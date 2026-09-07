@@ -10,7 +10,10 @@ public static class DbSeeder
     public static async Task SeedAsync(IServiceProvider services)
     {
         var db = services.GetRequiredService<AppDbContext>();
-        await db.Database.MigrateAsync();
+        // EnsureCreated بدل Migrate: يبني الجداول مباشرة من الموديل الحالي، بلا حاجة لملفات
+        // Migrations (يلي بتحتاج dotnet-ef مثبتة محلياً). مناسب لمشروع بهالحجم؛ لو احتجنا
+        // تعديل الجداول لاحقاً بعد وجود بيانات حقيقية، ننتقل وقتها لنظام Migrations فعلي.
+        await db.Database.EnsureCreatedAsync();
 
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         foreach (var role in new[] { "Admin", "Student" })
