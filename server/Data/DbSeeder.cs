@@ -10,10 +10,23 @@ public static class DbSeeder
     public static async Task SeedAsync(IServiceProvider services)
     {
         var db = services.GetRequiredService<AppDbContext>();
-        // EnsureCreated بدل Migrate: يبني الجداول مباشرة من الموديل الحالي، بلا حاجة لملفات
-        // Migrations (يلي بتحتاج dotnet-ef مثبتة محلياً). مناسب لمشروع بهالحجم؛ لو احتجنا
-        // تعديل الجداول لاحقاً بعد وجود بيانات حقيقية، ننتقل وقتها لنظام Migrations فعلي.
-        await db.Database.EnsureCreatedAsync();
+        // نتحقق فعلياً من وجود الجداول (لا نكتفي بالتحقق من وجود قاعدة البيانات نفسها،
+        // لأن قاعدة postgres على Supabase موجودة دائماً بشكل افتراضي بغض النظر عن الجداول).
+        var tablesExist = true;
+        try
+        {
+            await db.Database.ExecuteSqlRawAsync("SELECT 1 FROM \"AspNetRoles\" LIMIT 1");
+        }
+        catch
+        {
+            tablesExist = false;
+        }
+
+        if (!tablesExist)
+        {
+            var createScript = db.Database.GenerateCreateScript();
+            await db.Database.ExecuteSqlRawAsync(createScript);
+        }
 
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         foreach (var role in new[] { "Admin", "Student" })
