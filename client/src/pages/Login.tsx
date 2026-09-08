@@ -29,9 +29,9 @@ export default function Login() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="mx-auto w-16 h-16 rounded-2xl bg-brand text-white flex items-center justify-center text-3xl font-bold mb-4">
-            خ
+            ر
           </div>
-          <h1 className="text-xl font-bold text-ink">الخبير</h1>
+          <h1 className="text-xl font-bold text-ink">رخصتي</h1>
           <p className="text-sm text-muted mt-1">اختبار النظري لرخصة قيادة السيارات</p>
         </div>
 
@@ -79,10 +79,6 @@ export default function Login() {
           >
             {busy ? '...جارِ الدخول' : 'دخول'}
           </button>
-
-          <p className="text-xs text-muted text-center leading-relaxed pt-2">
-            الحساب يُنشأ من إدارة المكتب. لأي استفسار تواصل معهم مباشرة.
-          </p>
         </form>
       </div>
     </div>

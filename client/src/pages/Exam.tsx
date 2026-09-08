@@ -28,6 +28,17 @@ export default function Exam() {
     );
   }, [modelId]);
 
+  // الامتحان صغير وكل الأسئلة معروفة من البداية، فبنحمّل كل صوره مسبقاً بالخلفية
+  // مشان التنقل بين الأسئلة (بالترتيب أو بالضغط على رقم مباشرة) يطلع فوراً
+  useEffect(() => {
+    questions.forEach((qq) => {
+      if (qq.imageUrl) {
+        const img = new Image();
+        img.src = qq.imageUrl;
+      }
+    });
+  }, [questions]);
+
   const finish = useCallback(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
@@ -66,7 +77,7 @@ export default function Exam() {
 
   return (
     <div className="min-h-screen">
-      <div className="bg-ink text-white sticky top-0 z-10">
+      <div className="bg-surface text-white sticky top-0 z-10">
         <div className="px-4 py-3 flex items-center justify-between">
           <div>
             <p className="text-xs opacity-70">السؤال {current + 1} من {questions.length}</p>

@@ -36,7 +36,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen">
-      <div className="bg-ink text-white px-4 py-3.5 flex items-center gap-3 sticky top-0 z-10">
+      <div className="bg-surface text-white px-4 py-3.5 flex items-center gap-3 sticky top-0 z-10">
         <button onClick={() => navigate('/')} className="opacity-90 hover:opacity-100">
           <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" className="w-6 h-6">
             <path d="M9 6l6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
