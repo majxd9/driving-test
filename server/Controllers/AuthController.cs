@@ -52,7 +52,7 @@ public class AuthController : ControllerBase
         if (!user.IsActive)
         {
             await LogAttempt(user.Id, false, "AccountDisabled");
-            return Unauthorized(new { message = "هذا الحساب معطّل. تواصل مع إدارة المكتب." });
+            return Unauthorized(new { message = "هذا الحساب معطّل حالياً." });
         }
 
         if (user.AccessExpiresAt is not null && user.AccessExpiresAt < DateTime.UtcNow)
@@ -79,7 +79,7 @@ public class AuthController : ControllerBase
             await LogAttempt(user.Id, false, "DeviceMismatch");
             return Unauthorized(new
             {
-                message = "هذا الحساب مرتبط بجهاز آخر مسبقاً. تواصل مع الإدارة لإعادة الربط إذا بدّلت جهازك."
+                message = "هذا الحساب مرتبط بجهاز آخر مسبقاً."
             });
         }
 
