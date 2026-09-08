@@ -109,7 +109,7 @@ export default function Home() {
       <main className="px-5 pt-6 pb-10 max-w-md mx-auto">
         <div className="text-center mb-8">
           <div className="mx-auto w-14 h-14 rounded-2xl bg-brand text-white flex items-center justify-center text-2xl font-bold mb-3">
-            خ
+            ر
           </div>
           <h2 className="text-base font-bold text-ink">اختبار النظري لرخصة قيادة السيارات</h2>
         </div>
@@ -137,11 +137,6 @@ export default function Home() {
               </span>
             </button>
           ))}
-        </div>
-
-        <div className="mt-8 bg-surface rounded-xl2 p-4 text-center text-sm text-muted leading-relaxed border border-line">
-          <p className="font-semibold text-ink mb-1">📞 للحجز والاستعلام</p>
-          <p>المكتب الرئيسي: حماه — أول شارع العلمين، مقابل البنك الإسلامي</p>
         </div>
       </main>
     </div>

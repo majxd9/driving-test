@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { Question } from '../types';
+import { preloadImages } from '../utils/preloadImages';
 
 const DURATION = 15 * 60;
 const PASS_SCORE = 25;
@@ -22,7 +23,9 @@ export default function Exam() {
         const seed = Number(modelId) || 1;
         const pick = (arr: Question[], n: number) =>
           arr.filter((_, i) => (i + seed) % Math.ceil(arr.length / n) === 0).slice(0, n);
-        setQuestions([...pick(ser, 12), ...pick(ish, 12), ...pick(mek, 6)]);
+        const picked = [...pick(ser, 12), ...pick(ish, 12), ...pick(mek, 6)];
+        setQuestions(picked);
+        preloadImages(picked.map((qq) => qq.imageUrl));
         setLoading(false);
       }
     );
@@ -66,7 +69,7 @@ export default function Exam() {
 
   return (
     <div className="min-h-screen">
-      <div className="bg-ink text-white sticky top-0 z-10">
+      <div className="bg-surface text-white sticky top-0 z-10">
         <div className="px-4 py-3 flex items-center justify-between">
           <div>
             <p className="text-xs opacity-70">السؤال {current + 1} من {questions.length}</p>
