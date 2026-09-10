@@ -13,6 +13,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Question> Questions => Set<Question>();
     public DbSet<ExamModel> ExamModels => Set<ExamModel>();
     public DbSet<AuthLog> AuthLogs => Set<AuthLog>();
+    public DbSet<ExamResult> ExamResults => Set<ExamResult>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

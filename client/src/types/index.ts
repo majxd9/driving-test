@@ -1,5 +1,12 @@
 export type QuestionCategory = 'Ser' | 'Ishara' | 'Mechanic';
 
+export interface QuestionDiagram {
+  type: 'svg' | 'image' | 'interactive';
+  url: string;
+  title?: string;
+  description?: string;
+}
+
 export interface Question {
   id: number;
   category: QuestionCategory;
@@ -7,7 +14,11 @@ export interface Question {
   options: string[];
   correctAnswerIndex: number;
   explanation?: string;
-  imageUrl?: string;
+  imageUrl?: string | null;
+  diagramType?: 'svg' | 'image' | 'interactive' | null;
+  diagramUrl?: string | null;
+  diagramTitle?: string | null;
+  diagramDescription?: string | null;
 }
 
 export interface LoginResponse {
@@ -35,4 +46,13 @@ export interface AuthLog {
   userAgent: string | null;
   success: boolean;
   reason: string;
+}
+
+export interface Analytics {
+  students: { total: number; active: number };
+  questions: { total: number; byCategory: Record<QuestionCategory, number> };
+  media: { totalReferenced: number };
+  exams: { total: number; passed: number; passRate: number; averageScore: number };
+  auth: { totalAttempts: number; successful: number; failed: number };
+  topQuestions: { questionId: number; category: QuestionCategory; text: string; attempts: number; correct: number; accuracy: number }[];
 }

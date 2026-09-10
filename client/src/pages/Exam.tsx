@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { Question } from '../types';
+import OptimizedImage from '../components/OptimizedImage';
+import DiagramRenderer from '../components/DiagramRenderer';
 
 const DURATION = 15 * 60;
 const PASS_SCORE = 25;
@@ -31,13 +33,10 @@ export default function Exam() {
   // الامتحان صغير وكل الأسئلة معروفة من البداية، فبنحمّل كل صوره مسبقاً بالخلفية
   // مشان التنقل بين الأسئلة (بالترتيب أو بالضغط على رقم مباشرة) يطلع فوراً
   useEffect(() => {
-    questions.forEach((qq) => {
-      if (qq.imageUrl) {
-        const img = new Image();
-        img.src = qq.imageUrl;
-      }
+    questions.slice(current, current + 4).forEach((qq) => {
+      if (qq.imageUrl) { const img = new Image(); img.src = qq.imageUrl; }
     });
-  }, [questions]);
+  }, [questions, current]);
 
   const finish = useCallback(() => {
     if (finishedRef.current) return;
@@ -46,10 +45,9 @@ export default function Exam() {
     questions.forEach((q) => {
       if (answers[q.id] === q.correctAnswerIndex) correct++;
     });
-    navigate('/result', {
-      state: { correct, total: questions.length, answered: Object.keys(answers).length },
-    });
-  }, [answers, questions, navigate]);
+    api.submitExamResult({ modelId: Number(modelId) || 1, total: questions.length, correct, answered: Object.keys(answers).length }).catch(() => {});
+    navigate('/result', { state: { correct, total: questions.length, answered: Object.keys(answers).length } });
+  }, [answers, questions, navigate, modelId]);
 
   useEffect(() => {
     if (loading) return;
@@ -119,8 +117,8 @@ export default function Exam() {
       <div className="max-w-lg mx-auto px-4 py-5">
         <div className="bg-surface rounded-xl2 border border-line p-5">
           {q.imageUrl && (
-            <div className="w-full max-w-[200px] aspect-square mx-auto mb-4 rounded-xl border border-line bg-paper flex items-center justify-center overflow-hidden">
-              <img src={q.imageUrl} alt="إشارة" className="w-full h-full object-contain p-3" />
+            <div className="w-full max-w-[560px] min-h-[240px] max-h-[430px] mx-auto mb-5 rounded-2xl border border-line bg-paper flex items-center justify-center overflow-hidden p-3">
+              <OptimizedImage src={q.imageUrl} alt={`صورة توضيحية للسؤال ${q.id}`} priority={current < 2} sizes="(max-width: 768px) 92vw, 560px" className="w-full h-full min-h-[220px] max-h-[400px]" objectFit="contain" />
             </div>
           )}
           <p className="text-[17px] font-bold text-ink leading-relaxed text-center mb-5">{q.text}</p>
@@ -141,6 +139,8 @@ export default function Exam() {
               </button>
             ))}
           </div>
+
+          <DiagramRenderer question={q} />
 
           <div className="flex gap-2.5 mt-5">
             <button
