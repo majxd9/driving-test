@@ -12,3 +12,7 @@ public record StudentResponse(
     DateTime CreatedAt);
 
 public record UpdateStudentStatusRequest(bool IsActive);
+
+public record ActivityLogResponse(string AttemptedUserName, DateTime Timestamp, bool Success, string Reason);
+
+public record QuestionStatResponse(string Category, int Count);

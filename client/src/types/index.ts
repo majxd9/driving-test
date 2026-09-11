@@ -1,12 +1,5 @@
 export type QuestionCategory = 'Ser' | 'Ishara' | 'Mechanic';
 
-export interface QuestionDiagram {
-  type: 'svg' | 'image' | 'interactive';
-  url: string;
-  title?: string;
-  description?: string;
-}
-
 export interface Question {
   id: number;
   category: QuestionCategory;
@@ -14,14 +7,8 @@ export interface Question {
   options: string[];
   correctAnswerIndex: number;
   explanation?: string;
-  imageUrl?: string | null;
-  diagramType?: 'svg' | 'image' | 'interactive' | null;
-  diagramUrl?: string | null;
-  diagramTitle?: string | null;
-  diagramDescription?: string | null;
+  imageUrl?: string;
 }
-
-export type QuestionUpsert = Omit<Question, "id">;
 
 export interface LoginResponse {
   fullName: string;
@@ -50,9 +37,14 @@ export interface AuthLog {
   reason: string;
 }
 
-export interface Analytics {
-  students: { total: number; active: number };
-  questions: { total: number; byCategory: Record<QuestionCategory, number> };
-  exams: { total: number; passed: number; passRate: number; averageScore: number };
-  auth: { totalAttempts: number; successful: number; failed: number };
+export interface ActivityLog {
+  attemptedUserName: string;
+  timestamp: string;
+  success: boolean;
+  reason: string;
+}
+
+export interface QuestionStat {
+  category: QuestionCategory;
+  count: number;
 }

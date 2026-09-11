@@ -1,1113 +1,423 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
-import {
-  Analytics,
-  Question,
-  QuestionCategory,
-  Student
-} from '../../types';
+import { Student, ActivityLog, QuestionStat, QuestionCategory } from '../../types';
 
-type Tab = 'overview' | 'students' | 'questions' | 'media';
+const CATEGORY_LABEL: Record<QuestionCategory, string> = {
+  Ser: 'قواعد السير',
+  Ishara: 'الإشارات',
+  Mechanic: 'الميكانيك',
+};
 
-const tabs: [Tab, string][] = [
-  ['overview', 'نظرة عامة'],
-  ['students', 'الطلاب'],
-  ['questions', 'الأسئلة'],
-  ['media', 'الصور']
-];
+const CATEGORY_BAR_CLASS: Record<QuestionCategory, string> = {
+  Ser: 'bg-brand',
+  Ishara: 'bg-signs',
+  Mechanic: 'bg-mek',
+};
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>('overview');
-  const [students, setStudents] = useState<Student[]>([]);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [analytics, setAnalytics] = useState<Analytics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [showStudent, setShowStudent] = useState(false);
-
-  const reload = () => {
-    setLoading(true);
-
-    Promise.all([
-      api.admin.listStudents(),
-      api.admin.listQuestions(),
-      api.admin.analytics()
-    ])
-      .then(([s, q, a]) => {
-        setStudents(s);
-        setQuestions(q);
-        setAnalytics(a);
-      })
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    reload();
-  }, []);
+  const [tab, setTab] = useState<'overview' | 'students'>('overview');
 
   return (
-    <div className="min-h-screen bg-paper">
-      <header className="admin-header">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/')}
-            className="icon-button"
-          >
-            →
-          </button>
-
-          <div>
-            <b>لوحة الإدارة</b>
-            <p>تحكم كامل بالمحتوى والأداء</p>
-          </div>
-        </div>
-
-        <button onClick={reload} className="top-link">
-          تحديث البيانات ↻
+    <div className="min-h-screen">
+      <div className="bg-surface text-white px-4 py-3.5 flex items-center gap-3 sticky top-0 z-10">
+        <button onClick={() => navigate('/')} className="opacity-90 hover:opacity-100">
+          <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" className="w-6 h-6">
+            <path d="M9 6l6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </button>
-      </header>
+        <span className="font-semibold text-sm flex-1">لوحة التحكم</span>
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-6 py-6">
-        <nav className="admin-tabs">
-          {tabs.map(([k, l]) => (
-            <button
-              key={k}
-              onClick={() => setTab(k)}
-              className={tab === k ? 'active' : ''}
-            >
-              {l}
-            </button>
-          ))}
-        </nav>
+      <div className="max-w-lg mx-auto px-4 pt-4">
+        <div className="flex gap-1.5 bg-surface rounded-xl p-1 mb-5">
+          <button
+            onClick={() => setTab('overview')}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+              tab === 'overview' ? 'bg-brand text-paper' : 'text-muted'
+            }`}
+          >
+            نظرة عامة
+          </button>
+          <button
+            onClick={() => setTab('students')}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+              tab === 'students' ? 'bg-brand text-paper' : 'text-muted'
+            }`}
+          >
+            الطلاب
+          </button>
+        </div>
+      </div>
 
-        {loading ? (
-          <div className="py-20 text-center text-muted">
-            جارِ تحميل لوحة التحكم...
-          </div>
-        ) : (
-          <>
-            {tab === 'overview' && (
-              <Overview
-                analytics={analytics}
-                questions={questions}
-              />
-            )}
-
-            {tab === 'students' && (
-              <Students
-                students={students}
-                reload={reload}
-                showForm={showStudent}
-                setShowForm={setShowStudent}
-              />
-            )}
-
-            {tab === 'questions' && (
-              <Questions
-                questions={questions}
-                reload={reload}
-              />
-            )}
-
-            {tab === 'media' && <Media />}
-          </>
-        )}
-      </main>
+      {tab === 'overview' ? <OverviewTab /> : <StudentsTab />}
     </div>
   );
 }
 
-function Overview({
-  analytics,
-  questions
-}: {
-  analytics: Analytics | null;
-  questions: Question[];
-}) {
-  if (!analytics) return null;
+/* ------------------------------- نظرة عامة ------------------------------- */
 
-  const max = Math.max(
-    ...Object.values(analytics.questions.byCategory),
-    1
-  );
+function OverviewTab() {
+  const [students, setStudents] = useState<Student[] | null>(null);
+  const [activity, setActivity] = useState<ActivityLog[] | null>(null);
+  const [stats, setStats] = useState<QuestionStat[] | null>(null);
+
+  useEffect(() => {
+    api.admin.listStudents().then(setStudents);
+    api.admin.getRecentActivity().then(setActivity).catch(() => setActivity([]));
+    api.admin.getQuestionStats().then(setStats).catch(() => setStats([]));
+  }, []);
+
+  const loading = !students || !activity || !stats;
+
+  const activeCount = students?.filter((s) => s.isActive).length ?? 0;
+  const expiringSoon =
+    students?.filter((s) => {
+      if (!s.accessExpiresAt) return false;
+      const days = (new Date(s.accessExpiresAt).getTime() - Date.now()) / 86_400_000;
+      return days > 0 && days <= 14;
+    }).length ?? 0;
+  const totalQuestions = stats?.reduce((sum, s) => sum + s.count, 0) ?? 0;
+
+  const signupsByMonth = (() => {
+    if (!students) return [];
+    const map = new Map<string, number>();
+    students.forEach((s) => {
+      const d = new Date(s.createdAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      map.set(key, (map.get(key) ?? 0) + 1);
+    });
+    return [...map.entries()]
+      .sort(([a], [b]) => (a > b ? 1 : -1))
+      .slice(-6)
+      .map(([key, value]) => ({ label: MONTHS_AR[Number(key.split('-')[1]) - 1], value }));
+  })();
 
   return (
-    <section className="space-y-5">
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          ['الطلاب', analytics.students.total, ''],
-          ['النشطون', analytics.students.active, 'brand'],
-          ['الأسئلة', analytics.questions.total, 'signs'],
-          [
-            'نسبة النجاح',
-            `${analytics.exams.passRate}%`,
-            'exam'
-          ]
-        ].map(([l, v, c]) => (
-          <div
-            className="stat-card"
-            key={l as string}
-          >
-            <p>{l}</p>
-
-            <strong
-              className={
-                c === 'brand'
-                  ? 'text-brand'
-                  : c === 'signs'
-                    ? 'text-signs'
-                    : c === 'exam'
-                      ? 'text-exam'
-                      : ''
-              }
-            >
-              {v}
-            </strong>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-5">
-        <div className="admin-card">
-          <div className="card-title">
-            <div>
-              <p>توزيع بنك الأسئلة</p>
-              <b>حسب القسم</b>
-            </div>
+    <div className="max-w-lg mx-auto px-4 pb-10">
+      {loading ? (
+        <p className="text-center text-muted py-16">...جارِ التحميل</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <StatCard label="إجمالي الطلاب" value={students!.length} accentClass="text-ink" />
+            <StatCard label="حسابات فعّالة" value={activeCount} accentClass="text-brand" />
+            <StatCard label="صلاحية تنتهي قريباً" value={expiringSoon} accentClass="text-mek" />
+            <StatCard label="بنك الأسئلة" value={totalQuestions} accentClass="text-signs" />
           </div>
 
-          <div className="bars">
-            {Object.entries(
-              analytics.questions.byCategory
-            ).map(([k, v]) => (
-              <div className="bar-row" key={k}>
-                <span>
-                  {k === 'Ser'
-                    ? 'قواعد السير'
-                    : k === 'Ishara'
-                      ? 'الإشارات'
-                      : 'الميكانيك'}
-                </span>
-
-                <div>
-                  <i
-                    style={{
-                      width: `${(v / max) * 100}%`
-                    }}
-                  />
-                </div>
-
-                <b>{v}</b>
+          <div className="bg-surface rounded-xl2 border border-line p-4 mb-4">
+            <h3 className="text-sm font-semibold text-ink mb-4">تسجيلات الطلاب الجدد</h3>
+            {signupsByMonth.length === 0 ? (
+              <p className="text-xs text-muted text-center py-6">ما في بيانات كافية بعد</p>
+            ) : (
+              <div className="flex items-end gap-2.5 h-28">
+                {signupsByMonth.map((d) => {
+                  const max = Math.max(...signupsByMonth.map((x) => x.value), 1);
+                  return (
+                    <div key={d.label} className="flex-1 h-full flex flex-col items-center justify-end gap-1.5">
+                      <span className="text-[11px] text-ink font-semibold">{d.value}</span>
+                      <div
+                        className="w-full max-w-[26px] rounded-t-md bg-brand"
+                        style={{ height: `${Math.max((d.value / max) * 100, 6)}%` }}
+                      />
+                      <span className="text-[10px] text-muted">{d.label}</span>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="admin-card">
-          <div className="card-title">
-            <div>
-              <p>الاختبارات</p>
-              <b>ملخص الأداء</b>
-            </div>
+            )}
           </div>
 
-          <div className="mini-metrics">
-            <div>
-              <strong>{analytics.exams.total}</strong>
-              <span>اختبار مكتمل</span>
-            </div>
-
-            <div>
-              <strong>
-                {analytics.exams.averageScore}
-              </strong>
-              <span>متوسط الإجابات</span>
-            </div>
-
-            <div>
-              <strong>{analytics.auth.successful}</strong>
-              <span>دخول ناجح</span>
-            </div>
-
-            <div>
-              <strong>{analytics.auth.failed}</strong>
-              <span>محاولة فاشلة</span>
+          <div className="bg-surface rounded-xl2 border border-line p-4 mb-4">
+            <h3 className="text-sm font-semibold text-ink mb-4">بنك الأسئلة حسب الفئة</h3>
+            <div className="space-y-3">
+              {stats!.map((s) => {
+                const pct = totalQuestions > 0 ? (s.count / totalQuestions) * 100 : 0;
+                return (
+                  <div key={s.category}>
+                    <div className="flex items-center justify-between mb-1 text-xs">
+                      <span className="text-ink font-medium">{CATEGORY_LABEL[s.category] ?? s.category}</span>
+                      <span className="text-muted">{s.count} سؤال</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-paper overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${CATEGORY_BAR_CLASS[s.category] ?? 'bg-brand'}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="admin-card">
-        <div className="card-title">
-          <div>
-            <p>آخر الأسئلة</p>
-            <b>مراجعة سريعة لبنك المحتوى</b>
+          <div className="bg-surface rounded-xl2 border border-line p-4">
+            <h3 className="text-sm font-semibold text-ink mb-3">آخر نشاط دخول</h3>
+            {activity!.length === 0 ? (
+              <p className="text-xs text-muted text-center py-6">ولا محاولة دخول مسجّلة بعد</p>
+            ) : (
+              <div className="space-y-0.5 max-h-80 overflow-y-auto">
+                {activity!.map((log, i) => (
+                  <div key={i} className="flex items-center gap-2.5 py-2 border-b border-line last:border-0">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${log.success ? 'bg-brand' : 'bg-exam'}`} />
+                    <span className="flex-1 min-w-0 text-xs text-ink truncate" dir="ltr">
+                      {log.attemptedUserName}
+                    </span>
+                    <span className="text-[11px] text-muted shrink-0">{timeAgo(log.timestamp)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>السؤال</th>
-                <th>القسم</th>
-                <th>الصورة</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {questions.slice(0, 8).map(q => (
-                <tr key={q.id}>
-                  <td>{q.text}</td>
-
-                  <td>
-                    {q.category === 'Ser'
-                      ? 'قواعد السير'
-                      : q.category === 'Ishara'
-                        ? 'الإشارات'
-                        : 'الميكانيك'}
-                  </td>
-
-                  <td>
-                    {q.imageUrl ? '✓' : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+        </>
+      )}
+    </div>
   );
 }
 
-function Students({
-  students,
-  reload,
-  showForm,
-  setShowForm
-}: {
-  students: Student[];
-  reload: () => void;
-  showForm: boolean;
-  setShowForm: (v: boolean) => void;
-}) {
-  const [search, setSearch] = useState('');
-
-  const filtered = useMemo(
-    () =>
-      students.filter(s =>
-        (s.fullName + ' ' + s.userName)
-          .toLowerCase()
-          .includes(search.toLowerCase())
-      ),
-    [students, search]
+function StatCard({ label, value, accentClass }: { label: string; value: number; accentClass: string }) {
+  return (
+    <div className="bg-surface rounded-xl2 border border-line p-4 text-center">
+      <p className={`text-2xl font-bold ${accentClass}`}>{value}</p>
+      <p className="text-xs text-muted mt-0.5">{label}</p>
+    </div>
   );
+}
 
-  async function act(fn: () => Promise<unknown>) {
-    await fn();
-    reload();
+const MONTHS_AR = [
+  'كانون٢',
+  'شباط',
+  'آذار',
+  'نيسان',
+  'أيار',
+  'حزيران',
+  'تموز',
+  'آب',
+  'أيلول',
+  'تشرين١',
+  'تشرين٢',
+  'كانون١',
+];
+
+function timeAgo(iso: string): string {
+  const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (seconds < 60) return 'الآن';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `منذ ${minutes} د`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `منذ ${hours} س`;
+  const days = Math.floor(hours / 24);
+  return `منذ ${days} يوم`;
+}
+
+/* -------------------------------- الطلاب -------------------------------- */
+
+function StudentsTab() {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [query, setQuery] = useState('');
+
+  function load() {
+    setLoading(true);
+    api.admin.listStudents().then(setStudents).finally(() => setLoading(false));
   }
 
+  useEffect(load, []);
+
+  async function toggleStatus(s: Student) {
+    await api.admin.setStatus(s.id, !s.isActive);
+    load();
+  }
+
+  async function resetDevice(s: Student) {
+    await api.admin.resetDevice(s.id);
+    load();
+  }
+
+  async function removeStudent(s: Student) {
+    if (!confirm(`حذف حساب ${s.fullName} نهائياً؟`)) return;
+    await api.admin.deleteStudent(s.id);
+    load();
+  }
+
+  const filtered = students.filter(
+    (s) => s.fullName.includes(query) || s.userName.toLowerCase().includes(query.toLowerCase())
+  );
+
   return (
-    <section>
-      <div className="toolbar">
-        <div>
-          <p className="eyebrow">إدارة الحسابات</p>
-          <h1>الطلاب</h1>
-        </div>
+    <div className="max-w-lg mx-auto px-4 pb-10">
+      <button
+        onClick={() => setShowForm((v) => !v)}
+        className="w-full py-3.5 rounded-xl2 font-bold text-white bg-brand mb-4"
+      >
+        {showForm ? 'إغلاق' : '+ إضافة طالب جديد'}
+      </button>
 
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="primary-cta"
-        >
-          {showForm ? 'إغلاق' : '＋ إضافة طالب'}
-        </button>
-      </div>
+      {showForm && <CreateStudentForm onCreated={() => { setShowForm(false); load(); }} />}
 
-      {showForm && (
-        <CreateStudentForm
-          onCreated={() => {
-            setShowForm(false);
-            reload();
-          }}
+      {students.length > 0 && (
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="بحث بالاسم أو اسم المستخدم..."
+          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm outline-none focus:border-brand mb-4"
         />
       )}
 
-      <input
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        placeholder="ابحث بالاسم أو اسم المستخدم..."
-        className="admin-search"
-      />
-
-      <div className="admin-card mt-4">
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>الاسم</th>
-                <th>الحالة</th>
-                <th>الجهاز</th>
-                <th>الاختبارات</th>
-                <th>النجاح</th>
-                <th>الصلاحية</th>
-                <th>إجراءات</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filtered.map(s => (
-                <tr key={s.id}>
-                  <td>
-                    <b>{s.fullName}</b>
-                    <small dir="ltr">
-                      {s.userName}
-                    </small>
-                  </td>
-
-                  <td>
-                    <span
-                      className={`status ${
-                        s.isActive ? 'on' : 'off'
-                      }`}
-                    >
-                      {s.isActive ? 'نشط' : 'معطل'}
-                    </span>
-                  </td>
-
-                  <td>
-                    {s.deviceBound
-                      ? 'مرتبط'
-                      : 'غير مرتبط'}
-                  </td>
-
-                  <td>—</td>
-
-                  <td>—</td>
-
-                  <td>
-                    {s.accessExpiresAt
-                      ? new Date(
-                          s.accessExpiresAt
-                        ).toLocaleDateString('ar-SY')
-                      : 'دائم'}
-                  </td>
-
-                  <td>
-                    <div className="action-row">
-                      <button
-                        onClick={() =>
-                          act(() =>
-                            api.admin.setStatus(
-                              s.id,
-                              !s.isActive
-                            )
-                          )
-                        }
-                      >
-                        {s.isActive
-                          ? 'تعطيل'
-                          : 'تفعيل'}
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          act(() =>
-                            api.admin.resetDevice(s.id)
-                          )
-                        }
-                      >
-                        إعادة الجهاز
-                      </button>
-
-                      <button
-                        className="danger"
-                        onClick={() => {
-                          if (
-                            confirm(
-                              `حذف حساب ${s.fullName}؟`
-                            )
-                          ) {
-                            act(() =>
-                              api.admin.deleteStudent(
-                                s.id
-                              )
-                            );
-                          }
-                        }}
-                      >
-                        حذف
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {loading ? (
+        <p className="text-center text-muted py-8">...جارِ التحميل</p>
+      ) : filtered.length === 0 ? (
+        <p className="text-center text-muted py-8">
+          {students.length === 0 ? 'لا يوجد طلاب مسجّلين بعد' : 'ولا نتيجة مطابقة'}
+        </p>
+      ) : (
+        <div className="space-y-2.5">
+          {filtered.map((s) => (
+            <StudentRow
+              key={s.id}
+              student={s}
+              onToggle={() => toggleStatus(s)}
+              onResetDevice={() => resetDevice(s)}
+              onDelete={() => removeStudent(s)}
+            />
+          ))}
         </div>
-      </div>
-    </section>
+      )}
+    </div>
   );
 }
 
-function CreateStudentForm({
-  onCreated
+function StudentRow({
+  student,
+  onToggle,
+  onResetDevice,
+  onDelete,
 }: {
-  onCreated: () => void;
+  student: Student;
+  onToggle: () => void;
+  onResetDevice: () => void;
+  onDelete: () => void;
 }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="bg-surface rounded-xl2 border border-line overflow-hidden">
+      <button onClick={() => setOpen((v) => !v)} className="w-full p-4 flex items-center gap-3 text-right">
+        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${student.isActive ? 'bg-brand' : 'bg-exam'}`} />
+        <span className="flex-1 min-w-0">
+          <span className="block font-semibold text-ink truncate">{student.fullName}</span>
+          <span className="block text-xs text-muted mt-0.5" dir="ltr">
+            {student.userName}
+          </span>
+        </span>
+        {student.deviceBound && (
+          <span className="text-[10px] text-signs bg-signs-soft px-2 py-1 rounded-full shrink-0">مرتبط بجهاز</span>
+        )}
+      </button>
+
+      {open && (
+        <div className="border-t border-line p-3 grid grid-cols-3 gap-2 text-xs">
+          <button
+            onClick={onToggle}
+            className={`py-2.5 rounded-lg font-semibold ${
+              student.isActive ? 'bg-exam-soft text-exam' : 'bg-brand-soft text-brand'
+            }`}
+          >
+            {student.isActive ? 'تعطيل' : 'تفعيل'}
+          </button>
+          <button onClick={onResetDevice} className="py-2.5 rounded-lg font-semibold bg-signs-soft text-signs">
+            إعادة ربط الجهاز
+          </button>
+          <button onClick={onDelete} className="py-2.5 rounded-lg font-semibold bg-white/5 text-muted">
+            حذف
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CreateStudentForm({ onCreated }: { onCreated: () => void }) {
   const [userName, setUserName] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
-  const [days, setDays] = useState('90');
-  const [error, setError] = useState('');
+  const [accessDays, setAccessDays] = useState('90');
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function submit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-
     setBusy(true);
-    setError('');
-
+    setError(null);
     try {
       await api.admin.createStudent({
         userName,
         fullName,
         password,
-        accessDays: days ? Number(days) : null
+        accessDays: accessDays ? Number(accessDays) : null,
       });
-
       onCreated();
-    } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : 'تعذر الحفظ'
-      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'تعذّر إنشاء الحساب');
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <form
-      onSubmit={submit}
-      className="admin-card form-grid"
-    >
-      <input
-        placeholder="الاسم الكامل"
-        value={fullName}
-        onChange={e => setFullName(e.target.value)}
-        required
-      />
+    <form onSubmit={handleSubmit} className="bg-surface rounded-xl2 border border-line p-4 space-y-3 mb-4">
+      <div>
+        <label className="block text-xs text-muted mb-1">الاسم الكامل</label>
+        <input
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          required
+          className="w-full rounded-lg border border-line bg-paper px-3 py-2.5 text-sm outline-none focus:border-brand"
+        />
+      </div>
+      <div>
+        <label className="block text-xs text-muted mb-1">اسم المستخدم</label>
+        <input
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          required
+          dir="ltr"
+          className="w-full rounded-lg border border-line bg-paper px-3 py-2.5 text-sm outline-none focus:border-brand"
+        />
+      </div>
+      <div>
+        <label className="block text-xs text-muted mb-1">كلمة المرور</label>
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          type="text"
+          dir="ltr"
+          className="w-full rounded-lg border border-line bg-paper px-3 py-2.5 text-sm outline-none focus:border-brand"
+        />
+      </div>
+      <div>
+        <label className="block text-xs text-muted mb-1">مدة الصلاحية (يوم)</label>
+        <input
+          value={accessDays}
+          onChange={(e) => setAccessDays(e.target.value)}
+          type="number"
+          className="w-full rounded-lg border border-line bg-paper px-3 py-2.5 text-sm outline-none focus:border-brand"
+        />
+      </div>
 
-      <input
-        placeholder="اسم المستخدم"
-        value={userName}
-        onChange={e => setUserName(e.target.value)}
-        required
-        dir="ltr"
-      />
-
-      <input
-        placeholder="كلمة المرور"
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-        required
-        dir="ltr"
-      />
-
-      <input
-        placeholder="مدة الصلاحية بالأيام"
-        value={days}
-        onChange={e => setDays(e.target.value)}
-        type="number"
-      />
+      {error && <p className="text-xs text-exam">{error}</p>}
 
       <button
+        type="submit"
         disabled={busy}
-        className="primary-cta"
+        className="w-full py-3 rounded-lg font-bold text-white bg-brand disabled:opacity-60"
       >
-        {busy ? 'جارٍ الحفظ...' : 'حفظ الحساب'}
+        {busy ? '...جارِ الحفظ' : 'حفظ الحساب'}
       </button>
-
-      {error && (
-        <p className="text-exam text-sm">
-          {error}
-        </p>
-      )}
     </form>
-  );
-}
-
-function Questions({
-  questions,
-  reload
-}: {
-  questions: Question[];
-  reload: () => void;
-}) {
-  const [editing, setEditing] =
-    useState<Question | null>(null);
-
-  const [search, setSearch] = useState('');
-
-  const filtered = questions.filter(
-    q =>
-      q.text.includes(search) ||
-      String(q.id).includes(search)
-  );
-
-  return (
-    <section>
-      <div className="toolbar">
-        <div>
-          <p className="eyebrow">محرر المحتوى</p>
-          <h1>الأسئلة</h1>
-        </div>
-
-        <button
-          className="primary-cta"
-          onClick={() =>
-            setEditing({
-              id: 0,
-              category: 'Ser',
-              text: '',
-              options: ['', '', '', ''],
-              correctAnswerIndex: 0,
-              explanation: '',
-              imageUrl: undefined,
-              diagramType: undefined,
-              diagramUrl: undefined,
-              diagramTitle: undefined,
-              diagramDescription: undefined
-            })
-          }
-        >
-          ＋ إضافة سؤال
-        </button>
-      </div>
-
-      <input
-        className="admin-search"
-        placeholder="ابحث عن سؤال..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-      />
-
-      <div className="admin-card mt-4">
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>السؤال</th>
-                <th>القسم</th>
-                <th>الصورة</th>
-                <th>إجراءات</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filtered.map(q => (
-                <tr key={q.id}>
-                  <td>{q.id}</td>
-
-                  <td>
-                    <b>{q.text}</b>
-                  </td>
-
-                  <td>{q.category}</td>
-
-                  <td>
-                    {q.imageUrl ? '✓' : '—'}
-                  </td>
-
-                  <td>
-                    <div className="action-row">
-                      <button
-                        onClick={() => setEditing(q)}
-                      >
-                        تعديل
-                      </button>
-
-                      <button
-                        className="danger"
-                        onClick={async () => {
-                          if (
-                            confirm(
-                              'حذف السؤال نهائياً؟'
-                            )
-                          ) {
-                            await api.admin.deleteQuestion(
-                              q.id
-                            );
-
-                            reload();
-                          }
-                        }}
-                      >
-                        حذف
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {editing && (
-        <QuestionEditor
-          initial={editing}
-          close={() => setEditing(null)}
-          saved={() => {
-            setEditing(null);
-            reload();
-          }}
-        />
-      )}
-    </section>
-  );
-}
-
-function QuestionEditor({
-  initial,
-  close,
-  saved
-}: {
-  initial: Question;
-  close: () => void;
-  saved: () => void;
-}) {
-  const [q, setQ] = useState<Question>(initial);
-  const [busy, setBusy] = useState(false);
-
-  const set = (patch: Partial<Question>) =>
-    setQ(x => ({ ...x, ...patch }));
-
-  async function save() {
-    setBusy(true);
-
-    try {
-      const options = q.options.map(x => x.trim());
-
-      if (!q.text.trim()) {
-        throw new Error('نص السؤال مطلوب.');
-      }
-
-      if (
-        options.length < 2 ||
-        options.some(x => !x)
-      ) {
-        throw new Error(
-          'يجب تعبئة جميع الاختيارات.'
-        );
-      }
-
-      if (
-        q.correctAnswerIndex < 0 ||
-        q.correctAnswerIndex >= options.length
-      ) {
-        throw new Error(
-          'الإجابة الصحيحة غير صالحة.'
-        );
-      }
-
-      const payload = {
-        category: q.category,
-        text: q.text.trim(),
-        options,
-        correctAnswerIndex: q.correctAnswerIndex,
-        explanation:
-          q.explanation?.trim() || undefined,
-        imageUrl:
-          q.imageUrl?.trim() || undefined,
-        diagramType:
-          q.diagramType || undefined,
-        diagramUrl:
-          q.diagramUrl?.trim() || undefined,
-        diagramTitle:
-          q.diagramTitle?.trim() || undefined,
-        diagramDescription:
-          q.diagramDescription?.trim() || undefined
-      };
-
-      if (q.id) {
-        await api.admin.updateQuestion(
-          q.id,
-          payload
-        );
-      } else {
-        await api.admin.createQuestion(payload);
-      }
-
-      saved();
-    } catch (e) {
-      alert(
-        e instanceof Error
-          ? e.message
-          : 'تعذر حفظ السؤال'
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <div
-      className="modal-backdrop"
-      onClick={close}
-    >
-      <div
-        className="editor-modal"
-        onClick={e => e.stopPropagation()}
-      >
-        <button
-          className="modal-close"
-          onClick={close}
-        >
-          ×
-        </button>
-
-        <h2>محرر السؤال</h2>
-
-        <div className="form-grid">
-          <select
-            value={q.category}
-            onChange={e =>
-              set({
-                category:
-                  e.target.value as QuestionCategory
-              })
-            }
-          >
-            <option value="Ser">
-              قواعد السير
-            </option>
-
-            <option value="Ishara">
-              الإشارات
-            </option>
-
-            <option value="Mechanic">
-              الميكانيك
-            </option>
-          </select>
-
-          <textarea
-            value={q.text}
-            onChange={e =>
-              set({ text: e.target.value })
-            }
-            placeholder="نص السؤال"
-            rows={3}
-          />
-
-          {q.options.map((o, i) => (
-            <input
-              key={i}
-              value={o}
-              onChange={e =>
-                set({
-                  options: q.options.map(
-                    (x, j) =>
-                      j === i
-                        ? e.target.value
-                        : x
-                  )
-                })
-              }
-              placeholder={`الإجابة ${i + 1}`}
-            />
-          ))}
-
-          <label>
-            رقم الإجابة الصحيحة
-
-            <input
-              type="number"
-              min={0}
-              max={3}
-              value={q.correctAnswerIndex}
-              onChange={e =>
-                set({
-                  correctAnswerIndex:
-                    Number(e.target.value)
-                })
-              }
-            />
-          </label>
-
-          <textarea
-            value={q.explanation || ''}
-            onChange={e =>
-              set({
-                explanation: e.target.value
-              })
-            }
-            placeholder="شرح الإجابة"
-            rows={3}
-          />
-
-          <input
-            value={q.imageUrl || ''}
-            onChange={e =>
-              set({
-                imageUrl: e.target.value
-              })
-            }
-            placeholder="رابط الصورة /signs/sign_01.webp"
-          />
-
-          <div className="diagram-fields">
-            <select
-              value={q.diagramType || ''}
-              onChange={e =>
-                set({
-                  diagramType: (
-                    e.target.value || undefined
-                  ) as
-                    | 'svg'
-                    | 'image'
-                    | 'interactive'
-                    | undefined
-                })
-              }
-            >
-              <option value="">
-                بدون Diagram
-              </option>
-
-              <option value="svg">
-                SVG
-              </option>
-
-              <option value="image">
-                صورة
-              </option>
-
-              <option value="interactive">
-                تفاعلي
-              </option>
-            </select>
-
-            <input
-              value={q.diagramUrl || ''}
-              onChange={e =>
-                set({
-                  diagramUrl: e.target.value
-                })
-              }
-              placeholder="رابط التوضيح"
-            />
-
-            <input
-              value={q.diagramTitle || ''}
-              onChange={e =>
-                set({
-                  diagramTitle: e.target.value
-                })
-              }
-              placeholder="عنوان التوضيح"
-            />
-
-            <textarea
-              value={q.diagramDescription || ''}
-              onChange={e =>
-                set({
-                  diagramDescription:
-                    e.target.value
-                })
-              }
-              placeholder="وصف التوضيح"
-              rows={2}
-            />
-          </div>
-
-          <button
-            onClick={save}
-            disabled={busy}
-            className="primary-cta"
-          >
-            {busy
-              ? 'جارٍ الحفظ...'
-              : 'حفظ السؤال'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Media() {
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
-
-  async function optimize(file: File) {
-    if (!file.type.startsWith('image/')) {
-      throw new Error('الملف ليس صورة');
-    }
-
-    if (file.size > 8 * 1024 * 1024) {
-      throw new Error(
-        'حجم الصورة الأصلي أكبر من 8MB'
-      );
-    }
-
-    if (
-      file.type === 'image/svg+xml' ||
-      file.type === 'image/webp'
-    ) {
-      return file;
-    }
-
-    const bitmap = await createImageBitmap(file);
-
-    const scale = Math.min(
-      1,
-      1280 /
-        Math.max(
-          bitmap.width,
-          bitmap.height
-        )
-    );
-
-    const canvas =
-      document.createElement('canvas');
-
-    canvas.width = Math.max(
-      1,
-      Math.round(bitmap.width * scale)
-    );
-
-    canvas.height = Math.max(
-      1,
-      Math.round(bitmap.height * scale)
-    );
-
-    canvas
-      .getContext('2d')!
-      .drawImage(
-        bitmap,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-
-    const blob =
-      await new Promise<Blob | null>(
-        resolve =>
-          canvas.toBlob(
-            resolve,
-            'image/webp',
-            0.84
-          )
-      );
-
-    if (!blob) {
-      throw new Error(
-        'تعذر ضغط الصورة'
-      );
-    }
-
-    return new File(
-      [blob],
-      file.name.replace(
-        /\.[^.]+$/,
-        ''
-      ) + '.webp',
-      {
-        type: 'image/webp'
-      }
-    );
-  }
-
-  async function onFile(file?: File) {
-    if (!file) return;
-
-    setBusy(true);
-    setMessage(
-      'جارٍ ضغط الصورة وتجهيزها...'
-    );
-
-    try {
-      const optimized =
-        await optimize(file);
-
-      setMessage(
-        `تم تجهيز الصورة بنجاح (${Math.round(
-          optimized.size / 1024
-        )}KB)، لكن رفعها إلى الخادم غير متاح حاليًا من API.`
-      );
-    } catch (e) {
-      setMessage(
-        e instanceof Error
-          ? e.message
-          : 'تعذر تجهيز الصورة'
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <section>
-      <div className="toolbar">
-        <div>
-          <p className="eyebrow">
-            Media pipeline
-          </p>
-
-          <h1>إدارة الصور</h1>
-        </div>
-
-        <label className="primary-cta cursor-pointer">
-          ＋ رفع صورة
-
-          <input
-            hidden
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/svg+xml"
-            onChange={e =>
-              onFile(
-                e.target.files?.[0]
-              )
-            }
-          />
-        </label>
-      </div>
-
-      <div className="admin-card upload-zone">
-        <div className="upload-icon">
-          ↥
-        </div>
-
-        <h2>
-          ارفع صورة وسيتم تحسينها قبل إرسالها
-        </h2>
-
-        <p>
-          PNG/JPG يتم تحويلها إلى WebP
-          بحد أقصى 1280px. SVG وWebP
-          تحفظ كما هي.
-        </p>
-
-        {busy && (
-          <div className="mt-4 text-brand">
-            جارٍ المعالجة...
-          </div>
-        )}
-
-        {message && (
-          <div className="mt-4 text-muted">
-            {message}
-          </div>
-        )}
-      </div>
-    </section>
   );
 }
