@@ -88,6 +88,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddResponseCompression(o => o.EnableForHttps = true);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -100,10 +101,20 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseResponseCompression();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        var ext = Path.GetExtension(ctx.File.Name).ToLowerInvariant();
+        if (ext is ".webp" or ".svg" or ".png" or ".jpg" or ".jpeg" or ".woff2")
+            ctx.Context.Response.Headers.CacheControl = "public,max-age=604800";
+    }
+});
 app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapGet("/api/health", () => Results.Ok(new { ok = true }));
 app.MapControllers();
 
 app.Run();

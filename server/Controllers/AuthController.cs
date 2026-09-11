@@ -71,8 +71,8 @@ public class AuthController : ControllerBase
         // ---- ربط الجهاز: أول دخول ناجح يثبّت الجهاز، أي جهاز مختلف بعدها يُرفض ----
         if (string.IsNullOrEmpty(user.DeviceId))
         {
+            // user is already tracked by the scoped EF context; persist the first device bind together with the success log.
             user.DeviceId = request.DeviceId;
-            await _userManager.UpdateAsync(user);
         }
         else if (user.DeviceId != request.DeviceId)
         {
@@ -95,7 +95,12 @@ public class AuthController : ControllerBase
             Expires = DateTimeOffset.UtcNow.AddHours(12)
         });
 
-        await LogAttempt(user.Id, true, "Success");
+        _db.AuthLogs.Add(new AuthLog
+        {
+            UserId = user.Id, AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent,
+            Success = true, Reason = "Success"
+        });
+        await _db.SaveChangesAsync();
 
         return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt));
     }

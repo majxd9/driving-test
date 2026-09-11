@@ -12,9 +12,12 @@ function getDeviceId(): string {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const isFormData = options.body instanceof FormData;
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), path.includes('/login') ? 20000 : 30000);
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     credentials: 'include',
+    signal: options.signal ?? controller.signal,
     headers: {
       ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(options.headers || {}),
@@ -34,6 +37,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
+  warmup: () => fetch(`${API_BASE}/api/health`, { credentials: 'omit', cache: 'no-store', keepalive: true }).catch(() => {}),
   login: (userName: string, password: string) =>
     request<import('../types').LoginResponse>('/api/auth/login', {
       method: 'POST', body: JSON.stringify({ userName, password, deviceId: getDeviceId() }),

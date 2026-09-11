@@ -23,6 +23,7 @@ public class QuestionsController : ControllerBase
     {
         var questions = await _db.Questions
             .Where(q => q.Category == category)
+            .AsNoTracking()
             .ToListAsync();
         return Ok(questions);
     }
