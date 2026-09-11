@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { Question, QuestionCategory } from '../types';
+import { preloadImages } from '../utils/preloadImages';
+import Spinner from '../components/Spinner';
 
 const THEME: Record<QuestionCategory, { name: string; head: string; soft: string; text: string }> = {
   Ser: { name: 'أسئلة قواعد السير', head: 'bg-brand', soft: 'bg-brand-soft', text: 'text-brand' },
@@ -30,19 +32,9 @@ export default function Study() {
       .finally(() => setLoading(false));
   }, [category]);
 
-  const preloaded = useRef<Set<string>>(new Set());
-
-  // تحميل مسبق لصور الأسئلة الجاية (الحالي + 3 بعده) مشان لما يضغط "التالي" تطلع الصورة فوراً بدون انتظار
   useEffect(() => {
-    const upcoming = questions.slice(index, index + 4);
-    upcoming.forEach((qq) => {
-      if (qq.imageUrl && !preloaded.current.has(qq.imageUrl)) {
-        preloaded.current.add(qq.imageUrl);
-        const img = new Image();
-        img.src = qq.imageUrl;
-      }
-    });
-  }, [questions, index]);
+    preloadImages(questions.map((qq) => qq.imageUrl));
+  }, [questions]);
 
   const q = questions[index];
   const chosen = q ? answers[q.id] : undefined;
@@ -71,7 +63,7 @@ export default function Study() {
   }
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-muted">...جارِ التحميل</div>;
+    return <Spinner label="...جارِ التحميل" />;
   }
 
   if (!q) {
@@ -143,7 +135,9 @@ export default function Study() {
                     key={i}
                     onClick={() => choose(i)}
                     disabled={chosen !== undefined}
-                    className={`w-full text-right rounded-xl border-[1.5px] px-4 py-3.5 flex items-center gap-3 transition-colors ${style}`}
+                    className={`w-full text-right rounded-xl border-[1.5px] px-4 py-3.5 flex items-center gap-3 transition-all ${
+                      chosen !== undefined && isCorrect ? 'scale-[1.02]' : ''
+                    } ${style}`}
                   >
                     <span className="shrink-0 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">
                       {['أ', 'ب', 'ج', 'د'][i]}

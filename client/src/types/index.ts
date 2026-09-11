@@ -24,6 +24,8 @@ export interface Student {
   deviceBound: boolean;
   accessExpiresAt: string | null;
   createdAt: string;
+  attemptCount: number;
+  passCount: number;
 }
 
 export interface AuthLog {
@@ -37,14 +39,12 @@ export interface AuthLog {
   reason: string;
 }
 
-export interface ActivityLog {
-  attemptedUserName: string;
-  timestamp: string;
-  success: boolean;
-  reason: string;
-}
-
-export interface QuestionStat {
-  category: QuestionCategory;
-  count: number;
+export interface ExamAttempt {
+  id: number;
+  modelId: number;
+  correct: number;
+  total: number;
+  answered: number;
+  wrongQuestionIds: number[];
+  createdAt: string;
 }

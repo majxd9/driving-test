@@ -26,7 +26,24 @@ public class AdminController : ControllerBase
     public async Task<ActionResult<List<StudentResponse>>> GetAll()
     {
         var students = await _userManager.GetUsersInRoleAsync("Student");
-        var result = students.Select(ToResponse).OrderByDescending(s => s.CreatedAt).ToList();
+        var studentIds = students.Select(s => s.Id).ToHashSet();
+
+        var attemptStats = await _db.ExamAttempts
+            .Where(a => studentIds.Contains(a.StudentId))
+            .GroupBy(a => a.StudentId)
+            .Select(g => new
+            {
+                StudentId = g.Key,
+                AttemptCount = g.Count(),
+                PassCount = g.Count(a => a.Correct >= PassScore),
+            })
+            .ToDictionaryAsync(g => g.StudentId);
+
+        var result = students
+            .Select(s => ToResponse(s, attemptStats.GetValueOrDefault(s.Id)?.AttemptCount ?? 0,
+                                        attemptStats.GetValueOrDefault(s.Id)?.PassCount ?? 0))
+            .OrderByDescending(s => s.CreatedAt)
+            .ToList();
         return Ok(result);
     }
 
@@ -46,7 +63,7 @@ public class AdminController : ControllerBase
             return BadRequest(result.Errors.Select(e => e.Description));
 
         await _userManager.AddToRoleAsync(user, "Student");
-        return Ok(ToResponse(user));
+        return Ok(ToResponse(user, 0, 0));
     }
 
     [HttpPatch("{id}/status")]
@@ -94,30 +111,21 @@ public class AdminController : ControllerBase
         return Ok(logs);
     }
 
-    // نشاط تسجيل الدخول لكل الطلاب مع بعض (للوحة التحكم الرئيسية) — آخر 40 محاولة
-    [HttpGet("~/api/admin/activity")]
-    public async Task<ActionResult<List<ActivityLogResponse>>> GetRecentActivity()
+    [HttpGet("{id}/attempts")]
+    public async Task<ActionResult<List<ExamAttemptResponse>>> GetAttempts(string id)
     {
-        var logs = await _db.AuthLogs
-            .OrderByDescending(l => l.Timestamp)
-            .Take(40)
-            .Select(l => new ActivityLogResponse(l.AttemptedUserName, l.Timestamp, l.Success, l.Reason))
+        var attempts = await _db.ExamAttempts
+            .Where(a => a.StudentId == id)
+            .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
-        return Ok(logs);
+
+        return Ok(attempts.Select(ExamAttemptsController.ToResponse).ToList());
     }
 
-    // إحصائية بسيطة لبنك الأسئلة (تُستخدم برسم بياني بلوحة التحكم)
-    [HttpGet("~/api/admin/question-stats")]
-    public async Task<ActionResult<List<QuestionStatResponse>>> GetQuestionStats()
-    {
-        var stats = await _db.Questions
-            .GroupBy(q => q.Category)
-            .Select(g => new QuestionStatResponse(g.Key.ToString(), g.Count()))
-            .ToListAsync();
-        return Ok(stats);
-    }
+    private const int PassScore = 25;
 
-    private static StudentResponse ToResponse(ApplicationUser u) => new(
+    private static StudentResponse ToResponse(ApplicationUser u, int attemptCount, int passCount) => new(
         u.Id, u.UserName ?? "", u.FullName, u.IsActive,
-        !string.IsNullOrEmpty(u.DeviceId), u.AccessExpiresAt, u.CreatedAt);
+        !string.IsNullOrEmpty(u.DeviceId), u.AccessExpiresAt, u.CreatedAt,
+        attemptCount, passCount);
 }

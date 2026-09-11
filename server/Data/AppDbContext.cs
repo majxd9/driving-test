@@ -13,6 +13,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Question> Questions => Set<Question>();
     public DbSet<ExamModel> ExamModels => Set<ExamModel>();
     public DbSet<AuthLog> AuthLogs => Set<AuthLog>();
+    public DbSet<ExamAttempt> ExamAttempts => Set<ExamAttempt>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -35,5 +36,16 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<ExamModel>()
             .Property(e => e.QuestionIds)
             .HasConversion(intListConverter);
+
+        builder.Entity<ExamAttempt>()
+            .Property(a => a.WrongQuestionIds)
+            .HasConversion(intListConverter);
+
+        // كل محاولة مرتبطة بطالب — إذا انحذف حساب الطالب تنحذف محاولاته معه (بدل ما تضل يتيمة).
+        builder.Entity<ExamAttempt>()
+            .HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(a => a.StudentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

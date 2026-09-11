@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { Question } from '../types';
+import { preloadImages } from '../utils/preloadImages';
+import Spinner from '../components/Spinner';
 
 const DURATION = 15 * 60;
 const PASS_SCORE = 25;
@@ -22,34 +24,44 @@ export default function Exam() {
         const seed = Number(modelId) || 1;
         const pick = (arr: Question[], n: number) =>
           arr.filter((_, i) => (i + seed) % Math.ceil(arr.length / n) === 0).slice(0, n);
-        setQuestions([...pick(ser, 12), ...pick(ish, 12), ...pick(mek, 6)]);
+        const picked = [...pick(ser, 12), ...pick(ish, 12), ...pick(mek, 6)];
+        setQuestions(picked);
+        preloadImages(picked.map((qq) => qq.imageUrl));
         setLoading(false);
       }
     );
   }, [modelId]);
 
-  // الامتحان صغير وكل الأسئلة معروفة من البداية، فبنحمّل كل صوره مسبقاً بالخلفية
-  // مشان التنقل بين الأسئلة (بالترتيب أو بالضغط على رقم مباشرة) يطلع فوراً
-  useEffect(() => {
-    questions.forEach((qq) => {
-      if (qq.imageUrl) {
-        const img = new Image();
-        img.src = qq.imageUrl;
-      }
-    });
-  }, [questions]);
-
   const finish = useCallback(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
     let correct = 0;
+    const wrongQuestions: { question: Question; chosen: number }[] = [];
     questions.forEach((q) => {
-      if (answers[q.id] === q.correctAnswerIndex) correct++;
+      if (answers[q.id] === q.correctAnswerIndex) {
+        correct++;
+      } else if (answers[q.id] !== undefined) {
+        wrongQuestions.push({ question: q, chosen: answers[q.id] });
+      }
     });
+    const answeredCount = Object.keys(answers).length;
+
+    api
+      .submitExamAttempt({
+        modelId: Number(modelId) || 1,
+        correct,
+        total: questions.length,
+        answered: answeredCount,
+        wrongQuestionIds: wrongQuestions.map((w) => w.question.id),
+      })
+      .catch(() => {
+        // ما منكسّر تجربة الطالب إذا فشل الحفظ — النتيجة أصلاً رح تظهر إله بالشاشة الجاية
+      });
+
     navigate('/result', {
-      state: { correct, total: questions.length, answered: Object.keys(answers).length, questions, answers },
+      state: { correct, total: questions.length, answered: answeredCount, wrongQuestions },
     });
-  }, [answers, questions, navigate]);
+  }, [answers, questions, navigate, modelId]);
 
   useEffect(() => {
     if (loading) return;
@@ -67,7 +79,7 @@ export default function Exam() {
   }, [loading, finish]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-muted">...جارِ التحضير</div>;
+    return <Spinner label="...جارِ التحضير" />;
   }
 
   const q = questions[current];

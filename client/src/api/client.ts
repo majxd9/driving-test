@@ -47,6 +47,18 @@ export const api = {
   getQuestions: (category: 'Ser' | 'Ishara' | 'Mechanic') =>
     request<import('../types').Question[]>(`/api/questions?category=${category}`),
 
+  submitExamAttempt: (data: {
+    modelId: number;
+    correct: number;
+    total: number;
+    answered: number;
+    wrongQuestionIds: number[];
+  }) =>
+    request<import('../types').ExamAttempt>('/api/exam-attempts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
   admin: {
     listStudents: () => request<import('../types').Student[]>('/api/admin/students'),
     createStudent: (data: { userName: string; fullName: string; password: string; accessDays: number | null }) =>
@@ -65,9 +77,7 @@ export const api = {
       request<void>(`/api/admin/students/${id}`, { method: 'DELETE' }),
     getLogs: (id: string) =>
       request<import('../types').AuthLog[]>(`/api/admin/students/${id}/logs`),
-    getRecentActivity: () =>
-      request<import('../types').ActivityLog[]>('/api/admin/activity'),
-    getQuestionStats: () =>
-      request<import('../types').QuestionStat[]>('/api/admin/question-stats'),
+    getAttempts: (id: string) =>
+      request<import('../types').ExamAttempt[]>(`/api/admin/students/${id}/attempts`),
   },
 };

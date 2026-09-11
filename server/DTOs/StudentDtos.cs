@@ -9,10 +9,8 @@ public record StudentResponse(
     bool IsActive,
     bool DeviceBound,
     DateTime? AccessExpiresAt,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    int AttemptCount,
+    int PassCount);
 
 public record UpdateStudentStatusRequest(bool IsActive);
-
-public record ActivityLogResponse(string AttemptedUserName, DateTime Timestamp, bool Success, string Reason);
-
-public record QuestionStatResponse(string Category, int Count);
