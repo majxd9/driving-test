@@ -37,8 +37,6 @@ export interface Student {
   deviceBound: boolean;
   accessExpiresAt: string | null;
   createdAt: string;
-  attemptCount: number;
-  passCount: number;
 }
 
 export interface AuthLog {
@@ -55,8 +53,6 @@ export interface AuthLog {
 export interface Analytics {
   students: { total: number; active: number };
   questions: { total: number; byCategory: Record<QuestionCategory, number> };
-  media: { totalReferenced: number };
   exams: { total: number; passed: number; passRate: number; averageScore: number };
   auth: { totalAttempts: number; successful: number; failed: number };
-  recentQuestions: { questionId: number; category: QuestionCategory; text: string; hasImage: boolean }[];
 }

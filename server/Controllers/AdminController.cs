@@ -28,25 +28,7 @@ public class AdminController : ControllerBase
     public async Task<ActionResult<List<StudentResponse>>> GetAllStudents()
     {
         var students = await _userManager.GetUsersInRoleAsync("Student");
-        var results = await _db.ExamResults.AsNoTracking()
-            .GroupBy(x => x.UserId)
-            .Select(g => new
-            {
-                UserId = g.Key,
-                AttemptCount = g.Count(),
-                PassCount = g.Count(x => x.Passed)
-            })
-            .ToListAsync();
-
-        var stats = results.ToDictionary(x => x.UserId ?? string.Empty);
-        return Ok(students
-            .Select(u =>
-            {
-                stats.TryGetValue(u.Id, out var stat);
-                return ToResponse(u, stat?.AttemptCount ?? 0, stat?.PassCount ?? 0);
-            })
-            .OrderByDescending(s => s.CreatedAt)
-            .ToList());
+        return Ok(students.Select(ToResponse).OrderByDescending(s => s.CreatedAt).ToList());
     }
 
     [HttpPost("students")]
@@ -142,46 +124,17 @@ public class AdminController : ControllerBase
     {
         var students = await _userManager.GetUsersInRoleAsync("Student");
         var questionCounts = await _db.Questions.AsNoTracking().GroupBy(q => q.Category).Select(g => new { Category = g.Key, Count = g.Count() }).ToListAsync();
-        var totalReferenced = await _db.Questions.AsNoTracking().CountAsync(q => q.ImageUrl != null && q.ImageUrl != "");
         var exams = await _db.ExamResults.AsNoTracking().ToListAsync();
         var authTotal = await _db.AuthLogs.CountAsync();
         var authSuccess = await _db.AuthLogs.CountAsync(x => x.Success);
         return Ok(new {
-            students = new { total = students.Count, active = students.Count(s=>s.IsActive) },
-            questions = new { total = questionCounts.Sum(x=>x.Count), byCategory = new {
-                Ser = questionCounts.Where(x=>x.Category==QuestionCategory.Ser).Select(x=>x.Count).FirstOrDefault(),
-                Ishara = questionCounts.Where(x=>x.Category==QuestionCategory.Ishara).Select(x=>x.Count).FirstOrDefault(),
-                Mechanic = questionCounts.Where(x=>x.Category==QuestionCategory.Mechanic).Select(x=>x.Count).FirstOrDefault()
-            }},
-            media = new { totalReferenced },
-            exams = new { total=exams.Count, passed=exams.Count(x=>x.Passed),
-                passRate=exams.Count==0?0:Math.Round(exams.Count(x=>x.Passed)*100.0/exams.Count,1),
-                averageScore=exams.Count==0?0:Math.Round(exams.Average(x=>(double)x.Correct),1) },
-            auth = new { totalAttempts=authTotal, successful=authSuccess, failed=authTotal-authSuccess },
-            recentQuestions = await _db.Questions.AsNoTracking()
-                .OrderByDescending(q=>q.Id).Take(8)
-                .Select(q=>new { questionId=q.Id, category=q.Category, text=q.Text, hasImage=q.ImageUrl != null && q.ImageUrl != "" })
-                .ToListAsync()
+            students = new { total = students.Count, active = students.Count(s => s.IsActive) },
+            questions = new { total = questionCounts.Sum(x=>x.Count), byCategory = new { Ser=questionCounts.Where(x=>x.Category==QuestionCategory.Ser).Select(x=>x.Count).FirstOrDefault(), Ishara=questionCounts.Where(x=>x.Category==QuestionCategory.Ishara).Select(x=>x.Count).FirstOrDefault(), Mechanic=questionCounts.Where(x=>x.Category==QuestionCategory.Mechanic).Select(x=>x.Count).FirstOrDefault() } },
+            exams = new { total=exams.Count, passed=exams.Count(x=>x.Passed), passRate=exams.Count==0?0:Math.Round(exams.Count(x=>x.Passed)*100.0/exams.Count,1), averageScore=exams.Count==0?0:Math.Round(exams.Average(x=>(double)x.Correct),1) },
+            auth = new { totalAttempts=authTotal, successful=authSuccess, failed=authTotal-authSuccess }
         });
     }
 
-    [HttpPost("media")]
-    [RequestSizeLimit(10_000_000)]
-    public async Task<IActionResult> UploadMedia(IFormFile file)
-    {
-        if (file is null || file.Length == 0) return BadRequest(new { message = "لم يتم اختيار ملف." });
-        var allowed = new[] { "image/webp", "image/png", "image/jpeg", "image/svg+xml" };
-        if (!allowed.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase)) return BadRequest(new { message = "الصيغ المدعومة: WebP, PNG, JPG, SVG." });
-        var ext = file.ContentType switch { "image/webp" => ".webp", "image/png" => ".png", "image/jpeg" => ".jpg", _ => ".svg" };
-        var folder = Path.Combine(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"), "uploads");
-        Directory.CreateDirectory(folder);
-        var name = $"{Guid.NewGuid():N}{ext}";
-        var path = Path.Combine(folder, name);
-        await using var stream = System.IO.File.Create(path); await file.CopyToAsync(stream);
-        return Ok(new { url = $"{Request.Scheme}://{Request.Host}/uploads/{name}", size = file.Length, width = 0, height = 0 });
-    }
-
     private static Question FromRequest(QuestionUpsertRequest r) => new() { Category=r.Category, Text=r.Text, Options=r.Options, CorrectAnswerIndex=r.CorrectAnswerIndex, Explanation=r.Explanation, ImageUrl=r.ImageUrl, DiagramType=r.DiagramType, DiagramUrl=r.DiagramUrl, DiagramTitle=r.DiagramTitle, DiagramDescription=r.DiagramDescription };
-    private static StudentResponse ToResponse(ApplicationUser u, int attemptCount = 0, int passCount = 0) =>
-        new(u.Id,u.UserName??"",u.FullName,u.IsActive,!string.IsNullOrEmpty(u.DeviceId),u.AccessExpiresAt,u.CreatedAt,attemptCount,passCount);
+    private static StudentResponse ToResponse(ApplicationUser u) => new(u.Id,u.UserName??"",u.FullName,u.IsActive,!string.IsNullOrEmpty(u.DeviceId),u.AccessExpiresAt,u.CreatedAt);
 }

@@ -68,23 +68,19 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
 
-        // ---- ربط الجهاز: أول دخول ناجح يثبّت الجهاز، أي جهاز مختلف بعدها يُرفض ----
-        if (string.IsNullOrEmpty(user.DeviceId))
-        {
-            // user is already tracked by the scoped EF context; persist the first device bind together with the success log.
-            user.DeviceId = request.DeviceId;
-        }
-        else if (user.DeviceId != request.DeviceId)
-        {
-            await LogAttempt(user.Id, false, "DeviceMismatch");
-            return Unauthorized(new
-            {
-                message = "هذا الحساب مرتبط بجهاز آخر مسبقاً."
-            });
-        }
-
+        // الأدمن غير مقيّد بجهاز. الطالب فقط يثبّت أول جهاز ناجح ثم يُرفض أي جهاز آخر.
         var roles = await _userManager.GetRolesAsync(user);
         var role = roles.FirstOrDefault() ?? "Student";
+        if (role == "Student")
+        {
+            if (string.IsNullOrEmpty(user.DeviceId)) user.DeviceId = request.DeviceId;
+            else if (user.DeviceId != request.DeviceId)
+            {
+                await LogAttempt(user.Id, false, "DeviceMismatch");
+                return Unauthorized(new { message = "هذا الحساب مرتبط بجهاز آخر مسبقاً." });
+            }
+        }
+
         var jwt = _tokenService.CreateToken(user, role);
 
         Response.Cookies.Append("auth_token", jwt, new CookieOptions
@@ -97,11 +93,14 @@ public class AuthController : ControllerBase
 
         _db.AuthLogs.Add(new AuthLog
         {
-            UserId = user.Id, AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent,
-            Success = true, Reason = "Success"
+            UserId = user.Id,
+            AttemptedUserName = request.UserName,
+            IpAddress = ip,
+            UserAgent = userAgent,
+            Success = true,
+            Reason = "Success"
         });
         await _db.SaveChangesAsync();
-
         return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt));
     }
 

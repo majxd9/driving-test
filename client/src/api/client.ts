@@ -12,12 +12,9 @@ function getDeviceId(): string {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const isFormData = options.body instanceof FormData;
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), path.includes('/login') ? 20000 : 30000);
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     credentials: 'include',
-    signal: options.signal ?? controller.signal,
     headers: {
       ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(options.headers || {}),
@@ -37,7 +34,6 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  warmup: () => fetch(`${API_BASE}/api/health`, { credentials: 'omit', cache: 'no-store', keepalive: true }).catch(() => {}),
   login: (userName: string, password: string) =>
     request<import('../types').LoginResponse>('/api/auth/login', {
       method: 'POST', body: JSON.stringify({ userName, password, deviceId: getDeviceId() }),
@@ -60,10 +56,6 @@ export const api = {
     updateQuestion: (id: number, data: import('../types').QuestionUpsert) => request<import('../types').Question>(`/api/admin/questions/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     deleteQuestion: (id: number) => request<void>(`/api/admin/questions/${id}`, { method: 'DELETE' }),
     analytics: () => request<import('../types').Analytics>('/api/admin/analytics'),
-    uploadMedia: (file: File) => {
-      const form = new FormData();
-      form.append('file', file, file.name);
-      return request<{ url: string; size: number; width: number; height: number }>('/api/admin/media', { method: 'POST', body: form });
-    },
+
   },
 };
