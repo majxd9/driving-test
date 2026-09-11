@@ -9,15 +9,12 @@ namespace DrivingTestApi.Controllers;
 
 [ApiController]
 [Route("api/exam-attempts")]
-[Authorize] // أي طالب مسجّل دخول يقدر يحفظ نتيجة اختباره هو بس (ما بنستقبل StudentId من الفرونت اند)
+[Authorize(Roles = "Student")]
 public class ExamAttemptsController : ControllerBase
 {
     private readonly AppDbContext _db;
 
-    public ExamAttemptsController(AppDbContext db)
-    {
-        _db = db;
-    }
+    public ExamAttemptsController(AppDbContext db) => _db = db;
 
     [HttpPost]
     public async Task<ActionResult<ExamAttemptResponse>> Submit(SubmitExamAttemptRequest request)
@@ -25,6 +22,12 @@ public class ExamAttemptsController : ControllerBase
         var studentId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (studentId is null) return Unauthorized();
 
+        if (request.Total <= 0 || request.Total > 100 ||
+            request.Correct < 0 || request.Correct > request.Total ||
+            request.Answered < 0 || request.Answered > request.Total)
+            return BadRequest(new { message = "بيانات نتيجة الاختبار غير صالحة." });
+
+        var wrongIds = request.WrongQuestionIds?.Distinct().Take(100).ToList() ?? new List<int>();
         var attempt = new ExamAttempt
         {
             StudentId = studentId,
@@ -32,16 +35,15 @@ public class ExamAttemptsController : ControllerBase
             Correct = request.Correct,
             Total = request.Total,
             Answered = request.Answered,
-            WrongQuestionIds = request.WrongQuestionIds,
-            CreatedAt = DateTime.UtcNow,
+            WrongQuestionIds = wrongIds,
+            CreatedAt = DateTime.UtcNow
         };
 
         _db.ExamAttempts.Add(attempt);
         await _db.SaveChangesAsync();
 
-        return Ok(ToResponse(attempt));
+        return Ok(new ExamAttemptResponse(
+            attempt.Id, attempt.ModelId, attempt.Correct, attempt.Total,
+            attempt.Answered, attempt.WrongQuestionIds, attempt.CreatedAt));
     }
-
-    internal static ExamAttemptResponse ToResponse(ExamAttempt a) => new(
-        a.Id, a.ModelId, a.Correct, a.Total, a.Answered, a.WrongQuestionIds, a.CreatedAt);
 }

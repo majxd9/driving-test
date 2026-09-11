@@ -88,7 +88,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "اختيار المسرب الأوسط مسبقاً يجنّب القطع المفاجئ للمسارب الجانبية عند عبور التقاطع مستقيماً.",
-    "imageUrl": "/signs/sign_300.svg"
+    "imageUrl": null
   },
   {
     "category": "Ser",
@@ -231,7 +231,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "اتخاذ المسرب الأيسر مسبقاً يجنّب القطع المفاجئ أمام المركبات الأخرى عند الانعطاف يساراً بالتقاطع.",
-    "imageUrl": "/signs/sign_301.svg"
+    "imageUrl": null
   },
   {
     "category": "Ser",
@@ -387,7 +387,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "القاعدة الافتراضية بتقاطع خالٍ من أي إشارات هي إعطاء الأفضلية لمن يأتي من جهة اليمين.",
-    "imageUrl": "/signs/sign_302.svg"
+    "imageUrl": null
   },
   {
     "category": "Ser",
@@ -452,7 +452,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "المركبات الموجودة أصلاً داخل الدوار لها الأفضلية على الداخلين الجدد لتفادي التصادم.",
-    "imageUrl": "/signs/sign_303.svg"
+    "imageUrl": null
   },
   {
     "category": "Ser",
@@ -946,7 +946,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يجب إعادة بناء مسافة أمان جديدة خلف أي مركبة تدخل بين مسافتك والمركبة الأمامية فوراً.",
-    "imageUrl": "/signs/sign_304.svg"
+    "imageUrl": null
   },
   {
     "category": "Ser",
@@ -1388,7 +1388,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "القيادة بوسط المسرب بمنعطف يميني تمنع خروج العجلات الخلفية الطويلة عن حافة الطريق أثناء الدوران.",
-    "imageUrl": "/signs/sign_305.svg"
+    "imageUrl": null
   },
   {
     "category": "Ser",
@@ -1401,7 +1401,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "أخذ اليمين قليلاً بمنعطف يساري يعوّض طول المركبة فيمنع عبور عجلاتها الخلفية لمسار السير المقابل.",
-    "imageUrl": "/signs/sign_306.svg"
+    "imageUrl": null
   },
   {
     "category": "Ser",
@@ -2064,7 +2064,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "إشارة تحذير مثلثة بسهم منحنٍ لليسار تنبّه لانعطاف قادم بهذا الاتجاه فقط.",
-    "imageUrl": "/signs/sign_01.webp"
+    "imageUrl": "/signs/sign_01.png"
   },
   {
     "category": "Ishara",
@@ -2077,7 +2077,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "نفس فكرة التحذير بالانعطاف، لكن هنا الانحناء نحو اليمين.",
-    "imageUrl": "/signs/sign_02.webp"
+    "imageUrl": "/signs/sign_02.png"
   },
   {
     "category": "Ishara",
@@ -2090,7 +2090,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "السهم المتعرج يدل على منعطفين متتاليين قريبين، أولهما نحو اليسار.",
-    "imageUrl": "/signs/sign_03.webp"
+    "imageUrl": "/signs/sign_03.png"
   },
   {
     "category": "Ishara",
@@ -2103,7 +2103,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس الفكرة، لكن أول انحناء بالمنعطفين المتتاليين يكون نحو اليمين.",
-    "imageUrl": "/signs/sign_04.webp"
+    "imageUrl": "/signs/sign_04.png"
   },
   {
     "category": "Ishara",
@@ -2116,7 +2116,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "المثلث مع رسم انحدار ونسبة مئوية ينبّه لهبوط حاد قد يستدعي تخفيف السرعة ونقل غيار منخفض.",
-    "imageUrl": "/signs/sign_05.webp"
+    "imageUrl": "/signs/sign_05.png"
   },
   {
     "category": "Ishara",
@@ -2129,7 +2129,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس شكل التحذير لكن للصعود الحاد بدل الهبوط.",
-    "imageUrl": "/signs/sign_06.webp"
+    "imageUrl": "/signs/sign_06.png"
   },
   {
     "category": "Ishara",
@@ -2142,7 +2142,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "تكرار لتحذير الصعود الحاد بنسبة مختلفة عن السابقة.",
-    "imageUrl": "/signs/sign_07.webp"
+    "imageUrl": "/signs/sign_07.png"
   },
   {
     "category": "Ishara",
@@ -2155,7 +2155,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "خطوط الطريق تضيق من الجهتين معاً، تحذير لتخفيف السرعة والانتباه للمركبات المقابلة.",
-    "imageUrl": "/signs/sign_08.webp"
+    "imageUrl": "/signs/sign_08.png"
   },
   {
     "category": "Ishara",
@@ -2168,7 +2168,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس تحذير الضيق، لكن من جهة واحدة فقط هذه المرة.",
-    "imageUrl": "/signs/sign_09.webp"
+    "imageUrl": "/signs/sign_09.png"
   },
   {
     "category": "Ishara",
@@ -2181,7 +2181,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "ينبّه لوجود جسر يرتفع أو يدور للسماح بمرور السفن، مع احتمال توقف مفاجئ.",
-    "imageUrl": "/signs/sign_10.webp"
+    "imageUrl": "/signs/sign_10.png"
   },
   {
     "category": "Ishara",
@@ -2194,7 +2194,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "تحذير من نهاية الطريق مباشرة عند رصيف ميناء أو ضفة نهر بدون حاجز واضح.",
-    "imageUrl": "/signs/sign_11.webp"
+    "imageUrl": "/signs/sign_11.png"
   },
   {
     "category": "Ishara",
@@ -2207,7 +2207,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "مطبات أو تعرجات بسطح الطريق تستدعي تخفيف السرعة تفادياً لأضرار بالمركبة.",
-    "imageUrl": "/signs/sign_12.webp"
+    "imageUrl": "/signs/sign_12.png"
   },
   {
     "category": "Ishara",
@@ -2220,7 +2220,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "احتمال انزلاق الإطارات بسبب رطوبة أو زيت على السطح، يستدعي قيادة حذرة.",
-    "imageUrl": "/signs/sign_13.webp"
+    "imageUrl": "/signs/sign_13.png"
   },
   {
     "category": "Ishara",
@@ -2233,7 +2233,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "حصى سائب يقلل التماسك مع الطريق خصوصاً أثناء الفرملة أو الانعطاف.",
-    "imageUrl": "/signs/sign_14.webp"
+    "imageUrl": "/signs/sign_14.png"
   },
   {
     "category": "Ishara",
@@ -2246,7 +2246,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "احتمال سقوط صخور من منحدر مجاور للطريق، خطر مفاجئ لا يمكن توقعه بدقة.",
-    "imageUrl": "/signs/sign_15.webp"
+    "imageUrl": "/signs/sign_15.png"
   },
   {
     "category": "Ishara",
@@ -2259,7 +2259,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "تحذير مسبق بوجود ممر عبور مشاة قريب لإعطائهم الأفضلية عند الاقتراب.",
-    "imageUrl": "/signs/sign_16.webp"
+    "imageUrl": "/signs/sign_16.png"
   },
   {
     "category": "Ishara",
@@ -2272,7 +2272,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "احتمال وجود جليد أو ثلج على سطح الطريق يقلل التصاق الإطارات.",
-    "imageUrl": "/signs/sign_17.webp"
+    "imageUrl": "/signs/sign_17.png"
   },
   {
     "category": "Ishara",
@@ -2285,7 +2285,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "قرب مدرسة أو منطقة سكنية، احتمال عبور أطفال فجأة يستدعي أقصى درجات الحذر.",
-    "imageUrl": "/signs/sign_18.webp"
+    "imageUrl": "/signs/sign_18.png"
   },
   {
     "category": "Ishara",
@@ -2298,7 +2298,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "تقاطع مخصص لعبور الدراجات الهوائية قد يقطع الطريق فجأة.",
-    "imageUrl": "/signs/sign_19.webp"
+    "imageUrl": "/signs/sign_19.png"
   },
   {
     "category": "Ishara",
@@ -2311,7 +2311,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "احتمال عبور حيوانات أليفة (كالمواشي) بإشراف راعٍ عبر الطريق.",
-    "imageUrl": "/signs/sign_20.webp"
+    "imageUrl": "/signs/sign_20.png"
   },
   {
     "category": "Ishara",
@@ -2324,7 +2324,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "احتمال عبور حيوانات برية بدون إشراف، أخطر من سابقتها لعدم إمكانية توقع تحركها.",
-    "imageUrl": "/signs/sign_21.webp"
+    "imageUrl": "/signs/sign_21.png"
   },
   {
     "category": "Ishara",
@@ -2337,7 +2337,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "ورشة عمل على الطريق تستدعي تخفيف السرعة والحذر من العمال والمعدات.",
-    "imageUrl": "/signs/sign_22.webp"
+    "imageUrl": "/signs/sign_22.png"
   },
   {
     "category": "Ishara",
@@ -2350,7 +2350,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "تنبيه مسبق بوجود إشارة ضوئية قادمة قد لا تكون ظاهرة بوضوح من مسافة بعيدة.",
-    "imageUrl": "/signs/sign_23.webp"
+    "imageUrl": "/signs/sign_23.png"
   },
   {
     "category": "Ishara",
@@ -2363,7 +2363,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "احتمال مرور طائرات منخفضة قرب مطار مجاور للطريق.",
-    "imageUrl": "/signs/sign_24.webp"
+    "imageUrl": "/signs/sign_24.png"
   },
   {
     "category": "Ishara",
@@ -2376,7 +2376,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "تحذير من رياح جانبية قوية قد تدفع المركبة عن مسارها، خصوصاً الخفيفة منها.",
-    "imageUrl": "/signs/sign_25.webp"
+    "imageUrl": "/signs/sign_25.png"
   },
   {
     "category": "Ishara",
@@ -2389,7 +2389,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "طريق أحادي الاتجاه أصلاً أصبح مؤقتاً بمسارين متقابلين بسبب ظرف طارئ كالأشغال.",
-    "imageUrl": "/signs/sign_26.webp"
+    "imageUrl": "/signs/sign_26.png"
   },
   {
     "category": "Ishara",
@@ -2402,7 +2402,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "علامة تعجب عامة تُستخدم لخطر لا توجد له إشارة نمطية محددة، فتستدعي حذراً عاماً.",
-    "imageUrl": "/signs/sign_27.webp"
+    "imageUrl": "/signs/sign_27.png"
   },
   {
     "category": "Ishara",
@@ -2415,7 +2415,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "تقاطع لا توجد فيه أفضلية معلنة، فتُطبَّق قاعدة الأفضلية للقادم من اليمين؛ الرسم الداخلي يوضح هندسة التقاطع فقط.",
-    "imageUrl": "/signs/sign_28.webp"
+    "imageUrl": "/signs/sign_28.png"
   },
   {
     "category": "Ishara",
@@ -2428,7 +2428,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس معنى غياب الأفضلية بتقاطع بهندسة مختلفة قليلاً عن السابقة.",
-    "imageUrl": "/signs/sign_29.webp"
+    "imageUrl": "/signs/sign_29.png"
   },
   {
     "category": "Ishara",
@@ -2441,7 +2441,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "نفس المعنى مجدداً، الاختلاف فقط بشكل التقاطع المرسوم داخل المثلث.",
-    "imageUrl": "/signs/sign_30.webp"
+    "imageUrl": "/signs/sign_30.png"
   },
   {
     "category": "Ishara",
@@ -2454,7 +2454,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس قاعدة عدم الأفضلية مع هندسة تقاطع رابعة.",
-    "imageUrl": "/signs/sign_31.webp"
+    "imageUrl": "/signs/sign_31.png"
   },
   {
     "category": "Ishara",
@@ -2467,7 +2467,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس القاعدة مع هندسة تقاطع خامسة من نفس المجموعة.",
-    "imageUrl": "/signs/sign_32.webp"
+    "imageUrl": "/signs/sign_32.png"
   },
   {
     "category": "Ishara",
@@ -2480,7 +2480,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "تقاطع طريق عريض مع طريق ضيق دون أفضلية معلنة؛ اتساع الطريق وحده لا يمنح أفضلية تلقائية.",
-    "imageUrl": "/signs/sign_33.webp"
+    "imageUrl": "/signs/sign_33.png"
   },
   {
     "category": "Ishara",
@@ -2493,7 +2493,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس المعنى بهندسة تقاطع مختلفة قليلاً ضمن نفس المجموعة.",
-    "imageUrl": "/signs/sign_34.webp"
+    "imageUrl": "/signs/sign_34.png"
   },
   {
     "category": "Ishara",
@@ -2506,7 +2506,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "تحذير من دوار قادم، والسهم يوضح تحديداً اتجاه الدوران الواجب اتباعه فيه.",
-    "imageUrl": "/signs/sign_35.webp"
+    "imageUrl": "/signs/sign_35.png"
   },
   {
     "category": "Ishara",
@@ -2519,7 +2519,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "تقاطع مع سكة قطار مزوّد بحاجز يُغلق عند اقتراب القطار.",
-    "imageUrl": "/signs/sign_36.webp"
+    "imageUrl": "/signs/sign_36.png"
   },
   {
     "category": "Ishara",
@@ -2532,7 +2532,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس تقاطع السكة لكن بدون حاجز أو حارس؛ التأكد من خلو الخط مسؤولية السائق كاملة.",
-    "imageUrl": "/signs/sign_37.webp"
+    "imageUrl": "/signs/sign_37.png"
   },
   {
     "category": "Ishara",
@@ -2545,7 +2545,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "عمود عدّ تنازلي قبل تقاطع السكة الحديدية بثلاث شرائط، يشير لبداية منطقة الاقتراب.",
-    "imageUrl": "/signs/sign_38.webp"
+    "imageUrl": "/signs/sign_38.png"
   },
   {
     "category": "Ishara",
@@ -2558,7 +2558,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "نفس العمود بشريطين، يعني اقتراباً أكبر من تقاطع السكة مقارنة بالثلاث شرائط.",
-    "imageUrl": "/signs/sign_39.webp"
+    "imageUrl": "/signs/sign_39.png"
   },
   {
     "category": "Ishara",
@@ -2571,7 +2571,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس العمود بشريط واحد، وهو الأقرب لتقاطع السكة من بين الأعمدة الثلاثة.",
-    "imageUrl": "/signs/sign_40.webp"
+    "imageUrl": "/signs/sign_40.png"
   },
   {
     "category": "Ishara",
@@ -2584,7 +2584,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "إشارة تمهّل: تلزم إبطاء السرعة وإعطاء الأفضلية لطريق فرعي دون حاجة لتوقف كامل إن كان الطريق خالياً.",
-    "imageUrl": "/signs/sign_41.webp"
+    "imageUrl": "/signs/sign_41.png"
   },
   {
     "category": "Ishara",
@@ -2597,7 +2597,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "إشارة قف: تلزم توقفاً كاملاً حتى لو بدا الطريق خالياً، ثم المتابعة بعد التأكد التام.",
-    "imageUrl": "/signs/sign_42.webp"
+    "imageUrl": "/signs/sign_42.png"
   },
   {
     "category": "Ishara",
@@ -2610,7 +2610,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "المعين الأصفر يعلن أن هذا الطريق يملك الأفضلية على التقاطعات التالية حتى إشارة نهايتها.",
-    "imageUrl": "/signs/sign_43.webp"
+    "imageUrl": "/signs/sign_43.png"
   },
   {
     "category": "Ishara",
@@ -2623,7 +2623,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "تُلغي الأفضلية الممنوحة سابقاً، فتعود قاعدة الأفضلية لليمين بالتقاطعات التالية.",
-    "imageUrl": "/signs/sign_44.webp"
+    "imageUrl": "/signs/sign_44.png"
   },
   {
     "category": "Ishara",
@@ -2636,7 +2636,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "بممر ضيق ثنائي الاتجاه، تعني أن الأولوية للمركبات القادمة من الجهة المقابلة وعليك الانتظار.",
-    "imageUrl": "/signs/sign_45.webp"
+    "imageUrl": "/signs/sign_45.png"
   },
   {
     "category": "Ishara",
@@ -2649,7 +2649,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس موقف الممر الضيق لكن معكوساً: الأفضلية لك، وعلى الطرف الآخر الانتظار.",
-    "imageUrl": "/signs/sign_46.webp"
+    "imageUrl": "/signs/sign_46.png"
   },
   {
     "category": "Ishara",
@@ -2662,7 +2662,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "علامة الصليب (X) تشير إلى وجود خط سكة حديد واحد يعبر الطريق.",
-    "imageUrl": "/signs/sign_47.webp"
+    "imageUrl": "/signs/sign_47.png"
   },
   {
     "category": "Ishara",
@@ -2675,7 +2675,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس علامة الصليب مع خط إضافي يدل على وجود خطي سكة متوازيين، فقد يمر قطاران.",
-    "imageUrl": "/signs/sign_48.webp"
+    "imageUrl": "/signs/sign_48.png"
   },
   {
     "category": "Ishara",
@@ -2688,7 +2688,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يمنع دخول المركبات من هذا الاتجاه المحدد فقط، بينما يُسمح بالاتجاه المعاكس.",
-    "imageUrl": "/signs/sign_49.webp"
+    "imageUrl": "/signs/sign_49.png"
   },
   {
     "category": "Ishara",
@@ -2701,7 +2701,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يمنع أي حركة مركبات بكلا الاتجاهين معاً على هذا المقطع.",
-    "imageUrl": "/signs/sign_50.webp"
+    "imageUrl": "/signs/sign_50.png"
   },
   {
     "category": "Ishara",
@@ -2714,7 +2714,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "يمنع مرور السيارات تحديداً، مع استثناء الدراجات النارية بدون سلة جانبية.",
-    "imageUrl": "/signs/sign_51.webp"
+    "imageUrl": "/signs/sign_51.png"
   },
   {
     "category": "Ishara",
@@ -2727,7 +2727,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "أيقونة دراجة نارية مشطوبة تمنع مرورها تحديداً.",
-    "imageUrl": "/signs/sign_52.webp"
+    "imageUrl": "/signs/sign_52.png"
   },
   {
     "category": "Ishara",
@@ -2740,7 +2740,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "أيقونة دراجة هوائية مشطوبة تمنع مرورها تحديداً.",
-    "imageUrl": "/signs/sign_53.webp"
+    "imageUrl": "/signs/sign_53.png"
   },
   {
     "category": "Ishara",
@@ -2753,7 +2753,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يخص الدراجات الهوائية المزوّدة بمحرك مساعد صغير.",
-    "imageUrl": "/signs/sign_54.webp"
+    "imageUrl": "/signs/sign_54.png"
   },
   {
     "category": "Ishara",
@@ -2766,7 +2766,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "أيقونة شاحنة مشطوبة تمنع مرور السيارات الشاحنة بهذا المقطع.",
-    "imageUrl": "/signs/sign_55.webp"
+    "imageUrl": "/signs/sign_55.png"
   },
   {
     "category": "Ishara",
@@ -2779,7 +2779,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يخص تحديداً الشاحنات المفصلية المكوّنة من قاطرة ومقطورة.",
-    "imageUrl": "/signs/sign_56.webp"
+    "imageUrl": "/signs/sign_56.png"
   },
   {
     "category": "Ishara",
@@ -2792,7 +2792,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "يمنع تواجد المشاة على هذا الطريق، شائع بالأوتوسترادات لأسباب سلامة.",
-    "imageUrl": "/signs/sign_57.webp"
+    "imageUrl": "/signs/sign_57.png"
   },
   {
     "category": "Ishara",
@@ -2805,7 +2805,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يمنع عربات الجر بالحيوانات كالخيل.",
-    "imageUrl": "/signs/sign_58.webp"
+    "imageUrl": "/signs/sign_58.png"
   },
   {
     "category": "Ishara",
@@ -2818,7 +2818,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يمنع العربات التي تُدفع باليد من المرور.",
-    "imageUrl": "/signs/sign_59.webp"
+    "imageUrl": "/signs/sign_59.png"
   },
   {
     "category": "Ishara",
@@ -2831,7 +2831,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "يمنع الجرارات والمعدات الزراعية البطيئة من المرور.",
-    "imageUrl": "/signs/sign_60.webp"
+    "imageUrl": "/signs/sign_60.png"
   },
   {
     "category": "Ishara",
@@ -2844,7 +2844,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "منع عام لأي مركبة تعمل بمحرك، أشمل من فئات المنع السابقة.",
-    "imageUrl": "/signs/sign_61.webp"
+    "imageUrl": "/signs/sign_61.png"
   },
   {
     "category": "Ishara",
@@ -2857,7 +2857,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "الرقم أسفل الرسم يحدد أقصى عرض للمركبة مسموح بالمرور، بالمتر.",
-    "imageUrl": "/signs/sign_62.webp"
+    "imageUrl": "/signs/sign_62.png"
   },
   {
     "category": "Ishara",
@@ -2870,7 +2870,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "الرقم يحدد أقصى ارتفاع مسموح، مهم جداً قرب الجسور والأنفاق المنخفضة.",
-    "imageUrl": "/signs/sign_63.webp"
+    "imageUrl": "/signs/sign_63.png"
   },
   {
     "category": "Ishara",
@@ -2883,7 +2883,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يحدد أقصى وزن إجمالي (مع الحمولة) مسموح به، حماية للطريق والجسور الضعيفة.",
-    "imageUrl": "/signs/sign_64.webp"
+    "imageUrl": "/signs/sign_64.png"
   },
   {
     "category": "Ishara",
@@ -2896,7 +2896,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "يحدد أقصى حمل مسموح لكل محور على حدة، لا الوزن الكلي.",
-    "imageUrl": "/signs/sign_65.webp"
+    "imageUrl": "/signs/sign_65.png"
   },
   {
     "category": "Ishara",
@@ -2909,7 +2909,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يحدد أقصى طول مسموح للمركبة، مهم بالمنعطفات الضيقة.",
-    "imageUrl": "/signs/sign_66.webp"
+    "imageUrl": "/signs/sign_66.png"
   },
   {
     "category": "Ishara",
@@ -2922,7 +2922,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يلزم بترك مسافة أمان محددة بالأمتار عن المركبة الأمامية، شائع بالطرق السريعة.",
-    "imageUrl": "/signs/sign_67.webp"
+    "imageUrl": "/signs/sign_67.png"
   },
   {
     "category": "Ishara",
@@ -2935,7 +2935,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "سهم منحنٍ لليسار مشطوب يمنع الانعطاف بهذا الاتجاه عند هذه النقطة.",
-    "imageUrl": "/signs/sign_68.webp"
+    "imageUrl": "/signs/sign_68.png"
   },
   {
     "category": "Ishara",
@@ -2948,7 +2948,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "نفس المنع، لكن للانعطاف نحو اليمين.",
-    "imageUrl": "/signs/sign_69.webp"
+    "imageUrl": "/signs/sign_69.png"
   },
   {
     "category": "Ishara",
@@ -2961,7 +2961,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يمنع الدوران الكامل بالاتجاه المعاكس (يو-تيرن) عند هذه النقطة تحديداً.",
-    "imageUrl": "/signs/sign_70.webp"
+    "imageUrl": "/signs/sign_70.png"
   },
   {
     "category": "Ishara",
@@ -2974,7 +2974,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يمنع سيارات الركاب من تجاوز غيرها بهذا المقطع، غالباً لرؤية محدودة أمامياً.",
-    "imageUrl": "/signs/sign_71.webp"
+    "imageUrl": "/signs/sign_71.png"
   },
   {
     "category": "Ishara",
@@ -2987,7 +2987,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس منع التجاوز لكن يخص الشاحنات تحديداً لطول مسافة تجاوزها.",
-    "imageUrl": "/signs/sign_72.webp"
+    "imageUrl": "/signs/sign_72.png"
   },
   {
     "category": "Ishara",
@@ -3000,7 +3000,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "الرقم داخل الدائرة الحمراء هو أقصى سرعة مسموحة بالكيلومتر بالساعة على هذا المقطع.",
-    "imageUrl": "/signs/sign_73.webp"
+    "imageUrl": "/signs/sign_73.png"
   },
   {
     "category": "Ishara",
@@ -3013,7 +3013,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يمنع استخدام آلة التنبيه الصوتي، شائع قرب المستشفيات والمناطق السكنية.",
-    "imageUrl": "/signs/sign_74.webp"
+    "imageUrl": "/signs/sign_74.png"
   },
   {
     "category": "Ishara",
@@ -3026,7 +3026,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يلزم بالتوقف الإلزامي عند نقطة تفتيش جمركية أو أمنية مهما بدا الطريق خالياً.",
-    "imageUrl": "/signs/sign_75.webp"
+    "imageUrl": "/signs/sign_75.png"
   },
   {
     "category": "Ishara",
@@ -3039,7 +3039,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "تكرار لتحذير ضيق الطريق من الجانبين ضمن مجموعة اللوحات التنظيمية لنفس المقطع.",
-    "imageUrl": "/signs/sign_76.webp"
+    "imageUrl": "/signs/sign_76.png"
   },
   {
     "category": "Ishara",
@@ -3052,7 +3052,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "تنظيم لوجود نفق قادم، يستدعي عادة إضاءة المصابيح قبل الدخول.",
-    "imageUrl": "/signs/sign_77.webp"
+    "imageUrl": "/signs/sign_77.png"
   },
   {
     "category": "Ishara",
@@ -3065,7 +3065,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "تُلغي أي منع سابق (سرعة أو وقوف) كان سارياً على المقطع الذي انتهى للتو.",
-    "imageUrl": "/signs/sign_78.webp"
+    "imageUrl": "/signs/sign_78.png"
   },
   {
     "category": "Ishara",
@@ -3078,7 +3078,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "تعني عودة السرعة لحدها الطبيعي بعد انتهاء تحديد سابق للسرعة القصوى.",
-    "imageUrl": "/signs/sign_79.webp"
+    "imageUrl": "/signs/sign_79.png"
   },
   {
     "category": "Ishara",
@@ -3091,7 +3091,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يعود السماح بالتجاوز بعد انتهاء منطقة كان ممنوعاً التجاوز فيها.",
-    "imageUrl": "/signs/sign_80.webp"
+    "imageUrl": "/signs/sign_80.png"
   },
   {
     "category": "Ishara",
@@ -3104,7 +3104,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "يمنع ترك المركبة حتى للحظات قصيرة على هذا المقطع.",
-    "imageUrl": "/signs/sign_81.webp"
+    "imageUrl": "/signs/sign_81.png"
   },
   {
     "category": "Ishara",
@@ -3117,7 +3117,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "منع أشمل من السابق: يمنع حتى التوقف اللحظي لتحميل أو تنزيل راكب.",
-    "imageUrl": "/signs/sign_82.webp"
+    "imageUrl": "/signs/sign_82.png"
   },
   {
     "category": "Ishara",
@@ -3130,7 +3130,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "وقوف مسموح ضمن مدة زمنية محددة معلنة، وليس بلا سقف زمني.",
-    "imageUrl": "/signs/sign_83.webp"
+    "imageUrl": "/signs/sign_83.png"
   },
   {
     "category": "Ishara",
@@ -3143,7 +3143,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "تعلن نهاية منطقة الوقوف المخصصة أو المعلنة سابقاً.",
-    "imageUrl": "/signs/sign_84.webp"
+    "imageUrl": "/signs/sign_84.png"
   },
   {
     "category": "Ishara",
@@ -3156,7 +3156,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "الوقوف مسموح فقط بالأيام ذات التاريخ الفردي من الشهر لتنظيم الوقوف بالشوارع الضيقة.",
-    "imageUrl": "/signs/sign_85.webp"
+    "imageUrl": "/signs/sign_85.png"
   },
   {
     "category": "Ishara",
@@ -3169,7 +3169,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس فكرة تقنين الوقوف، لكن للأيام ذات التاريخ الزوجي.",
-    "imageUrl": "/signs/sign_86.webp"
+    "imageUrl": "/signs/sign_86.png"
   },
   {
     "category": "Ishara",
@@ -3182,7 +3182,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "دائرة زرقاء بسهم تلزم السائق باتجاه محدد لا يجوز الانحراف عنه عند هذه النقطة.",
-    "imageUrl": "/signs/sign_87.webp"
+    "imageUrl": "/signs/sign_87.png"
   },
   {
     "category": "Ishara",
@@ -3195,7 +3195,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "نفس الإلزام، لكن بالاتجاه الأمامي المستقيم فقط.",
-    "imageUrl": "/signs/sign_88.webp"
+    "imageUrl": "/signs/sign_88.png"
   },
   {
     "category": "Ishara",
@@ -3208,7 +3208,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "نفس الإلزام، لكن نحو اليمين تحديداً.",
-    "imageUrl": "/signs/sign_89.webp"
+    "imageUrl": "/signs/sign_89.png"
   },
   {
     "category": "Ishara",
@@ -3221,7 +3221,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يلزم باختيار أحد اتجاهين فقط (أمام أو يمين) لا غير.",
-    "imageUrl": "/signs/sign_90.webp"
+    "imageUrl": "/signs/sign_90.png"
   },
   {
     "category": "Ishara",
@@ -3234,7 +3234,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "الاتجاه الإجباري هنا محدد بدلالة السهم المرسوم تحديداً لا بشكل ثابت مسبق.",
-    "imageUrl": "/signs/sign_91.webp"
+    "imageUrl": "/signs/sign_91.png"
   },
   {
     "category": "Ishara",
@@ -3247,7 +3247,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يلزم بدخول الدوار والسير وفق اتجاه الدوران الموضح بالأسهم الدائرية.",
-    "imageUrl": "/signs/sign_92.webp"
+    "imageUrl": "/signs/sign_92.png"
   },
   {
     "category": "Ishara",
@@ -3260,7 +3260,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "مسار مخصص إلزامي لعبور الدراجات الهوائية دون غيرها من المركبات.",
-    "imageUrl": "/signs/sign_93.webp"
+    "imageUrl": "/signs/sign_93.png"
   },
   {
     "category": "Ishara",
@@ -3273,7 +3273,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "رصيف أو ممر مخصص إلزامي للمشاة فقط.",
-    "imageUrl": "/signs/sign_94.webp"
+    "imageUrl": "/signs/sign_94.png"
   },
   {
     "category": "Ishara",
@@ -3286,7 +3286,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "مسار مخصص إلزامي لركوب الخيل.",
-    "imageUrl": "/signs/sign_95.webp"
+    "imageUrl": "/signs/sign_95.png"
   },
   {
     "category": "Ishara",
@@ -3299,7 +3299,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "عكس حد السرعة القصوى: يلزم عدم النزول عن هذه السرعة، شائع بالأنفاق لمنع الإبطاء الخطر.",
-    "imageUrl": "/signs/sign_96.webp"
+    "imageUrl": "/signs/sign_96.png"
   },
   {
     "category": "Ishara",
@@ -3312,7 +3312,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "يُلغي الإلزام السابق بحد أدنى للسرعة.",
-    "imageUrl": "/signs/sign_97.webp"
+    "imageUrl": "/signs/sign_97.png"
   },
   {
     "category": "Ishara",
@@ -3325,7 +3325,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يلزم بتركيب سلاسل العجلات بسبب ثلوج متوقعة على الطريق القادم.",
-    "imageUrl": "/signs/sign_98.webp"
+    "imageUrl": "/signs/sign_98.png"
   },
   {
     "category": "Ishara",
@@ -3338,7 +3338,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يعلم السائق أن الطريق ينتهي بلا مخرج، غالباً برسم يشبه حرف T أو H.",
-    "imageUrl": "/signs/sign_99.webp"
+    "imageUrl": "/signs/sign_99.png"
   },
   {
     "category": "Ishara",
@@ -4053,7 +4053,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "شكله الأسطواني المثبّت بجانب المحرك ومتصل بقشاط يدوّره يميّز المولد (الدينامو) عن باقي الأجزاء.",
-    "imageUrl": "/signs/sign_210.webp"
+    "imageUrl": "/signs/sign_210.png"
   },
   {
     "category": "Mechanic",
@@ -4066,7 +4066,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "المقطع (المرش) هو المحرك الكهربائي الصغير المسؤول عن إدارة عمود المرفق عند تشغيل المفتاح لأول مرة.",
-    "imageUrl": "/signs/sign_211.webp"
+    "imageUrl": "/signs/sign_211.png"
   },
   {
     "category": "Mechanic",
@@ -4079,7 +4079,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "موزع الشرر يستقبل الكهرباء من البوبين ويوزّعها دورياً على شمعات الاحتراق حسب ترتيب الأسطوانات.",
-    "imageUrl": "/signs/sign_212.webp"
+    "imageUrl": "/signs/sign_212.png"
   },
   {
     "category": "Mechanic",
@@ -4092,7 +4092,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "ملف الاشتعال (البوبين) يرفع جهد البطارية المنخفض إلى الجهد العالي اللازم لتوليد شرارة الاحتراق.",
-    "imageUrl": "/signs/sign_213.webp"
+    "imageUrl": "/signs/sign_213.png"
   },
   {
     "category": "Mechanic",
@@ -4105,7 +4105,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "شمعة الاحتراق (البوجي) هي الجزء الذي يبرز طرفه داخل غرفة الاحتراق ليولّد الشرارة.",
-    "imageUrl": "/signs/sign_214.webp"
+    "imageUrl": "/signs/sign_214.png"
   },
   {
     "category": "Mechanic",

@@ -20,4 +20,10 @@ public class Question
 
     // جديد: صورة/رسم توضيحي اختياري (مفيد خصوصاً لأسئلة الإشارات)
     public string? ImageUrl { get; set; }
+
+    // Optional visual explanation attached to the question.
+    public string? DiagramType { get; set; }
+    public string? DiagramUrl { get; set; }
+    public string? DiagramTitle { get; set; }
+    public string? DiagramDescription { get; set; }
 }

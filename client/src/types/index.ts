@@ -8,6 +8,10 @@ export interface Question {
   correctAnswerIndex: number;
   explanation?: string;
   imageUrl?: string;
+  diagramType?: 'svg' | 'image' | 'interactive' | null;
+  diagramUrl?: string | null;
+  diagramTitle?: string | null;
+  diagramDescription?: string | null;
 }
 
 export interface LoginResponse {
@@ -47,4 +51,13 @@ export interface ExamAttempt {
   answered: number;
   wrongQuestionIds: number[];
   createdAt: string;
+}
+
+export interface Analytics {
+  students: { total: number; active: number };
+  questions: { total: number; byCategory: Record<QuestionCategory, number> };
+  media: { totalReferenced: number };
+  exams: { total: number; passed: number; passRate: number; averageScore: number };
+  auth: { totalAttempts: number; successful: number; failed: number };
+  topQuestions: { questionId: number; category: QuestionCategory; text: string; attempts: number; correct: number; accuracy: number }[];
 }

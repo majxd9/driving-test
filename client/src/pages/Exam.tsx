@@ -2,8 +2,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { Question } from '../types';
-import { preloadImages } from '../utils/preloadImages';
-import Spinner from '../components/Spinner';
+import OptimizedImage from '../components/OptimizedImage';
+import DiagramRenderer from '../components/DiagramRenderer';
 
 const DURATION = 15 * 60;
 const PASS_SCORE = 25;
@@ -18,19 +18,48 @@ export default function Exam() {
   const [loading, setLoading] = useState(true);
   const finishedRef = useRef(false);
 
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   useEffect(() => {
+    setLoading(true);
+    setLoadError(null);
     Promise.all([api.getQuestions('Ser'), api.getQuestions('Ishara'), api.getQuestions('Mechanic')]).then(
       ([ser, ish, mek]) => {
         const seed = Number(modelId) || 1;
-        const pick = (arr: Question[], n: number) =>
-          arr.filter((_, i) => (i + seed) % Math.ceil(arr.length / n) === 0).slice(0, n);
-        const picked = [...pick(ser, 12), ...pick(ish, 12), ...pick(mek, 6)];
+        // Seeded shuffle: يعطي كل نموذج 30 سؤالاً بالضبط، بدون اعتماد على
+        // فلترة قد تنتج 28/29 سؤالاً بسبب قسمة غير متساوية.
+        const pick = (arr: Question[], n: number, salt: number) => {
+          const copy = [...arr];
+          let state = (seed * 2654435761 + salt * 1013904223) >>> 0;
+          for (let i = copy.length - 1; i > 0; i--) {
+            state = (Math.imul(state ^ (state >>> 16), 2246822519) + 3266489917) >>> 0;
+            const j = state % (i + 1);
+            [copy[i], copy[j]] = [copy[j], copy[i]];
+          }
+          return copy.slice(0, n);
+        };
+        const picked = [
+          ...pick(ser, 12, 11),
+          ...pick(ish, 12, 23),
+          ...pick(mek, 6, 37),
+        ];
+        if (picked.length !== 30) throw new Error('تعذر تجهيز ٣٠ سؤالاً للاختبار.');
         setQuestions(picked);
-        preloadImages(picked.map((qq) => qq.imageUrl));
         setLoading(false);
       }
-    );
+    ).catch((err) => {
+      setLoadError(err instanceof Error ? err.message : 'تعذر تحميل الأسئلة.');
+      setLoading(false);
+    });
   }, [modelId]);
+
+  // الامتحان صغير وكل الأسئلة معروفة من البداية، فبنحمّل كل صوره مسبقاً بالخلفية
+  // مشان التنقل بين الأسئلة (بالترتيب أو بالضغط على رقم مباشرة) يطلع فوراً
+  useEffect(() => {
+    questions.slice(current, current + 3).forEach((qq) => {
+      if (qq.imageUrl) { const img = new Image(); img.src = qq.imageUrl; }
+    });
+  }, [questions, current]);
 
   const finish = useCallback(() => {
     if (finishedRef.current) return;
@@ -38,28 +67,19 @@ export default function Exam() {
     let correct = 0;
     const wrongQuestions: { question: Question; chosen: number }[] = [];
     questions.forEach((q) => {
-      if (answers[q.id] === q.correctAnswerIndex) {
-        correct++;
-      } else if (answers[q.id] !== undefined) {
-        wrongQuestions.push({ question: q, chosen: answers[q.id] });
-      }
+      if (answers[q.id] === q.correctAnswerIndex) correct++;
+      else if (answers[q.id] !== undefined) wrongQuestions.push({ question: q, chosen: answers[q.id] });
     });
-    const answeredCount = Object.keys(answers).length;
-
-    api
-      .submitExamAttempt({
-        modelId: Number(modelId) || 1,
-        correct,
-        total: questions.length,
-        answered: answeredCount,
-        wrongQuestionIds: wrongQuestions.map((w) => w.question.id),
-      })
-      .catch(() => {
-        // ما منكسّر تجربة الطالب إذا فشل الحفظ — النتيجة أصلاً رح تظهر إله بالشاشة الجاية
-      });
-
+    const answered = Object.keys(answers).length;
+    api.submitExamAttempt({
+      modelId: Number(modelId) || 1,
+      total: questions.length,
+      correct,
+      answered,
+      wrongQuestionIds: wrongQuestions.map((w) => w.question.id),
+    }).catch(() => {});
     navigate('/result', {
-      state: { correct, total: questions.length, answered: answeredCount, wrongQuestions },
+      state: { correct, total: questions.length, answered, wrongQuestions },
     });
   }, [answers, questions, navigate, modelId]);
 
@@ -79,7 +99,7 @@ export default function Exam() {
   }, [loading, finish]);
 
   if (loading) {
-    return <Spinner label="...جارِ التحضير" />;
+    return <div className="min-h-screen flex items-center justify-center text-muted">...جارِ التحضير</div>;
   }
 
   const q = questions[current];
@@ -132,7 +152,7 @@ export default function Exam() {
         <div className="bg-surface rounded-xl2 border border-line p-5">
           {q.imageUrl && (
             <div className="w-full max-w-[200px] aspect-square mx-auto mb-4 rounded-xl border border-line bg-paper flex items-center justify-center overflow-hidden">
-              <img src={q.imageUrl} alt="إشارة" className="w-full h-full object-contain p-3" />
+              <OptimizedImage src={q.imageUrl} alt={`صورة توضيحية للسؤال ${q.id}`} priority={current < 2} className="w-full h-full p-3" />
             </div>
           )}
           <p className="text-[17px] font-bold text-ink leading-relaxed text-center mb-5">{q.text}</p>
@@ -153,6 +173,8 @@ export default function Exam() {
               </button>
             ))}
           </div>
+
+          <DiagramRenderer question={q} />
 
           <div className="flex gap-2.5 mt-5">
             <button
