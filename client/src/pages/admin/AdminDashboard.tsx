@@ -19,7 +19,6 @@ const tabs: [Tab, string][] = [
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-
   const [tab, setTab] = useState<Tab>('overview');
   const [students, setStudents] = useState<Student[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -43,7 +42,9 @@ export default function AdminDashboard() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(reload, []);
+  useEffect(() => {
+    reload();
+  }, []);
 
   return (
     <div className="min-h-screen bg-paper">
@@ -87,7 +88,10 @@ export default function AdminDashboard() {
         ) : (
           <>
             {tab === 'overview' && (
-              <Overview analytics={analytics} />
+              <Overview
+                analytics={analytics}
+                questions={questions}
+              />
             )}
 
             {tab === 'students' && (
@@ -115,9 +119,11 @@ export default function AdminDashboard() {
 }
 
 function Overview({
-  analytics
+  analytics,
+  questions
 }: {
   analytics: Analytics | null;
+  questions: Question[];
 }) {
   if (!analytics) return null;
 
@@ -251,25 +257,23 @@ function Overview({
             </thead>
 
             <tbody>
-              {analytics.recentQuestions
-                .slice(0, 8)
-                .map(q => (
-                  <tr key={q.questionId}>
-                    <td>{q.text}</td>
+              {questions.slice(0, 8).map(q => (
+                <tr key={q.id}>
+                  <td>{q.text}</td>
 
-                    <td>
-                      {q.category === 'Ser'
-                        ? 'قواعد السير'
-                        : q.category === 'Ishara'
-                          ? 'الإشارات'
-                          : 'الميكانيك'}
-                    </td>
+                  <td>
+                    {q.category === 'Ser'
+                      ? 'قواعد السير'
+                      : q.category === 'Ishara'
+                        ? 'الإشارات'
+                        : 'الميكانيك'}
+                  </td>
 
-                    <td>
-                      {q.hasImage ? '✓' : '—'}
-                    </td>
-                  </tr>
-                ))}
+                  <td>
+                    {q.imageUrl ? '✓' : '—'}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -379,9 +383,9 @@ function Students({
                       : 'غير مرتبط'}
                   </td>
 
-                  <td>{s.attemptCount}</td>
+                  <td>—</td>
 
-                  <td>{s.passCount}</td>
+                  <td>—</td>
 
                   <td>
                     {s.accessExpiresAt
@@ -716,24 +720,17 @@ function QuestionEditor({
         category: q.category,
         text: q.text.trim(),
         options,
-        correctAnswerIndex:
-          q.correctAnswerIndex,
-
+        correctAnswerIndex: q.correctAnswerIndex,
         explanation:
           q.explanation?.trim() || undefined,
-
         imageUrl:
           q.imageUrl?.trim() || undefined,
-
         diagramType:
           q.diagramType || undefined,
-
         diagramUrl:
           q.diagramUrl?.trim() || undefined,
-
         diagramTitle:
           q.diagramTitle?.trim() || undefined,
-
         diagramDescription:
           q.diagramDescription?.trim() || undefined
       };
@@ -744,9 +741,7 @@ function QuestionEditor({
           payload
         );
       } else {
-        await api.admin.createQuestion(
-          payload
-        );
+        await api.admin.createQuestion(payload);
       }
 
       saved();
@@ -874,7 +869,11 @@ function QuestionEditor({
                 set({
                   diagramType: (
                     e.target.value || undefined
-                  ) as any
+                  ) as
+                    | 'svg'
+                    | 'image'
+                    | 'interactive'
+                    | undefined
                 })
               }
             >
@@ -1032,28 +1031,23 @@ function Media() {
 
     setBusy(true);
     setMessage(
-      'جارٍ ضغط الصورة ورفعها...'
+      'جارٍ ضغط الصورة وتجهيزها...'
     );
 
     try {
       const optimized =
         await optimize(file);
 
-      const r =
-        await api.admin.uploadMedia(
-          optimized
-        );
-
       setMessage(
-        `تم الرفع: ${r.url} • ${Math.round(
-          r.size / 1024
-        )}KB`
+        `تم تجهيز الصورة بنجاح (${Math.round(
+          optimized.size / 1024
+        )}KB)، لكن رفعها إلى الخادم غير متاح حاليًا من API.`
       );
     } catch (e) {
       setMessage(
         e instanceof Error
           ? e.message
-          : 'تعذر رفع الصورة'
+          : 'تعذر تجهيز الصورة'
       );
     } finally {
       setBusy(false);
