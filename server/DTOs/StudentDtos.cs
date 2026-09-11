@@ -9,6 +9,8 @@ public record StudentResponse(
     bool IsActive,
     bool DeviceBound,
     DateTime? AccessExpiresAt,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    int AttemptCount,
+    int PassCount);
 
 public record UpdateStudentStatusRequest(bool IsActive);

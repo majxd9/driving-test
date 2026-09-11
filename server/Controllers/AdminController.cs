@@ -28,7 +28,25 @@ public class AdminController : ControllerBase
     public async Task<ActionResult<List<StudentResponse>>> GetAllStudents()
     {
         var students = await _userManager.GetUsersInRoleAsync("Student");
-        return Ok(students.Select(ToResponse).OrderByDescending(s => s.CreatedAt).ToList());
+        var results = await _db.ExamResults.AsNoTracking()
+            .GroupBy(x => x.UserId)
+            .Select(g => new
+            {
+                UserId = g.Key,
+                AttemptCount = g.Count(),
+                PassCount = g.Count(x => x.Passed)
+            })
+            .ToListAsync();
+
+        var stats = results.ToDictionary(x => x.UserId ?? string.Empty);
+        return Ok(students
+            .Select(u =>
+            {
+                stats.TryGetValue(u.Id, out var stat);
+                return ToResponse(u, stat?.AttemptCount ?? 0, stat?.PassCount ?? 0);
+            })
+            .OrderByDescending(s => s.CreatedAt)
+            .ToList());
     }
 
     [HttpPost("students")]
@@ -128,16 +146,22 @@ public class AdminController : ControllerBase
         var exams = await _db.ExamResults.AsNoTracking().ToListAsync();
         var authTotal = await _db.AuthLogs.CountAsync();
         var authSuccess = await _db.AuthLogs.CountAsync(x => x.Success);
-        var attempts = new Dictionary<int,(Question q,int attempts,int correct)>();
-        // Current schema does not persist per-question answers, so topQuestions reports content inventory rather than invented performance.
-        var top = await _db.Questions.AsNoTracking().OrderByDescending(q => q.Id).Take(8).Select(q => new { questionId=q.Id, category=q.Category, text=q.Text, attempts=0, correct=0, accuracy=0 }).ToListAsync();
         return Ok(new {
-            students = new { total = students.Count, active = students.Count(s => s.IsActive) },
-            questions = new { total = questionCounts.Sum(x=>x.Count), byCategory = new { Ser=questionCounts.Where(x=>x.Category==QuestionCategory.Ser).Select(x=>x.Count).FirstOrDefault(), Ishara=questionCounts.Where(x=>x.Category==QuestionCategory.Ishara).Select(x=>x.Count).FirstOrDefault(), Mechanic=questionCounts.Where(x=>x.Category==QuestionCategory.Mechanic).Select(x=>x.Count).FirstOrDefault() } },
+            students = new { total = students.Count, active = students.Count(s=>s.IsActive) },
+            questions = new { total = questionCounts.Sum(x=>x.Count), byCategory = new {
+                Ser = questionCounts.Where(x=>x.Category==QuestionCategory.Ser).Select(x=>x.Count).FirstOrDefault(),
+                Ishara = questionCounts.Where(x=>x.Category==QuestionCategory.Ishara).Select(x=>x.Count).FirstOrDefault(),
+                Mechanic = questionCounts.Where(x=>x.Category==QuestionCategory.Mechanic).Select(x=>x.Count).FirstOrDefault()
+            }},
             media = new { totalReferenced },
-            exams = new { total=exams.Count, passed=exams.Count(x=>x.Passed), passRate=exams.Count==0?0:Math.Round(exams.Count(x=>x.Passed)*100.0/exams.Count,1), averageScore=exams.Count==0?0:Math.Round(exams.Average(x=>(double)x.Correct),1) },
+            exams = new { total=exams.Count, passed=exams.Count(x=>x.Passed),
+                passRate=exams.Count==0?0:Math.Round(exams.Count(x=>x.Passed)*100.0/exams.Count,1),
+                averageScore=exams.Count==0?0:Math.Round(exams.Average(x=>(double)x.Correct),1) },
             auth = new { totalAttempts=authTotal, successful=authSuccess, failed=authTotal-authSuccess },
-            topQuestions=top
+            recentQuestions = await _db.Questions.AsNoTracking()
+                .OrderByDescending(q=>q.Id).Take(8)
+                .Select(q=>new { questionId=q.Id, category=q.Category, text=q.Text, hasImage=q.ImageUrl != null && q.ImageUrl != "" })
+                .ToListAsync()
         });
     }
 
@@ -158,5 +182,6 @@ public class AdminController : ControllerBase
     }
 
     private static Question FromRequest(QuestionUpsertRequest r) => new() { Category=r.Category, Text=r.Text, Options=r.Options, CorrectAnswerIndex=r.CorrectAnswerIndex, Explanation=r.Explanation, ImageUrl=r.ImageUrl, DiagramType=r.DiagramType, DiagramUrl=r.DiagramUrl, DiagramTitle=r.DiagramTitle, DiagramDescription=r.DiagramDescription };
-    private static StudentResponse ToResponse(ApplicationUser u) => new(u.Id,u.UserName??"",u.FullName,u.IsActive,!string.IsNullOrEmpty(u.DeviceId),u.AccessExpiresAt,u.CreatedAt);
+    private static StudentResponse ToResponse(ApplicationUser u, int attemptCount = 0, int passCount = 0) =>
+        new(u.Id,u.UserName??"",u.FullName,u.IsActive,!string.IsNullOrEmpty(u.DeviceId),u.AccessExpiresAt,u.CreatedAt,attemptCount,passCount);
 }

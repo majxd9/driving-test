@@ -21,6 +21,8 @@ export interface Question {
   diagramDescription?: string | null;
 }
 
+export type QuestionUpsert = Omit<Question, "id">;
+
 export interface LoginResponse {
   fullName: string;
   role: 'Admin' | 'Student';
@@ -35,6 +37,8 @@ export interface Student {
   deviceBound: boolean;
   accessExpiresAt: string | null;
   createdAt: string;
+  attemptCount: number;
+  passCount: number;
 }
 
 export interface AuthLog {
@@ -54,5 +58,5 @@ export interface Analytics {
   media: { totalReferenced: number };
   exams: { total: number; passed: number; passRate: number; averageScore: number };
   auth: { totalAttempts: number; successful: number; failed: number };
-  topQuestions: { questionId: number; category: QuestionCategory; text: string; attempts: number; correct: number; accuracy: number }[];
+  recentQuestions: { questionId: number; category: QuestionCategory; text: string; hasImage: boolean }[];
 }
