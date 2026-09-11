@@ -1,4 +1,4 @@
-```tsx
+
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
@@ -1037,4 +1037,3 @@ function Media() {
     </section>
   );
 }
-```
