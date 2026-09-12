@@ -116,10 +116,11 @@ CREATE INDEX IF NOT EXISTS "IX_ExamAttempts_StudentId_CreatedAt"
 
         if (items is null) return;
 
-        var existingTexts = await db.Questions
+        var existingTexts = (await db.Questions
             .AsNoTracking()
             .Select(q => q.Text)
-            .ToHashSetAsync();
+            .ToListAsync())
+            .ToHashSet();
 
         var added = 0;
         foreach (var item in items)
