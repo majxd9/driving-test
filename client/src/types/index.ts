@@ -6,8 +6,8 @@ export interface Question {
   text: string;
   options: string[];
   correctAnswerIndex: number;
-  explanation?: string;
-  imageUrl?: string;
+  explanation?: string | null;
+  imageUrl?: string | null;
   diagramType?: 'svg' | 'image' | 'interactive' | null;
   diagramUrl?: string | null;
   diagramTitle?: string | null;
