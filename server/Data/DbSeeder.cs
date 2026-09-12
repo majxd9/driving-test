@@ -101,12 +101,10 @@ CREATE INDEX IF NOT EXISTS "IX_ExamAttempts_StudentId_CreatedAt"
         await SeedQuestionsAsync(db);
     }
 
-    // يزرع بنك الأسئلة الكامل (٣٤٧ سؤال: سير + إشارات + ميكانيك) من ملف JSON مرفق بالمشروع،
-    // مرة واحدة فقط — إذا كان جدول الأسئلة فارغاً. تعديل الأسئلة لاحقاً يكون من قاعدة البيانات مباشرة.
+    // يزرع بنك الأسئلة من ملف JSON بشكل غير هدّام. إذا كانت القاعدة تحتوي أسئلة قديمة،
+    // تتم إضافة الأسئلة الجديدة فقط دون حذف أو تكرار المحتوى الموجود.
     private static async Task SeedQuestionsAsync(AppDbContext db)
     {
-        if (await db.Questions.AnyAsync()) return;
-
         var path = Path.Combine(AppContext.BaseDirectory, "Data", "SeedData", "questions.json");
         if (!File.Exists(path)) return;
 
@@ -118,9 +116,18 @@ CREATE INDEX IF NOT EXISTS "IX_ExamAttempts_StudentId_CreatedAt"
 
         if (items is null) return;
 
+        var existingTexts = await db.Questions
+            .AsNoTracking()
+            .Select(q => q.Text)
+            .ToHashSetAsync();
+
+        var added = 0;
         foreach (var item in items)
         {
             if (!Enum.TryParse<QuestionCategory>(item.Category, true, out var category)) continue;
+            if (string.IsNullOrWhiteSpace(item.Text) || existingTexts.Contains(item.Text)) continue;
+            if (item.Options is null || item.Options.Count < 2 ||
+                item.CorrectAnswerIndex < 0 || item.CorrectAnswerIndex >= item.Options.Count) continue;
 
             db.Questions.Add(new Question
             {
@@ -135,9 +142,12 @@ CREATE INDEX IF NOT EXISTS "IX_ExamAttempts_StudentId_CreatedAt"
                 DiagramTitle = item.DiagramTitle,
                 DiagramDescription = item.DiagramDescription
             });
+            existingTexts.Add(item.Text);
+            added++;
         }
 
-        await db.SaveChangesAsync();
+        if (added > 0)
+            await db.SaveChangesAsync();
     }
 
     private class SeedQuestion

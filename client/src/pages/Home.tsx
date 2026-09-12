@@ -28,7 +28,7 @@ export default function Home() {
         <div className="hero-orbit" aria-hidden="true"><div className="orbit-core">ر</div><span>✓</span><span>?</span><span>↗</span></div>
       </section>
 
-      <section className="mt-8"><div className="section-heading"><div><p className="eyebrow">التدريب</p><h2>اختر مسارك</h2></div><span className="section-hint">347 سؤالاً</span></div>
+      <section className="mt-8"><div className="section-heading"><div><p className="eyebrow">التدريب</p><h2>اختر مسارك</h2></div><span className="section-hint">397 سؤالاً</span></div>
         <div className="grid md:grid-cols-3 gap-4 mt-4">
           {categories.map(c=><button key={c.key} onClick={()=>navigate(c.path)} className={`category-card ${c.color}`}>
             <div className="category-icon">{c.icon}</div><div className="flex-1 text-right"><h3>{c.title}</h3><p>{c.meta}</p></div><span className="arrow">←</span>

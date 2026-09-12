@@ -68,23 +68,34 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
 
-        // ---- ربط الجهاز: أول دخول ناجح يثبّت الجهاز، أي جهاز مختلف بعدها يُرفض ----
-        if (string.IsNullOrEmpty(user.DeviceId))
-        {
-            user.DeviceId = request.DeviceId;
-            await _userManager.UpdateAsync(user);
-        }
-        else if (user.DeviceId != request.DeviceId)
-        {
-            await LogAttempt(user.Id, false, "DeviceMismatch");
-            return Unauthorized(new
-            {
-                message = "هذا الحساب مرتبط بجهاز آخر مسبقاً."
-            });
-        }
-
         var roles = await _userManager.GetRolesAsync(user);
         var role = roles.FirstOrDefault() ?? "Student";
+
+        // حساب الأدمن غير مربوط بجهاز: يمكن فتحه من أي هاتف/كمبيوتر.
+        // الطلاب يبقون مقيدين بجهاز واحد كإجراء حماية للحساب.
+        if (role == "Admin")
+        {
+            if (!string.IsNullOrEmpty(user.DeviceId))
+            {
+                user.DeviceId = null;
+                await _userManager.UpdateAsync(user);
+            }
+        }
+        else
+        {
+            // ---- ربط الجهاز للطالب فقط ----
+            if (string.IsNullOrEmpty(user.DeviceId))
+            {
+                user.DeviceId = request.DeviceId;
+                await _userManager.UpdateAsync(user);
+            }
+            else if (user.DeviceId != request.DeviceId)
+            {
+                await LogAttempt(user.Id, false, "DeviceMismatch");
+                return Unauthorized(new { message = "هذا الحساب مرتبط بجهاز آخر مسبقاً." });
+            }
+        }
+
         var jwt = _tokenService.CreateToken(user, role);
 
         Response.Cookies.Append("auth_token", jwt, new CookieOptions

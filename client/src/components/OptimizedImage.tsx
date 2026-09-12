@@ -4,12 +4,14 @@ export default function OptimizedImage({ src, alt, className = '', priority = fa
   src: string; alt: string; className?: string; priority?: boolean; sizes?: string;
 }) {
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
   if (!src) return null;
   const isRaster = /\.(png|jpe?g)$/i.test(src);
   const webp = isRaster ? src.replace(/\.(png|jpe?g)$/i, '.webp') : undefined;
+
   return (
     <div className={`relative overflow-hidden ${className}`}>
-      {!loaded && <div className="absolute inset-0 skeleton" aria-hidden="true" />}
+      {!loaded && !failed && <div className="absolute inset-0 skeleton" aria-hidden="true" />}
       <picture>
         {webp && <source srcSet={webp} type="image/webp" sizes={sizes} />}
         <img
@@ -22,9 +24,11 @@ export default function OptimizedImage({ src, alt, className = '', priority = fa
           decoding="async"
           fetchPriority={priority ? 'high' : 'auto'}
           onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
           className={`w-full h-full object-contain transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
         />
       </picture>
+      {failed && <div className="absolute inset-0 grid place-items-center text-xs text-muted bg-paper/80">الصورة غير متاحة</div>}
     </div>
   );
 }

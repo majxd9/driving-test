@@ -20,7 +20,7 @@
 
 - `client/` — React + TypeScript + Vite + Tailwind
 - `server/` — ASP.NET Core 8 + PostgreSQL + Identity + JWT Cookie
-- `server/Data/SeedData/questions.json` — بنك الأسئلة (٣٤٧ سؤالاً)
+- `server/Data/SeedData/questions.json` — بنك الأسئلة (٣٩٧ سؤالاً)
 
 ## متغيرات البيئة
 

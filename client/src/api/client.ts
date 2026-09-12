@@ -41,6 +41,8 @@ export const api = {
   logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
   getQuestions: (category: 'Ser' | 'Ishara' | 'Mechanic') =>
     request<import('../types').Question[]>(`/api/questions?category=${category}`),
+  getExamQuestions: (modelId: number) =>
+    request<import('../types').Question[]>(`/api/questions/exam/${modelId}`),
   submitExamAttempt: (data: {
     modelId: number;
     total: number;
