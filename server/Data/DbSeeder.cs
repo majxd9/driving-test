@@ -78,8 +78,91 @@ public static class DbSeeder
             }
         }
 
+        await NormalizeQuestionImagesAsync(db);
         await SeedQuestionsAsync(db);
         await RepairIncompleteQuestionsAsync(db);
+    }
+
+
+    // يوحّد مسارات الصور الموجودة في قواعد البيانات القديمة مع مكتبة الصور الأساسية
+    // المرفقة بالمشروع، ويضيف الصور الجديدة للأسئلة التي أصبحت لها صورة في seed.
+    // لا يلمس نص السؤال أو الخيارات أو إجابة السؤال.
+    private static async Task NormalizeQuestionImagesAsync(AppDbContext db)
+    {
+        var existing = await db.Questions.ToListAsync();
+        if (existing.Count == 0) return;
+
+        var path = Path.Combine(AppContext.BaseDirectory, "Data", "SeedData", "questions.json");
+        if (!File.Exists(path)) return;
+
+        var json = await File.ReadAllTextAsync(path);
+        var items = JsonSerializer.Deserialize<List<SeedQuestion>>(json, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        }) ?? new List<SeedQuestion>();
+
+        static string ContentSignature(Question q) => string.Join("|",
+            q.Category, q.Text, string.Join("\u001f", q.Options));
+
+        static string ContentSignature(SeedQuestion q, QuestionCategory category) => string.Join("|",
+            category, q.Text, string.Join("\u001f", q.Options ?? new List<string>()));
+
+        var seedByContent = items
+            .Select(x =>
+            {
+                Enum.TryParse<QuestionCategory>(x.Category, true, out var category);
+                return new { x, category };
+            })
+            .Where(x => !string.IsNullOrWhiteSpace(x.x.Text))
+            .GroupBy(x => ContentSignature(x.x, x.category))
+            .ToDictionary(g => g.Key, g => g.Select(x => x.x).ToList(), StringComparer.Ordinal);
+
+        var changed = false;
+
+        foreach (var q in existing)
+        {
+            // الصور الموجودة ضمن حزمة المشروع: الإشارات 01-131 و200-205.
+            var file = Path.GetFileNameWithoutExtension(q.ImageUrl ?? "");
+            if (file.StartsWith("sign_", StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(file[5..], out var signNumber))
+            {
+                if ((signNumber >= 1 && signNumber <= 131) || (signNumber >= 200 && signNumber <= 205))
+                {
+                    var normalized = signNumber < 100
+                        ? $"/signs/sign_{signNumber:00}.webp"
+                        : $"/signs/sign_{signNumber}.webp";
+                    if (!string.Equals(q.ImageUrl, normalized, StringComparison.OrdinalIgnoreCase))
+                    {
+                        q.ImageUrl = normalized;
+                        changed = true;
+                    }
+                }
+            }
+            else if (file.StartsWith("mechanic_", StringComparison.OrdinalIgnoreCase) &&
+                     int.TryParse(file[9..], out var mechanicNumber) &&
+                     mechanicNumber >= 210 && mechanicNumber <= 235)
+            {
+                var normalized = $"/mechanic/mechanic_{mechanicNumber}.webp";
+                if (!string.Equals(q.ImageUrl, normalized, StringComparison.OrdinalIgnoreCase))
+                {
+                    q.ImageUrl = normalized;
+                    changed = true;
+                }
+            }
+
+            // إذا كان السؤال بلا صورة وهناك تطابق وحيد في بنك seed، نضيف الصورة المناسبة.
+            if (string.IsNullOrWhiteSpace(q.ImageUrl) &&
+                seedByContent.TryGetValue(ContentSignature(q), out var matches) &&
+                matches.Count == 1 &&
+                !string.IsNullOrWhiteSpace(matches[0].ImageUrl))
+            {
+                q.ImageUrl = matches[0].ImageUrl;
+                changed = true;
+            }
+        }
+
+        if (changed)
+            await db.SaveChangesAsync();
     }
 
     // يصلّح فقط الأسئلة الموجودة مسبقاً إذا كانت الاختيارات مفقودة/ناقصة بسبب إصدار سابق.
@@ -161,7 +244,7 @@ public static class DbSeeder
         await db.SaveChangesAsync();
     }
 
-    // يزرع بنك الأسئلة الكامل (٣٤٧ سؤال: سير + إشارات + ميكانيك) من ملف JSON مرفق بالمشروع،
+    // يزرع بنك الأسئلة الكامل (٣٩٧ سؤال: سير + إشارات + ميكانيك) من ملف JSON مرفق بالمشروع،
     // مرة واحدة فقط — إذا كان جدول الأسئلة فارغاً. تعديل الأسئلة لاحقاً يكون من قاعدة البيانات مباشرة.
     private static async Task SeedQuestionsAsync(AppDbContext db)
     {

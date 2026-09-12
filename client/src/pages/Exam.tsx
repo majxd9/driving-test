@@ -115,15 +115,15 @@ export default function Exam() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-5">
-        <div className="question-card">
+        <div className="question-card exam-question-card">
           {q.imageUrl && <div className="question-image"><OptimizedImage src={q.imageUrl} alt={`صورة توضيحية للسؤال ${q.id}`} priority={current === 0} sizes="(max-width: 640px) 90vw, 420px" className="w-full h-full" /></div>}
           <p className="question-number">سؤال {current + 1}</p>
-          <h1>{q.text}</h1>
-          <div className="space-y-2.5">
+          <h1 className="exam-question-title">{q.text}</h1>
+          <div className="exam-answer-list space-y-2.5">
             {q.options.map((opt, i) => <button key={i} onClick={() => setAnswers((a) => ({ ...a, [q.id]: i }))} className={`answer-option ${answers[q.id] === i ? 'selected' : ''}`}><span className="answer-letter">{['أ','ب','ج','د','هـ','و'][i]}</span><span className="flex-1 leading-snug">{opt}</span></button>)}
           </div>
           <DiagramRenderer question={q} />
-          <div className="flex gap-2.5 mt-5"><button onClick={() => setCurrent((c) => Math.max(c - 1, 0))} disabled={current === 0} className="flex-1 py-3 rounded-xl font-semibold text-muted bg-paper border border-line disabled:opacity-40">→ السابق</button><button onClick={() => setCurrent((c) => Math.min(c + 1, questions.length - 1))} disabled={current === questions.length - 1} className="flex-1 py-3 rounded-xl font-bold text-white bg-signs disabled:opacity-40">التالي ←</button></div>
+          <div className="exam-nav-actions flex gap-2.5 mt-5"><button onClick={() => setCurrent((c) => Math.max(c - 1, 0))} disabled={current === 0} className="flex-1 py-3 rounded-xl font-semibold text-muted bg-paper border border-line disabled:opacity-40">→ السابق</button><button onClick={() => setCurrent((c) => Math.min(c + 1, questions.length - 1))} disabled={current === questions.length - 1} className="flex-1 py-3 rounded-xl font-bold text-white bg-signs disabled:opacity-40">التالي ←</button></div>
         </div>
         <button onClick={finish} className="w-full mt-4 py-3.5 rounded-xl font-bold text-white bg-exam">إنهاء الاختبار وعرض النتيجة</button>
       </div>

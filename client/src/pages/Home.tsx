@@ -3,9 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import SiteGuide from '../components/SiteGuide';
 
 const categories = [
-  { key:'ser', title:'قواعد السير', meta:'158 سؤال', color:'brand', path:'/study/Ser', icon:'↗' },
-  { key:'ish', title:'الإشارات المرورية', meta:'141 سؤال', color:'signs', path:'/study/Ishara', icon:'△' },
-  { key:'mek', title:'الميكانيك', meta:'48 سؤال', color:'mek', path:'/study/Mechanic', icon:'⚙' },
+  { key:'ser', title:'قواعد السير', meta:'178 سؤال', color:'brand', path:'/study/Ser', icon:'↗' },
+  { key:'ish', title:'الإشارات المرورية', meta:'156 سؤال', color:'signs', path:'/study/Ishara', icon:'△' },
+  { key:'mek', title:'الميكانيك', meta:'63 سؤال', color:'mek', path:'/study/Mechanic', icon:'⚙' },
 ];
 
 export default function Home() {

@@ -23,7 +23,7 @@ export default function Login() {
     <div className="w-full max-w-md relative z-10">
       <div className="text-center mb-6"><div className="login-chip mb-4"><span className="login-chip-dot"/> تدريب سريع • صور • اختبارات محاكاة</div><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-3xl font-black text-ink">رخصتي</h1><p className="text-sm text-muted mt-2">من أول سؤال إلى الامتحان — بتجربة أسرع وأوضح.</p></div>
       <form onSubmit={handleSubmit} className="login-card rounded-[28px] p-6 md:p-7 space-y-4">
-        <div><p className="eyebrow">بوابة التدريب</p><h2 className="text-xl font-black text-ink mt-1">دخول الحساب</h2><p className="text-xs text-muted mt-1">حساب الطالب يعمل على جهاز واحد، وحساب الأدمن متاح من أي جهاز.</p></div>
+        <div><p className="eyebrow">بوابة التدريب</p><h2 className="text-xl font-black text-ink mt-1">دخول الحساب</h2></div>
         <div><label className="block text-sm text-muted mb-1.5">اسم المستخدم</label><input value={userName} onChange={e=>setUserName(e.target.value)} required autoFocus className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-ink outline-none focus:border-brand transition-colors" placeholder="مثال: ahmad2026"/></div>
         <div><label className="block text-sm text-muted mb-1.5">كلمة المرور</label><input value={password} onChange={e=>setPassword(e.target.value)} type="password" required className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-ink outline-none focus:border-brand transition-colors"/></div>
         {error&&<div className="rounded-xl bg-exam-soft text-exam text-sm px-4 py-3">{error}</div>}

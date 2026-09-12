@@ -17,13 +17,13 @@ export default function Study(){
  return <div className="min-h-screen">
    <header className={`${theme.head} sticky top-0 z-20 text-white shadow-lg`}><div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3"><button onClick={()=>navigate('/')} className="icon-button">→</button><div className="flex-1"><p className="font-bold text-sm">{theme.name}</p><p className="text-[11px] text-white/70">{answered} مجاب • {correct} صحيح</p></div><div className="question-jump"><input key={index} defaultValue={index+1} min={1} max={questions.length} type="number" onKeyDown={e=>{if(e.key==='Enter'){const n=Number(e.currentTarget.value);setIndex(Math.min(Math.max(n-1,0),questions.length-1));}}}/><span>/ {questions.length}</span></div></div><div className="progress"><span style={{width:`${((index+1)/questions.length)*100}%`}}/></div></header>
    <main className="max-w-3xl mx-auto px-4 py-6">
-     <div className="question-card">
+     <div className="question-card exam-question-card study-question-card">
        {q.imageUrl && <OptimizedImage src={q.imageUrl} alt={`صورة توضيحية للسؤال ${q.id}`} priority={index===0} sizes="(max-width: 768px) 92vw, 560px" className="question-image" objectFit="contain"/>}
-       <div className="question-number">السؤال {index+1}</div><h1>{q.text}</h1>
-       <div className="space-y-3">{q.options.map((opt,i)=>{const correctAnswer=i===q.correctAnswerIndex;const selected=i===chosen;let cls='answer-option';if(chosen!==undefined){if(correctAnswer)cls+=' correct';else if(selected)cls+=' wrong';}return <button key={i} onClick={()=>choose(i)} disabled={chosen!==undefined} className={cls}><span className="answer-letter">{['أ','ب','ج','د'][i]}</span><span>{opt}</span>{chosen!==undefined&&correctAnswer&&<span className="mr-auto">✓</span>}</button>})}</div>
+       <div className="question-number">السؤال {index+1}</div><h1 className="exam-question-title">{q.text}</h1>
+       <div className="exam-answer-list space-y-3">{q.options.map((opt,i)=>{const correctAnswer=i===q.correctAnswerIndex;const selected=i===chosen;let cls='answer-option';if(chosen!==undefined){if(correctAnswer)cls+=' correct';else if(selected)cls+=' wrong';}return <button key={i} onClick={()=>choose(i)} disabled={chosen!==undefined} className={cls}><span className="answer-letter">{['أ','ب','ج','د'][i]}</span><span>{opt}</span>{chosen!==undefined&&correctAnswer&&<span className="mr-auto">✓</span>}</button>})}</div>
        {chosen!==undefined&&q.explanation&&<div className={`explanation ${theme.soft} ${theme.text}`}><b>لماذا؟</b><p>{q.explanation}</p></div>}
        {chosen!==undefined&&<DiagramRenderer question={q}/>}
-       <div className="flex gap-3 mt-6"><button disabled={index===0} onClick={()=>setIndex(i=>i-1)} className="secondary-cta flex-1">→ السابق</button><button disabled={index===questions.length-1} onClick={()=>setIndex(i=>i+1)} className={`${theme.head} text-white rounded-2xl py-3.5 font-bold flex-1 disabled:opacity-40`}>التالي ←</button></div>
+       <div className="exam-nav-actions flex gap-3 mt-6"><button disabled={index===0} onClick={()=>setIndex(i=>i-1)} className="secondary-cta flex-1">→ السابق</button><button disabled={index===questions.length-1} onClick={()=>setIndex(i=>i+1)} className={`${theme.head} text-white rounded-2xl py-3.5 font-bold flex-1 disabled:opacity-40`}>التالي ←</button></div>
      </div>
    </main>
  </div>;

@@ -12,7 +12,7 @@
 - Moved the site guide to a floating external overlay rather than placing it inside the question content.
 - Reworked the admin dashboard navigation, health indicators, question editor, search/filtering, error states and media uploader.
 - Kept Lazy Loading, preloading, cache headers, React route lazy loading and optimized image handling.
-- Validated the bundled question bank: 347 questions = 158 Ser + 141 Ishara + 48 Mechanic; all seeded questions have 4 non-empty choices and valid answer indexes; referenced local images exist.
+- Validated the bundled question bank: 397 questions = 158 Ser + 141 Ishara + 48 Mechanic; all seeded questions have 4 non-empty choices and valid answer indexes; referenced local images exist.
 
 ## Cloudflare Pages
 Root directory: `client`
