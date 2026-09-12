@@ -68,10 +68,6 @@ export const api = {
     updateQuestion: (id: number, data: Omit<import('../types').Question, 'id'>) => request<import('../types').Question>(`/api/admin/questions/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     deleteQuestion: (id: number) => request<void>(`/api/admin/questions/${id}`, { method: 'DELETE' }),
     analytics: () => request<import('../types').Analytics>('/api/admin/analytics'),
-    uploadMedia: (file: File) => {
-      const form = new FormData();
-      form.append('file', file, file.name);
-      return request<{ url: string; size: number; width: number; height: number }>('/api/admin/media', { method: 'POST', body: form });
-    },
+
   },
 };

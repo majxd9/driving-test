@@ -4,10 +4,10 @@ using DrivingTestApi.Models;
 using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
+using Microsoft.AspNetCore.ResponseCompression;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==================================================================
@@ -120,7 +120,9 @@ app.UseStaticFiles(new StaticFileOptions
     OnPrepareResponse = context =>
     {
         var path = context.Context.Request.Path.Value ?? string.Empty;
-        if (path.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase))
+        if (path.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("/signs/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("/mechanic/", StringComparison.OrdinalIgnoreCase))
         {
             context.Context.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
         }

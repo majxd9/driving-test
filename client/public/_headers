@@ -1,14 +1,8 @@
-/signs/*
-  Cache-Control: public, max-age=31536000, immutable
-
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-/uploads/*
+/signs/*
   Cache-Control: public, max-age=31536000, immutable
 
-/*.js
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.css
+/mechanic/*
   Cache-Control: public, max-age=31536000, immutable

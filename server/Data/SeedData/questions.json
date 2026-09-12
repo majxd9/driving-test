@@ -88,7 +88,11 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "اختيار المسرب الأوسط مسبقاً يجنّب القطع المفاجئ للمسارب الجانبية عند عبور التقاطع مستقيماً.",
-    "imageUrl": null
+    "imageUrl": null,
+    "diagramType": "svg",
+    "diagramUrl": "/signs/sign_300.svg",
+    "diagramTitle": "اختيار المسرب الصحيح",
+    "diagramDescription": "قبل التقاطع اختر المسرب الأوسط للاستمرار مستقيماً — الأيسر مخصص للانعطاف يساراً والأيمن لليمين."
   },
   {
     "category": "Ser",
@@ -231,7 +235,11 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "اتخاذ المسرب الأيسر مسبقاً يجنّب القطع المفاجئ أمام المركبات الأخرى عند الانعطاف يساراً بالتقاطع.",
-    "imageUrl": null
+    "imageUrl": null,
+    "diagramType": "svg",
+    "diagramUrl": "/signs/sign_301.svg",
+    "diagramTitle": "التموضع قبل الانعطاف يساراً",
+    "diagramDescription": "اتخذ المسرب الأيسر مسبقاً قبل الوصول إلى التقاطع."
   },
   {
     "category": "Ser",
@@ -387,7 +395,11 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "القاعدة الافتراضية بتقاطع خالٍ من أي إشارات هي إعطاء الأفضلية لمن يأتي من جهة اليمين.",
-    "imageUrl": null
+    "imageUrl": null,
+    "diagramType": "svg",
+    "diagramUrl": "/signs/sign_302.svg",
+    "diagramTitle": "قاعدة الأفضلية لليمين",
+    "diagramDescription": "بغياب الإشارات وشرطي المرور، صاحب الأفضلية هو القادم من جهة يمينك."
   },
   {
     "category": "Ser",
@@ -452,7 +464,11 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "المركبات الموجودة أصلاً داخل الدوار لها الأفضلية على الداخلين الجدد لتفادي التصادم.",
-    "imageUrl": null
+    "imageUrl": null,
+    "diagramType": "svg",
+    "diagramUrl": "/signs/sign_303.svg",
+    "diagramTitle": "الأفضلية داخل الدوّار",
+    "diagramDescription": "المركبات الموجودة أصلاً داخل الدوّار لها الأولوية على المركبات التي تريد الدخول إليه."
   },
   {
     "category": "Ser",
@@ -946,7 +962,11 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "يجب إعادة بناء مسافة أمان جديدة خلف أي مركبة تدخل بين مسافتك والمركبة الأمامية فوراً.",
-    "imageUrl": null
+    "imageUrl": null,
+    "diagramType": "svg",
+    "diagramUrl": "/signs/sign_304.svg",
+    "diagramTitle": "إعادة بناء مسافة الأمان",
+    "diagramDescription": "إذا دخلت مركبة أخرى إلى مسافة الأمان أمامك، خفف السرعة وأنشئ مسافة أمان جديدة خلفها."
   },
   {
     "category": "Ser",
@@ -1297,7 +1317,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "خط مزدوج متصل يمنع العبور نهائياً من كلا الجانبين دون استثناء.",
-    "imageUrl": "/signs/sign_200.svg"
+    "imageUrl": "/signs/sign_200.png"
   },
   {
     "category": "Ser",
@@ -1310,7 +1330,7 @@
     ],
     "correctAnswerIndex": 0,
     "explanation": "خط متقطع بجانب خط متصل يسمح بالعبور فقط من جهة الخط المتقطع تجاه الجهة الأخرى.",
-    "imageUrl": "/signs/sign_201.svg"
+    "imageUrl": "/signs/sign_201.png"
   },
   {
     "category": "Ser",
@@ -1323,7 +1343,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "خط متصل واحد يمنع تجاوزه بتاتاً بغض النظر عن جهة السائق القادم منه.",
-    "imageUrl": "/signs/sign_202.svg"
+    "imageUrl": "/signs/sign_202.png"
   },
   {
     "category": "Ser",
@@ -1388,7 +1408,11 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "القيادة بوسط المسرب بمنعطف يميني تمنع خروج العجلات الخلفية الطويلة عن حافة الطريق أثناء الدوران.",
-    "imageUrl": null
+    "imageUrl": null,
+    "diagramType": "svg",
+    "diagramUrl": "/signs/sign_305.svg",
+    "diagramTitle": "دوران المركبة الثقيلة يميناً",
+    "diagramDescription": "قُد بوسط مسربك قبل الدوران يميناً كي لا تنزل عجلاتك الخلفية عن حافة الطريق."
   },
   {
     "category": "Ser",
@@ -1401,7 +1425,11 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "أخذ اليمين قليلاً بمنعطف يساري يعوّض طول المركبة فيمنع عبور عجلاتها الخلفية لمسار السير المقابل.",
-    "imageUrl": null
+    "imageUrl": null,
+    "diagramType": "svg",
+    "diagramUrl": "/signs/sign_306.svg",
+    "diagramTitle": "دوران المركبة الثقيلة يساراً",
+    "diagramDescription": "خذ يمينك قليلاً قبل الانعطاف يساراً كي لا تتجاوز عجلاتك الخلفية خط وسط الطريق."
   },
   {
     "category": "Ser",
@@ -2025,7 +2053,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "الانتظار حتى ينتهي راكب الدراجة الهوائية من تجاوز السيارة الناقلة يمنع اصطدامه أثناء عملية تجاوزك المزدوجة له وللسيارة معاً.",
-    "imageUrl": "/signs/sign_203.svg"
+    "imageUrl": "/signs/sign_203.png"
   },
   {
     "category": "Ser",
@@ -2038,7 +2066,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "إفساح المجال لسيارة النقل يمنع الضغط على راكب الدراجة من جهتين في آن واحد: خلفه وأمام سيارة النقل المتجاوزة.",
-    "imageUrl": "/signs/sign_204.svg"
+    "imageUrl": "/signs/sign_204.png"
   },
   {
     "category": "Ser",
@@ -2051,7 +2079,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "عند معبر بلا إشارات تحكم، تُطبَّق قاعدة إعطاء الأفضلية حسب ما يحدده الموقف الفعلي مع السيارة المعاكسة.",
-    "imageUrl": "/signs/sign_205.svg"
+    "imageUrl": "/signs/sign_205.png"
   },
   {
     "category": "Ishara",
@@ -4053,7 +4081,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "شكله الأسطواني المثبّت بجانب المحرك ومتصل بقشاط يدوّره يميّز المولد (الدينامو) عن باقي الأجزاء.",
-    "imageUrl": "/signs/sign_210.png"
+    "imageUrl": "/mechanic/mechanic_210.webp"
   },
   {
     "category": "Mechanic",
@@ -4066,7 +4094,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "المقطع (المرش) هو المحرك الكهربائي الصغير المسؤول عن إدارة عمود المرفق عند تشغيل المفتاح لأول مرة.",
-    "imageUrl": "/signs/sign_211.png"
+    "imageUrl": "/mechanic/mechanic_211.webp"
   },
   {
     "category": "Mechanic",
@@ -4079,7 +4107,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "موزع الشرر يستقبل الكهرباء من البوبين ويوزّعها دورياً على شمعات الاحتراق حسب ترتيب الأسطوانات.",
-    "imageUrl": "/signs/sign_212.png"
+    "imageUrl": "/mechanic/mechanic_212.webp"
   },
   {
     "category": "Mechanic",
@@ -4092,7 +4120,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "ملف الاشتعال (البوبين) يرفع جهد البطارية المنخفض إلى الجهد العالي اللازم لتوليد شرارة الاحتراق.",
-    "imageUrl": "/signs/sign_213.png"
+    "imageUrl": "/mechanic/mechanic_213.webp"
   },
   {
     "category": "Mechanic",
@@ -4105,7 +4133,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "شمعة الاحتراق (البوجي) هي الجزء الذي يبرز طرفه داخل غرفة الاحتراق ليولّد الشرارة.",
-    "imageUrl": "/signs/sign_214.png"
+    "imageUrl": "/mechanic/mechanic_214.webp"
   },
   {
     "category": "Mechanic",
@@ -4118,7 +4146,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "مصفاة الهواء تُركَّب في مسار دخول الهواء للمحرك لتنقيته من الغبار قبل خلطه بالبنزين.",
-    "imageUrl": "/signs/sign_215.webp"
+    "imageUrl": "/mechanic/mechanic_215.webp"
   },
   {
     "category": "Mechanic",
@@ -4131,7 +4159,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "مضخة البنزين تسحب الوقود من الخزان وتدفعه ضمن الدارة نحو المفحم أو نظام الحقن.",
-    "imageUrl": "/signs/sign_216.webp"
+    "imageUrl": "/mechanic/mechanic_216.webp"
   },
   {
     "category": "Mechanic",
@@ -4144,7 +4172,7 @@
     ],
     "correctAnswerIndex": 2,
     "explanation": "مصفاة البنزين تنقّي الوقود من الشوائب قبل وصوله لمضخة أو مفحم البنزين.",
-    "imageUrl": "/signs/sign_217.webp"
+    "imageUrl": "/mechanic/mechanic_217.webp"
   },
   {
     "category": "Mechanic",
@@ -4157,7 +4185,7 @@
     ],
     "correctAnswerIndex": 1,
     "explanation": "المفحم (الكربوراتير) هو الجزء الذي يخلط البنزين مع الهواء قبل دخوله لغرفة الاحتراق.",
-    "imageUrl": "/signs/sign_218.webp"
+    "imageUrl": "/mechanic/mechanic_218.webp"
   },
   {
     "category": "Mechanic",
@@ -4170,7 +4198,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "شكل ووضع هذا الجزء ضمن مسار الهواء الداخل للمحرك يحدّد أنه مصفاة الهواء (بتصميم مختلف عن سابقتها).",
-    "imageUrl": "/signs/sign_219.webp"
+    "imageUrl": "/mechanic/mechanic_219.webp"
   },
   {
     "category": "Mechanic",
@@ -4183,7 +4211,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "المبرد (الردياتير) يتميز بشبكة الزعانف المعدنية التي تسمح بمرور الهواء لتبريد ماء المحرك.",
-    "imageUrl": "/signs/sign_220.webp"
+    "imageUrl": "/mechanic/mechanic_220.webp"
   },
   {
     "category": "Mechanic",
@@ -4196,7 +4224,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "مضخة الماء تُدَوِّر ماء التبريد بين المحرك والمبرد باستمرار أثناء عمل المحرك.",
-    "imageUrl": "/signs/sign_221.webp"
+    "imageUrl": "/mechanic/mechanic_221.webp"
   },
   {
     "category": "Mechanic",
@@ -4209,7 +4237,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "صمام الحرارة (الترموستات) يتحكم بفتح وإغلاق مسار الماء نحو المبرد حسب حرارة المحرك.",
-    "imageUrl": "/signs/sign_222.webp"
+    "imageUrl": "/mechanic/mechanic_222.webp"
   },
   {
     "category": "Mechanic",
@@ -4222,7 +4250,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "مصفاة الزيت تُرَكَّب على مسار دوران الزيت لتنقيته من الشوائب المعدنية الناتجة عن حركة الأجزاء.",
-    "imageUrl": "/signs/sign_223.webp"
+    "imageUrl": "/mechanic/mechanic_223.webp"
   },
   {
     "category": "Mechanic",
@@ -4235,7 +4263,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "عمود المرفق (الكرنك) يحوّل الحركة الترددية للمكابس إلى حركة دورانية تُنقل لاحقاً إلى علبة السرعة.",
-    "imageUrl": "/signs/sign_224.webp"
+    "imageUrl": "/mechanic/mechanic_224.webp"
   },
   {
     "category": "Mechanic",
@@ -4248,7 +4276,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "عمود الكامات يتحكم بتوقيت فتح وإغلاق صمامات السحب والعادم بالتزامن مع دورة المحرك.",
-    "imageUrl": "/signs/sign_225.webp"
+    "imageUrl": "/mechanic/mechanic_225.webp"
   },
   {
     "category": "Mechanic",
@@ -4261,7 +4289,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "ذراع التوصيل (البييل) يربط المكبس بعمود المرفق وينقل قوة الاحتراق إليه.",
-    "imageUrl": "/signs/sign_226.webp"
+    "imageUrl": "/mechanic/mechanic_226.webp"
   },
   {
     "category": "Mechanic",
@@ -4274,7 +4302,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "المكبس (البيستون) يتحرك صعوداً ونزولاً داخل الأسطوانة تحت ضغط الاحتراق، وينقل هذه الحركة عبر ذراع التوصيل.",
-    "imageUrl": "/signs/sign_227.webp"
+    "imageUrl": "/mechanic/mechanic_227.webp"
   },
   {
     "category": "Mechanic",
@@ -4287,7 +4315,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "الحدافة (الفولان) قرص معدني ثقيل متصل بعمود المرفق يخزّن طاقة دورانية لتنعيم حركة المحرك بين الأشواط.",
-    "imageUrl": "/signs/sign_228.webp"
+    "imageUrl": "/mechanic/mechanic_228.webp"
   },
   {
     "category": "Mechanic",
@@ -4300,7 +4328,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "الصمامات (الصبابات) تفتح وتغلق لتنظيم دخول خليط الهواء والبنزين وخروج غازات العادم من الأسطوانة.",
-    "imageUrl": "/signs/sign_229.webp"
+    "imageUrl": "/mechanic/mechanic_229.webp"
   },
   {
     "category": "Mechanic",
@@ -4313,7 +4341,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "جسم المحرك (السيلندر) هو الكتلة المعدنية التي تحوي الأسطوانات وتتحرك ضمنها المكابس.",
-    "imageUrl": "/signs/sign_230.webp"
+    "imageUrl": "/mechanic/mechanic_230.webp"
   },
   {
     "category": "Mechanic",
@@ -4326,7 +4354,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "رأس المحرك (الكولاس) يغطي الأسطوانات من الأعلى ويحمل الصمامات وشمعات الاحتراق غالباً.",
-    "imageUrl": "/signs/sign_231.webp"
+    "imageUrl": "/mechanic/mechanic_231.webp"
   },
   {
     "category": "Mechanic",
@@ -4339,7 +4367,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "جوان الكولاس هو الحشوة الرقيقة بين رأس المحرك وجسم المحرك، تمنع تسرب الماء أو الزيت بينهما.",
-    "imageUrl": "/signs/sign_232.webp"
+    "imageUrl": "/mechanic/mechanic_232.webp"
   },
   {
     "category": "Mechanic",
@@ -4352,7 +4380,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "الدبرياج يقع بين المحرك وعلبة السرعة، ويُعرف بشكله القرصي المتصل بالحدافة.",
-    "imageUrl": "/signs/sign_233.webp"
+    "imageUrl": "/mechanic/mechanic_233.webp"
   },
   {
     "category": "Mechanic",
@@ -4365,7 +4393,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "علبة السرعة (الجير) تحتوي التروس المسؤولة عن تغيير سرعة نقل الحركة نحو العجلات.",
-    "imageUrl": "/signs/sign_234.webp"
+    "imageUrl": "/mechanic/mechanic_234.webp"
   },
   {
     "category": "Mechanic",
@@ -4378,7 +4406,7 @@
     ],
     "correctAnswerIndex": 3,
     "explanation": "ممتص الصدمات يمتص اهتزازات الطريق ويخفف ارتداد النابض (الزنبرك) بعد كل مطب.",
-    "imageUrl": "/signs/sign_235.webp"
+    "imageUrl": "/mechanic/mechanic_235.webp"
   },
   {
     "category": "Ishara",

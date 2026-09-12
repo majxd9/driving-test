@@ -17,7 +17,7 @@ export default function SiteGuide() {
   }, [open]);
   return (
     <>
-      <button onClick={() => setOpen(true)} className="guide-button group">
+      <button type="button" onClick={() => setOpen(true)} className="guide-button group">
         <span className="guide-spark">✦</span><span>شرح الموقع</span><span className="guide-pulse" />
       </button>
       {open && (
@@ -32,7 +32,7 @@ export default function SiteGuide() {
                 <div className="step-number">{n}</div><div><h3 className="font-bold text-ink">{title}</h3><p className="text-sm text-muted mt-1 leading-relaxed">{text}</p></div>
               </div>)}
             </div>
-            <button onClick={() => setOpen(false)} className="w-full mt-7 rounded-2xl bg-brand py-3.5 font-bold text-white">فهمت، لنبدأ</button>
+            <button type="button" onClick={() => setOpen(false)} className="w-full mt-7 rounded-2xl bg-brand py-3.5 font-bold text-white">فهمت، لنبدأ</button>
           </section>
         </div>
       )}

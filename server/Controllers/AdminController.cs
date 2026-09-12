@@ -15,9 +15,8 @@ public class AdminController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly AppDbContext _db;
-    private readonly IWebHostEnvironment _env;
 
-    public AdminController(UserManager<ApplicationUser> userManager, AppDbContext db, IWebHostEnvironment env)
+    public AdminController(UserManager<ApplicationUser> userManager, AppDbContext db)
     {
         _userManager = userManager;
         _db = db;
@@ -169,22 +168,6 @@ public class AdminController : ControllerBase
             auth = new { totalAttempts=authTotal, successful=authSuccess, failed=authTotal-authSuccess },
             topQuestions=top
         });
-    }
-
-    [HttpPost("media")]
-    [RequestSizeLimit(10_000_000)]
-    public async Task<IActionResult> UploadMedia(IFormFile file)
-    {
-        if (file is null || file.Length == 0) return BadRequest(new { message = "لم يتم اختيار ملف." });
-        var allowed = new[] { "image/webp", "image/png", "image/jpeg", "image/svg+xml" };
-        if (!allowed.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase)) return BadRequest(new { message = "الصيغ المدعومة: WebP, PNG, JPG, SVG." });
-        var ext = file.ContentType switch { "image/webp" => ".webp", "image/png" => ".png", "image/jpeg" => ".jpg", _ => ".svg" };
-        var folder = Path.Combine(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"), "uploads");
-        Directory.CreateDirectory(folder);
-        var name = $"{Guid.NewGuid():N}{ext}";
-        var path = Path.Combine(folder, name);
-        await using var stream = System.IO.File.Create(path); await file.CopyToAsync(stream);
-        return Ok(new { url = $"{Request.Scheme}://{Request.Host}/uploads/{name}", size = file.Length, width = 0, height = 0 });
     }
 
     private static Question FromRequest(QuestionUpsertRequest r) => new() { Category=r.Category, Text=r.Text, Options=r.Options, CorrectAnswerIndex=r.CorrectAnswerIndex, Explanation=r.Explanation, ImageUrl=r.ImageUrl, DiagramType=r.DiagramType, DiagramUrl=r.DiagramUrl, DiagramTitle=r.DiagramTitle, DiagramDescription=r.DiagramDescription };

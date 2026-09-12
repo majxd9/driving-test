@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import OptimizedImage from '../components/OptimizedImage';
+import DiagramRenderer from '../components/DiagramRenderer';
 
 type ReviewItem = {
   question: {
@@ -9,6 +10,10 @@ type ReviewItem = {
     correctAnswerIndex: number;
     explanation?: string;
     imageUrl?: string;
+    diagramType?: 'svg' | 'image' | 'interactive' | null;
+    diagramUrl?: string | null;
+    diagramTitle?: string | null;
+    diagramDescription?: string | null;
   };
   chosen: number | null;
 };
@@ -64,5 +69,6 @@ function ReviewCard({ item, index, mode }: { item: ReviewItem; index: number; mo
     <div className="review-answer"><span>إجابتك</span><b>{chosenText}</b></div>
     {mode !== 'correct' && <div className="review-answer correct"><span>الإجابة الصحيحة</span><b>{correctText}</b></div>}
     {item.question.explanation && <p className="review-explanation">💡 {item.question.explanation}</p>}
+    <DiagramRenderer question={item.question as any} />
   </article>;
 }
