@@ -16,7 +16,6 @@ public class AdminController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly AppDbContext _db;
 
-```
 public AdminController(
     UserManager<ApplicationUser> userManager,
     AppDbContext db)
@@ -484,6 +483,5 @@ public AdminController(
             attemptCount,
             passCount);
     }
-```
 
 }
