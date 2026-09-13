@@ -65,7 +65,7 @@ public class QuestionsController : ControllerBase
 
             var unique = DeduplicateQuestions(source);
             if (unique.Count < count)
-                return Conflict(new { message = $"قسم {CategoryName(category)} لا يحتوي عدداً كافياً من الأسئلة الفريدة والمصورة لهذا النموذج." });
+                return Conflict(new { message = $"قسم {CategoryName(category)} لا يحتوي عدداً كافياً من الأسئلة الفريدة الصالحة لهذا النموذج." });
 
             picked.AddRange(Pick(unique, count, checked(modelId * 1009 + salts[category])));
         }
@@ -89,19 +89,34 @@ public class QuestionsController : ControllerBase
 
     private static bool HasCanonicalQuestionImage(Question question)
     {
-        if (question.Category != QuestionCategory.Ishara)
-            return true;
-
         var src = question.ImageUrl;
+
+        // Traffic-sign questions must always have a current-library sign image.
+        if (question.Category == QuestionCategory.Ishara && string.IsNullOrWhiteSpace(src))
+            return false;
+
+        // Theory questions may be text-only, but any supplied image must still
+        // belong to the current uploaded library.
         if (string.IsNullOrWhiteSpace(src))
-            return false;
+            return question.Category != QuestionCategory.Ishara;
 
-        var match = Regex.Match(src, @"(?:^|/)sign_(\d+)\.(?:webp|png|jpe?g)$", RegexOptions.IgnoreCase);
-        if (!match.Success)
-            return false;
+        var signMatch = Regex.Match(src, @"(?:^|/)sign_(\d+)\.(?:webp|png|jpe?g)$", RegexOptions.IgnoreCase);
+        if (signMatch.Success)
+        {
+            var number = int.Parse(signMatch.Groups[1].Value);
+            var trafficSign = (number >= 1 && number <= 131) || (number >= 200 && number <= 205);
+            var mechanicInSigns = number >= 210 && number <= 214;
+            return trafficSign || mechanicInSigns;
+        }
 
-        var number = int.Parse(match.Groups[1].Value);
-        return (number >= 1 && number <= 131) || (number >= 200 && number <= 205);
+        var mechanicMatch = Regex.Match(src, @"(?:^|/)mechanic/mechanic_(\d+)\.(?:webp|png|jpe?g)$", RegexOptions.IgnoreCase);
+        if (mechanicMatch.Success)
+        {
+            var number = int.Parse(mechanicMatch.Groups[1].Value);
+            return number >= 215 && number <= 235;
+        }
+
+        return false;
     }
 
     private static List<Question> DeduplicateQuestions(IEnumerable<Question> source)
@@ -111,15 +126,9 @@ public class QuestionsController : ControllerBase
 
         foreach (var question in source.OrderBy(q => q.Id))
         {
-            // A sign question without its canonical image must never reach the
-            // student UI or the timed exam.
             if (!HasCanonicalQuestionImage(question)) continue;
 
-            var visualKey = question.Category == QuestionCategory.Ishara
-                ? $"{question.ImageUrl ?? string.Empty}|{question.DiagramUrl ?? string.Empty}|{string.Join("\u001f", question.Options ?? new List<string>())}"
-                : string.Empty;
-
-            var key = $"{question.Category}|{NormalizeText(question.Text)}|{visualKey}";
+            var key = $"{question.Category}|{NormalizeText(question.Text)}|{string.Join("\u001f", question.Options ?? new List<string>())}";
             if (seen.Add(key)) result.Add(question);
         }
 
