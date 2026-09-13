@@ -25,88 +25,51 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
     {
+        request.UserName = request.UserName?.Trim() ?? string.Empty;
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
-
-        async Task LogAttempt(string? userId, bool success, string reason)
-        {
-            _db.AuthLogs.Add(new AuthLog
-            {
-                UserId = userId,
-                AttemptedUserName = request.UserName,
-                IpAddress = ip,
-                UserAgent = userAgent,
-                Success = success,
-                Reason = reason
-            });
-            await _db.SaveChangesAsync();
-        }
 
         var user = await _userManager.FindByNameAsync(request.UserName);
         if (user is null)
         {
-            await LogAttempt(null, false, "UserNotFound");
+            _db.AuthLogs.Add(new AuthLog { AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "UserNotFound" });
+            await _db.SaveChangesAsync();
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
-
         if (!user.IsActive)
         {
-            await LogAttempt(user.Id, false, "AccountDisabled");
+            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "AccountDisabled" });
+            await _db.SaveChangesAsync();
             return Unauthorized(new { message = "هذا الحساب معطّل حالياً." });
         }
-
         if (user.AccessExpiresAt is not null && user.AccessExpiresAt < DateTime.UtcNow)
         {
-            await LogAttempt(user.Id, false, "AccessExpired");
+            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "AccessExpired" });
+            await _db.SaveChangesAsync();
             return Unauthorized(new { message = "انتهت صلاحية الاشتراك" });
         }
-
-        var passwordValid = await _userManager.CheckPasswordAsync(user, request.Password);
-        if (!passwordValid)
+        if (!await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            await LogAttempt(user.Id, false, "WrongPassword");
+            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "WrongPassword" });
+            await _db.SaveChangesAsync();
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var role = roles.FirstOrDefault() ?? "Student";
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Student";
+        if (role != "Admin" && !string.IsNullOrEmpty(user.DeviceId) && !string.Equals(user.DeviceId, request.DeviceId, StringComparison.Ordinal))
+        {
+            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "DeviceMismatch" });
+            await _db.SaveChangesAsync();
+            return Unauthorized(new { message = "هذا الحساب مرتبط بجهاز آخر مسبقاً." });
+        }
 
-        // حساب الأدمن غير مربوط بجهاز: يمكن فتحه من أي هاتف/كمبيوتر.
-        // الطلاب يبقون مقيدين بجهاز واحد كإجراء حماية للحساب.
-        if (role == "Admin")
-        {
-            if (!string.IsNullOrEmpty(user.DeviceId))
-            {
-                user.DeviceId = null;
-                await _userManager.UpdateAsync(user);
-            }
-        }
-        else
-        {
-            // ---- ربط الجهاز للطالب فقط ----
-            if (string.IsNullOrEmpty(user.DeviceId))
-            {
-                user.DeviceId = request.DeviceId;
-                await _userManager.UpdateAsync(user);
-            }
-            else if (user.DeviceId != request.DeviceId)
-            {
-                await LogAttempt(user.Id, false, "DeviceMismatch");
-                return Unauthorized(new { message = "هذا الحساب مرتبط بجهاز آخر مسبقاً." });
-            }
-        }
+        if (role != "Admin" && string.IsNullOrEmpty(user.DeviceId))
+            user.DeviceId = request.DeviceId;
 
         var jwt = _tokenService.CreateToken(user, role);
-
-        Response.Cookies.Append("auth_token", jwt, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTimeOffset.UtcNow.AddHours(12)
-        });
-
-        await LogAttempt(user.Id, true, "Success");
+        Response.Cookies.Append("auth_token", jwt, new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.None, Expires = DateTimeOffset.UtcNow.AddHours(12) });
+        _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent, Success = true, Reason = "Success" });
+        await _db.SaveChangesAsync();
 
         return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt));
     }
