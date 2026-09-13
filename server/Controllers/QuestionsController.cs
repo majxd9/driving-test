@@ -1,5 +1,6 @@
 using DrivingTestApi.Data;
 using DrivingTestApi.Models;
+using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,31 +13,24 @@ namespace DrivingTestApi.Controllers;
 public class QuestionsController : ControllerBase
 {
     private readonly AppDbContext _db;
-
-    public QuestionsController(AppDbContext db)
-    {
-        _db = db;
-    }
+    public QuestionsController(AppDbContext db) => _db = db;
 
     [HttpGet]
     public async Task<ActionResult<List<Question>>> GetByCategory([FromQuery] QuestionCategory category)
+        => Ok(await _db.Questions.AsNoTracking().Where(q => q.Category == category).ToListAsync());
+
+    [HttpGet("count")]
+    public async Task<ActionResult<int>> GetCount()
     {
-        var questions = await _db.Questions
-            .AsNoTracking()
-            .Where(q => q.Category == category)
-            .ToListAsync();
-        return Ok(questions);
+        await QuestionCountCache.InitializeAsync(_db);
+        return Ok(QuestionCountCache.Total);
     }
 
-    // يجلب 30 سؤالاً جاهزاً من الخادم بطلب واحد بدل تحميل بنك الأسئلة كاملاً من 3 طلبات.
-    // النموذج 1..8 يغيّر البذرة فقط، مع توزيع ثابت 12 سير + 12 إشارات + 6 ميكانيك.
     [HttpGet("exam/{modelId:int}")]
     public async Task<ActionResult<List<Question>>> GetExam(int modelId)
     {
-        if (modelId is < 1 or > 8)
-            return BadRequest(new { message = "رقم النموذج يجب أن يكون بين 1 و8." });
+        if (modelId is < 1 or > 8) return BadRequest(new { message = "رقم النموذج يجب أن يكون بين 1 و8." });
 
-        var all = await _db.Questions.AsNoTracking().ToListAsync();
         var required = new[]
         {
             (Category: QuestionCategory.Ser, Count: 12),
@@ -44,23 +38,26 @@ public class QuestionsController : ControllerBase
             (Category: QuestionCategory.Mechanic, Count: 6)
         };
 
-        if (required.Any(r => all.Count(q => q.Category == r.Category) < r.Count))
-            return Conflict(new { message = "بنك الأسئلة لا يحتوي عدداً كافياً من الأسئلة لهذا النموذج." });
-
-        static List<Question> Pick(IEnumerable<Question> source, int count, int seed)
+        // لا نحمل بنك الأسئلة كاملاً إلى الذاكرة: نتحقق من العدد لكل تصنيف ثم نسحب فقط المطلوب.
+        foreach (var (category, count) in required)
         {
-            var copy = source.ToList();
+            if (await _db.Questions.AsNoTracking().CountAsync(q => q.Category == category) < count)
+                return Conflict(new { message = "بنك الأسئلة لا يحتوي عدداً كافياً من الأسئلة لهذا النموذج." });
+        }
+
+        static List<Question> Pick(List<Question> source, int count, int seed)
+        {
             var state = unchecked((uint)(seed * 2654435761u));
-            for (var i = copy.Count - 1; i > 0; i--)
+            for (var i = source.Count - 1; i > 0; i--)
             {
                 state = unchecked((state ^ (state >> 16)) * 2246822519u + 3266489917u);
                 var j = (int)(state % (uint)(i + 1));
-                (copy[i], copy[j]) = (copy[j], copy[i]);
+                (source[i], source[j]) = (source[j], source[i]);
             }
-            return copy.Take(count).ToList();
+            return source.Take(count).ToList();
         }
 
-        var picked = new List<Question>();
+        var picked = new List<Question>(30);
         var salts = new Dictionary<QuestionCategory, int>
         {
             [QuestionCategory.Ser] = 11,
@@ -70,11 +67,16 @@ public class QuestionsController : ControllerBase
 
         foreach (var (category, count) in required)
         {
-            var source = all.Where(q => q.Category == category);
+            // نستخدم ORDER BY random فقط على مجموعة التصنيف داخل قاعدة البيانات، ثم نعيد 12/6 سجلات.
+            // هذا يمنع تحميل بنك الأسئلة الكامل في API.
+            var source = await _db.Questions.AsNoTracking()
+                .Where(q => q.Category == category)
+                .OrderBy(q => EF.Functions.Random())
+                .Take(Math.Max(count * 3, count))
+                .ToListAsync();
             picked.AddRange(Pick(source, count, checked(modelId * 1009 + salts[category])));
         }
 
-        // النموذج 7 و8 ليسا مجرد إعادة تسمية: نستخدم بذوراً مختلفة تعطي تركيبات أصعب ومتنوعة من بنك الأسئلة.
         return Ok(picked);
     }
 }
