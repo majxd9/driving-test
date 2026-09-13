@@ -17,7 +17,15 @@ public class QuestionsController : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult<List<Question>>> GetByCategory([FromQuery] QuestionCategory category)
-        => Ok(await _db.Questions.AsNoTracking().Where(q => q.Category == category).ToListAsync());
+    {
+        var questions = await _db.Questions
+            .AsNoTracking()
+            .Where(q => q.Category == category)
+            .OrderBy(q => q.Id)
+            .ToListAsync();
+
+        return Ok(DeduplicateQuestions(questions));
+    }
 
     [HttpGet("count")]
     public async Task<ActionResult<int>> GetCount()
@@ -38,25 +46,6 @@ public class QuestionsController : ControllerBase
             (Category: QuestionCategory.Mechanic, Count: 6)
         };
 
-        // لا نحمل بنك الأسئلة كاملاً إلى الذاكرة: نتحقق من العدد لكل تصنيف ثم نسحب فقط المطلوب.
-        foreach (var (category, count) in required)
-        {
-            if (await _db.Questions.AsNoTracking().CountAsync(q => q.Category == category) < count)
-                return Conflict(new { message = "بنك الأسئلة لا يحتوي عدداً كافياً من الأسئلة لهذا النموذج." });
-        }
-
-        static List<Question> Pick(List<Question> source, int count, int seed)
-        {
-            var state = unchecked((uint)(seed * 2654435761u));
-            for (var i = source.Count - 1; i > 0; i--)
-            {
-                state = unchecked((state ^ (state >> 16)) * 2246822519u + 3266489917u);
-                var j = (int)(state % (uint)(i + 1));
-                (source[i], source[j]) = (source[j], source[i]);
-            }
-            return source.Take(count).ToList();
-        }
-
         var picked = new List<Question>(30);
         var salts = new Dictionary<QuestionCategory, int>
         {
@@ -67,16 +56,64 @@ public class QuestionsController : ControllerBase
 
         foreach (var (category, count) in required)
         {
-            // نستخدم ORDER BY random فقط على مجموعة التصنيف داخل قاعدة البيانات، ثم نعيد 12/6 سجلات.
-            // هذا يمنع تحميل بنك الأسئلة الكامل في API.
-            var source = await _db.Questions.AsNoTracking()
+            var source = await _db.Questions
+                .AsNoTracking()
                 .Where(q => q.Category == category)
-                .OrderBy(q => EF.Functions.Random())
-                .Take(Math.Max(count * 3, count))
+                .OrderBy(q => q.Id)
                 .ToListAsync();
-            picked.AddRange(Pick(source, count, checked(modelId * 1009 + salts[category])));
+
+            var unique = DeduplicateQuestions(source);
+            if (unique.Count < count)
+                return Conflict(new { message = $"قسم {CategoryName(category)} لا يحتوي عدداً كافياً من الأسئلة الفريدة لهذا النموذج." });
+
+            picked.AddRange(Pick(unique, count, checked(modelId * 1009 + salts[category])));
         }
 
         return Ok(picked);
+    }
+
+    private static string CategoryName(QuestionCategory category) => category switch
+    {
+        QuestionCategory.Ser => "قواعد السير",
+        QuestionCategory.Ishara => "الإشارات المرورية",
+        QuestionCategory.Mechanic => "الميكانيك",
+        _ => category.ToString()
+    };
+
+    private static string NormalizeText(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        return string.Join(" ", value.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    private static List<Question> DeduplicateQuestions(IEnumerable<Question> source)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var result = new List<Question>();
+
+        foreach (var question in source.OrderBy(q => q.Id))
+        {
+            var visualKey = question.Category == QuestionCategory.Ishara
+                ? $"{question.ImageUrl ?? string.Empty}|{question.DiagramUrl ?? string.Empty}|{string.Join("\u001f", question.Options ?? new List<string>())}"
+                : string.Empty;
+
+            var key = $"{question.Category}|{NormalizeText(question.Text)}|{visualKey}";
+            if (seen.Add(key)) result.Add(question);
+        }
+
+        return result;
+    }
+
+    private static List<Question> Pick(List<Question> source, int count, int seed)
+    {
+        var state = unchecked((uint)(seed * 2654435761u));
+        for (var i = source.Count - 1; i > 0; i--)
+        {
+            state = unchecked((state ^ (state >> 16)) * 2246822519u + 3266489917u);
+            var j = (int)(state % (uint)(i + 1));
+            (source[i], source[j]) = (source[j], source[i]);
+        }
+
+        return source.Take(count).ToList();
     }
 }
