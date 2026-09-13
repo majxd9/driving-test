@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext';
 import './index.css';
 import './unified.css';
 import './modern-overrides.css';
+import './final-ui.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><BrowserRouter><AuthProvider><App /></AuthProvider></BrowserRouter></React.StrictMode>
