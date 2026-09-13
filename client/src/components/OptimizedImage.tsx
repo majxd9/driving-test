@@ -9,6 +9,38 @@ type Props = {
   objectFit?: 'contain' | 'cover';
 };
 
+function buildSources(src: string) {
+  if (!src) return [];
+
+  const sources: string[] = [];
+  const add = (value: string) => {
+    if (!sources.includes(value)) sources.push(value);
+  };
+
+  add(src);
+
+  // Legacy mechanic questions used /signs/sign_XXX.webp.
+  // Try the dedicated mechanic asset first for 210+ IDs.
+  const legacySign = src.match(/\/signs\/sign_(\d+)\.webp$/i);
+  if (legacySign) {
+    const number = Number(legacySign[1]);
+    if (number >= 210) {
+      add(`/mechanic/mechanic_${number}.webp`);
+      add(`/signs/mechanic_${number}.webp`);
+    }
+  }
+
+  // Some database versions already contain /mechanic/mechanic_XXX.webp.
+  const mechanic = src.match(/\/mechanic\/mechanic_(\d+)\.webp$/i);
+  if (mechanic) {
+    const number = mechanic[1];
+    add(`/signs/mechanic_${number}.webp`);
+    add(`/signs/sign_${number}.webp`);
+  }
+
+  return sources;
+}
+
 export default function OptimizedImage({
   src,
   alt,
@@ -27,26 +59,7 @@ export default function OptimizedImage({
     setSourceIndex(0);
   }, [src]);
 
-  const sources = useMemo(() => {
-    if (!src) return [];
-
-    const result = [src];
-
-    // بعض النسخ القديمة من البيانات تشير إلى /mechanic/mechanic_XXX.webp
-    // بينما بعض ملفات الصور موجودة أيضاً داخل /signs.
-    // نجرّب النسخ البديلة فقط عندما يكون المسار ميكانيكياً، حتى لا نعرض
-    // صورة ميكانيك مكان إشارة مرورية صحيحة.
-    const match = src.match(/(?:^|\/)mechanic(?:\/|_)?(?:mechanic_)?(\d+)\.webp$/i);
-
-    if (match) {
-      const number = match[1];
-
-      result.push(`/signs/mechanic_${number}.webp`);
-      result.push(`/signs/sign_${number}.webp`);
-    }
-
-    return [...new Set(result)];
-  }, [src]);
+  const sources = useMemo(() => buildSources(src), [src]);
 
   if (!src) return null;
 
