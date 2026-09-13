@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { Question, QuestionCategory } from '../types';
-import OptimizedImage from '../components/OptimizedImage';
+import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
 import '../study-premium.css';
 
@@ -31,6 +31,7 @@ export default function Study() {
     setError('');
     setIndex(0);
     setAnswers({});
+    preloaded.current.clear();
     api.getQuestions(category)
       .then(setQuestions)
       .catch(e => setError(e instanceof Error ? e.message : 'تعذر تحميل الأسئلة.'))
@@ -39,11 +40,12 @@ export default function Study() {
 
   useEffect(() => {
     questions.slice(index, index + 3).forEach(q => {
-      if (!q.imageUrl || preloaded.current.has(q.imageUrl)) return;
-      preloaded.current.add(q.imageUrl);
+      const src = resolveQuestionImageUrl(q.imageUrl);
+      if (!src || preloaded.current.has(src)) return;
+      preloaded.current.add(src);
       const img = new Image();
       img.decoding = 'async';
-      img.src = q.imageUrl;
+      img.src = src;
     });
   }, [questions, index]);
 
