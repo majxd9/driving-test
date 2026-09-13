@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { Question } from '../types';
-import OptimizedImage from '../components/OptimizedImage';
+import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
 import '../login-v3.css';
 
@@ -43,11 +43,11 @@ export default function Exam() {
   useEffect(() => { void loadExam(); }, [loadExam]);
   useEffect(() => {
     questions.slice(current, current + 2).forEach(q => {
-      if (q.imageUrl) {
-        const img = new Image();
-        img.decoding = 'async';
-        img.src = q.imageUrl;
-      }
+      const src = resolveQuestionImageUrl(q.imageUrl);
+      if (!src) return;
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = src;
     });
   }, [questions, current]);
   useEffect(() => { setImageExpanded(false); }, [current]);
