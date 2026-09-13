@@ -4,6 +4,7 @@ using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace DrivingTestApi.Controllers;
 
@@ -64,7 +65,7 @@ public class QuestionsController : ControllerBase
 
             var unique = DeduplicateQuestions(source);
             if (unique.Count < count)
-                return Conflict(new { message = $"قسم {CategoryName(category)} لا يحتوي عدداً كافياً من الأسئلة الفريدة لهذا النموذج." });
+                return Conflict(new { message = $"قسم {CategoryName(category)} لا يحتوي عدداً كافياً من الأسئلة الفريدة والمصورة لهذا النموذج." });
 
             picked.AddRange(Pick(unique, count, checked(modelId * 1009 + salts[category])));
         }
@@ -86,6 +87,23 @@ public class QuestionsController : ControllerBase
         return string.Join(" ", value.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
     }
 
+    private static bool HasCanonicalQuestionImage(Question question)
+    {
+        if (question.Category != QuestionCategory.Ishara)
+            return true;
+
+        var src = question.ImageUrl;
+        if (string.IsNullOrWhiteSpace(src))
+            return false;
+
+        var match = Regex.Match(src, @"(?:^|/)sign_(\d+)\.(?:webp|png|jpe?g)$", RegexOptions.IgnoreCase);
+        if (!match.Success)
+            return false;
+
+        var number = int.Parse(match.Groups[1].Value);
+        return (number >= 1 && number <= 131) || (number >= 200 && number <= 205);
+    }
+
     private static List<Question> DeduplicateQuestions(IEnumerable<Question> source)
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -93,6 +111,10 @@ public class QuestionsController : ControllerBase
 
         foreach (var question in source.OrderBy(q => q.Id))
         {
+            // A sign question without its canonical image must never reach the
+            // student UI or the timed exam.
+            if (!HasCanonicalQuestionImage(question)) continue;
+
             var visualKey = question.Category == QuestionCategory.Ishara
                 ? $"{question.ImageUrl ?? string.Empty}|{question.DiagramUrl ?? string.Empty}|{string.Join("\u001f", question.Options ?? new List<string>())}"
                 : string.Empty;
