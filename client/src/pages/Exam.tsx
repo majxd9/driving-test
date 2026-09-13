@@ -42,11 +42,12 @@ export default function Exam() {
 
   useEffect(() => { void loadExam(); }, [loadExam]);
   useEffect(() => {
-    questions.slice(current, current + 2).forEach(q => {
+    questions.slice(current, current + 3).forEach((q, offset) => {
       const src = resolveQuestionImageUrl(q.imageUrl);
       if (!src) return;
       const img = new Image();
       img.decoding = 'async';
+      img.fetchPriority = offset === 0 ? 'high' : 'auto';
       img.src = src;
     });
   }, [questions, current]);
@@ -120,13 +121,13 @@ export default function Exam() {
     <div className="exam-progress-v2"><span style={{ width: `${((current + 1) / questions.length) * 100}%` }} /></div>
 
     <main className="exam-stage-v2"><section className="exam-card-v2">
-      {q.imageUrl && <button type="button" className="exam-image-v2" onClick={() => setImageExpanded(true)} aria-label="تكبير صورة السؤال"><OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority={current === 0} sizes="(max-width: 700px) 92vw, 720px" className="w-full h-full object-contain" /></button>}
+      {q.imageUrl && <button type="button" className="exam-image-v2" onClick={() => setImageExpanded(true)} aria-label="تكبير صورة السؤال"><OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 92vw, 720px" className="w-full h-full" objectFit="contain" /></button>}
       <div className="exam-question-v2"><span className="exam-question-label">السؤال {current + 1}</span>{q.text}</div>
       <div className="exam-answers-v2">{q.options.map((opt, i) => <button key={i} type="button" onClick={() => setAnswers(a => ({ ...a, [q.id]: i }))} className={`exam-option-v2 ${answers[q.id] === i ? 'selected' : ''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span></button>)}</div>
       <DiagramRenderer question={q} />
       <div className="exam-actions-v2"><button type="button" onClick={() => setCurrent(c => Math.max(c - 1, 0))} disabled={current === 0} className="exam-action-v2 secondary">السابق</button><button type="button" onClick={finish} className="exam-action-v2 finish">إنهاء الاختبار</button><button type="button" onClick={() => isLast ? finish() : setCurrent(c => c + 1)} className="exam-action-v2 next">{isLast ? 'عرض النتيجة' : 'التالي'}</button></div>
     </section></main>
 
-    {imageExpanded && q.imageUrl && <div className="exam-image-modal-v2" onClick={() => setImageExpanded(false)}><OptimizedImage src={q.imageUrl} alt={`الصورة المكبرة للسؤال ${q.id}`} sizes="100vw" className="max-w-full max-h-full object-contain rounded-xl" /></div>}
+    {imageExpanded && q.imageUrl && <div className="exam-image-modal-v2" onClick={() => setImageExpanded(false)}><OptimizedImage src={q.imageUrl} alt={`الصورة المكبرة للسؤال ${q.id}`} priority sizes="100vw" className="max-w-full max-h-full" objectFit="contain" /></div>}
   </div>;
 }
