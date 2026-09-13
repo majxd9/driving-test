@@ -4,6 +4,7 @@ import { api } from '../api/client';
 import { Question } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
+import { ensureImageReady, preloadImages } from '../utils/imagePreload';
 import '../login-v3.css';
 
 const DURATION = 15 * 60;
@@ -19,7 +20,9 @@ export default function Exam() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [imageExpanded, setImageExpanded] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const finishedRef = useRef(false);
+  const navigationLockRef = useRef(false);
 
   const loadExam = useCallback(async () => {
     const id = Number(modelId) || 1;
@@ -33,6 +36,16 @@ export default function Exam() {
       setCurrent(0);
       setSeconds(DURATION);
       finishedRef.current = false;
+      navigationLockRef.current = false;
+
+      // Decode the first question before showing the exam. The next two stay
+      // warm in the browser cache so navigation does not flash or wait.
+      const firstThree = picked.slice(0, 3)
+        .map(q => resolveQuestionImageUrl(q.imageUrl))
+        .filter(Boolean);
+      const first = firstThree[0];
+      if (first) await ensureImageReady(first, 1600);
+      preloadImages(firstThree.slice(1), 2);
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : 'تعذر تحميل الأسئلة.');
     } finally {
@@ -41,16 +54,15 @@ export default function Exam() {
   }, [modelId]);
 
   useEffect(() => { void loadExam(); }, [loadExam]);
+
   useEffect(() => {
-    questions.slice(current, current + 3).forEach((q, offset) => {
-      const src = resolveQuestionImageUrl(q.imageUrl);
-      if (!src) return;
-      const img = new Image();
-      img.decoding = 'async';
-      img.fetchPriority = offset === 0 ? 'high' : 'auto';
-      img.src = src;
-    });
+    const sources = questions
+      .slice(current, current + 3)
+      .map(q => resolveQuestionImageUrl(q.imageUrl))
+      .filter(Boolean);
+    preloadImages(sources, 3);
   }, [questions, current]);
+
   useEffect(() => { setImageExpanded(false); }, [current]);
 
   const finish = useCallback(() => {
@@ -84,6 +96,17 @@ export default function Exam() {
     });
   }, [answers, questions, navigate, modelId]);
 
+  const goToQuestion = useCallback(async (nextIndex: number) => {
+    if (navigationLockRef.current || nextIndex === current || nextIndex < 0 || nextIndex >= questions.length) return;
+    navigationLockRef.current = true;
+    setNavigating(true);
+    const src = resolveQuestionImageUrl(questions[nextIndex]?.imageUrl);
+    if (src) await ensureImageReady(src, 1200);
+    setCurrent(nextIndex);
+    setNavigating(false);
+    navigationLockRef.current = false;
+  }, [current, questions]);
+
   useEffect(() => {
     if (loading) return;
     const timer = setInterval(() => {
@@ -100,7 +123,7 @@ export default function Exam() {
   }, [loading, finish]);
 
   if (loading) {
-    return <div className="page-shell flex items-center justify-center px-4"><div className="surface-panel w-full max-w-xl p-5"><div className="skeleton h-44 rounded-2xl" /></div></div>;
+    return <div className="page-shell flex items-center justify-center px-4"><div className="surface-panel w-full max-w-xl p-5"><div className="skeleton h-44 rounded-2xl" /><p className="text-center text-muted text-sm mt-4">جارِ تجهيز أول صورة للاختبار...</p></div></div>;
   }
 
   if (loadError || !questions.length) {
@@ -115,8 +138,8 @@ export default function Exam() {
   return <div className="exam-page-v2" dir="rtl">
     <header className="exam-topbar-v2">
       <button onClick={() => navigate('/models')} className="exam-back-v2" aria-label="العودة">‹</button>
-      <div className="exam-title-v2"><strong>اختبار القيادة</strong><span>اختبر نفسك بهدوء</span></div>
-      <div className={`exam-timer-v2 ${seconds <= 60 ? 'urgent' : ''}`}>{mm}:{ss}</div>
+      <div className="exam-title-v2"><strong>اختبار القيادة</strong><span>السؤال {current + 1} من {questions.length}</span></div>
+      <div className={`exam-timer-v2 ${seconds <= 60 ? 'urgent' : ''}`} aria-label={`الوقت المتبقي ${mm}:${ss}`}>{mm}:{ss}</div>
     </header>
     <div className="exam-progress-v2"><span style={{ width: `${((current + 1) / questions.length) * 100}%` }} /></div>
 
@@ -125,7 +148,11 @@ export default function Exam() {
       <div className="exam-question-v2"><span className="exam-question-label">السؤال {current + 1}</span>{q.text}</div>
       <div className="exam-answers-v2">{q.options.map((opt, i) => <button key={i} type="button" onClick={() => setAnswers(a => ({ ...a, [q.id]: i }))} className={`exam-option-v2 ${answers[q.id] === i ? 'selected' : ''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span></button>)}</div>
       <DiagramRenderer question={q} />
-      <div className="exam-actions-v2"><button type="button" onClick={() => setCurrent(c => Math.max(c - 1, 0))} disabled={current === 0} className="exam-action-v2 secondary">السابق</button><button type="button" onClick={finish} className="exam-action-v2 finish">إنهاء الاختبار</button><button type="button" onClick={() => isLast ? finish() : setCurrent(c => c + 1)} className="exam-action-v2 next">{isLast ? 'عرض النتيجة' : 'التالي'}</button></div>
+      <div className="exam-actions-v2">
+        <button type="button" onClick={() => void goToQuestion(current - 1)} disabled={current === 0 || navigating} className="exam-action-v2 secondary">السابق</button>
+        <button type="button" onClick={finish} className="exam-action-v2 finish">إنهاء الاختبار</button>
+        <button type="button" onClick={() => isLast ? finish() : void goToQuestion(current + 1)} disabled={navigating} className="exam-action-v2 next">{navigating ? 'جارٍ التجهيز…' : isLast ? 'عرض النتيجة' : 'التالي'}</button>
+      </div>
     </section></main>
 
     {imageExpanded && q.imageUrl && <div className="exam-image-modal-v2" onClick={() => setImageExpanded(false)}><OptimizedImage src={q.imageUrl} alt={`الصورة المكبرة للسؤال ${q.id}`} priority sizes="100vw" className="max-w-full max-h-full" objectFit="contain" /></div>}
