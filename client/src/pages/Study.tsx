@@ -2,31 +2,135 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { Question, QuestionCategory } from '../types';
-import OptimizedImage from '../components/OptimizedImage';
+import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
+import '../study-premium.css';
 
-const THEME: Record<QuestionCategory,{name:string;head:string;soft:string;text:string}>={Ser:{name:'قواعد السير',head:'bg-brand',soft:'bg-brand-soft',text:'text-brand'},Ishara:{name:'الإشارات المرورية',head:'bg-signs',soft:'bg-signs-soft',text:'text-signs'},Mechanic:{name:'الميكانيك',head:'bg-mek',soft:'bg-mek-soft',text:'text-mek'}};
+const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
+  Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
+  Ishara: { name: 'الإشارات المرورية', accent: '#60A5FA', soft: 'rgba(96,165,250,.12)' },
+  Mechanic: { name: 'الميكانيك', accent: '#F59E0B', soft: 'rgba(245,158,11,.12)' },
+};
 
-export default function Study(){
- const {category}=useParams<{category:QuestionCategory}>(); const navigate=useNavigate(); const [questions,setQuestions]=useState<Question[]>([]); const [index,setIndex]=useState(0); const [answers,setAnswers]=useState<Record<number,number>>({}); const [loading,setLoading]=useState(true); const [error,setError]=useState(''); const preloaded=useRef(new Set<string>()); const theme=THEME[category as QuestionCategory];
- useEffect(()=>{if(!category)return;setLoading(true);setError('');setIndex(0);setAnswers({});api.getQuestions(category).then(setQuestions).catch(e=>setError(e.message)).finally(()=>setLoading(false));},[category]);
- useEffect(()=>{questions.slice(index,index+3).forEach(q=>{if(!q.imageUrl||preloaded.current.has(q.imageUrl))return;preloaded.current.add(q.imageUrl);const img=new Image();img.src=q.imageUrl;});},[questions,index]);
- if(loading)return <Loading text="جارِ تجهيز الأسئلة..."/>; if(error)return <Empty text={error}/>; const q=questions[index]; if(!q)return <Empty text="لا توجد أسئلة بهذا القسم بعد"/>;
- const chosen=answers[q.id]; const answered=Object.keys(answers).length; const correct=questions.filter(x=>answers[x.id]===x.correctAnswerIndex).length;
- const choose=(i:number)=>{if(chosen===undefined)setAnswers(a=>({...a,[q.id]:i}));};
- return <div className="min-h-screen">
-   <header className={`${theme.head} sticky top-0 z-20 text-white shadow-lg`}><div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3"><button onClick={()=>navigate('/')} className="icon-button">→</button><div className="flex-1"><p className="font-bold text-sm">{theme.name}</p><p className="text-[11px] text-white/70">{answered} مجاب • {correct} صحيح</p></div><div className="question-jump"><input key={index} defaultValue={index+1} min={1} max={questions.length} type="number" onKeyDown={e=>{if(e.key==='Enter'){const n=Number(e.currentTarget.value);setIndex(Math.min(Math.max(n-1,0),questions.length-1));}}}/><span>/ {questions.length}</span></div></div><div className="progress"><span style={{width:`${((index+1)/questions.length)*100}%`}}/></div></header>
-   <main className="max-w-3xl mx-auto px-4 py-6">
-     <div className="question-card exam-question-card study-question-card">
-       {q.imageUrl && <OptimizedImage src={q.imageUrl} alt={`صورة توضيحية للسؤال ${q.id}`} priority={index===0} sizes="(max-width: 768px) 92vw, 560px" className="question-image" objectFit="contain"/>}
-       <div className="question-number">السؤال {index+1}</div><h1 className="exam-question-title">{q.text}</h1>
-       <div className="exam-answer-list space-y-3">{q.options.map((opt,i)=>{const correctAnswer=i===q.correctAnswerIndex;const selected=i===chosen;let cls='answer-option';if(chosen!==undefined){if(correctAnswer)cls+=' correct';else if(selected)cls+=' wrong';}return <button key={i} onClick={()=>choose(i)} disabled={chosen!==undefined} className={cls}><span className="answer-letter">{['أ','ب','ج','د'][i]}</span><span>{opt}</span>{chosen!==undefined&&correctAnswer&&<span className="mr-auto">✓</span>}</button>})}</div>
-       {chosen!==undefined&&q.explanation&&<div className={`explanation ${theme.soft} ${theme.text}`}><b>لماذا؟</b><p>{q.explanation}</p></div>}
-       {chosen!==undefined&&<DiagramRenderer question={q}/>}
-       <div className="exam-nav-actions flex gap-3 mt-6"><button disabled={index===0} onClick={()=>setIndex(i=>i-1)} className="secondary-cta flex-1">→ السابق</button><button disabled={index===questions.length-1} onClick={()=>setIndex(i=>i+1)} className={`${theme.head} text-white rounded-2xl py-3.5 font-bold flex-1 disabled:opacity-40`}>التالي ←</button></div>
-     </div>
-   </main>
- </div>;
+const LETTERS = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
+
+export default function Study() {
+  const { category } = useParams<{ category: QuestionCategory }>();
+  const navigate = useNavigate();
+  const theme = THEME[category as QuestionCategory] ?? THEME.Ser;
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [index, setIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const preloaded = useRef(new Set<string>());
+
+  useEffect(() => {
+    if (!category) return;
+    setLoading(true);
+    setError('');
+    setIndex(0);
+    setAnswers({});
+    preloaded.current.clear();
+    api.getQuestions(category)
+      .then(setQuestions)
+      .catch(e => setError(e instanceof Error ? e.message : 'تعذر تحميل الأسئلة.'))
+      .finally(() => setLoading(false));
+  }, [category]);
+
+  useEffect(() => {
+    questions.slice(index, index + 3).forEach((q, offset) => {
+      const src = resolveQuestionImageUrl(q.imageUrl);
+      if (!src || preloaded.current.has(src)) return;
+      preloaded.current.add(src);
+      const img = new Image();
+      img.decoding = 'async';
+      img.fetchPriority = offset === 0 ? 'high' : 'auto';
+      img.src = src;
+    });
+  }, [questions, index]);
+
+  if (loading) return <div className="study-premium-loading">جارِ تجهيز التدريب...</div>;
+  if (error) return <div className="study-premium-loading">{error}</div>;
+  const q = questions[index];
+  if (!q) return <div className="study-premium-loading">لا توجد أسئلة بهذا القسم.</div>;
+
+  const chosen = answers[q.id];
+  const answered = Object.keys(answers).length;
+  const correct = questions.filter(x => answers[x.id] === x.correctAnswerIndex).length;
+  const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0;
+  const isLast = index === questions.length - 1;
+
+  const choose = (i: number) => {
+    if (chosen !== undefined) return;
+    setAnswers(current => ({ ...current, [q.id]: i }));
+  };
+  const next = () => setIndex(i => Math.min(i + 1, questions.length - 1));
+  const prev = () => setIndex(i => Math.max(i - 1, 0));
+
+  return (
+    <div className="study-premium" style={{ '--study-accent': theme.accent, '--study-soft': theme.soft } as React.CSSProperties} dir="rtl">
+      <header className="study-premium-header">
+        <button className="study-premium-back" onClick={() => navigate('/')} aria-label="العودة">‹</button>
+        <div className="study-premium-brand">
+          <span className="study-premium-kicker">تدريب تفاعلي</span>
+          <strong>{theme.name}</strong>
+          <small>{answered} مجاب · {correct} صحيح</small>
+        </div>
+        <div className="study-premium-counter" aria-label="عداد الأسئلة">
+          <b>{index + 1}</b><span>من {questions.length}</span>
+        </div>
+      </header>
+
+      <div className="study-premium-progress"><span style={{ width: `${progress}%` }} /></div>
+
+      <main className="study-premium-stage">
+        <section className="study-premium-card">
+          <div className="study-premium-meta">
+            <div><span className="live-dot" /> سؤال {index + 1}</div>
+            <span>{chosen === undefined ? 'اختر إجابة' : 'تمت الإجابة'}</span>
+          </div>
+
+          {q.imageUrl ? (
+            <div className="study-premium-image">
+              <OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 96vw, 760px" className="study-premium-image-el" objectFit="contain" />
+            </div>
+          ) : (
+            <div className="study-premium-no-image"><span>سؤال نظري</span></div>
+          )}
+
+          <div className="study-premium-question">{q.text}</div>
+
+          <div className="study-premium-answers">
+            {q.options.map((opt, i) => {
+              const isCorrect = i === q.correctAnswerIndex;
+              const isChosen = i === chosen;
+              let state = '';
+              if (chosen !== undefined) state = isCorrect ? 'is-correct' : isChosen ? 'is-wrong' : 'is-muted';
+              return (
+                <button key={i} type="button" disabled={chosen !== undefined} onClick={() => choose(i)} className={`study-premium-option ${state}`}>
+                  <span className="study-premium-letter">{LETTERS[i]}</span>
+                  <span className="study-premium-option-text">{opt}</span>
+                  {chosen !== undefined && isCorrect && <span className="study-premium-check">✓</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {chosen !== undefined && q.explanation && (
+            <div className="study-premium-explanation">
+              <b>لماذا؟</b>
+              <span>{q.explanation}</span>
+            </div>
+          )}
+          <div className="study-premium-diagram"><DiagramRenderer question={q} /></div>
+
+          <nav className="study-premium-actions" aria-label="التنقل بين الأسئلة">
+            <button onClick={prev} disabled={index === 0} className="study-premium-action ghost">السابق</button>
+            <button onClick={next} disabled={isLast} className="study-premium-action next">تخطي السؤال <span>←</span></button>
+          </nav>
+        </section>
+      </main>
+    </div>
+  );
 }
-function Loading({text}:{text:string}){return <div className="min-h-screen flex items-center justify-center text-muted"><div className="loading-dot"/>{text}</div>}
-function Empty({text}:{text:string}){return <div className="min-h-screen flex items-center justify-center px-5 text-muted text-center">{text}</div>}
