@@ -6,14 +6,14 @@ function isCanonicalSignNumber(value: number): boolean {
     (value >= 200 && value <= 205);
 }
 
-// Mechanic images were accidentally removed from the latest tree. These are
-// the exact bundled mechanic WebP assets from the project image library.
-// Served from an immutable GitHub CDN URL until they are copied back locally.
-const MECHANIC_IMAGE_BASE =
-  'https://cdn.jsdelivr.net/gh/majxd9/driving-test@0191b262e264417b00ed917a370c605891dd2ee0/client/public/mechanic';
+// The canonical mechanic set contains 210-235. The first five were originally
+// stored as sign_210..214; the remaining set uses mechanic_215..235.
+// These immutable CDN URLs point to the exact project assets, not V1 fallbacks.
+const LIBRARY_CDN_BASE =
+  'https://cdn.jsdelivr.net/gh/majxd9/driving-test@0191b262e264417b00ed917a370c605891dd2ee0/client/public';
 
 function isMechanicNumber(value: number): boolean {
-  return value >= 215 && value <= 235;
+  return value >= 210 && value <= 235;
 }
 
 function formatImageNumber(value: number): string {
@@ -21,38 +21,43 @@ function formatImageNumber(value: number): string {
 }
 
 /**
- * Resolves question images without ever falling back to unrelated/legacy
- * traffic-sign artwork. Mechanic images and AI explanatory diagrams are
- * handled as separate, explicit asset types.
+ * Resolves question images without using unrelated or legacy traffic-sign
+ * artwork. Mechanic assets and AI explanatory diagrams are explicit types.
  */
 export function resolveQuestionImageUrl(src?: string | null): string {
   if (!src) return '';
 
   if (/^(data:|blob:)/i.test(src)) return src;
 
+  // AI-created explanatory visuals only.
   const diagramMatch = src.match(/(?:^|\/)sign_(30[0-6])\.svg$/i);
   if (diagramMatch) {
     return `${PRIMARY_IMAGE_BASE}/sign_${diagramMatch[1]}.svg`;
   }
 
-  const mechanicMatch = src.match(/(?:^|\/)mechanic\/mechanic_(\d+)\.(?:webp|png|jpe?g)$/i);
+  const mechanicPathMatch = src.match(/(?:^|\/)mechanic\/mechanic_(\d+)\.(?:webp|png|jpe?g)$/i);
   const signMatch = src.match(/(?:^|\/)sign_(\d+)\.(?:webp|png|jpe?g)$/i);
 
-  if (mechanicMatch) {
-    const number = Number(mechanicMatch[1]);
+  if (mechanicPathMatch) {
+    const number = Number(mechanicPathMatch[1]);
     if (!isMechanicNumber(number)) return '';
-    return `${MECHANIC_IMAGE_BASE}/mechanic_${number}.webp`;
+    if (number <= 214) {
+      return `${LIBRARY_CDN_BASE}/signs/sign_${number}.webp`;
+    }
+    return `${LIBRARY_CDN_BASE}/mechanic/mechanic_${number}.webp`;
   }
 
   if (!signMatch) return '';
 
   const number = Number(signMatch[1]);
 
-  // The question bank historically used sign_215..235 for mechanic questions.
-  // Resolve those legacy references only to the exact mechanic asset, never
-  // to a traffic-sign image.
+  // The question bank historically uses sign_210..235 for the canonical
+  // mechanic set. Never substitute a traffic-sign image for these questions.
   if (isMechanicNumber(number)) {
-    return `${MECHANIC_IMAGE_BASE}/mechanic_${number}.webp`;
+    if (number <= 214) {
+      return `${LIBRARY_CDN_BASE}/signs/sign_${number}.webp`;
+    }
+    return `${LIBRARY_CDN_BASE}/mechanic/mechanic_${number}.webp`;
   }
 
   if (!isCanonicalSignNumber(number)) return '';
