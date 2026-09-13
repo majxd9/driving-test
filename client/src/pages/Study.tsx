@@ -4,7 +4,7 @@ import { api } from '../api/client';
 import { Question, QuestionCategory } from '../types';
 import OptimizedImage from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
-import '../login-v3.css';
+import '../study-premium.css';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string; }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
