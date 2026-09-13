@@ -6,7 +6,7 @@ import OptimizedImage from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
 import '../study-premium.css';
 
-const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string; }> = {
+const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
   Ishara: { name: 'الإشارات المرورية', accent: '#60A5FA', soft: 'rgba(96,165,250,.12)' },
   Mechanic: { name: 'الميكانيك', accent: '#F59E0B', soft: 'rgba(245,158,11,.12)' },
@@ -56,6 +56,7 @@ export default function Study() {
   const answered = Object.keys(answers).length;
   const correct = questions.filter(x => answers[x.id] === x.correctAnswerIndex).length;
   const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0;
+  const isLast = index === questions.length - 1;
 
   const choose = (i: number) => {
     if (chosen !== undefined) return;
@@ -63,7 +64,6 @@ export default function Study() {
   };
   const next = () => setIndex(i => Math.min(i + 1, questions.length - 1));
   const prev = () => setIndex(i => Math.max(i - 1, 0));
-  const skip = () => next();
 
   return (
     <div className="study-premium" style={{ '--study-accent': theme.accent, '--study-soft': theme.soft } as React.CSSProperties} dir="rtl">
@@ -124,8 +124,7 @@ export default function Study() {
 
           <nav className="study-premium-actions" aria-label="التنقل بين الأسئلة">
             <button onClick={prev} disabled={index === 0} className="study-premium-action ghost">السابق</button>
-            <button onClick={skip} disabled={index === questions.length - 1} className="study-premium-action skip">تخطي</button>
-            <button onClick={next} disabled={index === questions.length - 1} className="study-premium-action next">التالي <span>←</span></button>
+            <button onClick={next} disabled={isLast} className="study-premium-action next">تخطي السؤال <span>←</span></button>
           </nav>
         </section>
       </main>
