@@ -25,6 +25,7 @@ public class QuestionsController : ControllerBase
             .OrderBy(q => q.Id)
             .ToListAsync();
 
+        Response.Headers.CacheControl = "private,max-age=60,stale-while-revalidate=30";
         return Ok(DeduplicateQuestions(questions));
     }
 
@@ -32,6 +33,7 @@ public class QuestionsController : ControllerBase
     public async Task<ActionResult<int>> GetCount()
     {
         await QuestionCountCache.InitializeAsync(_db);
+        Response.Headers.CacheControl = "private,max-age=300,stale-while-revalidate=60";
         return Ok(QuestionCountCache.Total);
     }
 
@@ -39,6 +41,7 @@ public class QuestionsController : ControllerBase
     public async Task<ActionResult<List<Question>>> GetExam(int modelId)
     {
         if (modelId is < 1 or > 8) return BadRequest(new { message = "رقم النموذج يجب أن يكون بين 1 و8." });
+        Response.Headers.CacheControl = "no-store";
 
         var required = new[]
         {
@@ -90,15 +93,8 @@ public class QuestionsController : ControllerBase
     private static bool HasCanonicalQuestionImage(Question question)
     {
         var src = question.ImageUrl;
-
-        // Traffic-sign questions must always have a current-library sign image.
-        if (question.Category == QuestionCategory.Ishara && string.IsNullOrWhiteSpace(src))
-            return false;
-
-        // Theory questions may be text-only, but any supplied image must still
-        // belong to the current uploaded library.
-        if (string.IsNullOrWhiteSpace(src))
-            return question.Category != QuestionCategory.Ishara;
+        if (question.Category == QuestionCategory.Ishara && string.IsNullOrWhiteSpace(src)) return false;
+        if (string.IsNullOrWhiteSpace(src)) return question.Category != QuestionCategory.Ishara;
 
         var signMatch = Regex.Match(src, @"(?:^|/)sign_(\d+)\.(?:webp|png|jpe?g)$", RegexOptions.IgnoreCase);
         if (signMatch.Success)
@@ -123,15 +119,12 @@ public class QuestionsController : ControllerBase
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
         var result = new List<Question>();
-
         foreach (var question in source.OrderBy(q => q.Id))
         {
             if (!HasCanonicalQuestionImage(question)) continue;
-
             var key = $"{question.Category}|{NormalizeText(question.Text)}|{string.Join("\u001f", question.Options ?? new List<string>())}";
             if (seen.Add(key)) result.Add(question);
         }
-
         return result;
     }
 
@@ -144,7 +137,6 @@ public class QuestionsController : ControllerBase
             var j = (int)(state % (uint)(i + 1));
             (source[i], source[j]) = (source[j], source[i]);
         }
-
         return source.Take(count).ToList();
     }
 }
