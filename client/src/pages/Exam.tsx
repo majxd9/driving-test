@@ -4,6 +4,7 @@ import { api } from '../api/client';
 import { Question } from '../types';
 import OptimizedImage from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
+import '../exam-mobile.css';
 
 const DURATION = 15 * 60;
 
