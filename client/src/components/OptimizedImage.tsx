@@ -22,30 +22,18 @@ export default function OptimizedImage({
 }: Props) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const canonicalSrc = useMemo(() => resolveQuestionImageUrl(src), [src]);
 
   useEffect(() => {
     setLoaded(false);
     setFailed(false);
-  }, [src]);
-
-  const canonicalSrc = useMemo(() => resolveQuestionImageUrl(src), [src]);
+  }, [canonicalSrc]);
 
   if (!canonicalSrc) return null;
 
-  const handleError = () => {
-    setFailed(true);
-    setLoaded(true);
-  };
-
   return (
-    <div className={`relative overflow-hidden ${className}`}>
-      {!loaded && !failed && (
-        <div
-          className="absolute inset-0 skeleton"
-          aria-hidden="true"
-        />
-      )}
-
+    <div className={`relative ${className}`}>
+      {!loaded && !failed && <div className="absolute inset-0 skeleton" aria-hidden="true" />}
       <img
         src={canonicalSrc}
         alt={alt}
@@ -53,14 +41,14 @@ export default function OptimizedImage({
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
         fetchPriority={priority ? 'high' : 'auto'}
+        draggable={false}
         onLoad={() => setLoaded(true)}
-        onError={handleError}
-        className={`block w-full h-full object-${objectFit} transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        onError={() => { setFailed(true); setLoaded(true); }}
+        className={`block w-full h-full object-${objectFit} ${loaded ? '' : 'opacity-0'}`}
       />
-
       {failed && (
-        <div className="absolute inset-0 grid place-items-center text-xs text-muted bg-paper">
-          تعذر تحميل الصورة من المصدر الأساسي
+        <div className="absolute inset-0 grid place-items-center text-xs text-muted bg-paper p-3 text-center">
+          تعذر تحميل الصورة
         </div>
       )}
     </div>
