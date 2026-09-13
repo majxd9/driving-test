@@ -1,13 +1,13 @@
 # Image policy
 
-The bundled `Traffic_Signals_Images` reference pack is the canonical source for all matching traffic-sign images.
+The supplied/current traffic-sign image library is the canonical source for question images.
 
-- Matching filenames (`sign_01` ... `sign_99`, `sign_200` ... `sign_214`) use the reference PNG exactly as supplied.
-- A WebP derivative is bundled beside each reference PNG for fast delivery.
-- Older V1 images remain only when the reference pack has no matching image.
-- The Admin "Upload images" area was removed because production content uses the bundled, controlled image library. This avoids accidental mismatches and unnecessary storage/uploads.
-- Question editing still accepts an image path so existing/custom content remains compatible; use paths from `/signs/`.
-
+- Question images may resolve only to the canonical `/signs/sign_01.webp` ... `/signs/sign_99.webp` and `/signs/sign_200.webp` ... `/signs/sign_214.webp` assets.
+- Legacy V1 images are **not** a fallback and must never be returned when a canonical image is unavailable.
+- Old `/mechanic/mechanic_*` and other legacy image paths are rejected at runtime; the app must not silently substitute them.
+- AI-created explanatory visuals are a separate exception: `/signs/sign_300.svg` ... `/signs/sign_306.svg` are retained and rendered only as question explanations/diagrams.
+- The Admin "Upload images" area remains removed because production content uses the controlled image library. This avoids accidental mismatches and unnecessary storage/uploads.
+- Question editing still accepts an image path for compatibility, but unsupported/legacy paths do not render in the student experience.
 
 ## Runtime image optimization (2026-09-13)
-The supplied image archive remains the canonical source for image selection. The deployed client keeps optimized WebP derivatives for runtime; duplicate PNG staging copies are not shipped. SVG diagram assets are retained. Exact duplicate mechanic/sign assets 210-214 are represented once under the canonical signs library.
+Canonical question images use bundled WebP assets for fast delivery. The exam preloads the current question and the next questions, while AI explanatory SVGs stay lightweight and load only when their explanation is shown. No legacy image fallback is used.
