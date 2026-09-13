@@ -1,5 +1,6 @@
 using System.Text.Json;
 using DrivingTestApi.Models;
+using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -20,8 +21,6 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(builder);
 
-        // تخزين القوائم (Options / QuestionIds) كنص JSON داخل عمود واحد — أبسط حل لمشروع بهالحجم.
-        // ملاحظة: EF Core ممكن يطبع تحذيراً بسيطاً بالكونسول بخصوص هالنوع من القوائم، هذا طبيعي ولا يؤثر على عمل النظام.
         var stringListConverter = new ValueConverter<List<string>, string>(
             v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
             v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
@@ -30,17 +29,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
             v => JsonSerializer.Deserialize<List<int>>(v, (JsonSerializerOptions?)null) ?? new List<int>());
 
-        builder.Entity<Question>()
-            .Property(q => q.Options)
-            .HasConversion(stringListConverter);
-
-        builder.Entity<ExamModel>()
-            .Property(e => e.QuestionIds)
-            .HasConversion(intListConverter);
-
-        builder.Entity<ExamAttempt>()
-            .Property(e => e.WrongQuestionIds)
-            .HasConversion(intListConverter);
+        builder.Entity<Question>().Property(q => q.Options).HasConversion(stringListConverter);
+        builder.Entity<ExamModel>().Property(e => e.QuestionIds).HasConversion(intListConverter);
+        builder.Entity<ExamAttempt>().Property(e => e.WrongQuestionIds).HasConversion(intListConverter);
 
         builder.Entity<ExamAttempt>()
             .HasOne<ApplicationUser>()
@@ -50,5 +41,28 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<ExamAttempt>()
             .HasIndex(e => new { e.StudentId, e.CreatedAt });
+    }
+
+    public override int SaveChanges()
+    {
+        var changes = GetQuestionChanges();
+        var result = base.SaveChanges();
+        QuestionCountCache.ApplyChanges(changes.added, changes.deleted);
+        return result;
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var changes = GetQuestionChanges();
+        var result = await base.SaveChangesAsync(cancellationToken);
+        QuestionCountCache.ApplyChanges(changes.added, changes.deleted);
+        return result;
+    }
+
+    private (int added, int deleted) GetQuestionChanges()
+    {
+        var added = ChangeTracker.Entries<Question>().Count(e => e.State == EntityState.Added);
+        var deleted = ChangeTracker.Entries<Question>().Count(e => e.State == EntityState.Deleted);
+        return (added, deleted);
     }
 }
