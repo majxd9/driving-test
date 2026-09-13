@@ -39,12 +39,13 @@ export default function Study() {
   }, [category]);
 
   useEffect(() => {
-    questions.slice(index, index + 3).forEach(q => {
+    questions.slice(index, index + 3).forEach((q, offset) => {
       const src = resolveQuestionImageUrl(q.imageUrl);
       if (!src || preloaded.current.has(src)) return;
       preloaded.current.add(src);
       const img = new Image();
       img.decoding = 'async';
+      img.fetchPriority = offset === 0 ? 'high' : 'auto';
       img.src = src;
     });
   }, [questions, index]);
@@ -92,7 +93,7 @@ export default function Study() {
 
           {q.imageUrl ? (
             <div className="study-premium-image">
-              <OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority={index === 0} sizes="(max-width: 700px) 96vw, 760px" className="study-premium-image-el" />
+              <OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 96vw, 760px" className="study-premium-image-el" objectFit="contain" />
             </div>
           ) : (
             <div className="study-premium-no-image"><span>سؤال نظري</span></div>
