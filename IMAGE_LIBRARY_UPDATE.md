@@ -1,31 +1,22 @@
-# Image Library Update — V5
+# Image Library Update — V6
 
 - Source archive: `Downloaded_Site_Images.zip`
-- Canonical source images: 163 PNGs.
-- Canonical traffic-sign images: 137.
-- Canonical mechanic images: 26.
-- WebP derivatives generated for every canonical image.
-- Existing question image references were normalized to canonical WebP paths where the source archive contains the same numbered image.
-- Missing source-only legacy references 236–245 are retained as fallback because the new archive does not contain those exact images.
-- Added relevant canonical images to questions that previously had no image when a direct visual match existed.
+- Current uploaded source images: 163 PNGs (137 traffic-sign/road images + 26 mechanic images).
+- WebP derivatives are the runtime format for fast delivery.
+- Question image paths resolve only to assets present in the current uploaded library.
+- Legacy/V1 images are never a fallback.
+- Source-only references `236–245` are not displayed as sign-question images because those exact images are not part of the current uploaded source pack; this prevents an old/wrong image from appearing.
+- AI-created explanatory visuals `300–306` remain available as a separate diagram-only set.
 
-## Question image coverage
+## Verified important mappings
 
-| Category | Questions | With image |
-|---|---:|---:|
-| قواعد السير | 178 | 43 |
-| الإشارات المرورية | 156 | 156 |
-| الميكانيك | 63 | 48 |
-| **Total** | **397** | **247** |
+- `sign_20.webp` → livestock/animal crossing warning used by the animal-crossing sign question.
+- `sign_55.webp` → no trucks sign used by the question “ممنوع مرور السيارات الشاحنة”.
+- `sign_213.webp` → ignition coil (البوبين) from the current uploaded mechanic source pack.
+- `sign_100.webp` ... `sign_131.webp` are part of the current uploaded sign pack and are valid runtime images.
+- `sign_210.webp` ... `sign_214.webp` are current mechanic-source visuals stored in the signs directory.
+- `mechanic_215.webp` ... `mechanic_235.webp` are current mechanic-source visuals stored in the mechanic directory.
 
-## UI count
+## Runtime image performance
 
-The home page now displays:
-- قواعد السير: 178 سؤال
-- الإشارات المرورية: 156 سؤال
-- الميكانيك: 63 سؤال
-- Total: 397 سؤالاً
-
-## Image policy
-
-The uploaded image archive is the primary bundled image library. Images are served as WebP for performance while the original PNGs are retained as canonical source assets. Legacy images are used only when the requested exact image is absent from the new source archive.
+The browser receives the bundled WebP derivatives instead of the large source PNGs. The timed exam eagerly loads the current question image and preloads the next questions, while immutable one-year caching is enabled for `/signs/*` and `/mechanic/*`. No legacy fallback is used.
