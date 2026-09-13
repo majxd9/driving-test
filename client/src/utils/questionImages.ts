@@ -1,17 +1,13 @@
 const PRIMARY_IMAGE_BASE = '/signs';
 
-// Canonical traffic-sign library supplied with the project.
+// Current uploaded traffic-sign library: sign_01..131 and sign_200..205.
 function isCanonicalSignNumber(value: number): boolean {
   return (value >= 1 && value <= 131) ||
     (value >= 200 && value <= 205);
 }
 
-// The canonical mechanic set contains 210-235. The first five were originally
-// stored as sign_210..214; the remaining set uses mechanic_215..235.
-// These immutable CDN URLs point to the exact project assets, not V1 fallbacks.
-const LIBRARY_CDN_BASE =
-  'https://cdn.jsdelivr.net/gh/majxd9/driving-test@0191b262e264417b00ed917a370c605891dd2ee0/client/public';
-
+// Current uploaded mechanic library: 210..235. In the repository,
+// 210..214 live under /signs while 215..235 live under /mechanic.
 function isMechanicNumber(value: number): boolean {
   return value >= 210 && value <= 235;
 }
@@ -21,15 +17,14 @@ function formatImageNumber(value: number): string {
 }
 
 /**
- * Resolves question images without using unrelated or legacy traffic-sign
- * artwork. Mechanic assets and AI explanatory diagrams are explicit types.
+ * Resolves only assets from the current uploaded image pack.
+ * Legacy/V1 images are never used as a fallback.
+ * AI explanatory diagrams 300..306 remain a separate, explicit exception.
  */
 export function resolveQuestionImageUrl(src?: string | null): string {
   if (!src) return '';
-
   if (/^(data:|blob:)/i.test(src)) return src;
 
-  // AI-created explanatory visuals only.
   const diagramMatch = src.match(/(?:^|\/)sign_(30[0-6])\.svg$/i);
   if (diagramMatch) {
     return `${PRIMARY_IMAGE_BASE}/sign_${diagramMatch[1]}.svg`;
@@ -41,26 +36,21 @@ export function resolveQuestionImageUrl(src?: string | null): string {
   if (mechanicPathMatch) {
     const number = Number(mechanicPathMatch[1]);
     if (!isMechanicNumber(number)) return '';
-    if (number <= 214) {
-      return `${LIBRARY_CDN_BASE}/signs/sign_${number}.webp`;
-    }
-    return `${LIBRARY_CDN_BASE}/mechanic/mechanic_${number}.webp`;
+    // The uploaded pack stores 210..214 in the signs directory.
+    if (number <= 214) return `${PRIMARY_IMAGE_BASE}/sign_${number}.webp`;
+    return `/mechanic/mechanic_${number}.webp`;
   }
 
   if (!signMatch) return '';
 
   const number = Number(signMatch[1]);
 
-  // The question bank historically uses sign_210..235 for the canonical
-  // mechanic set. Never substitute a traffic-sign image for these questions.
+  // 210..235 are mechanic visuals from the uploaded pack, not traffic signs.
   if (isMechanicNumber(number)) {
-    if (number <= 214) {
-      return `${LIBRARY_CDN_BASE}/signs/sign_${number}.webp`;
-    }
-    return `${LIBRARY_CDN_BASE}/mechanic/mechanic_${number}.webp`;
+    if (number <= 214) return `${PRIMARY_IMAGE_BASE}/sign_${number}.webp`;
+    return `/mechanic/mechanic_${number}.webp`;
   }
 
   if (!isCanonicalSignNumber(number)) return '';
-
   return `${PRIMARY_IMAGE_BASE}/sign_${formatImageNumber(number)}.webp`;
 }
