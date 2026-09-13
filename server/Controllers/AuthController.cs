@@ -25,32 +25,35 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
     {
-        request.UserName = request.UserName?.Trim() ?? string.Empty;
+        var username = request.UserName?.Trim() ?? string.Empty;
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
 
-        var user = await _userManager.FindByNameAsync(request.UserName);
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(request.Password))
+            return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
+
+        var user = await _userManager.FindByNameAsync(username);
         if (user is null)
         {
-            _db.AuthLogs.Add(new AuthLog { AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "UserNotFound" });
+            _db.AuthLogs.Add(new AuthLog { AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "UserNotFound" });
             await _db.SaveChangesAsync();
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
         if (!user.IsActive)
         {
-            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "AccountDisabled" });
+            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "AccountDisabled" });
             await _db.SaveChangesAsync();
             return Unauthorized(new { message = "هذا الحساب معطّل حالياً." });
         }
         if (user.AccessExpiresAt is not null && user.AccessExpiresAt < DateTime.UtcNow)
         {
-            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "AccessExpired" });
+            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "AccessExpired" });
             await _db.SaveChangesAsync();
             return Unauthorized(new { message = "انتهت صلاحية الاشتراك" });
         }
         if (!await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "WrongPassword" });
+            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "WrongPassword" });
             await _db.SaveChangesAsync();
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
@@ -58,7 +61,7 @@ public class AuthController : ControllerBase
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Student";
         if (role != "Admin" && !string.IsNullOrEmpty(user.DeviceId) && !string.Equals(user.DeviceId, request.DeviceId, StringComparison.Ordinal))
         {
-            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "DeviceMismatch" });
+            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "DeviceMismatch" });
             await _db.SaveChangesAsync();
             return Unauthorized(new { message = "هذا الحساب مرتبط بجهاز آخر مسبقاً." });
         }
@@ -68,7 +71,7 @@ public class AuthController : ControllerBase
 
         var jwt = _tokenService.CreateToken(user, role);
         Response.Cookies.Append("auth_token", jwt, new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.None, Expires = DateTimeOffset.UtcNow.AddHours(12) });
-        _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = request.UserName, IpAddress = ip, UserAgent = userAgent, Success = true, Reason = "Success" });
+        _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = true, Reason = "Success" });
         await _db.SaveChangesAsync();
 
         return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt));
