@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { Question, QuestionCategory } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
+import { ensureImageReady, preloadImages } from '../utils/imagePreload';
 import '../study-premium.css';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
@@ -23,7 +24,8 @@ export default function Study() {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const preloaded = useRef(new Set<string>());
+  const [navigating, setNavigating] = useState(false);
+  const navigationLockRef = useRef(false);
 
   useEffect(() => {
     if (!category) return;
@@ -31,24 +33,36 @@ export default function Study() {
     setError('');
     setIndex(0);
     setAnswers({});
-    preloaded.current.clear();
     api.getQuestions(category)
-      .then(setQuestions)
+      .then(async (items) => {
+        setQuestions(items);
+        const firstThree = items.slice(0, 3)
+          .map(q => resolveQuestionImageUrl(q.imageUrl))
+          .filter(Boolean);
+        if (firstThree[0]) await ensureImageReady(firstThree[0], 1400);
+        preloadImages(firstThree.slice(1), 2);
+      })
       .catch(e => setError(e instanceof Error ? e.message : 'تعذر تحميل الأسئلة.'))
       .finally(() => setLoading(false));
   }, [category]);
 
   useEffect(() => {
-    questions.slice(index, index + 3).forEach((q, offset) => {
-      const src = resolveQuestionImageUrl(q.imageUrl);
-      if (!src || preloaded.current.has(src)) return;
-      preloaded.current.add(src);
-      const img = new Image();
-      img.decoding = 'async';
-      img.fetchPriority = offset === 0 ? 'high' : 'auto';
-      img.src = src;
-    });
+    const sources = questions.slice(index, index + 3)
+      .map(q => resolveQuestionImageUrl(q.imageUrl))
+      .filter(Boolean);
+    preloadImages(sources, 3);
   }, [questions, index]);
+
+  const goTo = useCallback(async (nextIndex: number) => {
+    if (navigationLockRef.current || nextIndex < 0 || nextIndex >= questions.length || nextIndex === index) return;
+    navigationLockRef.current = true;
+    setNavigating(true);
+    const src = resolveQuestionImageUrl(questions[nextIndex]?.imageUrl);
+    if (src) await ensureImageReady(src, 1200);
+    setIndex(nextIndex);
+    setNavigating(false);
+    navigationLockRef.current = false;
+  }, [index, questions]);
 
   if (loading) return <div className="study-premium-loading">جارِ تجهيز التدريب...</div>;
   if (error) return <div className="study-premium-loading">{error}</div>;
@@ -65,8 +79,6 @@ export default function Study() {
     if (chosen !== undefined) return;
     setAnswers(current => ({ ...current, [q.id]: i }));
   };
-  const next = () => setIndex(i => Math.min(i + 1, questions.length - 1));
-  const prev = () => setIndex(i => Math.max(i - 1, 0));
 
   return (
     <div className="study-premium" style={{ '--study-accent': theme.accent, '--study-soft': theme.soft } as React.CSSProperties} dir="rtl">
@@ -126,8 +138,8 @@ export default function Study() {
           <div className="study-premium-diagram"><DiagramRenderer question={q} /></div>
 
           <nav className="study-premium-actions" aria-label="التنقل بين الأسئلة">
-            <button onClick={prev} disabled={index === 0} className="study-premium-action ghost">السابق</button>
-            <button onClick={next} disabled={isLast} className="study-premium-action next">تخطي السؤال <span>←</span></button>
+            <button onClick={() => void goTo(index - 1)} disabled={index === 0 || navigating} className="study-premium-action ghost">السابق</button>
+            <button onClick={() => void goTo(index + 1)} disabled={isLast || navigating} className="study-premium-action next">{navigating ? 'جارٍ التجهيز…' : isLast ? 'انتهى القسم' : 'السؤال التالي'} <span>←</span></button>
           </nav>
         </section>
       </main>
