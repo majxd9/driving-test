@@ -1,0 +1,62 @@
+/* Responsive final pass: prevent desktop-style split login on narrow/mobile browser viewports. */
+.login-v2{width:100%;box-sizing:border-box}
+@media (max-width:1200px){
+  .login-v2{min-height:100svh;height:auto;max-height:none;overflow-x:hidden;overflow-y:auto;padding:0!important;align-items:stretch!important}
+  .login-v2-wrap{width:100%!important;min-height:100svh!important;height:auto!important;border:0!important;border-radius:0!important;display:block!important;overflow:visible!important}
+  .login-v2-showcase{display:none!important}
+  .login-v2-panel{width:100%!important;min-height:100svh!important;box-sizing:border-box!important;padding:32px 24px!important;display:flex!important;justify-content:center!important;align-items:stretch!important;background:radial-gradient(circle at 50% 0,rgba(45,212,191,.11),transparent 32%),#071018!important}
+  .login-v2-panel>*{width:min(100%,520px);margin-inline:auto}
+  .login-v2-panel-head{margin-bottom:18px!important}
+  .login-v2-title h2{font-size:30px!important}
+  .login-v2-form input{height:54px!important}
+  .login-v2-submit{height:55px!important}
+  .login-v2-trial{height:56px!important}
+}
+
+/* Exam: the image area has one stable height whenever an image exists.
+   Question text and answers never stretch to fill unused viewport space. */
+.exam-card-v2{display:block!important;box-sizing:border-box!important}
+.exam-card-v2 .exam-image-v2{display:block!important;width:100%!important;height:clamp(160px,24svh,240px)!important;min-height:160px!important;max-height:240px!important;box-sizing:border-box!important;margin:0 0 14px!important;overflow:hidden!important}
+.exam-card-v2 .exam-image-v2>div{width:100%!important;height:100%!important;min-height:0!important}
+.exam-question-v2{height:auto!important;min-height:0!important;max-height:none!important;margin:0 4px 13px!important;overflow:visible!important}
+.exam-answers-v2{display:flex!important;flex-direction:column!important;gap:8px!important;height:auto!important;min-height:0!important;overflow:visible!important;margin:0 0 14px!important}
+.exam-option-v2{display:flex!important;align-items:center!important;width:100%!important;min-height:58px!important;height:auto!important;box-sizing:border-box!important;flex:0 0 auto!important;padding:9px 12px!important;border-radius:18px!important}
+.exam-option-text-v2{font-size:clamp(11px,1.8vw,14px)!important;line-height:1.45!important;display:block!important;overflow:visible!important;-webkit-line-clamp:unset!important}
+.exam-actions-v2{position:sticky!important;bottom:0!important;z-index:20!important;display:grid!important;grid-template-columns:1fr 1.1fr 1fr!important;gap:8px!important;width:100%!important;height:auto!important;min-height:68px!important;margin:0!important;padding:10px 0 2px!important;box-sizing:border-box!important;background:linear-gradient(180deg,rgba(7,16,24,0),rgba(7,16,24,.98) 34%)!important;border-radius:0!important}
+.exam-action-v2{height:52px!important;min-height:52px!important;width:100%!important;border-radius:999px!important;white-space:nowrap!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.exam-action-v2.finish{display:flex!important;visibility:visible!important;opacity:1!important}
+
+@media(max-width:700px){
+  .login-v2-panel{padding:26px 18px 22px!important;justify-content:flex-start!important}
+  .login-v2-panel-head{margin-top:6px!important}
+  .login-v2-title h2{font-size:27px!important}
+  .login-v2-title p{font-size:11px!important;line-height:1.7!important}
+  .login-v2-form{gap:11px!important}
+  .login-v2-form input{height:50px!important;border-radius:17px!important}
+  .login-v2-submit{height:52px!important}
+  .login-v2-trial{height:54px!important}
+
+  .exam-stage-v2{padding:7px 7px 84px!important;overflow-y:auto!important}
+  .exam-card-v2{padding:10px!important;border-radius:22px!important}
+  .exam-card-v2 .exam-image-v2{height:150px!important;min-height:150px!important;max-height:150px!important;border-radius:18px!important;margin-bottom:11px!important}
+  .exam-question-v2{font-size:clamp(.98rem,4.1vw,1.12rem)!important;line-height:1.55!important;margin-bottom:10px!important}
+  .exam-answers-v2{gap:7px!important;margin-bottom:10px!important}
+  .exam-option-v2{min-height:53px!important;padding:8px 10px!important;border-radius:17px!important}
+  .exam-option-letter-v2{width:31px!important;height:31px!important;flex:0 0 31px!important;border-radius:50%!important}
+  .exam-option-text-v2{font-size:11px!important;line-height:1.4!important}
+  .exam-actions-v2{min-height:65px!important;gap:6px!important;padding:8px 0 1px!important}
+  .exam-action-v2{height:47px!important;min-height:47px!important;font-size:10.5px!important;padding:0 6px!important}
+}
+
+@media(max-width:430px){
+  .login-v2-panel{padding:22px 15px 18px!important}
+  .login-v2-title h2{font-size:25px!important}
+  .login-v2-form input{height:48px!important}
+  .login-v2-submit{height:50px!important}
+  .login-v2-trial{height:52px!important}
+  .exam-card-v2 .exam-image-v2{height:136px!important;min-height:136px!important;max-height:136px!important}
+  .exam-option-v2{min-height:50px!important;padding:7px 8px!important}
+  .exam-option-letter-v2{width:29px!important;height:29px!important;flex-basis:29px!important}
+  .exam-option-text-v2{font-size:10.5px!important}
+  .exam-action-v2{height:45px!important;min-height:45px!important;font-size:10px!important}
+}
