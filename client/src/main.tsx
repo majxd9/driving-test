@@ -7,6 +7,7 @@ import './index.css';
 import './unified.css';
 import './modern-overrides.css';
 import './login-v3.css';
+import './study-premium.css';
 import './final-ui.css';
 import './mobile-fixes.css';
 
