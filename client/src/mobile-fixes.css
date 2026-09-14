@@ -1,4 +1,4 @@
-/* FINAL MOBILE LAYOUT — one source of truth for Login + Exam. */
+/* Final mobile rules: exam layout is a fixed frame with a scrollable question area. */
 *{box-sizing:border-box}
 button{-webkit-tap-highlight-color:transparent}
 
@@ -24,53 +24,47 @@ button{-webkit-tap-highlight-color:transparent}
   .login-v2-trial{height:53px!important;border-radius:999px!important}
 }
 
-/* EXAM — invariant inner geometry on every phone width. */
+/* EXAM — the device chooses the frame once; questions never move the controls. */
 @media (max-width:900px){
-  .exam-page-v2{width:100%!important;min-height:100svh!important;height:100svh!important;max-height:100svh!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
+  .exam-page-v2{width:100%!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
   .exam-topbar-v2{height:56px!important;min-height:56px!important;max-height:56px!important;flex:0 0 56px!important;padding:6px 9px!important}
   .exam-back-v2{width:40px!important;height:40px!important;border-radius:999px!important}
   .exam-timer-v2{border-radius:999px!important}
   .exam-progress-v2{height:2px!important;min-height:2px!important;max-height:2px!important;flex:0 0 2px!important}
-  .exam-stage-v2{width:100%!important;height:calc(100svh - 58px)!important;min-height:calc(100svh - 58px)!important;max-height:calc(100svh - 58px)!important;flex:0 0 calc(100svh - 58px)!important;display:flex!important;align-items:flex-start!important;justify-content:center!important;overflow:hidden!important;padding:8px!important;margin:0!important}
 
-  .exam-card-v2{width:100%!important;max-width:760px!important;height:calc(100svh - 74px)!important;min-height:calc(100svh - 74px)!important;max-height:calc(100svh - 74px)!important;flex:0 0 calc(100svh - 74px)!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;align-items:stretch!important;overflow:hidden!important;box-sizing:border-box!important;margin:0 auto!important;padding:10px!important;border-radius:22px!important}
+  .exam-stage-v2{width:100%!important;height:calc(100dvh - 58px)!important;min-height:0!important;max-height:calc(100dvh - 58px)!important;flex:1 1 auto!important;display:flex!important;align-items:stretch!important;justify-content:center!important;overflow:hidden!important;padding:8px!important;margin:0!important}
 
-  /* The image slot ALWAYS exists, whether the question has an image or not. */
-  .exam-image-slot-v2{width:100%!important;height:180px!important;min-height:180px!important;max-height:180px!important;flex:0 0 180px!important;margin:0 0 10px!important;overflow:hidden!important}
-  .exam-image-slot-v2 .exam-image-v2,
-  .exam-image-slot-v2 .exam-image-placeholder-v2{width:100%!important;height:180px!important;min-height:180px!important;max-height:180px!important;flex:0 0 180px!important;display:block!important;box-sizing:border-box!important;border-radius:18px!important;overflow:hidden!important}
+  /* Fixed-height card; only .exam-scroll-v2 can scroll. */
+  .exam-card-v2{width:100%!important;max-width:760px!important;height:100%!important;min-height:0!important;max-height:100%!important;flex:1 1 auto!important;display:grid!important;grid-template-rows:minmax(0,1fr) 50px!important;grid-template-columns:minmax(0,1fr)!important;align-items:stretch!important;overflow:hidden!important;box-sizing:border-box!important;margin:0 auto!important;padding:10px!important;border-radius:22px!important}
+  .exam-scroll-v2{width:100%!important;min-width:0!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding:0!important;margin:0!important;display:block!important;scrollbar-width:none!important}
+  .exam-scroll-v2::-webkit-scrollbar{display:none!important}
+
+  /* One image slot on every question. Device-specific size is allowed; question-to-question size is not. */
+  .exam-image-slot-v2{width:100%!important;height:clamp(140px,24dvh,200px)!important;min-height:clamp(140px,24dvh,200px)!important;max-height:clamp(140px,24dvh,200px)!important;overflow:hidden!important;margin:0 0 10px!important}
+  .exam-image-slot-v2 .exam-image-v2,.exam-image-slot-v2 .exam-image-placeholder-v2{width:100%!important;height:100%!important;min-height:100%!important;max-height:100%!important;display:block!important;box-sizing:border-box!important;border-radius:18px!important;overflow:hidden!important}
   .exam-image-slot-v2 .exam-image-v2{padding:4px!important;border:1px solid rgba(255,255,255,.08)!important;background:#091119!important}
-  .exam-image-slot-v2 .exam-image-v2>div,
-  .exam-image-slot-v2 .exam-image-v2 img{width:100%!important;height:100%!important;min-height:0!important}
+  .exam-image-slot-v2 .exam-image-v2>div,.exam-image-slot-v2 .exam-image-v2 img{width:100%!important;height:100%!important;min-height:0!important}
   .exam-image-slot-v2 .exam-image-v2 img{object-fit:contain!important;object-position:center!important}
   .exam-image-placeholder-v2{visibility:hidden!important;border:0!important;background:transparent!important}
 
-  /* Give the Arabic question enough vertical room; its height does NOT change between questions. */
-  .exam-question-v2{width:100%!important;height:92px!important;min-height:92px!important;max-height:92px!important;flex:0 0 92px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;overflow:auto!important;margin:0 0 10px!important;padding:4px 7px!important;font-size:1rem!important;line-height:1.45!important;font-weight:950!important}
+  /* Question text may scroll inside its own fixed block, but never changes the frame height. */
+  .exam-question-v2{width:100%!important;height:84px!important;min-height:84px!important;max-height:84px!important;flex:0 0 84px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;overflow:auto!important;margin:0 0 10px!important;padding:4px 8px!important;font-size:1rem!important;line-height:1.45!important;font-weight:950!important}
   .exam-question-label{display:block!important;flex:0 0 auto!important;margin-bottom:4px!important}
 
-  /* Four answer rows, always identical. */
-  .exam-answers-v2{width:100%!important;height:252px!important;min-height:252px!important;max-height:252px!important;flex:0 0 252px!important;display:grid!important;grid-template-rows:repeat(4,57px)!important;gap:8px!important;overflow:hidden!important;margin:0 0 10px!important;padding:0!important}
+  /* Exactly four fixed answer rows. */
+  .exam-answers-v2{width:100%!important;height:252px!important;min-height:252px!important;max-height:252px!important;display:grid!important;grid-template-rows:repeat(4,57px)!important;gap:8px!important;overflow:hidden!important;margin:0 0 10px!important;padding:0!important}
   .exam-option-v2{width:100%!important;height:57px!important;min-height:57px!important;max-height:57px!important;flex:0 0 57px!important;display:flex!important;align-items:center!important;box-sizing:border-box!important;border-radius:17px!important;padding:8px 10px!important;overflow:hidden!important}
   .exam-option-letter-v2{width:31px!important;height:31px!important;min-width:31px!important;flex:0 0 31px!important;border-radius:50%!important}
   .exam-option-text-v2{font-size:11px!important;line-height:1.35!important;display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;overflow:hidden!important}
 
-  /* All three controls are forced into one row; the finish button can never wrap or move below. */
-  .exam-actions-v2{position:relative!important;bottom:auto!important;z-index:50!important;width:100%!important;height:50px!important;min-height:50px!important;max-height:50px!important;flex:0 0 50px!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr) minmax(0,1fr)!important;grid-template-rows:50px!important;gap:7px!important;margin:0!important;padding:0!important;overflow:hidden!important;background:transparent!important}
-  .exam-actions-v2 .exam-action-v2,
-  .exam-actions-v2 .exam-action-v2.finish,
-  .exam-actions-v2 .exam-action-v2.next,
-  .exam-actions-v2 .exam-action-v2.secondary{grid-column:auto!important;grid-row:1!important;position:relative!important;inset:auto!important;width:100%!important;height:50px!important;min-height:50px!important;max-height:50px!important;flex:0 0 50px!important;display:flex!important;align-items:center!important;justify-content:center!important;visibility:visible!important;opacity:1!important;margin:0!important;padding:0 6px!important;border-radius:999px!important;white-space:nowrap!important;overflow:hidden!important}
+  /* Controls are OUTSIDE the scroll area and therefore stay in exactly one position. */
+  .exam-actions-v2{position:relative!important;inset:auto!important;z-index:50!important;width:100%!important;height:50px!important;min-height:50px!important;max-height:50px!important;flex:0 0 50px!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr) minmax(0,1fr)!important;grid-template-rows:50px!important;gap:7px!important;margin:0!important;padding:0!important;overflow:hidden!important;background:transparent!important}
+  .exam-actions-v2 .exam-action-v2,.exam-actions-v2 .exam-action-v2.finish,.exam-actions-v2 .exam-action-v2.next,.exam-actions-v2 .exam-action-v2.secondary{grid-column:auto!important;grid-row:1!important;position:relative!important;inset:auto!important;width:100%!important;height:50px!important;min-height:50px!important;max-height:50px!important;flex:0 0 50px!important;display:flex!important;align-items:center!important;justify-content:center!important;visibility:visible!important;opacity:1!important;margin:0!important;padding:0 6px!important;border-radius:999px!important;white-space:nowrap!important;overflow:hidden!important}
 }
 
 @media (max-width:430px){
-  /* Narrow phones keep exactly the same inner sizes — no 112/92/46px shrink rules. */
-  .exam-topbar-v2{height:56px!important;min-height:56px!important;max-height:56px!important;flex-basis:56px!important}
-  .exam-stage-v2{height:calc(100svh - 58px)!important;min-height:calc(100svh - 58px)!important;max-height:calc(100svh - 58px)!important;flex-basis:calc(100svh - 58px)!important}
-  .exam-card-v2{height:calc(100svh - 74px)!important;min-height:calc(100svh - 74px)!important;max-height:calc(100svh - 74px)!important;flex-basis:calc(100svh - 74px)!important}
-  .exam-image-slot-v2,.exam-image-slot-v2 .exam-image-v2,.exam-image-slot-v2 .exam-image-placeholder-v2{height:180px!important;min-height:180px!important;max-height:180px!important;flex-basis:180px!important}
-  .exam-question-v2{height:92px!important;min-height:92px!important;max-height:92px!important;flex-basis:92px!important;font-size:.95rem!important}
+  .exam-image-slot-v2,.exam-image-slot-v2 .exam-image-v2,.exam-image-slot-v2 .exam-image-placeholder-v2{height:clamp(140px,24dvh,200px)!important;min-height:clamp(140px,24dvh,200px)!important;max-height:clamp(140px,24dvh,200px)!important}
+  .exam-question-v2{height:84px!important;min-height:84px!important;max-height:84px!important;flex-basis:84px!important;font-size:.95rem!important}
   .exam-option-v2{height:57px!important;min-height:57px!important;max-height:57px!important;flex-basis:57px!important}
-  .exam-actions-v2{height:50px!important;min-height:50px!important;max-height:50px!important;flex-basis:50px!important;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr) minmax(0,1fr)!important;grid-template-rows:50px!important}
-  .exam-actions-v2 .exam-action-v2,.exam-actions-v2 .exam-action-v2.finish,.exam-actions-v2 .exam-action-v2.next,.exam-actions-v2 .exam-action-v2.secondary{height:50px!important;min-height:50px!important;max-height:50px!important;flex-basis:50px!important;font-size:10px!important}
+  .exam-actions-v2,.exam-actions-v2 .exam-action-v2,.exam-actions-v2 .exam-action-v2.finish,.exam-actions-v2 .exam-action-v2.next,.exam-actions-v2 .exam-action-v2.secondary{height:50px!important;min-height:50px!important;max-height:50px!important;flex-basis:50px!important;font-size:10px!important}
 }
