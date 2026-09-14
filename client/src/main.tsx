@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext';
 import './index.css';
 import './unified.css';
 import './modern-overrides.css';
+import './login-v3.css';
 import './final-ui.css';
 import './mobile-fixes.css';
 
