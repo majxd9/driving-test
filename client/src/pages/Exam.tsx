@@ -121,7 +121,15 @@ export default function Exam() {
     <div className="exam-progress-v2"><span style={{ width: `${((current + 1) / questions.length) * 100}%` }} /></div>
 
     <main className="exam-stage-v2"><section className="exam-card-v2">
-      {q.imageUrl && <button type="button" className="exam-image-v2" onClick={() => setImageExpanded(true)} aria-label="تكبير صورة السؤال"><OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 92vw, 720px" className="w-full h-full" objectFit="contain" /></button>}
+      <div className="exam-image-slot-v2">
+        {q.imageUrl ? (
+          <button type="button" className="exam-image-v2" onClick={() => setImageExpanded(true)} aria-label="تكبير صورة السؤال">
+            <OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 92vw, 720px" className="w-full h-full" objectFit="contain" />
+          </button>
+        ) : (
+          <div className="exam-image-placeholder-v2" aria-hidden="true" />
+        )}
+      </div>
       <div className="exam-question-v2"><span className="exam-question-label">السؤال {current + 1}</span>{q.text}</div>
       <div className="exam-answers-v2">{q.options.map((opt, i) => <button key={i} type="button" onClick={() => setAnswers(a => ({ ...a, [q.id]: i }))} className={`exam-option-v2 ${answers[q.id] === i ? 'selected' : ''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span></button>)}</div>
       <DiagramRenderer question={q} />
