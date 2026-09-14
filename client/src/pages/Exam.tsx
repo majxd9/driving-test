@@ -5,7 +5,6 @@ import { Question } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
 import { ensureImageReady, preloadImages } from '../utils/imagePreload';
-import '../login-v3.css';
 
 const DURATION = 15 * 60;
 const LETTERS = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
@@ -37,9 +36,6 @@ export default function Exam() {
       setSeconds(DURATION);
       finishedRef.current = false;
       navigationLockRef.current = false;
-
-      // Decode the first question before showing the exam. The next two stay
-      // warm in the browser cache so navigation does not flash or wait.
       const firstThree = picked.slice(0, 3)
         .map(q => resolveQuestionImageUrl(q.imageUrl))
         .filter(Boolean);
@@ -56,8 +52,7 @@ export default function Exam() {
   useEffect(() => { void loadExam(); }, [loadExam]);
 
   useEffect(() => {
-    const sources = questions
-      .slice(current, current + 3)
+    const sources = questions.slice(current, current + 3)
       .map(q => resolveQuestionImageUrl(q.imageUrl))
       .filter(Boolean);
     preloadImages(sources, 3);
@@ -78,22 +73,8 @@ export default function Exam() {
     const wrongQuestionIds = reviewQuestions
       .filter(x => x.chosen !== null && x.chosen !== x.question.correctAnswerIndex)
       .map(x => x.question.id);
-    api.submitExamAttempt({
-      modelId: Number(modelId) || 1,
-      total: questions.length,
-      correct,
-      answered,
-      wrongQuestionIds,
-    }).catch(() => {});
-    navigate('/result', {
-      state: {
-        correct,
-        total: questions.length,
-        answered,
-        reviewQuestions,
-        modelId: Number(modelId) || 1,
-      },
-    });
+    api.submitExamAttempt({ modelId: Number(modelId) || 1, total: questions.length, correct, answered, wrongQuestionIds }).catch(() => {});
+    navigate('/result', { state: { correct, total: questions.length, answered, reviewQuestions, modelId: Number(modelId) || 1 } });
   }, [answers, questions, navigate, modelId]);
 
   const goToQuestion = useCallback(async (nextIndex: number) => {
@@ -122,13 +103,9 @@ export default function Exam() {
     return () => clearInterval(timer);
   }, [loading, finish]);
 
-  if (loading) {
-    return <div className="page-shell flex items-center justify-center px-4"><div className="surface-panel w-full max-w-xl p-5"><div className="skeleton h-44 rounded-2xl" /><p className="text-center text-muted text-sm mt-4">جارِ تجهيز أول صورة للاختبار...</p></div></div>;
-  }
+  if (loading) return <div className="page-shell flex items-center justify-center px-4"><div className="surface-panel w-full max-w-xl p-5"><div className="skeleton h-44 rounded-2xl" /><p className="text-center text-muted text-sm mt-4">جارِ تجهيز أول صورة للاختبار...</p></div></div>;
 
-  if (loadError || !questions.length) {
-    return <div className="page-shell flex items-center justify-center px-5"><div className="surface-panel w-full max-w-md text-center p-7"><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-xl font-black mb-2">تعذر تحضير الاختبار</h1><p className="text-muted text-sm leading-relaxed">{loadError ?? 'لم يتم العثور على أسئلة.'}</p><button onClick={loadExam} className="primary-cta mt-5 w-full">إعادة المحاولة</button></div></div>;
-  }
+  if (loadError || !questions.length) return <div className="page-shell flex items-center justify-center px-5"><div className="surface-panel w-full max-w-md text-center p-7"><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-xl font-black mb-2">تعذر تحضير الاختبار</h1><p className="text-muted text-sm leading-relaxed">{loadError ?? 'لم يتم العثور على أسئلة.'}</p><button onClick={loadExam} className="primary-cta mt-5 w-full">إعادة المحاولة</button></div></div>;
 
   const q = questions[current];
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
