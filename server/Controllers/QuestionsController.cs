@@ -115,14 +115,42 @@ public class QuestionsController : ControllerBase
         return false;
     }
 
+    private static void RepairKnownQuestion(Question question)
+    {
+        // Keep the intended correct answer while removing the duplicated option
+        // that existed in the original seed data. AsNoTracking queries are used,
+        // so this response-level repair cannot accidentally persist bad data.
+        const string skidQuestion = "في حال انزلقت مركبتك عليك كسائق أن تكون ردة فعلك الأولى:";
+        if (question.Category == QuestionCategory.Ser &&
+            question.Text == skidQuestion &&
+            question.Options.Count == 4 &&
+            question.Options.Distinct(StringComparer.Ordinal).Count() < 4)
+        {
+            question.Options = new List<string>
+            {
+                "تضغط على الفرامل وتوجه المركبة بعكس اتجاه انزلاق مؤخرتها",
+                "لا تضغط على الفرامل وتوجه المركبة إلى الجهة التي تنزل بها مؤخرتها",
+                "تضغط على الفرامل وتوجه المركبة إلى الجهة التي تنزل بها مؤخرتها",
+                "تترك المقود دون توجيه حتى تتوقف المركبة"
+            };
+            question.CorrectAnswerIndex = 1;
+        }
+    }
+
     private static List<Question> DeduplicateQuestions(IEnumerable<Question> source)
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
         var result = new List<Question>();
         foreach (var question in source.OrderBy(q => q.Id))
         {
+            // Never expose the ten legacy sign_236..245 assets that are not shipped.
             if (!HasCanonicalQuestionImage(question)) continue;
-            var key = $"{question.Category}|{NormalizeText(question.Text)}|{string.Join("\u001f", question.Options ?? new List<string>())}";
+
+            RepairKnownQuestion(question);
+
+            // Sign questions can legitimately share generic wording/options while
+            // referring to different signs. Include the visual identity in the key.
+            var key = $"{question.Category}|{NormalizeText(question.Text)}|{string.Join("\u001f", question.Options ?? new List<string>())}|{NormalizeText(question.ImageUrl)}|{NormalizeText(question.DiagramUrl)}";
             if (seen.Add(key)) result.Add(question);
         }
         return result;
