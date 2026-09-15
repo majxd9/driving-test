@@ -39,3 +39,14 @@
  .study-premium-option{min-height:58px!important}
  .study-premium-option-text{font-size:14.5px!important}
 }
+
+/* Critical fix: the study card uses a fixed CSS grid row for the image.
+   Never force a larger pixel height on the grid item or it will overlap the question/options. */
+.study-premium-card{grid-template-rows:24px minmax(170px,28dvh) minmax(48px,7dvh) minmax(0,1fr) auto auto 44px!important}
+.study-premium-image{height:auto!important;min-height:0!important;align-self:stretch!important;position:relative!important;overflow:hidden!important;box-sizing:border-box!important}
+.study-premium-image>div{height:100%!important;width:100%!important;min-height:0!important;position:relative!important;overflow:hidden!important}
+.study-premium-image-el{height:100%!important;width:100%!important;min-height:0!important;position:relative!important;overflow:hidden!important}
+.study-premium-image-el img{position:static!important;display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center!important}
+@media(max-width:700px){.study-premium-card{grid-template-rows:18px minmax(150px,25dvh) minmax(40px,7dvh) minmax(0,1fr) auto auto 38px!important}.study-premium-image{height:auto!important;min-height:0!important}}
+@media(max-width:420px){.study-premium-card{grid-template-rows:17px 150px 38px minmax(0,1fr) auto auto 35px!important}.study-premium-image{height:auto!important;min-height:0!important}.study-premium-question{font-size:1.08rem!important}.study-premium-option-text{font-size:14px!important;line-height:1.5!important}}
+@media(max-height:700px) and (max-width:700px){.study-premium-card{grid-template-rows:16px 135px 38px minmax(0,1fr) auto auto 32px!important}.study-premium-image{height:auto!important;min-height:0!important}}
