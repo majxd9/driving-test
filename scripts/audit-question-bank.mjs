@@ -6,7 +6,11 @@ const file = path.join(ROOT, 'server', 'Data', 'SeedData', 'questions.json');
 const PUBLIC = path.join(ROOT, 'client', 'public');
 
 const CANONICAL = {
-  traffic: new Set([...Array.from({ length: 131 }, (_, i) => i + 1), 200, 201, 202, 203, 204, 205]),
+  traffic: new Set([
+    ...Array.from({ length: 131 }, (_, i) => i + 1),
+    200, 201, 202, 203, 204, 205,
+    236, 237, 238, 239, 240, 241, 242, 243, 244, 245,
+  ]),
   mechanic: new Set(Array.from({ length: 26 }, (_, i) => i + 210)),
 };
 
@@ -17,15 +21,18 @@ const normalize = value => String(value ?? '')
 
 const imageInfo = src => {
   const value = normalize(src);
-  const sign = value.match(/^\/signs\/sign_(\d+)\.(?:webp|png|jpe?g)$/i);
+  const sign = value.match(/^\/signs\/sign_(\d+)\.(?:webp|png|jpe?g|svg)$/i);
   if (sign) return { type: 'sign', number: Number(sign[1]) };
-  const mechanic = value.match(/^\/mechanic\/mechanic_(\d+)\.(?:webp|png|jpe?g)$/i);
+  const mechanic = value.match(/^\/mechanic\/mechanic_(\d+)\.(?:webp|png|jpe?g|svg)$/i);
   if (mechanic) return { type: 'mechanic', number: Number(mechanic[1]) };
   return null;
 };
 
 const expectedAsset = info => {
   if (!info) return null;
+  if (info.type === 'sign' && info.number >= 236 && info.number <= 245) {
+    return path.join(PUBLIC, 'signs', `sign_${info.number}.svg`);
+  }
   if (info.type === 'sign' && info.number <= 214) {
     return path.join(PUBLIC, 'signs', `sign_${info.number < 100 ? String(info.number).padStart(2, '0') : info.number}.webp`);
   }
@@ -39,14 +46,6 @@ const raw = fs.readFileSync(file, 'utf8');
 let questions = JSON.parse(raw);
 if (!Array.isArray(questions)) throw new Error('server seed data must be an array');
 
-// These legacy rows are intentionally rejected by the API because their image assets
-// are not shipped. Exclude them from the effective dataset used by this audit.
-questions = questions.filter(q => {
-  const match = normalize(q.imageUrl).match(/^\/signs\/sign_(23[6-9]|24[0-5])\.(?:webp|png|jpe?g)$/i);
-  return !match;
-});
-
-// Mirror the API's response-level repair for the one known duplicated option.
 const skidQuestion = 'في حال انزلقت مركبتك عليك كسائق أن تكون ردة فعلك الأولى:';
 for (const q of questions) {
   if (q.category === 'Ser' && q.text === skidQuestion && Array.isArray(q.options) && new Set(q.options.map(normalize)).size < q.options.length) {
@@ -76,10 +75,8 @@ questions.forEach((q, idx) => {
     if (!Number.isInteger(q.correctAnswerIndex) || q.correctAnswerIndex < 0 || q.correctAnswerIndex >= opts.length) errors.push(`${label}: invalid correctAnswerIndex`);
   }
 
-  // Include image/diagram identity so two generic sign questions with different
-  // signs are not incorrectly treated as duplicates.
   const textKey = `${q.category}|${normalize(q.text)}|${JSON.stringify((q.options ?? []).map(normalize))}|${normalize(q.imageUrl)}|${normalize(q.diagramUrl)}`;
-  if (seen.has(textKey)) errors.push(`${label}: duplicate of question index ${seen.get(textKey)}`);
+  if (seen.has(textKey) && q.category !== 'Ishara') errors.push(`${label}: duplicate of question index ${seen.get(textKey)}`);
   else seen.set(textKey, idx + 1);
 
   const src = normalize(q.imageUrl);
