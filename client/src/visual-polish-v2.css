@@ -1,0 +1,40 @@
+/* Final visual polish v2: stacked exam answers, larger study media/text, stable card/actions, visible icon accents. */
+.exam-answers-v2{display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;gap:10px!important;width:100%!important}
+.exam-option-v2{display:flex!important;width:100%!important;max-width:100%!important;grid-column:1/-1!important;flex:0 0 auto!important;box-sizing:border-box!important;min-height:62px!important;height:auto!important;padding:11px 14px!important;align-items:center!important}
+.exam-option-text-v2{font-size:15px!important;line-height:1.65!important;font-weight:700!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;word-break:normal!important}
+.exam-option-letter-v2{flex:0 0 38px!important;width:38px!important;height:38px!important;font-size:13px!important}
+.exam-card-v2 .exam-image-v2{height:clamp(170px,27svh,250px)!important;min-height:170px!important}
+.exam-title-v2{display:flex!important;align-items:center!important;gap:9px!important}
+.exam-title-v2::before{content:'🚘';display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.22);font-size:18px;flex:0 0 34px}
+.study-premium-image{height:clamp(250px,42svh,430px)!important;min-height:250px!important;border-radius:22px!important;overflow:hidden!important}
+.study-premium-image-el{width:100%!important;height:100%!important;display:block!important;object-fit:contain!important}
+.study-premium-question{font-size:clamp(1.2rem,3.2vw,1.65rem)!important;line-height:1.75!important;font-weight:900!important}
+.study-premium-answers{display:flex!important;flex-direction:column!important;gap:10px!important}
+.study-premium-option{width:100%!important;min-height:66px!important;height:auto!important;padding:11px 14px!important;box-sizing:border-box!important}
+.study-premium-option-text{font-size:16px!important;line-height:1.65!important;font-weight:700!important;white-space:normal!important;overflow:visible!important}
+.study-premium-letter{width:38px!important;height:38px!important;flex:0 0 38px!important;font-size:13px!important}
+.study-premium-brand strong{display:inline-flex!important;align-items:center!important;gap:8px!important}
+.study-premium-brand strong::before{content:'✦';display:inline-grid;place-items:center;width:30px;height:30px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);font-size:16px;color:var(--study-accent)!important}
+.exam-card-v2,.study-premium-card{box-sizing:border-box!important}
+.exam-actions-v2,.study-premium-actions{flex:0 0 auto!important;position:sticky!important;bottom:0!important;z-index:20!important}
+@media(max-width:900px){
+ .exam-answers-v2{gap:8px!important}
+ .exam-option-v2{min-height:60px!important;padding:10px 12px!important}
+ .exam-option-text-v2{font-size:14.5px!important;line-height:1.6!important}
+ .exam-option-letter-v2{width:36px!important;height:36px!important;flex-basis:36px!important}
+ .exam-card-v2 .exam-image-v2{height:clamp(155px,28svh,220px)!important;min-height:155px!important}
+ .study-premium-image{height:clamp(220px,38svh,360px)!important;min-height:220px!important}
+ .study-premium-question{font-size:1.15rem!important}
+ .study-premium-option{min-height:62px!important}
+ .study-premium-option-text{font-size:15px!important}
+}
+@media(max-width:430px){
+ .exam-option-v2{min-height:57px!important;padding:9px 10px!important}
+ .exam-option-text-v2{font-size:14px!important;line-height:1.55!important}
+ .exam-option-letter-v2{width:34px!important;height:34px!important;flex-basis:34px!important}
+ .exam-card-v2 .exam-image-v2{height:150px!important;min-height:150px!important}
+ .study-premium-image{height:240px!important;min-height:240px!important}
+ .study-premium-question{font-size:1.08rem!important}
+ .study-premium-option{min-height:58px!important}
+ .study-premium-option-text{font-size:14.5px!important}
+}
