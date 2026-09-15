@@ -66,13 +66,17 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "هذا الحساب مرتبط بجهاز آخر مسبقاً." });
         }
 
-        if (role != "Admin" && string.IsNullOrEmpty(user.DeviceId))
+        var deviceWasAssigned = role != "Admin" && string.IsNullOrEmpty(user.DeviceId);
+        if (deviceWasAssigned)
             user.DeviceId = request.DeviceId;
 
         var jwt = _tokenService.CreateToken(user, role);
         Response.Cookies.Append("auth_token", jwt, new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.None, Expires = DateTimeOffset.UtcNow.AddHours(12) });
-        _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = true, Reason = "Success" });
-        await _db.SaveChangesAsync();
+
+        // لا نسجل نجاح الدخول بشكل متزامن؛ هذا كان يضيف كتابة DB إضافية قبل إرسال الرد.
+        // حفظ DeviceId مطلوب فقط لأول دخول على الحساب.
+        if (deviceWasAssigned)
+            await _db.SaveChangesAsync();
 
         return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt));
     }
