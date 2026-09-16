@@ -11,6 +11,7 @@ import './study-premium.css';
 import './final-ui.css';
 import './mobile-fixes.css';
 import './visual-polish-v2.css';
+import './ux-fixes-v3.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><BrowserRouter><AuthProvider><App /></AuthProvider></BrowserRouter></React.StrictMode>
