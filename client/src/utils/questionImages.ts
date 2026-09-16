@@ -1,13 +1,12 @@
 const PRIMARY_IMAGE_BASE = '/signs';
 
-// Current uploaded traffic-sign library: sign_01..131 and sign_200..205.
+// Current traffic-sign library. 236..245 are reviewed SVG illustrations.
 function isCanonicalSignNumber(value: number): boolean {
   return (value >= 1 && value <= 131) ||
-    (value >= 200 && value <= 205);
+    (value >= 200 && value <= 205) ||
+    (value >= 236 && value <= 245);
 }
 
-// Current uploaded mechanic library: 210..235. In the repository,
-// 210..214 live under /signs while 215..235 live under /mechanic.
 function isMechanicNumber(value: number): boolean {
   return value >= 210 && value <= 235;
 }
@@ -17,13 +16,18 @@ function formatImageNumber(value: number): string {
 }
 
 /**
- * Resolves only assets from the current uploaded image pack.
- * Legacy/V1 images are never used as a fallback.
- * AI explanatory diagrams 300..306 remain a separate, explicit exception.
+ * Resolve only assets that actually exist in the current repository.
+ * Reviewed 236..245 signs are served as SVG so they are not discarded as
+ * non-canonical images by the client-side resolver.
  */
 export function resolveQuestionImageUrl(src?: string | null): string {
   if (!src) return '';
   if (/^(data:|blob:)/i.test(src)) return src;
+
+  const reviewedSign = src.match(/(?:^|\/)sign_(23[6-9]|24[0-5])\.svg$/i);
+  if (reviewedSign) {
+    return `${PRIMARY_IMAGE_BASE}/sign_${reviewedSign[1]}.svg`;
+  }
 
   const diagramMatch = src.match(/(?:^|\/)sign_(30[0-6])\.svg$/i);
   if (diagramMatch) {
@@ -36,7 +40,6 @@ export function resolveQuestionImageUrl(src?: string | null): string {
   if (mechanicPathMatch) {
     const number = Number(mechanicPathMatch[1]);
     if (!isMechanicNumber(number)) return '';
-    // The uploaded pack stores 210..214 in the signs directory.
     if (number <= 214) return `${PRIMARY_IMAGE_BASE}/sign_${number}.webp`;
     return `/mechanic/mechanic_${number}.webp`;
   }
@@ -45,7 +48,6 @@ export function resolveQuestionImageUrl(src?: string | null): string {
 
   const number = Number(signMatch[1]);
 
-  // 210..235 are mechanic visuals from the uploaded pack, not traffic signs.
   if (isMechanicNumber(number)) {
     if (number <= 214) return `${PRIMARY_IMAGE_BASE}/sign_${number}.webp`;
     return `/mechanic/mechanic_${number}.webp`;
