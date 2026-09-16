@@ -85,9 +85,7 @@ export default function Study() {
   const correct = questions.filter(x => answers[x.id] === x.correctAnswerIndex).length;
   const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0;
   const isLast = index === questions.length - 1;
-  const explanationNeeded = chosen !== undefined && Boolean(q.explanation) && (
-    chosen !== q.correctAnswerIndex || q.category === 'Ishara' || q.category === 'Mechanic'
-  );
+  const explanationNeeded = chosen !== undefined && Boolean(q.explanation);
 
   const choose = (i: number) => {
     if (chosen !== undefined) return;
