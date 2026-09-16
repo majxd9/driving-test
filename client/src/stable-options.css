@@ -1,4 +1,4 @@
-/* Final stable question layout: reserve space for all content and keep answer controls fixed. */
+/* Final stable question layout: explanations float above the content; answers and controls keep fixed geometry. */
 
 .study-premium-card{
   grid-template-rows:26px 170px 96px minmax(0,1fr) 0 0 48px!important;
@@ -82,7 +82,7 @@
 .study-premium-option.is-muted{opacity:1!important;color:#eef2f7!important}
 .study-premium-option.is-muted .study-premium-option-text{color:#dce3ea!important}
 
-/* Explanations are now a floating panel; they never consume layout space. */
+/* Explanations are floating overlays: they do not consume question/option layout space. */
 .study-premium-explanation{
   position:absolute!important;
   top:64px!important;
@@ -146,7 +146,6 @@
   line-height:1.75!important;
 }
 
-/* Exam explanation uses exactly the same non-layout overlay treatment. */
 .exam-answer-explanation-v2{
   position:absolute!important;
   top:64px!important;
@@ -167,6 +166,20 @@
 
 .exam-card-v2{overflow:hidden!important;flex-direction:column!important;position:relative!important}
 .exam-scroll-v2{min-height:0!important;flex:1 1 auto!important;overflow-y:auto!important;overflow-x:hidden!important}
+
+/* Bottom actions: lifted into the visible safe area and never clipped by the mobile viewport. */
+.study-premium-actions,
+.exam-actions-v2{
+  position:relative!important;
+  top:-10px!important;
+  z-index:20!important;
+}
+.study-premium-actions{
+  margin-bottom:-10px!important;
+}
+.exam-actions-v2{
+  margin-bottom:10px!important;
+}
 
 @media(max-width:700px){
   .study-premium-card{grid-template-rows:20px 150px 84px minmax(0,1fr) 0 0 46px!important}
