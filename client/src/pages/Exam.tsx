@@ -74,6 +74,7 @@ export default function Exam() {
   if(loadError||!questions.length)return <div className="page-shell flex items-center justify-center px-5"><div className="surface-panel w-full max-w-md text-center p-7"><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-xl font-black mb-2">تعذر تحضير الاختبار</h1><p className="text-muted text-sm leading-relaxed">{loadError??'لم يتم العثور على أسئلة.'}</p><button onClick={loadExam} className="primary-cta mt-5 w-full">إعادة المحاولة</button></div></div>;
 
   const q=questions[current]; const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
+  const selectedAnswer = answers[q.id];
   return <div className="exam-page-v2" dir="rtl">
     <header className="exam-topbar-v2"><button onClick={()=>navigate('/models')} className="exam-back-v2" aria-label="العودة"><UiIcon name="back"/></button><div className="exam-title-v2"><strong>اختبار القيادة</strong><span>السؤال {current+1} من {questions.length}</span></div><div className={`exam-timer-v2 ${seconds<=60?'urgent':''}`} aria-label={`الوقت المتبقي ${mm}:${ss}`}>{mm}:{ss}</div></header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
@@ -82,6 +83,12 @@ export default function Exam() {
         <div className="exam-image-slot-v2">{q.imageUrl?<button type="button" className="exam-image-v2" onClick={()=>setImageExpanded(true)} aria-label="تكبير صورة السؤال"><OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 92vw, 720px" className="w-full h-full" objectFit="contain"/></button>:<div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
         <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>setAnswers(a=>({...a,[q.id]:i}))} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
+        {selectedAnswer !== undefined && q.category === 'Ishara' && q.explanation && (
+          <div className="exam-answer-explanation-v2" role="status" aria-live="polite">
+            <div className="exam-answer-explanation-title-v2"><UiIcon name="check"/><span>شرح الإشارة</span></div>
+            <p>{q.explanation}</p>
+          </div>
+        )}
         <DiagramRenderer question={q}/>
       </div>
       <div className="exam-actions-v2"><button type="button" onClick={()=>void goToQuestion(current-1)} disabled={current===0||navigating} className="exam-action-v2 secondary"><UiIcon name="back"/><span>السابق</span></button><button type="button" onClick={finish} className="exam-action-v2 finish"><UiIcon name="finish"/><span>إنهاء الاختبار</span></button><button type="button" onClick={()=>isLast?finish():void goToQuestion(current+1)} disabled={navigating} className="exam-action-v2 next"><span>{navigating?'جارٍ التجهيز…':isLast?'عرض النتيجة':'التالي'}</span><UiIcon name="next"/></button></div>
