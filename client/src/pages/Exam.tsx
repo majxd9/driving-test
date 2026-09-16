@@ -91,7 +91,41 @@ export default function Exam() {
   return <div className="exam-page-v2" dir="rtl">
     <header className="exam-topbar-v2">
       <button onClick={()=>navigate('/models')} className="exam-back-v2" aria-label="العودة"><UiIcon name="back"/></button>
-      <div className="exam-title-v2"><strong>اختبار القيادة</strong><span>السؤال {current+1} من {questions.length}</span></div>
+      <div className="exam-title-v2">
+        <strong>اختبار القيادة</strong>
+        <div className="exam-question-counter-wrap">
+          <button
+            type="button"
+            className="exam-question-counter"
+            aria-label={`السؤال ${current + 1} من ${questions.length}. اضغط للانتقال إلى سؤال آخر`}
+            aria-expanded={jumpOpen}
+            onClick={() => {
+              setJumpValue(String(current + 1));
+              setJumpOpen(open => !open);
+            }}
+          >
+            السؤال {current + 1} من {questions.length} · انتقال سريع
+          </button>
+          {jumpOpen && (
+            <div className="question-jump-popover">
+              <form onSubmit={(event) => void jumpToQuestion(event)}>
+                <input
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  min={1}
+                  max={questions.length}
+                  value={jumpValue}
+                  onChange={event => setJumpValue(event.target.value.replace(/\D/g, ''))}
+                  autoFocus
+                  aria-label="رقم السؤال"
+                />
+                <button type="submit">انتقال</button>
+              </form>
+              <small>اكتب رقم السؤال من 1 إلى {questions.length}</small>
+            </div>
+          )}
+        </div>
+      </div>
       <div className={`exam-timer-v2 ${seconds<=60?'urgent':''}`} aria-label={`الوقت المتبقي ${mm}:${ss}`}>{mm}:{ss}</div>
     </header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
@@ -112,38 +146,6 @@ export default function Exam() {
         <button type="button" onClick={()=>void goToQuestion(current-1)} disabled={current===0||navigating} className="exam-action-v2 secondary"><UiIcon name="back"/><span>السابق</span></button>
         <button type="button" onClick={finish} className="exam-action-v2 finish"><UiIcon name="finish"/><span>إنهاء الاختبار</span></button>
         <button type="button" onClick={()=>isLast?finish():void goToQuestion(current+1)} disabled={navigating} className="exam-action-v2 next"><span>{navigating?'جارٍ التجهيز…':isLast?'عرض النتيجة':'التالي'}</span><UiIcon name="next"/></button>
-      </div>
-      <div className="exam-question-counter-wrap">
-        <button
-          type="button"
-          className="exam-question-counter"
-          aria-label={`السؤال ${current + 1} من ${questions.length}. اضغط للانتقال إلى سؤال آخر`}
-          aria-expanded={jumpOpen}
-          onClick={() => {
-            setJumpValue(String(current + 1));
-            setJumpOpen(open => !open);
-          }}
-        >
-          السؤال {current + 1} / {questions.length} — انتقال سريع
-        </button>
-        {jumpOpen && (
-          <div className="question-jump-popover">
-            <form onSubmit={(event) => void jumpToQuestion(event)}>
-              <input
-                inputMode="numeric"
-                pattern="[0-9]*"
-                min={1}
-                max={questions.length}
-                value={jumpValue}
-                onChange={event => setJumpValue(event.target.value.replace(/\D/g, ''))}
-                autoFocus
-                aria-label="رقم السؤال"
-              />
-              <button type="submit">انتقال</button>
-            </form>
-            <small>اكتب رقم السؤال من 1 إلى {questions.length}</small>
-          </div>
-        )}
       </div>
     </section></main>
     {imageExpanded&&q.imageUrl&&<div className="exam-image-modal-v2" onClick={()=>setImageExpanded(false)}><OptimizedImage src={q.imageUrl} alt={`الصورة المكبرة للسؤال ${q.id}`} priority sizes="100vw" className="max-w-full max-h-full" objectFit="contain"/></div>}
