@@ -18,6 +18,13 @@
 .study-premium-brand strong::before{content:'✦';display:inline-grid;place-items:center;width:30px;height:30px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);font-size:16px;color:var(--study-accent)!important}
 .exam-card-v2,.study-premium-card{box-sizing:border-box!important}
 .exam-actions-v2,.study-premium-actions{flex:0 0 auto!important;position:sticky!important;bottom:0!important;z-index:20!important}
+
+/* Post-answer sign explanation: appears only after a choice and stays inside the scroll area. */
+.exam-answer-explanation-v2{width:100%!important;box-sizing:border-box!important;margin:12px 0 2px!important;padding:14px 16px!important;border:1px solid rgba(45,212,191,.28)!important;border-radius:16px!important;background:linear-gradient(180deg,rgba(45,212,191,.10),rgba(8,20,28,.38))!important;color:#e7fffb!important;direction:rtl!important}
+.exam-answer-explanation-title-v2{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;font-weight:900!important;font-size:15px!important;color:#2dd4bf!important;margin-bottom:6px!important}
+.exam-answer-explanation-title-v2 svg{flex:0 0 19px!important}
+.exam-answer-explanation-v2 p{margin:0!important;font-size:14px!important;line-height:1.75!important;font-weight:600!important;color:rgba(235,247,249,.88)!important;white-space:normal!important;overflow:visible!important}
+
 @media(max-width:900px){
  .exam-answers-v2{gap:8px!important}
  .exam-option-v2{min-height:60px!important;padding:10px 12px!important}
@@ -28,6 +35,8 @@
  .study-premium-question{font-size:1.15rem!important}
  .study-premium-option{min-height:62px!important}
  .study-premium-option-text{font-size:15px!important}
+ .exam-answer-explanation-v2{margin:10px 0 2px!important;padding:12px 14px!important}
+ .exam-answer-explanation-v2 p{font-size:13.5px!important;line-height:1.7!important}
 }
 @media(max-width:430px){
  .exam-option-v2{min-height:57px!important;padding:9px 10px!important}
@@ -38,6 +47,9 @@
  .study-premium-question{font-size:1.08rem!important}
  .study-premium-option{min-height:58px!important}
  .study-premium-option-text{font-size:14.5px!important}
+ .exam-answer-explanation-v2{border-radius:14px!important;padding:11px 12px!important}
+ .exam-answer-explanation-title-v2{font-size:14px!important}
+ .exam-answer-explanation-v2 p{font-size:13px!important}
 }
 
 /* Critical fix: the study card uses a fixed CSS grid row for the image.
