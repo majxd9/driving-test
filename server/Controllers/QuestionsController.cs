@@ -70,7 +70,37 @@ public class QuestionsController : ControllerBase
             if (unique.Count < count)
                 return Conflict(new { message = $"قسم {CategoryName(category)} لا يحتوي عدداً كافياً من الأسئلة الفريدة الصالحة لهذا النموذج." });
 
-            picked.AddRange(Pick(unique, count, checked(modelId * 1009 + salts[category])));
+            var categoryPicked = Pick(unique, count, checked(modelId * 1009 + salts[category]));
+
+            // ضمان ظهور الأسئلة الجديدة ذات الرسومات (236-245) في نماذج الامتحان.
+            // لا نضيفها فوق العدد المحدد؛ نستبدل سؤالاً واحداً فقط إذا لم يكن موجوداً.
+            if (category == QuestionCategory.Ishara)
+            {
+                var priority = unique
+                    .Where(q => Regex.IsMatch(q.ImageUrl ?? string.Empty, @"/signs/sign_(23[6-9]|24[0-5])\\.svg$", RegexOptions.IgnoreCase))
+                    .OrderBy(q => q.Id)
+                    .ToList();
+
+                if (priority.Count > 0 && !categoryPicked.Any(q => priority.Any(p => p.Id == q.Id)))
+                {
+                    var guaranteed = priority[(modelId - 1) % priority.Count];
+                    categoryPicked[^1] = guaranteed;
+                }
+            }
+
+            // ضمان أن سؤال دخول النفق موجود ضمن نماذج الامتحان، دون زيادة عدد الأسئلة.
+            if (category == QuestionCategory.Ser)
+            {
+                var tunnel = unique
+                    .Where(q => q.Text.Contains("نفق", StringComparison.Ordinal))
+                    .OrderBy(q => q.Id)
+                    .FirstOrDefault();
+
+                if (tunnel is not null && !categoryPicked.Any(q => q.Id == tunnel.Id))
+                    categoryPicked[^1] = tunnel;
+            }
+
+            picked.AddRange(categoryPicked);
         }
 
         return Ok(picked);
