@@ -85,9 +85,7 @@ export default function Exam() {
 
   const q=questions[current]; const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
   const selectedAnswer = answers[q.id];
-  const explanationNeeded = selectedAnswer !== undefined && Boolean(q.explanation) && (
-    selectedAnswer !== q.correctAnswerIndex || q.category === 'Ishara' || q.category === 'Mechanic'
-  );
+  const explanationNeeded = selectedAnswer !== undefined && Boolean(q.explanation);
   return <div className="exam-page-v2" dir="rtl">
     <header className="exam-topbar-v2">
       <button onClick={()=>navigate('/models')} className="exam-back-v2" aria-label="العودة"><UiIcon name="back"/></button>
