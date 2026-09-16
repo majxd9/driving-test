@@ -1,0 +1,153 @@
+/* v4: zero-scroll exam/study layout + non-intrusive explanation overlay */
+
+html:has(.exam-page-v2),
+html:has(.study-premium),
+html:has(.exam-page-v2) body,
+html:has(.study-premium) body,
+html:has(.exam-page-v2) #root,
+html:has(.study-premium) #root{
+  overflow:hidden!important;
+  height:100%!important;
+}
+
+.exam-page-v2,
+.study-premium{
+  height:100dvh!important;
+  min-height:100dvh!important;
+  max-height:100dvh!important;
+  overflow:hidden!important;
+}
+
+.exam-stage-v2,
+.study-premium-stage{
+  min-height:0!important;
+  height:calc(100dvh - 100px)!important;
+  max-height:calc(100dvh - 100px)!important;
+  overflow:hidden!important;
+}
+
+.exam-card-v2,
+.study-premium-card{
+  min-height:0!important;
+  height:100%!important;
+  max-height:100%!important;
+  overflow:hidden!important;
+}
+
+.exam-scroll-v2,
+.study-premium-card > .study-premium-answers{
+  overflow:hidden!important;
+  scrollbar-width:none!important;
+}
+.exam-scroll-v2::-webkit-scrollbar,
+.study-premium-card > .study-premium-answers::-webkit-scrollbar{display:none!important}
+
+.exam-answers-v2,
+.study-premium-answers{
+  overflow:visible!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:6px!important;
+}
+
+.exam-option-v2,
+.study-premium-option{
+  height:78px!important;
+  min-height:78px!important;
+  max-height:78px!important;
+  flex:0 0 78px!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  transform:none!important;
+  transition:background .16s ease,border-color .16s ease,box-shadow .16s ease!important;
+}
+
+.exam-option-text-v2,
+.study-premium-option-text{
+  min-width:0!important;
+  max-height:100%!important;
+  overflow:hidden!important;
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:3!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  font-size:clamp(12px,3.15vw,14px)!important;
+  line-height:1.32!important;
+}
+
+.study-premium-explanation:not(.is-empty),
+.exam-answer-explanation-v2{
+  position:fixed!important;
+  top:calc(env(safe-area-inset-top, 0px) + 118px)!important;
+  left:clamp(12px,4vw,28px)!important;
+  right:clamp(12px,4vw,28px)!important;
+  width:auto!important;
+  max-width:760px!important;
+  max-height:min(30dvh,220px)!important;
+  margin:0 auto!important;
+  padding:12px 15px!important;
+  overflow:hidden!important;
+  z-index:9999!important;
+  box-sizing:border-box!important;
+  border-radius:16px!important;
+  background:rgba(7,20,26,.97)!important;
+  border:1px solid rgba(45,212,191,.32)!important;
+  box-shadow:0 16px 42px rgba(0,0,0,.42),0 0 0 1px rgba(255,255,255,.025) inset!important;
+  backdrop-filter:blur(18px)!important;
+  pointer-events:none!important;
+}
+
+.study-premium-explanation:not(.is-empty)::before,
+.exam-answer-explanation-v2::before{
+  content:'✦'!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:26px!important;
+  height:26px!important;
+  margin:0 0 5px!important;
+  border-radius:9px!important;
+  background:rgba(45,212,191,.12)!important;
+  color:#2dd4bf!important;
+}
+
+.study-premium-explanation:not(.is-empty) span,
+.exam-answer-explanation-v2 p{
+  display:block!important;
+  margin:4px 0 0!important;
+  max-height:calc(30dvh - 65px)!important;
+  overflow:hidden!important;
+  font-size:clamp(11px,2.8vw,13px)!important;
+  line-height:1.55!important;
+  overflow-wrap:anywhere!important;
+}
+
+@media(max-width:430px){
+  .exam-stage-v2,.study-premium-stage{
+    height:calc(100dvh - 92px)!important;
+    max-height:calc(100dvh - 92px)!important;
+  }
+  .exam-option-v2,.study-premium-option{
+    height:76px!important;
+    min-height:76px!important;
+    max-height:76px!important;
+    flex-basis:76px!important;
+    padding:7px 9px!important;
+  }
+  .exam-option-text-v2,.study-premium-option-text{
+    font-size:12px!important;
+    line-height:1.3!important;
+    -webkit-line-clamp:3!important;
+  }
+  .study-premium-explanation:not(.is-empty),
+  .exam-answer-explanation-v2{
+    top:calc(env(safe-area-inset-top, 0px) + 104px)!important;
+    left:10px!important;
+    right:10px!important;
+    max-height:185px!important;
+    padding:10px 12px!important;
+    border-radius:14px!important;
+  }
+}
