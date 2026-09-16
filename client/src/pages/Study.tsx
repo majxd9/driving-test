@@ -172,12 +172,16 @@ export default function Study() {
             })}
           </div>
 
-          {explanationNeeded && (
-            <div className="study-premium-explanation">
-              <b>الشرح</b>
-              <span>{q.explanation}</span>
-            </div>
-          )}
+          <div className={`study-premium-explanation ${explanationNeeded ? '' : 'is-empty'}`} aria-hidden={!explanationNeeded}>
+            {explanationNeeded ? (
+              <>
+                <b>الشرح</b>
+                <span>{q.explanation}</span>
+              </>
+            ) : (
+              <span>&nbsp;</span>
+            )}
+          </div>
           <div className="study-premium-diagram"><DiagramRenderer question={q} /></div>
 
           <nav className="study-premium-actions" aria-label="التنقل بين الأسئلة">
