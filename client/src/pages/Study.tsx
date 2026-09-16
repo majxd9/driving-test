@@ -24,6 +24,8 @@ export default function Study() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [navigating, setNavigating] = useState(false);
+  const [jumpOpen, setJumpOpen] = useState(false);
+  const [jumpValue, setJumpValue] = useState('1');
   const navigationLockRef = useRef(false);
 
   useEffect(() => {
@@ -32,6 +34,8 @@ export default function Study() {
     setError('');
     setIndex(0);
     setAnswers({});
+    setJumpOpen(false);
+    setJumpValue('1');
     api.getQuestions(category)
       .then(async (items) => {
         setQuestions(items);
@@ -63,6 +67,14 @@ export default function Study() {
     navigationLockRef.current = false;
   }, [index, questions]);
 
+  const jumpToQuestion = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const requested = Number.parseInt(jumpValue, 10);
+    if (!Number.isFinite(requested) || requested < 1 || requested > questions.length) return;
+    setJumpOpen(false);
+    await goTo(requested - 1);
+  }, [goTo, jumpValue, questions.length]);
+
   if (loading) return <div className="study-premium-loading">جارِ تجهيز التدريب...</div>;
   if (error) return <div className="study-premium-loading">{error}</div>;
   const q = questions[index];
@@ -73,6 +85,9 @@ export default function Study() {
   const correct = questions.filter(x => answers[x.id] === x.correctAnswerIndex).length;
   const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0;
   const isLast = index === questions.length - 1;
+  const explanationNeeded = chosen !== undefined && Boolean(q.explanation) && (
+    chosen !== q.correctAnswerIndex || q.category === 'Ishara' || q.category === 'Mechanic'
+  );
 
   const choose = (i: number) => {
     if (chosen !== undefined) return;
@@ -88,8 +103,37 @@ export default function Study() {
           <strong>{theme.name}</strong>
           <small>{answered} مجاب · {correct} صحيح</small>
         </div>
-        <div className="study-premium-counter" aria-label="عداد الأسئلة">
-          <b>{index + 1}</b><span>من {questions.length}</span>
+        <div className="study-premium-counter-wrap">
+          <button
+            type="button"
+            className="study-premium-counter"
+            aria-label={`السؤال ${index + 1} من ${questions.length}. اضغط للانتقال إلى سؤال آخر`}
+            aria-expanded={jumpOpen}
+            onClick={() => {
+              setJumpValue(String(index + 1));
+              setJumpOpen(open => !open);
+            }}
+          >
+            <b>{index + 1}</b><span>من {questions.length}</span>
+          </button>
+          {jumpOpen && (
+            <div className="question-jump-popover">
+              <form onSubmit={(event) => void jumpToQuestion(event)}>
+                <input
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  min={1}
+                  max={questions.length}
+                  value={jumpValue}
+                  onChange={event => setJumpValue(event.target.value.replace(/\D/g, ''))}
+                  autoFocus
+                  aria-label="رقم السؤال"
+                />
+                <button type="submit">انتقال</button>
+              </form>
+              <small>اكتب رقم السؤال من 1 إلى {questions.length}</small>
+            </div>
+          )}
         </div>
       </header>
 
@@ -128,9 +172,9 @@ export default function Study() {
             })}
           </div>
 
-          {chosen !== undefined && q.explanation && (
+          {explanationNeeded && (
             <div className="study-premium-explanation">
-              <b>لماذا؟</b>
+              <b>الشرح</b>
               <span>{q.explanation}</span>
             </div>
           )}
