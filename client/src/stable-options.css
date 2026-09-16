@@ -1,4 +1,4 @@
-/* Stable mobile answer geometry: every option keeps the same size and position. */
+/* Stable answer geometry: every option keeps the same size and position. */
 .exam-answers-v2,
 .study-premium-answers{align-content:start!important}
 
@@ -6,10 +6,10 @@
 .study-premium-option{
   box-sizing:border-box!important;
   width:100%!important;
-  min-height:72px!important;
-  height:72px!important;
-  max-height:72px!important;
-  flex:0 0 72px!important;
+  min-height:104px!important;
+  height:104px!important;
+  max-height:104px!important;
+  flex:0 0 104px!important;
   display:flex!important;
   align-items:center!important;
   overflow:hidden!important;
@@ -20,16 +20,14 @@
 .exam-option-text-v2,
 .study-premium-option-text{
   min-width:0!important;
-  max-height:58px!important;
-  overflow-y:auto!important;
-  overflow-x:hidden!important;
-  white-space:normal!important;
+  max-height:none!important;
+  overflow:visible!important;
   overflow-wrap:anywhere!important;
   word-break:normal!important;
+  white-space:normal!important;
   display:block!important;
-  font-size:13px!important;
-  line-height:1.38!important;
-  scrollbar-width:thin!important;
+  font-size:14px!important;
+  line-height:1.42!important;
 }
 
 .exam-option-letter-v2,
@@ -38,30 +36,28 @@
 @media(max-width:700px){
   .exam-answers-v2,.study-premium-answers{gap:8px!important}
   .exam-option-v2,.study-premium-option{
-    min-height:68px!important;
-    height:68px!important;
-    max-height:68px!important;
-    flex-basis:68px!important;
-    padding:8px 10px!important;
+    min-height:112px!important;
+    height:112px!important;
+    max-height:112px!important;
+    flex-basis:112px!important;
+    padding:10px 10px!important;
   }
   .exam-option-text-v2,.study-premium-option-text{
-    font-size:12.5px!important;
-    line-height:1.36!important;
-    max-height:52px!important;
+    font-size:14px!important;
+    line-height:1.42!important;
   }
 }
 
 @media(max-width:430px){
   .exam-option-v2,.study-premium-option{
-    min-height:64px!important;
-    height:64px!important;
-    max-height:64px!important;
-    flex-basis:64px!important;
-    padding:7px 9px!important;
+    min-height:120px!important;
+    height:120px!important;
+    max-height:120px!important;
+    flex-basis:120px!important;
+    padding:10px 9px!important;
   }
   .exam-option-text-v2,.study-premium-option-text{
-    font-size:12px!important;
-    line-height:1.34!important;
-    max-height:50px!important;
+    font-size:13.5px!important;
+    line-height:1.42!important;
   }
 }
