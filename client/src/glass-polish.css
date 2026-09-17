@@ -62,6 +62,76 @@
   backdrop-filter:blur(14px) saturate(125%)!important;
 }
 
+/* Mobile glass enhancement — visual only. Keep the exact existing geometry. */
+@media(max-width:700px){
+  .login-v2-wrap,
+  .login-v2-panel,
+  .exam-topbar-v2,
+  .study-premium-header,
+  .home-hero,
+  .surface-panel,
+  .category-card,
+  .home-exam,
+  .model-card,
+  .result-hero,
+  .result-section,
+  .review-card,
+  .admin-card,
+  .stat-card,
+  .exam-card-v2,
+  .study-premium-card{
+    background-color:rgba(16,31,42,.58)!important;
+    background-image:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.012) 45%,rgba(45,212,191,.035))!important;
+    border-color:rgba(255,255,255,.14)!important;
+    box-shadow:0 16px 44px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.10),inset 0 -1px rgba(0,0,0,.12)!important;
+    -webkit-backdrop-filter:blur(20px) saturate(150%) contrast(105%)!important;
+    backdrop-filter:blur(20px) saturate(150%) contrast(105%)!important;
+  }
+
+  .exam-option-v2,
+  .study-premium-option{
+    background:linear-gradient(135deg,rgba(20,34,45,.56),rgba(9,20,29,.42))!important;
+    border-color:rgba(255,255,255,.12)!important;
+    box-shadow:inset 0 1px rgba(255,255,255,.055),0 8px 22px rgba(0,0,0,.12)!important;
+    -webkit-backdrop-filter:blur(16px) saturate(145%)!important;
+    backdrop-filter:blur(16px) saturate(145%)!important;
+  }
+
+  .exam-option-v2.selected{
+    background:linear-gradient(135deg,rgba(45,212,191,.18),rgba(16,55,56,.34))!important;
+    border-color:rgba(45,212,191,.82)!important;
+    box-shadow:0 0 0 1px rgba(45,212,191,.16) inset,0 10px 26px rgba(45,212,191,.10),inset 0 1px rgba(255,255,255,.08)!important;
+  }
+
+  .study-premium-explanation,
+  .exam-answer-explanation-v2,
+  .question-jump-popover{
+    background:linear-gradient(135deg,rgba(12,38,43,.82),rgba(7,21,29,.74))!important;
+    border-color:rgba(45,212,191,.42)!important;
+    box-shadow:0 20px 50px rgba(0,0,0,.38),inset 0 1px rgba(255,255,255,.10),0 0 24px rgba(45,212,191,.045)!important;
+    -webkit-backdrop-filter:blur(22px) saturate(165%)!important;
+    backdrop-filter:blur(22px) saturate(165%)!important;
+  }
+
+  .exam-actions-v2,
+  .study-premium-actions{
+    background:linear-gradient(180deg,rgba(9,19,28,.54),rgba(7,16,24,.80))!important;
+    border-top:1px solid rgba(255,255,255,.10)!important;
+    box-shadow:0 -10px 28px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.055)!important;
+    -webkit-backdrop-filter:blur(20px) saturate(145%)!important;
+    backdrop-filter:blur(20px) saturate(145%)!important;
+  }
+
+  .login-v2-form input,
+  .login-v2-trial{
+    background:linear-gradient(135deg,rgba(13,28,38,.62),rgba(7,17,25,.48))!important;
+    border-color:rgba(255,255,255,.13)!important;
+    box-shadow:inset 0 1px rgba(255,255,255,.055),0 7px 20px rgba(0,0,0,.10)!important;
+    -webkit-backdrop-filter:blur(16px) saturate(145%)!important;
+    backdrop-filter:blur(16px) saturate(145%)!important;
+  }
+}
+
 @media(prefers-reduced-motion:reduce){
   .exam-topbar-v2,
   .study-premium-header,
