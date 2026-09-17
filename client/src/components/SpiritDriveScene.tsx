@@ -11,7 +11,7 @@ export default function SpiritDriveScene({ className = '', large = false }: { cl
       <div className="spirit-scene-car" aria-hidden="true" />
       <div className="spirit-scene-reflection" aria-hidden="true" />
       <div className="spirit-scene-controls">
-        <SpiritLights />
+        <SpiritLights compact />
         <SpiritHorn />
       </div>
     </div>
