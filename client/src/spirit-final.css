@@ -1,0 +1,493 @@
+/* رخصتي — FINAL DRIVING IDENTITY
+   Purpose: add meaningful driving artwork + state feedback without changing layout/logic.
+   No emoji. No new document flow. No size/spacing changes. */
+
+:root{
+  --drive-teal:#2dd4bf;
+  --drive-blue:#60a5fa;
+  --drive-amber:#f59e0b;
+  --drive-red:#ff7772;
+  --drive-ink:#071018;
+}
+
+/* Every visual layer is isolated and pointer-transparent. */
+.home-hero,.home-exam,.category-card,.models-hero,.model-card,
+.login-v2-showcase,.study-premium-card,.exam-card-v2,.result-hero,
+.result-section,.review-card,.admin-header,.admin-card{
+  position:relative!important;
+}
+
+.home-hero::before,.home-hero::after,.home-exam::before,
+.category-card::before,.category-card::after,.models-hero::before,.models-hero::after,
+.model-card::before,.model-card::after,.login-v2-showcase::before,.login-v2-showcase::after,
+.study-premium-card::before,.study-premium-card::after,.exam-card-v2::before,.exam-card-v2::after,
+.result-hero::before,.result-hero::after,.result-section::before,.review-card::before,
+.admin-header::before,.admin-header::after,.admin-card::before,.admin-card::after{
+  pointer-events:none!important;
+  background-repeat:no-repeat!important;
+  background-size:contain!important;
+}
+
+/* ───────────────── HOME ───────────────── */
+.home-hero{
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.home-hero::before{
+  content:""!important;
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  height:42%!important;
+  background-image:url('/spirit/road.svg')!important;
+  background-position:center bottom!important;
+  opacity:.28!important;
+  z-index:0!important;
+}
+.home-hero::after{
+  content:""!important;
+  position:absolute!important;
+  right:4%!important;
+  bottom:7%!important;
+  width:290px!important;
+  height:150px!important;
+  background-image:url('/spirit/car.svg')!important;
+  background-position:center bottom!important;
+  opacity:.52!important;
+  transform:translateX(0)!important;
+  transition:transform .5s cubic-bezier(.2,.8,.2,1),opacity .35s ease!important;
+  z-index:0!important;
+}
+.home-hero:hover::after{
+  transform:translateX(-12px)!important;
+  opacity:.66!important;
+}
+.home-hero > *{position:relative!important;z-index:1!important}
+
+/* Category cards: each has a different purposeful driving object. */
+.category-card{
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.category-card::after{
+  content:""!important;
+  position:absolute!important;
+  right:-4%!important;
+  bottom:-18%!important;
+  width:44%!important;
+  height:72%!important;
+  opacity:.14!important;
+  z-index:0!important;
+}
+.category-card.brand::after{background-image:url('/spirit/signal.svg')!important}
+.category-card.signs::after{background-image:url('/spirit/sign-warning.svg')!important}
+.category-card.mek::after{background-image:url('/spirit/tool.svg')!important;opacity:.17!important}
+.category-card > *{position:relative!important;z-index:1!important}
+.category-card:hover::after{transform:translateY(-4px)!important;opacity:.23!important;transition:transform .25s ease,opacity .25s ease!important}
+
+.home-exam{
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.home-exam::before{
+  content:""!important;
+  position:absolute!important;
+  inset:auto 0 0 auto!important;
+  width:54%!important;
+  height:82%!important;
+  background-image:url('/spirit/car.svg')!important;
+  background-position:right center!important;
+  opacity:.16!important;
+  z-index:0!important;
+}
+.home-exam::after{
+  content:""!important;
+  position:absolute!important;
+  left:3%!important;
+  bottom:0!important;
+  width:46%!important;
+  height:48%!important;
+  background-image:url('/spirit/road.svg')!important;
+  background-position:left bottom!important;
+  opacity:.22!important;
+  z-index:0!important;
+}
+.home-exam > *{position:relative!important;z-index:1!important}
+
+/* ───────────────── LOGIN ───────────────── */
+.login-v2-wrap{position:relative!important}
+.login-v2-showcase{
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+/* Static road scene */
+.login-v2-showcase::after{
+  content:""!important;
+  position:absolute!important;
+  left:-6%!important;
+  bottom:-11%!important;
+  width:74%!important;
+  height:48%!important;
+  background-image:url('/spirit/road.svg')!important;
+  background-position:left bottom!important;
+  opacity:.34!important;
+  z-index:0!important;
+}
+/* The actual car moves as username/password length increases. */
+.login-v2-showcase::before{
+  content:""!important;
+  position:absolute!important;
+  left:7%!important;
+  bottom:11%!important;
+  width:180px!important;
+  height:82px!important;
+  background-image:url('/spirit/car.svg')!important;
+  background-position:left center!important;
+  opacity:.72!important;
+  z-index:1!important;
+  transform:translateX(calc(var(--drive-progress,8%) * .65))!important;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .28s ease,filter .28s ease!important;
+}
+.login-v2-showcase:has(.login-v2-submit.is-moving)::before{
+  filter:drop-shadow(0 0 18px rgba(45,212,191,.42))!important;
+  animation:drive-login-finish .85s cubic-bezier(.2,.8,.2,1) both!important;
+}
+.login-v2-showcase > *{position:relative!important;z-index:2!important}
+.login-v2-submit.is-moving{box-shadow:0 10px 32px rgba(45,212,191,.26)!important}
+
+/* ───────────────── MODELS ───────────────── */
+.models-hero{
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.models-hero::before{
+  content:""!important;
+  position:absolute!important;
+  left:-1%!important;
+  bottom:-7%!important;
+  width:62%!important;
+  height:52%!important;
+  background-image:url('/spirit/road.svg')!important;
+  background-position:left bottom!important;
+  opacity:.28!important;
+  z-index:0!important;
+}
+.models-hero::after{
+  content:""!important;
+  position:absolute!important;
+  right:3%!important;
+  top:9%!important;
+  width:82px!important;
+  height:170px!important;
+  background-image:url('/spirit/signal.svg')!important;
+  opacity:.27!important;
+  z-index:0!important;
+}
+.models-hero > *{position:relative!important;z-index:1!important}
+.model-card{overflow:hidden!important;isolation:isolate!important}
+.model-card::after{
+  content:""!important;
+  position:absolute!important;
+  right:-10%!important;
+  bottom:-22%!important;
+  width:52%!important;
+  height:58%!important;
+  background-image:url('/spirit/road.svg')!important;
+  background-position:right bottom!important;
+  opacity:.10!important;
+  z-index:0!important;
+}
+.model-card::before{
+  content:""!important;
+  position:absolute!important;
+  left:8%!important;
+  bottom:10%!important;
+  width:82px!important;
+  height:38px!important;
+  background-image:url('/spirit/car.svg')!important;
+  background-position:left center!important;
+  opacity:.22!important;
+  z-index:0!important;
+}
+.model-card > *{position:relative!important;z-index:1!important}
+.model-card.advanced::before{opacity:.31!important;filter:saturate(1.15)!important}
+.model-card:hover::before{transform:translateX(8px)!important;transition:transform .3s ease!important}
+
+/* ───────────────── STUDY ───────────────── */
+.study-premium-card{
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.study-premium-card::before{
+  content:""!important;
+  position:absolute!important;
+  right:-4%!important;
+  top:7%!important;
+  width:56px!important;
+  height:118px!important;
+  background-image:url('/spirit/signal.svg')!important;
+  opacity:.19!important;
+  z-index:0!important;
+}
+.study-premium-card::after{
+  content:""!important;
+  position:absolute!important;
+  left:-7%!important;
+  bottom:-17%!important;
+  width:46%!important;
+  height:42%!important;
+  background-image:url('/spirit/road.svg')!important;
+  background-position:left bottom!important;
+  opacity:.17!important;
+  z-index:0!important;
+  transition:opacity .35s ease,transform .35s ease!important;
+}
+.study-premium-card > *{position:relative!important;z-index:1!important}
+.study-premium-card:has(.study-premium-option.is-correct)::before{
+  opacity:.55!important;
+  filter:drop-shadow(0 0 14px rgba(45,212,191,.4))!important;
+  animation:signal-success .7s ease both!important;
+}
+.study-premium-card:has(.study-premium-option.is-correct)::after{
+  opacity:.28!important;
+  transform:translateX(12px)!important;
+}
+.study-premium-card:has(.study-premium-option.is-wrong)::before{
+  opacity:.43!important;
+  filter:drop-shadow(0 0 12px rgba(255,119,114,.28))!important;
+}
+.study-premium-card:has(.study-premium-option.is-correct)::after,
+.study-premium-card:has(.study-premium-option.is-wrong)::after{content:""!important}
+.study-premium-card:has(.study-premium-option.is-correct) .study-premium-meta::after{
+  content:"إشارة خضراء · إجابة صحيحة"!important;
+  display:inline-block!important;
+  margin-inline-start:10px!important;
+  padding:3px 8px!important;
+  border:1px solid rgba(45,212,191,.22)!important;
+  border-radius:999px!important;
+  color:#7ee8dc!important;
+  background:rgba(45,212,191,.08)!important;
+  font-size:9px!important;
+  font-weight:900!important;
+}
+.study-premium-card:has(.study-premium-option.is-wrong) .study-premium-meta::after{
+  content:"راجع الإشارة قبل متابعة الطريق"!important;
+  display:inline-block!important;
+  margin-inline-start:10px!important;
+  padding:3px 8px!important;
+  border:1px solid rgba(255,119,114,.18)!important;
+  border-radius:999px!important;
+  color:#ff9d98!important;
+  background:rgba(255,119,114,.06)!important;
+  font-size:9px!important;
+  font-weight:900!important;
+}
+
+/* ───────────────── EXAM ───────────────── */
+.exam-card-v2{
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.exam-card-v2::before{
+  content:""!important;
+  position:absolute!important;
+  right:3%!important;
+  top:3%!important;
+  width:105px!important;
+  height:62px!important;
+  background-image:url('/spirit/gauge.svg')!important;
+  background-position:center top!important;
+  opacity:.20!important;
+  z-index:0!important;
+  transition:opacity .3s ease,filter .3s ease!important;
+}
+.exam-card-v2::after{
+  content:""!important;
+  position:absolute!important;
+  left:-8%!important;
+  bottom:-17%!important;
+  width:38%!important;
+  height:36%!important;
+  background-image:url('/spirit/road.svg')!important;
+  background-position:left bottom!important;
+  opacity:.12!important;
+  z-index:0!important;
+}
+.exam-card-v2 > *{position:relative!important;z-index:1!important}
+.exam-card-v2:has(.exam-option-v2.is-correct)::before{
+  opacity:.46!important;
+  filter:drop-shadow(0 0 14px rgba(45,212,191,.38))!important;
+  animation:signal-success .65s ease both!important;
+}
+.exam-card-v2:has(.exam-option-v2.is-selected:not(.is-correct))::before{
+  opacity:.31!important;
+}
+
+/* ───────────────── RESULT ───────────────── */
+.result-hero{
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.result-hero::before{
+  content:""!important;
+  position:absolute!important;
+  left:-3%!important;
+  bottom:-9%!important;
+  width:46%!important;
+  height:48%!important;
+  background-image:url('/spirit/finish.svg')!important;
+  background-position:left bottom!important;
+  opacity:.23!important;
+  z-index:0!important;
+}
+.result-hero::after{
+  content:""!important;
+  position:absolute!important;
+  right:5%!important;
+  bottom:5%!important;
+  width:160px!important;
+  height:74px!important;
+  background-image:url('/spirit/car.svg')!important;
+  background-position:center center!important;
+  opacity:.27!important;
+  z-index:0!important;
+  animation:finish-roll .9s cubic-bezier(.2,.8,.2,1) both!important;
+}
+.result-hero > *{position:relative!important;z-index:1!important}
+.result-section{overflow:hidden!important}
+.result-section::before{
+  content:""!important;
+  position:absolute!important;
+  right:2%!important;
+  top:3%!important;
+  width:72px!important;
+  height:116px!important;
+  background-image:url('/spirit/signal.svg')!important;
+  opacity:.08!important;
+  z-index:0!important;
+}
+.review-card{overflow:hidden!important;isolation:isolate!important}
+.review-card::before{
+  content:""!important;
+  position:absolute!important;
+  right:-5%!important;
+  bottom:-20%!important;
+  width:30%!important;
+  height:42%!important;
+  background-image:url('/spirit/finish.svg')!important;
+  background-position:right bottom!important;
+  opacity:.055!important;
+  z-index:0!important;
+}
+.review-card > *{position:relative!important;z-index:1!important}
+
+/* ───────────────── ADMIN ───────────────── */
+.admin-header{
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.admin-header::before{
+  content:""!important;
+  position:absolute!important;
+  left:4%!important;
+  top:50%!important;
+  width:170px!important;
+  height:82px!important;
+  background-image:url('/spirit/control.svg')!important;
+  background-position:center!important;
+  opacity:.12!important;
+  transform:translateY(-50%)!important;
+  z-index:0!important;
+}
+.admin-header::after{
+  content:""!important;
+  position:absolute!important;
+  right:5%!important;
+  bottom:-10%!important;
+  width:150px!important;
+  height:70px!important;
+  background-image:url('/spirit/car.svg')!important;
+  background-position:center!important;
+  opacity:.10!important;
+  z-index:0!important;
+}
+.admin-header > *{position:relative!important;z-index:1!important}
+.admin-card{overflow:hidden!important}
+.admin-card::after{
+  content:""!important;
+  position:absolute!important;
+  right:-8%!important;
+  bottom:-24%!important;
+  width:27%!important;
+  height:46%!important;
+  background-image:url('/spirit/control.svg')!important;
+  background-position:right bottom!important;
+  opacity:.035!important;
+  z-index:0!important;
+}
+.admin-card > *{position:relative!important;z-index:1!important}
+
+/* ───────────────── MOBILE ───────────────── */
+@media(max-width:900px){
+  .home-hero::after{width:220px!important;height:112px!important;right:3%!important;bottom:8%!important;opacity:.33!important}
+  .home-hero::before{height:34%!important;opacity:.20!important}
+  .home-exam::before{width:52%!important;height:70%!important;opacity:.11!important}
+  .home-exam::after{width:48%!important;height:38%!important;opacity:.15!important}
+  .category-card::after{width:36%!important;height:58%!important;opacity:.11!important}
+  .category-card.mek::after{opacity:.13!important}
+  .login-v2-showcase::after{width:70%!important;height:36%!important;left:-8%!important;bottom:-8%!important;opacity:.25!important}
+  .login-v2-showcase::before{width:138px!important;height:63px!important;left:5%!important;bottom:9%!important;opacity:.62!important}
+  .models-hero::before{width:70%!important;opacity:.20!important}
+  .models-hero::after{width:60px!important;height:125px!important;opacity:.18!important;right:4%!important}
+  .study-premium-card::before{width:46px!important;height:98px!important;right:3%!important;top:6%!important;opacity:.13!important}
+  .study-premium-card::after{width:42%!important;height:30%!important;opacity:.11!important}
+  .exam-card-v2::before{width:86px!important;height:52px!important;right:3%!important;top:2%!important;opacity:.15!important}
+  .exam-card-v2::after{width:34%!important;height:28%!important;opacity:.085!important}
+  .result-hero::before{width:42%!important;height:40%!important;opacity:.17!important}
+  .result-hero::after{width:118px!important;height:55px!important;right:4%!important;bottom:4%!important;opacity:.20!important}
+  .result-section::before{width:55px!important;height:90px!important;opacity:.055!important}
+  .review-card::before{width:26%!important;height:36%!important;opacity:.035!important}
+  .admin-header::before{width:130px!important;height:64px!important;left:3%!important;opacity:.075!important}
+  .admin-header::after{width:120px!important;height:56px!important;opacity:.065!important}
+}
+
+@media(max-width:430px){
+  /* Visible enough to read as identity, but never allowed to compete with content. */
+  .home-hero::after{width:165px!important;height:84px!important;right:2%!important;bottom:7%!important;opacity:.25!important}
+  .home-hero::before{height:28%!important;opacity:.14!important}
+  .home-exam::before{width:48%!important;opacity:.08!important}
+  .category-card::after{width:30%!important;height:48%!important;opacity:.08!important}
+  .login-v2-showcase::after{width:65%!important;height:28%!important;left:-9%!important;bottom:-5%!important;opacity:.18!important}
+  .login-v2-showcase::before{width:105px!important;height:48px!important;left:4%!important;bottom:7%!important;opacity:.48!important}
+  .models-hero::before{width:76%!important;opacity:.14!important}
+  .models-hero::after{width:48px!important;height:102px!important;opacity:.14!important}
+  .study-premium-card::before{width:36px!important;height:78px!important;opacity:.10!important}
+  .study-premium-card::after{width:36%!important;height:24%!important;opacity:.08!important}
+  .exam-card-v2::before{width:72px!important;height:44px!important;opacity:.11!important}
+  .exam-card-v2::after{width:28%!important;height:23%!important;opacity:.06!important}
+  .result-hero::before{width:40%!important;height:34%!important;opacity:.12!important}
+  .result-hero::after{width:96px!important;height:45px!important;opacity:.15!important}
+  .admin-header::before{width:110px!important;height:54px!important;opacity:.06!important}
+  .admin-header::after{width:100px!important;height:47px!important;opacity:.05!important}
+}
+
+@keyframes drive-login-finish{
+  0%{transform:translateX(calc(var(--drive-progress,8%) * .65)) scale(1)}
+  55%{transform:translateX(calc(var(--drive-progress,8%) * .65 + 16px)) scale(1.02)}
+  100%{transform:translateX(calc(var(--drive-progress,8%) * .65 + 28px)) scale(1)}
+}
+@keyframes signal-success{
+  0%{transform:scale(.92);opacity:.22}
+  55%{transform:scale(1.06);opacity:.70}
+  100%{transform:scale(1);opacity:.52}
+}
+@keyframes finish-roll{
+  from{transform:translateX(24px);opacity:0}
+  to{transform:translateX(0);opacity:.27}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .home-hero::after,.login-v2-showcase::before,.study-premium-card::before,
+  .exam-card-v2::before,.result-hero::after{animation:none!important;transition:none!important}
+}
