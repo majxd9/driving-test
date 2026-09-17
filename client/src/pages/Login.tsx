@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import OptimizedImage from '../components/OptimizedImage';
 import SiteGuide from '../components/SiteGuide';
 import SpiritLights from '../components/SpiritLights';
+import SpiritHorn from '../components/SpiritHorn';
 
 const SAMPLE_QUESTIONS = [
   { text: 'ما معنى هذه الإشارة؟', imageUrl: '/signs/sign_03.webp', options: ['منحدر خطر','طريق ضيق من جهتين','طريق زلقة','منعطف مزدوج، الأول باتجاه اليسار'], correct: 3, explanation: 'تحذّر الإشارة من منعطفين متتاليين، الأول باتجاه اليسار.' },
@@ -60,12 +61,7 @@ export default function Login() {
           <div className="spirit-login-road" aria-hidden="true" />
           <div className="spirit-login-dust" aria-hidden="true" />
           <div className="spirit-login-smoke" aria-hidden="true" />
-          <div
-            className={`spirit-login-car ${busy ? 'is-go ' : ''}${credentialLength > 0 || busy ? 'is-moving' : ''}`}
-            style={{'--login-car-x': `${driveDistance}px`} as CSSProperties}
-            data-progress={credentialLength}
-            aria-hidden="true"
-          />
+          <div className={`spirit-login-car ${busy ? 'is-go ' : ''}${credentialLength > 0 || busy ? 'is-moving' : ''}`} style={{'--login-car-x': `${driveDistance}px`} as CSSProperties} data-progress={credentialLength} aria-hidden="true" />
           <div className="spirit-headlight-glow spirit-beam" aria-hidden="true" />
           <div className="spirit-login-signal" data-state={signalState} aria-label={signalState === 'green' ? 'تم تسجيل الدخول بنجاح' : signalState === 'amber' ? 'بيانات تسجيل الدخول قيد الإدخال' : 'بانتظار بيانات تسجيل الدخول'}>
             <span className="spirit-signal-light red" />
@@ -73,7 +69,10 @@ export default function Login() {
             <span className="spirit-signal-light green" />
             <small className="spirit-signal-label">READY</small>
           </div>
-          <SpiritLights className="login-spirit-lights" />
+          <div className="login-spirit-controls">
+            <SpiritLights className="login-spirit-lights" />
+            <SpiritHorn />
+          </div>
         </div>
         <div className="login-v2-panel-head"><span className="login-v2-mini-dot"/> دخول آمن إلى حسابك</div>
         <div className="login-v2-title"><span>مرحباً بعودتك</span><h2>تسجيل الدخول</h2><p>أدخل بيانات حسابك للمتابعة إلى التدريب والاختبارات.</p></div>
