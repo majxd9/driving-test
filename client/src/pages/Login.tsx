@@ -40,13 +40,13 @@ export default function Login() {
 
   return <div className="login-v2" dir="rtl">
     <div className="login-v2-glow one"/><div className="login-v2-glow two"/>
-    <main className="login-v2-wrap">
+    <main className="login-v2-wrap" style={{'--drive-progress': `${driveProgress}%`} as CSSProperties}>
       <section className="login-v2-showcase">
         <div className="login-v2-brand"><span>ر</span><div><strong>رخصتي</strong><small>منصة تدريب لاختبار القيادة</small></div></div>
         <div className="login-v2-copy"><span className="login-v2-kicker">استعد قبل يوم الامتحان</span><h1>تدرّب بذكاء.<br/><b>ادخل الاختبار بثقة.</b></h1><p>تدرّب على القواعد والإشارات والميكانيك، ثم اختبر مستواك بمحاكاة كاملة مع مراجعة واضحة لأخطائك.</p></div>
         <div className="login-v2-features"><div><b>01</b><span><strong>تدريب منظم</strong><small>قسّم المراجعة حسب القسم الذي تحتاجه</small></span></div><div><b>02</b><span><strong>محاكاة واقعية</strong><small>٣٠ سؤالاً مع عداد زمني واضح</small></span></div><div><b>03</b><span><strong>مراجعة دقيقة</strong><small>شاهد أخطاءك والإجابة الصحيحة بعد الاختبار</small></span></div></div>
       </section>
-      <section className="login-v2-panel" style={{'--drive-progress': `${driveProgress}%`} as CSSProperties}>
+      <section className="login-v2-panel">
         <div className="login-v2-panel-head"><span className="login-v2-mini-dot"/> دخول آمن إلى حسابك</div>
         <div className="login-v2-title"><span>مرحباً بعودتك</span><h2>تسجيل الدخول</h2><p>أدخل بيانات حسابك للمتابعة إلى التدريب والاختبارات.</p></div>
         <form onSubmit={handleSubmit} className="login-v2-form">
