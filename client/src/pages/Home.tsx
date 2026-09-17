@@ -5,6 +5,7 @@ import { QuestionCategory } from '../types';
 import SiteGuide from '../components/SiteGuide';
 import SpiritDriveScene from '../components/SpiritDriveScene';
 import SpiritVolume from '../components/SpiritVolume';
+import SpiritHorn from '../components/SpiritHorn';
 
 const Icon = ({type}:{type:'rules'|'signs'|'mechanic'|'arrow'}) => {
  const common={width:24,height:24,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.9,strokeLinecap:'round' as const,strokeLinejoin:'round' as const};
@@ -27,7 +28,7 @@ export default function Home(){
  return <div className="min-h-screen home-page" dir="rtl">
   <header className="site-header"><div className="max-w-6xl mx-auto px-5 py-3.5 flex items-center justify-between">
    <div className="flex items-center gap-3"><div className="brand-mark">ر</div><div><b className="text-ink">رخصتي</b><p className="text-[11px] text-muted m-0">منصة تدريب لاختبار القيادة</p></div></div>
-   <div className="flex items-center gap-2"><SpiritVolume />{user?.role==='Admin'&&<button onClick={()=>navigate('/admin')} className="top-link">لوحة التحكم</button>}<button onClick={logout} className="top-link">تسجيل الخروج</button></div>
+   <div className="flex items-center gap-2"><SpiritVolume /><SpiritHorn />{user?.role==='Admin'&&<button onClick={()=>navigate('/admin')} className="top-link">لوحة التحكم</button>}<button onClick={logout} className="top-link">تسجيل الخروج</button></div>
   </div></header>
   <main className="max-w-6xl mx-auto px-5 pb-12">
    <section className="home-hero">
