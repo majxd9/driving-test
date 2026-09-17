@@ -7,6 +7,7 @@ import DiagramRenderer from '../components/DiagramRenderer';
 import SpiritTrafficSignal from '../components/SpiritTrafficSignal';
 import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { ensureImageReady, preloadImages } from '../utils/imagePreload';
+import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -101,11 +102,13 @@ export default function Study() {
 
   const choose = (i: number) => {
     if (chosen !== undefined) return;
+    const isCorrect = i === q.correctAnswerIndex;
     setAnswers(current => ({ ...current, [q.id]: i }));
+    playAnswerFeedback(isCorrect);
     setSignalState('pending');
     if (signalTimerRef.current !== null) window.clearTimeout(signalTimerRef.current);
     signalTimerRef.current = window.setTimeout(() => {
-      setSignalState(i === q.correctAnswerIndex ? 'correct' : 'wrong');
+      setSignalState(isCorrect ? 'correct' : 'wrong');
     }, 480);
   };
 
