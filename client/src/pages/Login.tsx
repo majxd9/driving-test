@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import OptimizedImage from '../components/OptimizedImage';
 import SiteGuide from '../components/SiteGuide';
+import SpiritLights from '../components/SpiritLights';
 
 const SAMPLE_QUESTIONS = [
   { text: 'ما معنى هذه الإشارة؟', imageUrl: '/signs/sign_03.webp', options: ['منحدر خطر','طريق ضيق من جهتين','طريق زلقة','منعطف مزدوج، الأول باتجاه اليسار'], correct: 3, explanation: 'تحذّر الإشارة من منعطفين متتاليين، الأول باتجاه اليسار.' },
@@ -36,17 +37,32 @@ export default function Login() {
   const chosen=sampleAnswers[sampleIndex];
   const sampleScore=SAMPLE_QUESTIONS.reduce((n,q,i)=>n+(sampleAnswers[i]===q.correct?1:0),0);
   const closeSample=()=>{setShowSample(false);setSampleIndex(0);setSampleAnswers({});};
-  const driveProgress = Math.min(94, 8 + (userName.length + password.length) * 2.4);
+  const driveDistance = Math.min(150, 12 + (userName.length + password.length) * 4);
+  const signalState = busy ? 'green' : (userName || password) ? 'amber' : 'red';
 
   return <div className="login-v2" dir="rtl">
     <div className="login-v2-glow one"/><div className="login-v2-glow two"/>
-    <main className="login-v2-wrap" style={{'--drive-progress': `${driveProgress}%`} as CSSProperties}>
+    <main className="login-v2-wrap">
       <section className="login-v2-showcase">
         <div className="login-v2-brand"><span>ر</span><div><strong>رخصتي</strong><small>منصة تدريب لاختبار القيادة</small></div></div>
         <div className="login-v2-copy"><span className="login-v2-kicker">استعد قبل يوم الامتحان</span><h1>تدرّب بذكاء.<br/><b>ادخل الاختبار بثقة.</b></h1><p>تدرّب على القواعد والإشارات والميكانيك، ثم اختبر مستواك بمحاكاة كاملة مع مراجعة واضحة لأخطائك.</p></div>
         <div className="login-v2-features"><div><b>01</b><span><strong>تدريب منظم</strong><small>قسّم المراجعة حسب القسم الذي تحتاجه</small></span></div><div><b>02</b><span><strong>محاكاة واقعية</strong><small>٣٠ سؤالاً مع عداد زمني واضح</small></span></div><div><b>03</b><span><strong>مراجعة دقيقة</strong><small>شاهد أخطاءك والإجابة الصحيحة بعد الاختبار</small></span></div></div>
       </section>
-      <section className="login-v2-panel">
+      <section className="login-v2-panel" style={{'--login-car-x': `${driveDistance}px`} as CSSProperties}>
+        <div className="spirit-login-scene" aria-hidden="true">
+          <div className="spirit-login-road" />
+          <div className="spirit-login-dust" />
+          <div className="spirit-login-smoke" />
+          <div className="spirit-login-car" className={busy ? 'spirit-login-car is-go' : 'spirit-login-car'} />
+          <div className="spirit-headlight-glow spirit-beam" />
+          <div className="spirit-login-signal" data-state={signalState}>
+            <span className="spirit-signal-light red" />
+            <span className="spirit-signal-light amber" />
+            <span className="spirit-signal-light green" />
+            <small className="spirit-signal-label">READY</small>
+          </div>
+          <SpiritLights className="login-spirit-lights" />
+        </div>
         <div className="login-v2-panel-head"><span className="login-v2-mini-dot"/> دخول آمن إلى حسابك</div>
         <div className="login-v2-title"><span>مرحباً بعودتك</span><h2>تسجيل الدخول</h2><p>أدخل بيانات حسابك للمتابعة إلى التدريب والاختبارات.</p></div>
         <form onSubmit={handleSubmit} className="login-v2-form">
