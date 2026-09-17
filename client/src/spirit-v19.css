@@ -1,0 +1,58 @@
+/* رخصتي — Spirit v19
+   Structural cleanup: one decorative scene, no floating controls, no layout reservation. */
+
+/* ---------- shared ---------- */
+.spirit-drive-scene{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;pointer-events:none!important;overflow:hidden!important;z-index:0!important;}
+.spirit-drive-scene>*{pointer-events:none!important;}
+.spirit-scene-controls{display:none!important;}
+.spirit-drive-scene .spirit-scene-sky{position:absolute!important;inset:0!important;opacity:.28!important;}
+.spirit-drive-scene .spirit-scene-road{position:absolute!important;left:0!important;right:0!important;bottom:0!important;height:30%!important;opacity:.18!important;}
+.spirit-drive-scene .spirit-scene-light-beam{position:absolute!important;pointer-events:none!important;}
+
+/* ---------- HOME: front view ---------- */
+.home-hero{position:relative!important;overflow:hidden!important;isolation:isolate!important;}
+.home-spirit-scene{position:absolute!important;inset:0!important;z-index:0!important;opacity:1!important;}
+.home-hero>div:not(.home-spirit-scene),.home-hero>section:not(.home-spirit-scene){position:relative!important;z-index:2!important;}
+.home-spirit-scene .spirit-scene-car{position:absolute!important;left:3%!important;right:auto!important;bottom:5%!important;width:clamp(190px,26vw,290px)!important;height:clamp(95px,14vw,145px)!important;background:url('/spirit/car-front.svg') center/contain no-repeat!important;opacity:.17!important;filter:drop-shadow(0 12px 20px rgba(0,0,0,.25)) drop-shadow(0 0 22px rgba(45,212,191,.12))!important;transform:none!important;animation:spirit19-front 5.5s ease-in-out infinite alternate!important;}
+.home-spirit-scene .spirit-scene-light-beam{left:2%!important;right:auto!important;bottom:8%!important;width:clamp(180px,25vw,300px)!important;height:80px!important;background:linear-gradient(90deg,rgba(236,255,252,.16),rgba(45,212,191,.08),transparent)!important;clip-path:polygon(0 48%,100% 0,100% 100%,0 58%)!important;filter:blur(10px)!important;opacity:.26!important;}
+.home-spirit-scene .spirit-scene-smoke{opacity:.08!important;}
+.home-score{position:relative!important;z-index:3!important;}
+
+/* ---------- MODELS: rear view ---------- */
+.models-hero{position:relative!important;overflow:hidden!important;isolation:isolate!important;min-height:245px!important;padding:30px 0 34px!important;}
+.models-spirit-scene{position:absolute!important;inset:0!important;z-index:0!important;opacity:1!important;}
+.models-hero> *:not(.models-spirit-scene){position:relative!important;z-index:3!important;}
+.models-spirit-scene .spirit-scene-car{position:absolute!important;right:auto!important;left:3%!important;bottom:4%!important;width:clamp(190px,24vw,270px)!important;height:clamp(98px,13vw,142px)!important;background:url('/spirit/car-rear.svg') center/contain no-repeat!important;opacity:.20!important;filter:drop-shadow(0 14px 22px rgba(0,0,0,.30)) drop-shadow(0 0 24px rgba(255,72,82,.15))!important;transform:none!important;animation:spirit19-rear 6s ease-in-out infinite alternate!important;}
+.models-spirit-scene .spirit-scene-light-beam{left:2%!important;right:auto!important;bottom:9%!important;width:clamp(170px,22vw,260px)!important;height:74px!important;background:linear-gradient(90deg,rgba(255,91,97,.18),rgba(210,45,58,.08),transparent)!important;clip-path:polygon(0 48%,100% 4%,100% 96%,0 58%)!important;filter:blur(10px)!important;opacity:.30!important;transform:scaleX(-1)!important;transform-origin:left center!important;}
+.models-spirit-scene .spirit-scene-smoke{opacity:.07!important;}
+
+/* ---------- LOGIN: decorative only; never placed between fields ---------- */
+.login-v2-panel{position:relative!important;isolation:isolate!important;overflow:hidden!important;}
+.login-v2-panel>*{position:relative!important;z-index:5!important;}
+.login-v2-panel>.spirit-login-scene{position:absolute!important;z-index:1!important;pointer-events:none!important;}
+@media(max-width:900px){
+  .login-v2-panel{box-sizing:border-box!important;overflow:hidden!important;}
+  .spirit-login-scene{position:absolute!important;top:clamp(110px,18svh,220px)!important;left:12px!important;right:auto!important;width:160px!important;height:76px!important;margin:0!important;z-index:1!important;pointer-events:none!important;overflow:visible!important;opacity:.95!important;}
+  .spirit-login-road{position:absolute!important;left:0!important;bottom:1px!important;width:155px!important;height:12px!important;opacity:.55!important;}
+  .spirit-login-car{position:absolute!important;left:0!important;right:auto!important;bottom:9px!important;width:118px!important;height:58px!important;background:url('/spirit/car.svg') center/contain no-repeat!important;transform:none!important;opacity:.24!important;filter:drop-shadow(0 8px 13px rgba(0,0,0,.25)) drop-shadow(0 0 15px rgba(45,212,191,.10))!important;animation:login19-car 5s ease-in-out infinite alternate!important;}
+  .spirit-login-car::before{display:none!important;content:none!important;}
+  .spirit-login-car::after{display:none!important;content:none!important;}
+  .spirit-login-smoke{display:none!important;}
+  .spirit-login-dust{display:none!important;}
+  .spirit-headlight-glow{display:none!important;}
+  .spirit-login-signal{display:none!important;}
+  .login-spirit-controls{display:none!important;}
+  .login-v2-panel-head,.login-v2-title,.login-v2-form,.login-v2-divider,.login-v2-trial,.login-v2-guide,.login-v2-footnote{position:relative!important;z-index:5!important;}
+}
+@media(max-width:430px){
+  .spirit-login-scene{top:96px!important;left:10px!important;width:145px!important;height:70px!important;}
+  .spirit-login-car{width:105px!important;height:52px!important;bottom:8px!important;opacity:.20!important;}
+}
+
+/* remove legacy decorative cars that used to be injected as pseudo-elements */
+.home-hero::before,.home-hero::after,.models-hero::before,.models-hero::after{content:none!important;background:none!important;animation:none!important;}
+
+@keyframes login19-car{from{transform:translate3d(0,0,0)}to{transform:translate3d(24px,-2px,0)}}
+@keyframes spirit19-front{from{transform:translate3d(0,0,0)}to{transform:translate3d(8px,-2px,0)}}
+@keyframes spirit19-rear{from{transform:translate3d(0,0,0)}to{transform:translate3d(-6px,-1px,0)}}
+@media(prefers-reduced-motion:reduce){.spirit-login-car,.home-spirit-scene .spirit-scene-car,.models-spirit-scene .spirit-scene-car{animation:none!important}}
