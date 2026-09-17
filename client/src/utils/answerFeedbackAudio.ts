@@ -18,7 +18,7 @@ function getContext() {
   compressor.ratio.value = 5;
   compressor.attack.value = 0.004;
   compressor.release.value = 0.10;
-  master.gain.value = 1.0;
+  master.gain.value = 1.05;
   if (context.state === 'suspended') void context.resume();
   return context;
 }
@@ -42,10 +42,10 @@ export function playAnswerFeedback(correct: boolean) {
   if (!ctx) return;
   const now = ctx.currentTime;
   if (correct) {
-    tone(ctx, 523.25, now, 0.13, 0.095, 'triangle');
-    tone(ctx, 659.25, now + 0.075, 0.18, 0.11, 'triangle');
+    tone(ctx, 523.25, now, 0.14, 0.12, 'triangle');
+    tone(ctx, 659.25, now + 0.075, 0.20, 0.14, 'triangle');
   } else {
-    tone(ctx, 220, now, 0.14, 0.075, 'triangle');
-    tone(ctx, 174.61, now + 0.085, 0.20, 0.070, 'triangle');
+    tone(ctx, 220, now, 0.15, 0.09, 'triangle');
+    tone(ctx, 174.61, now + 0.085, 0.21, 0.085, 'triangle');
   }
 }
