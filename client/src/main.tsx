@@ -18,6 +18,7 @@ import './zero-scroll-explanation.css';
 import './glass-polish.css';
 import './glass-visibility-v2.css';
 import './spirit-v20.css';
+import './spirit-v20-controls.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
