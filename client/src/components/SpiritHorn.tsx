@@ -13,23 +13,28 @@ export default function SpiritHorn({ className = '' }: { className?: string }) {
     const ctx = audioRef.current ?? new Ctx();
     audioRef.current = ctx;
     if (ctx.state === 'suspended') void ctx.resume();
-
     const now = ctx.currentTime;
-    const gain = ctx.createGain();
-    const osc = ctx.createOscillator();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(210, now);
-    osc.frequency.exponentialRampToValueAtTime(165, now + 0.12);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.028, now + 0.018);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.17);
+
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(0.085, now + 0.015);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
+    master.connect(ctx.destination);
+
+    [[220, 0], [277.18, 0.012]].forEach(([frequency, offset]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(frequency, now + offset);
+      gain.gain.setValueAtTime(0.48, now + offset);
+      osc.connect(gain);
+      gain.connect(master);
+      osc.start(now + offset);
+      osc.stop(now + 0.24);
+    });
 
     setPressed(true);
-    window.setTimeout(() => setPressed(false), 150);
+    window.setTimeout(() => setPressed(false), 170);
     if (navigator.vibrate) navigator.vibrate(10);
   };
 
