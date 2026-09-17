@@ -1,0 +1,140 @@
+/* رخصتي — visual identity v2
+   Real driving artwork, no emoji, no layout reflow. */
+
+/* Disable the previous decorative layer so the new identity is the only one visible. */
+.home-hero::before,.home-hero::after,
+.category-card::after,.category-card.brand::before,.category-card.signs::before,.category-card.mek::before,
+.models-hero::after,.model-card::after,.model-card.advanced::before,
+.login-v2-panel::before,.login-v2-panel::after,
+.login-v2-submit::before,.login-v2-submit::after,
+.study-premium-card::before,.study-premium-card::after,
+.exam-card-v2::before,.exam-card-v2::after,
+.result-hero::after,.result-section::before,
+.review-card.correct::before,.review-card.wrong::before,
+.admin-header::after,.admin-card::after{
+  content:none!important;
+  animation:none!important;
+  background-image:none!important;
+}
+
+/* Shared image treatment */
+.home-hero::after,
+.login-v2-showcase::after,
+.home-exam::before,
+.models-hero::after,
+.result-hero::after{
+  pointer-events:none!important;
+  background-repeat:no-repeat!important;
+  background-size:contain!important;
+}
+
+/* HOME — the hero gets one purposeful driving scene, integrated like artwork in the card. */
+.home-hero{position:relative!important;overflow:hidden!important}
+.home-hero::after{
+  content:""!important;
+  position:absolute!important;
+  right:-2%!important;
+  bottom:-9%!important;
+  width:58%!important;
+  height:78%!important;
+  background-image:url('/driving-spirit.webp')!important;
+  background-position:center right!important;
+  opacity:.72!important;
+  filter:saturate(.94) contrast(1.03)!important;
+  z-index:0!important;
+  transition:transform .45s ease,opacity .45s ease!important;
+}
+.home-hero:hover::after{transform:translateX(-6px)!important;opacity:.82!important}
+.home-hero > *{position:relative!important;z-index:1!important}
+
+/* The exam CTA carries the same visual language, but stays restrained. */
+.home-exam{position:relative!important;overflow:hidden!important}
+.home-exam::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0 0 0 auto!important;
+  width:48%!important;
+  background-image:url('/driving-spirit.webp')!important;
+  background-position:center right!important;
+  opacity:.28!important;
+  z-index:0!important;
+}
+.home-exam > *{position:relative!important;z-index:1!important}
+
+/* LOGIN — real artwork replaces the broken emoji car. It enters once and subtly follows form progress. */
+.login-v2-wrap{position:relative!important}
+.login-v2-showcase{position:relative!important;overflow:hidden!important}
+.login-v2-showcase::after{
+  content:""!important;
+  position:absolute!important;
+  left:-7%!important;
+  bottom:-3%!important;
+  width:70%!important;
+  height:44%!important;
+  background-image:url('/driving-spirit.webp')!important;
+  background-position:left bottom!important;
+  opacity:.42!important;
+  z-index:0!important;
+  transform:translateX(calc((var(--drive-progress, 8%) - 8%) * .18))!important;
+  animation:spirit-art-arrive .9s cubic-bezier(.2,.8,.2,1) both!important;
+  transition:transform .3s ease,opacity .3s ease!important;
+}
+.login-v2-showcase > *{position:relative!important;z-index:1!important}
+.login-v2-submit.is-moving{box-shadow:0 10px 32px rgba(45,212,191,.28)!important}
+
+/* MODELS — visual lane/road scene as a header accent, not an icon. */
+.models-hero{position:relative!important;overflow:hidden!important}
+.models-hero::after{
+  content:""!important;
+  position:absolute!important;
+  left:-2%!important;
+  bottom:-16%!important;
+  width:300px!important;
+  height:150px!important;
+  background-image:url('/driving-spirit.webp')!important;
+  background-position:left center!important;
+  opacity:.26!important;
+  z-index:0!important;
+  animation:spirit-art-breathe 5s ease-in-out infinite!important;
+}
+.models-hero > *{position:relative!important;z-index:1!important}
+
+/* RESULT — a subtle finish-drive image replaces the previous flag emoji. */
+.result-hero{position:relative!important;overflow:hidden!important}
+.result-hero::after{
+  content:""!important;
+  position:absolute!important;
+  left:-2%!important;
+  bottom:-20%!important;
+  width:310px!important;
+  height:170px!important;
+  background-image:url('/driving-spirit.webp')!important;
+  background-position:center left!important;
+  opacity:.25!important;
+  z-index:0!important;
+}
+.result-hero > *{position:relative!important;z-index:1!important}
+
+/* Mobile: keep the actual test geometry untouched; decorative artwork becomes lighter or disappears. */
+@media(max-width:900px){
+  .home-hero::after{width:48%!important;height:52%!important;right:-7%!important;bottom:-8%!important;opacity:.24!important}
+  .home-exam::before{width:55%!important;opacity:.16!important}
+  .login-v2-showcase::after{opacity:.30!important}
+  .models-hero::after,.result-hero::after{opacity:.16!important;width:220px!important;height:115px!important}
+}
+@media(max-width:430px){
+  .home-hero::after,.home-exam::before,.models-hero::after,.result-hero::after{opacity:.10!important}
+}
+
+@keyframes spirit-art-arrive{
+  from{opacity:0;transform:translate3d(-26px,18px,0) scale(.96)}
+  to{opacity:.42;transform:translate3d(0,0,0) scale(1)}
+}
+@keyframes spirit-art-breathe{
+  0%,100%{transform:translate3d(0,0,0);opacity:.23}
+  50%{transform:translate3d(10px,-3px,0);opacity:.29}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .home-hero::after,.login-v2-showcase::after,.models-hero::after{animation:none!important;transition:none!important}
+}
