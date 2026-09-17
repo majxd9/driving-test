@@ -20,6 +20,7 @@ import './glass-visibility-v2.css';
 import './spirit-final.css';
 import './spirit-motion-v5.css';
 import './spirit-v8.css';
+import './spirit-touch-v9.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
