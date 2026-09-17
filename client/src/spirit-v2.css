@@ -9,285 +9,95 @@
   --spirit-red:#ff7772;
 }
 
-/* The artwork is always decorative and never part of interaction. */
-.home-hero,
-.home-exam,
-.category-card,
-.models-hero,
-.model-card,
-.login-v2-showcase,
-.study-premium-card,
-.exam-card-v2,
-.result-hero,
-.result-section,
-.review-card,
-.admin-header,
-.admin-card{
-  position:relative!important;
-}
+.home-hero,.home-exam,.category-card,.models-hero,.model-card,.login-v2-showcase,.login-v2-panel,.study-premium-card,.exam-card-v2,.result-hero,.result-section,.review-card,.admin-header,.admin-card{position:relative!important}
 
-.home-hero::after,
-.home-exam::before,
-.category-card::after,
-.models-hero::after,
-.model-card::after,
-.login-v2-showcase::after,
-.study-premium-card::after,
-.exam-card-v2::after,
-.result-hero::after,
-.result-section::before,
-.review-card::before,
-.admin-header::after,
-.admin-card::after{
-  pointer-events:none!important;
-  background-repeat:no-repeat!important;
-  background-size:contain!important;
-}
+.home-hero::after,.home-exam::before,.category-card::after,.models-hero::after,.model-card::after,.login-v2-showcase::after,.login-v2-panel::before,.study-premium-card::after,.exam-card-v2::after,.result-hero::after,.result-section::before,.review-card::before,.admin-header::after,.admin-card::after{pointer-events:none!important;background-repeat:no-repeat!important;background-size:contain!important}
 
 /* HOME — one strong hero scene, integrated into the existing glass card. */
 .home-hero{overflow:hidden!important;isolation:isolate!important}
-.home-hero::after{
-  content:""!important;
-  position:absolute!important;
-  right:-3%!important;
-  bottom:-10%!important;
-  width:60%!important;
-  height:88%!important;
-  background-image:var(--spirit-art)!important;
-  background-position:right bottom!important;
-  opacity:.72!important;
-  z-index:0!important;
-  filter:saturate(.95) contrast(1.04)!important;
-  transition:transform .45s ease,opacity .45s ease!important;
-}
+.home-hero::after{content:""!important;position:absolute!important;right:-3%!important;bottom:-10%!important;width:60%!important;height:88%!important;background-image:var(--spirit-art)!important;background-position:right bottom!important;opacity:.72!important;z-index:0!important;filter:saturate(.95) contrast(1.04)!important;transition:transform .45s ease,opacity .45s ease!important}
 .home-hero:hover::after{transform:translateX(-8px)!important;opacity:.82!important}
 .home-hero > *{position:relative!important;z-index:1!important}
 
-/* CATEGORY CARDS — meaningful driving motifs, built from the same artwork language. */
+/* CATEGORY CARDS — meaningful driving artwork, kept secondary to the content. */
 .category-card{overflow:hidden!important}
-.category-card::after{
-  content:""!important;
-  right:-8%!important;
-  bottom:-24%!important;
-  width:44%!important;
-  height:72%!important;
-  position:absolute!important;
-  background-image:var(--spirit-art)!important;
-  background-position:right bottom!important;
-  opacity:.10!important;
-  transform:scale(.92)!important;
-  z-index:0!important;
-}
+.category-card::after{content:""!important;right:-8%!important;bottom:-24%!important;width:44%!important;height:72%!important;position:absolute!important;background-image:var(--spirit-art)!important;background-position:right bottom!important;opacity:.10!important;transform:scale(.92)!important;z-index:0!important}
 .category-card > *{position:relative!important;z-index:1!important}
 .category-card:hover::after{opacity:.18!important;transform:scale(.96) translateX(-4px)!important}
 
-/* HOME EXAM CTA — repeat the road language without making the card busy. */
+/* HOME EXAM CTA — same road language without making it busy. */
 .home-exam{overflow:hidden!important;isolation:isolate!important}
-.home-exam::before{
-  content:""!important;
-  position:absolute!important;
-  inset:0 0 0 auto!important;
-  width:52%!important;
-  background-image:var(--spirit-art)!important;
-  background-position:right 58%!important;
-  opacity:.25!important;
-  z-index:0!important;
-}
+.home-exam::before{content:""!important;position:absolute!important;inset:0 0 0 auto!important;width:52%!important;background-image:var(--spirit-art)!important;background-position:right 58%!important;opacity:.25!important;z-index:0!important}
 .home-exam > *{position:relative!important;z-index:1!important}
 
-/* LOGIN — artwork enters the showcase and subtly travels with form progress. */
+/* LOGIN — desktop showcase gets the art; mobile gets a dedicated panel art because showcase is hidden there. */
 .login-v2-showcase{overflow:hidden!important;isolation:isolate!important}
-.login-v2-showcase::after{
-  content:""!important;
-  position:absolute!important;
-  left:-9%!important;
-  bottom:-9%!important;
-  width:78%!important;
-  height:52%!important;
-  background-image:var(--spirit-art)!important;
-  background-position:left bottom!important;
-  opacity:.40!important;
-  z-index:0!important;
-  transform:translateX(calc((var(--drive-progress, 8%) - 8%) * .12))!important;
-  animation:spirit-login-arrive .9s cubic-bezier(.2,.8,.2,1) both!important;
-  transition:transform .3s ease,opacity .3s ease!important;
-}
+.login-v2-showcase::after{content:""!important;position:absolute!important;left:-9%!important;bottom:-9%!important;width:78%!important;height:52%!important;background-image:var(--spirit-art)!important;background-position:left bottom!important;opacity:.40!important;z-index:0!important;transform:translateX(calc((var(--drive-progress, 8%) - 8%) * .12))!important;animation:spirit-login-arrive .9s cubic-bezier(.2,.8,.2,1) both!important;transition:transform .3s ease,opacity .3s ease!important}
 .login-v2-showcase > *{position:relative!important;z-index:1!important}
 .login-v2-wrap{position:relative!important}
 .login-v2-submit.is-moving{box-shadow:0 10px 32px rgba(45,212,191,.28)!important}
 
 /* MODELS — road scene as a restrained header illustration. */
 .models-hero{overflow:hidden!important;isolation:isolate!important}
-.models-hero::after{
-  content:""!important;
-  position:absolute!important;
-  left:-5%!important;
-  bottom:-23%!important;
-  width:370px!important;
-  height:185px!important;
-  background-image:var(--spirit-art)!important;
-  background-position:left center!important;
-  opacity:.30!important;
-  z-index:0!important;
-  animation:spirit-breathe 5s ease-in-out infinite!important;
-}
+.models-hero::after{content:""!important;position:absolute!important;left:-5%!important;bottom:-23%!important;width:370px!important;height:185px!important;background-image:var(--spirit-art)!important;background-position:left center!important;opacity:.30!important;z-index:0!important;animation:spirit-breathe 5s ease-in-out infinite!important}
 .models-hero > *{position:relative!important;z-index:1!important}
 .model-card{overflow:hidden!important}
-.model-card::after{
-  content:""!important;
-  position:absolute!important;
-  right:-20%!important;
-  bottom:-35%!important;
-  width:55%!important;
-  height:75%!important;
-  background-image:var(--spirit-art)!important;
-  background-position:right bottom!important;
-  opacity:.07!important;
-  z-index:0!important;
-  transition:opacity .25s ease,transform .25s ease!important;
-}
+.model-card::after{content:""!important;position:absolute!important;right:-20%!important;bottom:-35%!important;width:55%!important;height:75%!important;background-image:var(--spirit-art)!important;background-position:right bottom!important;opacity:.07!important;z-index:0!important;transition:opacity .25s ease,transform .25s ease!important}
 .model-card > *{position:relative!important;z-index:1!important}
 .model-card:hover::after{opacity:.13!important;transform:translateX(-5px)!important}
 .model-card.advanced{border-color:rgba(245,158,11,.18)!important}
 
-/* STUDY — visible but deliberately quiet artwork; answer state gets a glow, not a sticker. */
+/* STUDY — quiet art + meaningful feedback via the existing answer state. */
 .study-premium-card{overflow:hidden!important;isolation:isolate!important}
-.study-premium-card::after{
-  content:""!important;
-  position:absolute!important;
-  right:-7%!important;
-  bottom:-22%!important;
-  width:34%!important;
-  height:48%!important;
-  background-image:var(--spirit-art)!important;
-  background-position:right bottom!important;
-  opacity:.13!important;
-  z-index:0!important;
-}
+.study-premium-card::after{content:""!important;position:absolute!important;right:-7%!important;bottom:-22%!important;width:34%!important;height:48%!important;background-image:var(--spirit-art)!important;background-position:right bottom!important;opacity:.13!important;z-index:0!important}
 .study-premium-card > *{position:relative!important;z-index:1!important}
-.study-premium-card:has(.study-premium-option.is-correct)::after{
-  opacity:.22!important;
-  filter:saturate(1.12)!important;
-  animation:spirit-correct-pulse 1.4s ease-out both!important;
-}
+.study-premium-card:has(.study-premium-option.is-correct)::after{opacity:.22!important;filter:saturate(1.12)!important;animation:spirit-correct-pulse 1.4s ease-out both!important}
 .study-premium-card:has(.study-premium-option.is-wrong)::after{opacity:.16!important}
 .study-premium-option.is-correct{box-shadow:0 0 0 1px rgba(45,212,191,.26) inset,0 8px 22px rgba(45,212,191,.08)!important}
 .study-premium-option.is-wrong{box-shadow:0 0 0 1px rgba(255,119,114,.20) inset,0 8px 22px rgba(255,119,114,.06)!important}
 
-/* EXAM — the main learning screen gets the same identity without changing dimensions. */
+/* EXAM — same identity without changing dimensions or answer positioning. */
 .exam-card-v2{overflow:hidden!important;isolation:isolate!important}
-.exam-card-v2::after{
-  content:""!important;
-  position:absolute!important;
-  right:-9%!important;
-  bottom:-24%!important;
-  width:32%!important;
-  height:44%!important;
-  background-image:var(--spirit-art)!important;
-  background-position:right bottom!important;
-  opacity:.11!important;
-  z-index:0!important;
-}
+.exam-card-v2::after{content:""!important;position:absolute!important;right:-9%!important;bottom:-24%!important;width:32%!important;height:44%!important;background-image:var(--spirit-art)!important;background-position:right bottom!important;opacity:.11!important;z-index:0!important}
 .exam-card-v2 > *{position:relative!important;z-index:1!important}
 .exam-option-v2.is-correct{box-shadow:0 0 0 1px rgba(45,212,191,.30) inset,0 8px 24px rgba(45,212,191,.08)!important}
 .exam-option-v2.is-selected:not(.is-correct){box-shadow:0 0 0 1px rgba(96,165,250,.16) inset!important}
 
 /* RESULT — finish-drive visual in the header and review cards. */
 .result-hero{overflow:hidden!important;isolation:isolate!important}
-.result-hero::after{
-  content:""!important;
-  position:absolute!important;
-  left:-3%!important;
-  bottom:-22%!important;
-  width:380px!important;
-  height:205px!important;
-  background-image:var(--spirit-art)!important;
-  background-position:center left!important;
-  opacity:.26!important;
-  z-index:0!important;
-}
+.result-hero::after{content:""!important;position:absolute!important;left:-3%!important;bottom:-22%!important;width:380px!important;height:205px!important;background-image:var(--spirit-art)!important;background-position:center left!important;opacity:.26!important;z-index:0!important}
 .result-hero > *{position:relative!important;z-index:1!important}
 .result-section{overflow:hidden!important}
-.result-section::before{
-  content:""!important;
-  position:absolute!important;
-  right:0!important;
-  top:0!important;
-  width:180px!important;
-  height:96px!important;
-  background-image:var(--spirit-art)!important;
-  background-position:right top!important;
-  opacity:.06!important;
-  z-index:0!important;
-}
+.result-section::before{content:""!important;position:absolute!important;right:0!important;top:0!important;width:180px!important;height:96px!important;background-image:var(--spirit-art)!important;background-position:right top!important;opacity:.06!important;z-index:0!important}
 .review-card{overflow:hidden!important}
-.review-card::before{
-  content:""!important;
-  position:absolute!important;
-  right:-6%!important;
-  bottom:-25%!important;
-  width:27%!important;
-  height:44%!important;
-  background-image:var(--spirit-art)!important;
-  background-position:right bottom!important;
-  opacity:.06!important;
-  z-index:0!important;
-}
+.review-card::before{content:""!important;position:absolute!important;right:-6%!important;bottom:-25%!important;width:27%!important;height:44%!important;background-image:var(--spirit-art)!important;background-position:right bottom!important;opacity:.06!important;z-index:0!important}
 .review-card > *{position:relative!important;z-index:1!important}
 .review-card.correct{border-color:rgba(45,212,191,.16)!important}
 .review-card.wrong{border-color:rgba(255,119,114,.16)!important}
 
 /* ADMIN — restrained dashboard illustration. */
 .admin-header{overflow:hidden!important;isolation:isolate!important}
-.admin-header::after{
-  content:""!important;
-  position:absolute!important;
-  left:88px!important;
-  top:50%!important;
-  width:210px!important;
-  height:110px!important;
-  background-image:var(--spirit-art)!important;
-  background-position:left center!important;
-  opacity:.13!important;
-  transform:translateY(-50%)!important;
-  z-index:0!important;
-}
+.admin-header::after{content:""!important;position:absolute!important;left:88px!important;top:50%!important;width:210px!important;height:110px!important;background-image:var(--spirit-art)!important;background-position:left center!important;opacity:.13!important;transform:translateY(-50%)!important;z-index:0!important}
 .admin-header > *{position:relative!important;z-index:1!important}
 .admin-card{overflow:hidden!important}
-.admin-card::after{
-  content:""!important;
-  position:absolute!important;
-  right:-8%!important;
-  bottom:-28%!important;
-  width:25%!important;
-  height:52%!important;
-  background-image:var(--spirit-art)!important;
-  background-position:right bottom!important;
-  opacity:.055!important;
-  z-index:0!important;
-}
+.admin-card::after{content:""!important;position:absolute!important;right:-8%!important;bottom:-28%!important;width:25%!important;height:52%!important;background-image:var(--spirit-art)!important;background-position:right bottom!important;opacity:.055!important;z-index:0!important}
 .admin-card > *{position:relative!important;z-index:1!important}
 
 @keyframes spirit-login-arrive{
   from{opacity:0;transform:translate3d(-32px,20px,0) scale(.96)}
   to{opacity:.40;transform:translate3d(calc((var(--drive-progress, 8%) - 8%) * .12),0,0) scale(1)}
 }
-@keyframes spirit-breathe{
-  0%,100%{transform:translate3d(0,0,0);opacity:.25}
-  50%{transform:translate3d(10px,-4px,0);opacity:.33}
-}
-@keyframes spirit-correct-pulse{
-  0%{opacity:.10;transform:scale(.96)}
-  55%{opacity:.23;transform:scale(1.02)}
-  100%{opacity:.18;transform:scale(1)}
-}
+@keyframes spirit-breathe{0%,100%{transform:translate3d(0,0,0);opacity:.25}50%{transform:translate3d(10px,-4px,0);opacity:.33}}
+@keyframes spirit-correct-pulse{0%{opacity:.10;transform:scale(.96)}55%{opacity:.23;transform:scale(1.02)}100%{opacity:.18;transform:scale(1)}}
 
-/* Mobile: artwork remains visible, but never takes space or interferes with question/options. */
 @media(max-width:900px){
   .home-hero::after{width:54%!important;height:68%!important;right:-8%!important;bottom:-8%!important;opacity:.27!important}
   .home-exam::before{width:58%!important;opacity:.18!important}
   .category-card::after{width:38%!important;height:62%!important;opacity:.08!important}
   .login-v2-showcase::after{width:72%!important;height:30%!important;left:-11%!important;bottom:-4%!important;opacity:.26!important}
+  .login-v2-panel{overflow:hidden!important;isolation:isolate!important}
+  .login-v2-panel::before{content:""!important;position:absolute!important;right:-10%!important;bottom:-7%!important;width:48%!important;height:28%!important;background-image:var(--spirit-art)!important;background-position:right bottom!important;opacity:.16!important;z-index:0!important;transform:translateX(calc((var(--drive-progress, 8%) - 8%) * .10))!important;transition:transform .3s ease,opacity .3s ease!important}
+  .login-v2-panel > *{position:relative!important;z-index:1!important}
   .models-hero::after{width:260px!important;height:130px!important;left:-4%!important;bottom:-18%!important;opacity:.20!important}
   .model-card::after{opacity:.055!important}
   .study-premium-card::after{width:30%!important;height:34%!important;right:-8%!important;bottom:-10%!important;opacity:.10!important}
@@ -300,10 +110,10 @@
 }
 
 @media(max-width:430px){
-  /* Still visible on phones — just cropped smaller, with no layout impact. */
   .home-hero::after{width:48%!important;height:58%!important;right:-8%!important;bottom:-5%!important;opacity:.18!important}
   .home-exam::before{width:50%!important;opacity:.13!important}
   .category-card::after{width:32%!important;height:55%!important;opacity:.065!important}
+  .login-v2-panel::before{right:-7%!important;bottom:-3%!important;width:46%!important;height:23%!important;opacity:.14!important}
   .login-v2-showcase::after{width:66%!important;height:25%!important;left:-10%!important;bottom:-2%!important;opacity:.20!important}
   .models-hero::after{width:210px!important;height:105px!important;opacity:.16!important}
   .study-premium-card::after{width:25%!important;height:28%!important;opacity:.075!important}
@@ -314,8 +124,5 @@
 }
 
 @media(prefers-reduced-motion:reduce){
-  .home-hero::after,
-  .login-v2-showcase::after,
-  .models-hero::after,
-  .study-premium-card::after{animation:none!important;transition:none!important}
+  .home-hero::after,.login-v2-showcase::after,.models-hero::after,.study-premium-card::after{animation:none!important;transition:none!important}
 }
