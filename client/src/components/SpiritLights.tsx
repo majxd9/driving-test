@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 
 const STORAGE_KEY = 'driving-spirit-lights';
 
-export default function SpiritLights({ className = '' }: { className?: string }) {
+type Props = { className?: string; compact?: boolean };
+
+export default function SpiritLights({ className = '', compact = false }: Props) {
   const [on, setOn] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) !== 'off';
@@ -23,10 +25,11 @@ export default function SpiritLights({ className = '' }: { className?: string })
   return (
     <button
       type="button"
-      className={`spirit-lights-control ${on ? 'is-on' : 'is-off'} ${className}`}
+      className={`spirit-lights-control ${on ? 'is-on' : 'is-off'} ${compact ? 'spirit-lights-compact' : ''} ${className}`}
       onClick={() => setOn(value => !value)}
       aria-pressed={on}
-      title={on ? 'إطفاء إضاءة السيارة' : 'تشغيل إضاءة السيارة'}
+      aria-label={on ? 'تفعيل الوضع المضيء' : 'تفعيل الوضع الهادئ'}
+      title={on ? 'الوضع الليلي المضيء — اضغط للتبديل' : 'الوضع الهادئ — اضغط للتبديل'}
     >
       <span className="spirit-lights-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -34,8 +37,8 @@ export default function SpiritLights({ className = '' }: { className?: string })
           <path d="M16 9h2M16 12h3M16 15h2" />
         </svg>
       </span>
-      <span className="spirit-lights-switch" aria-hidden="true"><i /></span>
-      <span className="spirit-lights-label">أنوار</span>
+      {!compact && <span className="spirit-lights-switch" aria-hidden="true"><i /></span>}
+      {!compact && <span className="spirit-lights-label">أنوار</span>}
     </button>
   );
 }
