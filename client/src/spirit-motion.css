@@ -1,0 +1,273 @@
+/* رخصتي — themed spirit layer. Decorative only: no layout, sizing, scroll, or interaction changes. */
+
+:root{
+  --spirit-brand:#2dd4bf;
+  --spirit-blue:#60a5fa;
+  --spirit-amber:#f59e0b;
+  --spirit-red:#ff7772;
+  --spirit-ink:#071018;
+}
+
+/* Shared road language */
+.home-hero,
+.models-hero,
+.login-v2-panel,
+.result-hero,
+.exam-card-v2,
+.study-premium-card,
+.admin-header{
+  position:relative!important;
+}
+
+/* HOME — a small road + moving car under the hero, tied to the driving theme. */
+.home-hero::after{
+  content:'🚗';
+  position:absolute!important;
+  inset:auto 7% 12px auto!important;
+  font-size:22px!important;
+  line-height:1!important;
+  filter:drop-shadow(0 7px 10px rgba(0,0,0,.28))!important;
+  animation:spirit-drive 5.5s ease-in-out infinite alternate!important;
+  pointer-events:none!important;
+  z-index:1!important;
+}
+.home-hero::before{
+  content:'';
+  position:absolute!important;
+  left:7%!important;
+  right:7%!important;
+  bottom:10px!important;
+  height:2px!important;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.16) 0 18px,transparent 18px 34px)!important;
+  opacity:.7!important;
+  pointer-events:none!important;
+}
+.category-card{position:relative!important;overflow:hidden!important}
+.category-card::after{
+  content:'';
+  position:absolute!important;
+  left:-30%!important;
+  bottom:0!important;
+  width:160%!important;
+  height:2px!important;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent)!important;
+  animation:spirit-lane 4.5s linear infinite!important;
+  pointer-events:none!important;
+}
+.category-card.brand::before{content:'🚦';position:absolute!important;top:12px!important;left:12px!important;font-size:19px!important;opacity:.35!important;pointer-events:none!important}
+.category-card.signs::before{content:'⚠️';position:absolute!important;top:12px!important;left:12px!important;font-size:18px!important;opacity:.35!important;pointer-events:none!important}
+.category-card.mek::before{content:'🔧';position:absolute!important;top:12px!important;left:12px!important;font-size:18px!important;opacity:.35!important;pointer-events:none!important}
+
+/* MODELS — each model gets a subtle lane marker and a tiny signal pulse. */
+.models-hero::after{
+  content:'🚦   🛣️   🚗';
+  position:absolute!important;
+  left:18px!important;
+  bottom:10px!important;
+  font-size:16px!important;
+  letter-spacing:4px!important;
+  opacity:.32!important;
+  pointer-events:none!important;
+  animation:spirit-breathe 3.8s ease-in-out infinite!important;
+}
+.model-card{position:relative!important;overflow:hidden!important}
+.model-card::after{
+  content:'';
+  position:absolute!important;
+  top:0!important;
+  right:-30%!important;
+  width:70%!important;
+  height:2px!important;
+  background:linear-gradient(90deg,transparent,rgba(45,212,191,.5),transparent)!important;
+  animation:spirit-scan 3.8s linear infinite!important;
+}
+.model-card.advanced::before{
+  content:'★';
+  position:absolute!important;
+  left:13px!important;
+  top:12px!important;
+  color:var(--spirit-amber)!important;
+  opacity:.5!important;
+  font-size:13px!important;
+  pointer-events:none!important;
+}
+
+/* LOGIN — the car advances as the user fills the form. */
+.login-v2-panel::before{
+  content:'🛣️  🚗';
+  position:absolute!important;
+  right:18px!important;
+  bottom:14px!important;
+  font-size:17px!important;
+  opacity:.30!important;
+  pointer-events:none!important;
+  transform:translateX(calc(var(--drive-progress, 12%) - 12%))!important;
+  transition:transform .25s ease-out!important;
+}
+.login-v2-panel::after{
+  content:'';
+  position:absolute!important;
+  left:18px!important;
+  right:18px!important;
+  bottom:12px!important;
+  height:1px!important;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.14) 0 14px,transparent 14px 28px)!important;
+  opacity:.55!important;
+  pointer-events:none!important;
+}
+.login-v2-submit:not(:disabled)::after{content:'✓';margin-inline-start:7px!important;font-weight:900!important}
+.login-v2-submit:disabled{position:relative!important}
+.login-v2-submit:disabled::before{content:'🚗';position:absolute!important;left:12px!important;animation:spirit-drive-button 1.1s ease-in-out infinite!important}
+
+/* STUDY — answer feedback becomes part of the road/signal story. */
+.study-premium-card:has(.study-premium-option.is-correct)::before{
+  content:'🚦  ✓';
+  position:absolute!important;
+  left:14px!important;
+  top:12px!important;
+  z-index:25!important;
+  font-size:15px!important;
+  opacity:.9!important;
+  pointer-events:none!important;
+  animation:spirit-success-pop .65s ease-out both!important;
+}
+.study-premium-card:has(.study-premium-option.is-correct)::after{
+  content:'ممتاز، على الطريق الصحيح';
+  position:absolute!important;
+  left:14px!important;
+  top:44px!important;
+  z-index:25!important;
+  padding:5px 9px!important;
+  border-radius:999px!important;
+  background:rgba(45,212,191,.10)!important;
+  border:1px solid rgba(45,212,191,.18)!important;
+  color:#74ead8!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  animation:spirit-success-label .8s ease .08s both!important;
+}
+.study-premium-card:has(.study-premium-option.is-wrong)::before{
+  content:'⚠️';
+  position:absolute!important;
+  left:14px!important;
+  top:12px!important;
+  z-index:25!important;
+  font-size:15px!important;
+  opacity:.75!important;
+  pointer-events:none!important;
+  animation:spirit-warn .5s ease-out both!important;
+}
+
+/* EXAM — correct answers get a small green traffic signal pulse without changing geometry. */
+.exam-card-v2:has(.exam-option-v2.is-correct)::before{
+  content:'🟢  إجابة صحيحة';
+  position:absolute!important;
+  left:13px!important;
+  top:9px!important;
+  z-index:25!important;
+  padding:4px 8px!important;
+  border-radius:999px!important;
+  background:rgba(45,212,191,.10)!important;
+  border:1px solid rgba(45,212,191,.18)!important;
+  color:#74ead8!important;
+  font-size:9px!important;
+  font-weight:900!important;
+  pointer-events:none!important;
+  animation:spirit-success-pop .55s ease-out both!important;
+}
+.exam-card-v2:has(.exam-option-v2.is-selected)::after{
+  content:'🚗';
+  position:absolute!important;
+  right:13px!important;
+  top:9px!important;
+  z-index:24!important;
+  font-size:15px!important;
+  opacity:.35!important;
+  pointer-events:none!important;
+  animation:spirit-roll-in .45s ease-out both!important;
+}
+
+/* RESULT — finish line / trophy language. */
+.result-hero::after{
+  content:'🏁';
+  position:absolute!important;
+  left:20px!important;
+  top:18px!important;
+  font-size:24px!important;
+  opacity:.42!important;
+  pointer-events:none!important;
+  animation:spirit-flag 2.8s ease-in-out infinite!important;
+}
+.result-section{position:relative!important}
+.result-section::before{
+  content:'';
+  position:absolute!important;
+  right:18px!important;
+  top:0!important;
+  width:64px!important;
+  height:2px!important;
+  background:linear-gradient(90deg,transparent,rgba(45,212,191,.55),transparent)!important;
+  pointer-events:none!important;
+}
+.review-card.correct::before{content:'🟢';position:absolute!important;top:14px!important;left:14px!important;font-size:13px!important;opacity:.42!important;pointer-events:none!important}
+.review-card.wrong::before{content:'⚠️';position:absolute!important;top:14px!important;left:14px!important;font-size:13px!important;opacity:.38!important;pointer-events:none!important}
+
+/* ADMIN — dashboard gets a restrained control-panel feel. */
+.admin-header::after{
+  content:'🚦  DRIVE CONTROL';
+  position:absolute!important;
+  left:18px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  font-size:8px!important;
+  letter-spacing:1px!important;
+  color:rgba(45,212,191,.55)!important;
+  pointer-events:none!important;
+}
+.admin-card{position:relative!important;overflow:hidden!important}
+.admin-card::after{
+  content:'';
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  height:1px!important;
+  background:linear-gradient(90deg,transparent,rgba(45,212,191,.32),transparent)!important;
+  pointer-events:none!important;
+}
+
+@keyframes spirit-drive{from{transform:translateX(0)}to{transform:translateX(-46px)}}
+@keyframes spirit-lane{from{transform:translateX(0)}to{transform:translateX(22%)}}
+@keyframes spirit-scan{from{transform:translateX(0)}to{transform:translateX(-180%)}}
+@keyframes spirit-breathe{0%,100%{opacity:.24;transform:translateY(0)}50%{opacity:.45;transform:translateY(-2px)}}
+@keyframes spirit-drive-button{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+@keyframes spirit-success-pop{0%{transform:scale(.72);opacity:0}65%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes spirit-success-label{0%{transform:translateY(-5px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes spirit-warn{0%{transform:rotate(-7deg) scale(.8);opacity:0}70%{transform:rotate(3deg) scale(1.05);opacity:.8}100%{transform:rotate(0) scale(1);opacity:.75}}
+@keyframes spirit-roll-in{0%{transform:translateX(8px);opacity:0}100%{transform:translateX(0);opacity:.35}}
+@keyframes spirit-flag{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+
+@media(max-width:700px){
+  .home-hero::after{font-size:18px!important;bottom:9px!important}
+  .models-hero::after{font-size:13px!important;left:12px!important}
+  .category-card.brand::before,.category-card.signs::before,.category-card.mek::before{font-size:16px!important;top:9px!important;left:9px!important}
+  .login-v2-panel::before{font-size:15px!important;bottom:11px!important}
+  .result-hero::after{font-size:20px!important;left:14px!important;top:14px!important}
+  .admin-header::after{font-size:7px!important;left:10px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .home-hero::after,
+  .category-card::after,
+  .models-hero::after,
+  .model-card::after,
+  .login-v2-submit:disabled::before,
+  .study-premium-card:has(.study-premium-option.is-correct)::before,
+  .study-premium-card:has(.study-premium-option.is-correct)::after,
+  .study-premium-card:has(.study-premium-option.is-wrong)::before,
+  .exam-card-v2:has(.exam-option-v2.is-correct)::before,
+  .exam-card-v2:has(.exam-option-v2.is-selected)::after,
+  .result-hero::after{animation:none!important}
+}
