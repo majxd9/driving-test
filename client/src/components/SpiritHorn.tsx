@@ -15,34 +15,42 @@ export default function SpiritHorn({ className = '' }: { className?: string }) {
     if (ctx.state === 'suspended') void ctx.resume();
     const now = ctx.currentTime;
 
+    const compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.value = -26;
+    compressor.knee.value = 18;
+    compressor.ratio.value = 7;
+    compressor.attack.value = 0.003;
+    compressor.release.value = 0.12;
+
     const master = ctx.createGain();
     master.gain.setValueAtTime(0.0001, now);
-    master.gain.exponentialRampToValueAtTime(0.085, now + 0.015);
-    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
-    master.connect(ctx.destination);
+    master.gain.exponentialRampToValueAtTime(0.16, now + 0.012);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+    master.connect(compressor);
+    compressor.connect(ctx.destination);
 
-    [[220, 0], [277.18, 0.012]].forEach(([frequency, offset]) => {
+    [[210, 0, 0.72], [263.74, 0.012, 0.55], [157.49, 0, 0.22]].forEach(([frequency, offset, level]) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(frequency, now + offset);
-      gain.gain.setValueAtTime(0.48, now + offset);
+      gain.gain.setValueAtTime(level, now + offset);
       osc.connect(gain);
       gain.connect(master);
       osc.start(now + offset);
-      osc.stop(now + 0.24);
+      osc.stop(now + 0.28);
     });
 
     setPressed(true);
-    window.setTimeout(() => setPressed(false), 170);
-    if (navigator.vibrate) navigator.vibrate(10);
+    window.setTimeout(() => setPressed(false), 190);
+    if (navigator.vibrate) navigator.vibrate(12);
   };
 
   return (
     <button
       type="button"
       className={`spirit-horn-control spirit-horn-icon-only ${pressed ? 'is-pressed' : ''} ${className}`}
-      onClick={honk}
+      onPointerDown={honk}
       aria-label="تشغيل الزمور"
       title="زمور"
     >
