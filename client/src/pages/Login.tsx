@@ -53,7 +53,7 @@ export default function Login() {
           <div className="spirit-login-road" />
           <div className="spirit-login-dust" />
           <div className="spirit-login-smoke" />
-          <div className="spirit-login-car" className={busy ? 'spirit-login-car is-go' : 'spirit-login-car'} />
+          <div className={`spirit-login-car ${busy ? 'is-go' : ''}`} />
           <div className="spirit-headlight-glow spirit-beam" />
           <div className="spirit-login-signal" data-state={signalState}>
             <span className="spirit-signal-light red" />
