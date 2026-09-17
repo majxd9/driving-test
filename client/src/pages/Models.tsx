@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import SpiritDriveScene from '../components/SpiritDriveScene';
 import SpiritVolume from '../components/SpiritVolume';
+import SpiritHorn from '../components/SpiritHorn';
 
 const MODELS = [
   { id: 1, label: 'النموذج 1', meta: 'اختبار قياسي', advanced: false },
@@ -24,7 +25,7 @@ export default function Models() {
           <strong>اختبارات المحاكاة</strong>
           <span>اختر نموذجاً وابدأ الاختبار</span>
         </div>
-        <div className="flex items-center gap-2"><SpiritVolume /><div className="exam-timer-v2">١٥:٠٠</div></div>
+        <div className="flex items-center gap-2"><SpiritVolume /><SpiritHorn /><div className="exam-timer-v2">١٥:٠٠</div></div>
       </header>
 
       <main className="models-wrap">
