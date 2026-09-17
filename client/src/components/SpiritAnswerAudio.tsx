@@ -18,20 +18,6 @@ function ensureAudioContext(ref: { current: AudioContext | null }) {
   return ctx;
 }
 
-function playTone(ctx: AudioContext, frequency: number, duration: number, start: number, gainValue: number, type: OscillatorType = 'sine') {
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(frequency, start);
-  gain.gain.setValueAtTime(0.0001, start);
-  gain.gain.exponentialRampToValueAtTime(gainValue, start + 0.012);
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start(start);
-  osc.stop(start + duration + 0.02);
-}
-
 function playAnswerSound(ctxRef: { current: AudioContext | null }, correct: boolean) {
   const ctx = ensureAudioContext(ctxRef);
   if (!ctx) return;
@@ -76,8 +62,6 @@ function playAnswerSound(ctxRef: { current: AudioContext | null }, correct: bool
       osc.stop(now + 0.33);
     });
   }
-
-  void playTone;
 }
 
 export default function SpiritAnswerAudio() {
@@ -87,17 +71,15 @@ export default function SpiritAnswerAudio() {
     const onClick = (event: MouseEvent) => {
       const target = event.target instanceof Element ? event.target.closest('button') : null;
       if (!(target instanceof HTMLButtonElement)) return;
-      // Only training mode gets correct/incorrect tones. The real exam stays silent/neutral.
+      // Correct/incorrect tones are training-only. The real exam must stay neutral.
       if (!target.classList.contains('study-premium-option')) return;
 
       const ctx = ensureAudioContext(audioRef);
       if (!ctx) return;
-      const correct = target.classList.contains('is-correct') && !target.classList.contains('is-wrong');
 
-      // Let React apply the selected state before choosing the tone.
       window.requestAnimationFrame(() => {
-        const currentCorrect = target.classList.contains('is-correct') && !target.classList.contains('is-wrong');
-        playAnswerSound(audioRef, currentCorrect || correct);
+        const correct = target.classList.contains('is-correct') && !target.classList.contains('is-wrong');
+        playAnswerSound(audioRef, correct);
       });
     };
     document.addEventListener('click', onClick, true);
