@@ -5,6 +5,7 @@ import { Question } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
 import { ensureImageReady, preloadImages } from '../utils/imagePreload';
+import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 
 const DURATION = 15 * 60;
 const LETTERS = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
@@ -78,6 +79,13 @@ export default function Exam() {
     await goToQuestion(requested - 1);
   }, [goToQuestion, jumpValue, questions.length]);
 
+  const chooseAnswer = (index:number) => {
+    if (answers[q.id] !== undefined) return;
+    const correct = index === q.correctAnswerIndex;
+    setAnswers(a=>({...a,[q.id]:index}));
+    playAnswerFeedback(correct);
+  };
+
   useEffect(()=>{if(loading)return;const timer=setInterval(()=>{setSeconds(s=>{if(s<=1){clearInterval(timer);finish();return 0;}return s-1;});},1000);return()=>clearInterval(timer);},[loading,finish]);
 
   if(loading)return <div className="page-shell flex items-center justify-center px-4"><div className="surface-panel w-full max-w-xl p-5"><div className="skeleton h-44 rounded-2xl"/><p className="text-center text-muted text-sm mt-4">جارِ تجهيز أول صورة للاختبار...</p></div></div>;
@@ -114,7 +122,7 @@ export default function Exam() {
       <div className="exam-scroll-v2">
         <div className="exam-image-slot-v2">{q.imageUrl?<button type="button" className="exam-image-v2" onClick={()=>setImageExpanded(true)} aria-label="تكبير صورة السؤال"><OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 92vw, 720px" className="w-full h-full" objectFit="contain"/></button>:<div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
-        <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>setAnswers(a=>({...a,[q.id]:i}))} className={`exam-option-v2 ${answers[q.id]===i?'selected':''} ${answers[q.id]===i&&isCorrectSelection?'is-correct':''} ${answers[q.id]===i?'is-selected':''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
+        <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>chooseAnswer(i)} className={`exam-option-v2 ${answers[q.id]===i?'selected':''} ${answers[q.id]===i&&isCorrectSelection?'is-correct':''} ${answers[q.id]===i?'is-selected':''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
         {explanationNeeded && (<div className="exam-answer-explanation-v2" role="status" aria-live="polite"><div className="exam-answer-explanation-title-v2"><UiIcon name="check"/><span>{q.category === 'Ishara' ? 'شرح الإشارة' : 'الشرح'}</span></div><p>{q.explanation}</p></div>)}
         <DiagramRenderer question={q}/>
       </div>
