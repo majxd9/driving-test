@@ -19,6 +19,7 @@ import './glass-polish.css';
 import './glass-visibility-v2.css';
 import './spirit-final.css';
 import './spirit-motion-v5.css';
+import './spirit-v8.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
