@@ -4,7 +4,8 @@ import { api } from '../api/client';
 import { Question, QuestionCategory } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
-import SpiritTrafficSignal, { SpiritTrafficState } from '../components/SpiritTrafficSignal';
+import SpiritTrafficSignal from '../components/SpiritTrafficSignal';
+import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { ensureImageReady, preloadImages } from '../utils/imagePreload';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
