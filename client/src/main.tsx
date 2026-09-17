@@ -22,6 +22,7 @@ import './spirit-motion-v5.css';
 import './spirit-v8.css';
 import './spirit-touch-v9.css';
 import './spirit-v10.css';
+import './spirit-v11.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
