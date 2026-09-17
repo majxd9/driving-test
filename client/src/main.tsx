@@ -29,6 +29,7 @@ import './spirit-v14.css';
 import './spirit-v15.css';
 import './spirit-v16.css';
 import './spirit-v18.css';
+import './spirit-v19.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
