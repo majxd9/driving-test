@@ -1,4 +1,4 @@
-import { CSSProperties, useState, FormEvent } from 'react';
+import { CSSProperties, useCallback, useEffect, useRef, useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import OptimizedImage from '../components/OptimizedImage';
@@ -17,6 +17,7 @@ const SAMPLE_QUESTIONS = [
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const userInputRef = useRef<HTMLInputElement>(null);
   const [userName,setUserName]=useState('');
   const [password,setPassword]=useState('');
   const [error,setError]=useState<string|null>(null);
@@ -25,6 +26,7 @@ export default function Login() {
   const [showSample,setShowSample]=useState(false);
   const [sampleIndex,setSampleIndex]=useState(0);
   const [sampleAnswers,setSampleAnswers]=useState<Record<number,number>>({});
+  const [loginSceneTop,setLoginSceneTop]=useState(160);
 
   async function handleSubmit(e:FormEvent){
     e.preventDefault();
@@ -39,6 +41,35 @@ export default function Login() {
     catch(err){ setLoginSuccess(false); setError(err instanceof Error ? err.message : 'تعذر تسجيل الدخول حالياً.'); }
     finally { setBusy(false); }
   }
+
+  const updateScenePosition = useCallback(() => {
+    if (window.innerWidth > 900) return;
+    const input = userInputRef.current;
+    if (!input) return;
+    const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+    const compact = window.innerWidth <= 430;
+    const sceneHeight = compact ? 82 : 88;
+    const gap = 8;
+    const preferred = input.getBoundingClientRect().top - sceneHeight - gap;
+    const maxTop = viewportHeight - sceneHeight - 8;
+    setLoginSceneTop(Math.max(74, Math.min(preferred, maxTop)));
+  }, []);
+
+  useEffect(() => {
+    const run = () => window.requestAnimationFrame(updateScenePosition);
+    run();
+    const vv = window.visualViewport;
+    window.addEventListener('resize', run);
+    window.addEventListener('scroll', run, { passive: true });
+    vv?.addEventListener('resize', run);
+    vv?.addEventListener('scroll', run);
+    return () => {
+      window.removeEventListener('resize', run);
+      window.removeEventListener('scroll', run);
+      vv?.removeEventListener('resize', run);
+      vv?.removeEventListener('scroll', run);
+    };
+  }, [updateScenePosition, userName, password, error]);
 
   const sample=SAMPLE_QUESTIONS[sampleIndex];
   const chosen=sampleAnswers[sampleIndex];
@@ -57,7 +88,7 @@ export default function Login() {
         <div className="login-v2-features"><div><b>01</b><span><strong>تدريب منظم</strong><small>قسّم المراجعة حسب القسم الذي تحتاجه</small></span></div><div><b>02</b><span><strong>محاكاة واقعية</strong><small>٣٠ سؤالاً مع عداد زمني واضح</small></span></div><div><b>03</b><span><strong>مراجعة دقيقة</strong><small>شاهد أخطاءك والإجابة الصحيحة بعد الاختبار</small></span></div></div>
       </section>
       <section className="login-v2-panel">
-        <div className="spirit-login-scene">
+        <div className="spirit-login-scene" style={{'--login-scene-top': `${loginSceneTop}px`} as CSSProperties}>
           <div className="spirit-login-road" aria-hidden="true" />
           <div className="spirit-login-dust" aria-hidden="true" />
           <div className="spirit-login-smoke" aria-hidden="true" />
@@ -69,16 +100,16 @@ export default function Login() {
             <span className="spirit-signal-light green" />
             <small className="spirit-signal-label">READY</small>
           </div>
-          <div className="login-spirit-controls">
-            <SpiritLights className="login-spirit-lights" />
+          <div className="login-spirit-controls" aria-label="تحكم القيادة">
+            <SpiritLights compact />
             <SpiritHorn />
           </div>
         </div>
         <div className="login-v2-panel-head"><span className="login-v2-mini-dot"/> دخول آمن إلى حسابك</div>
         <div className="login-v2-title"><span>مرحباً بعودتك</span><h2>تسجيل الدخول</h2><p>أدخل بيانات حسابك للمتابعة إلى التدريب والاختبارات.</p></div>
         <form onSubmit={handleSubmit} className="login-v2-form">
-          <label>اسم المستخدم<input value={userName} onChange={e=>{setUserName(e.target.value);setLoginSuccess(false);}} required autoFocus placeholder="أدخل اسم المستخدم" autoComplete="username" autoCapitalize="none" spellCheck={false}/></label>
-          <label>كلمة المرور<input value={password} onChange={e=>{setPassword(e.target.value);setLoginSuccess(false);}} type="password" required placeholder="أدخل كلمة المرور" autoComplete="current-password"/></label>
+          <label>اسم المستخدم<input ref={userInputRef} value={userName} onFocus={()=>window.requestAnimationFrame(updateScenePosition)} onChange={e=>{setUserName(e.target.value);setLoginSuccess(false);}} required autoFocus placeholder="أدخل اسم المستخدم" autoComplete="username" autoCapitalize="none" spellCheck={false}/></label>
+          <label>كلمة المرور<input value={password} onFocus={()=>window.requestAnimationFrame(updateScenePosition)} onChange={e=>{setPassword(e.target.value);setLoginSuccess(false);}} type="password" required placeholder="أدخل كلمة المرور" autoComplete="current-password"/></label>
           {error&&<div className="login-v2-error" role="alert">{error}</div>}
           <button type="submit" disabled={busy} className={`login-v2-submit ${busy?'is-moving':''}`}>{busy?'جارٍ تسجيل الدخول…':'تسجيل الدخول'}<span>←</span></button>
         </form>
