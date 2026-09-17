@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 250" fill="none">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#77f6e2"/>
+      <stop offset=".34" stop-color="#2dd4bf"/>
+      <stop offset=".72" stop-color="#1595cf"/>
+      <stop offset="1" stop-color="#0e5ea7"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#19384f"/>
+      <stop offset="1" stop-color="#071521"/>
+    </linearGradient>
+    <linearGradient id="under" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#2dd4bf" stop-opacity=".05"/>
+      <stop offset=".5" stop-color="#2dd4bf" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#60a5fa" stop-opacity=".05"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-30%" width="140%" height="170%">
+      <feDropShadow dx="0" dy="15" stdDeviation="12" flood-color="#000" flood-opacity=".38"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#2dd4bf" flood-opacity=".17"/>
+    </filter>
+  </defs>
+  <g filter="url(#soft)">
+    <path d="M47 155c7-42 33-68 82-77l112-21 46-38c14-11 31-16 53-16h72c38 0 68 12 89 38l37 48c11 15 18 35 18 53v22H47v-9Z" fill="url(#body)" stroke="#a9fff3" stroke-width="5"/>
+    <path d="M164 77 242 37c10-5 21-8 35-8h61c27 0 48 9 63 27l18 21H164Z" fill="url(#glass)" stroke="#7beee4" stroke-width="4"/>
+    <path d="M246 37v39M332 31l14 45" stroke="#56cfe1" stroke-width="3" opacity=".55"/>
+    <path d="M95 112h83M376 112h64" stroke="#d9ffff" stroke-width="8" stroke-linecap="round" opacity=".45"/>
+    <path d="M53 141h448" stroke="#06131d" stroke-width="18" opacity=".76"/>
+    <path d="M50 168h460" stroke="#0b2030" stroke-width="8"/>
+    <path d="M98 175c23 12 47 12 70 0M387 175c23 12 47 12 70 0" stroke="url(#under)" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="158" cy="168" r="35" fill="#06111a" stroke="#24445b" stroke-width="8"/>
+    <circle cx="158" cy="168" r="12" fill="#2dd4bf"/>
+    <circle cx="414" cy="168" r="35" fill="#06111a" stroke="#24445b" stroke-width="8"/>
+    <circle cx="414" cy="168" r="12" fill="#2dd4bf"/>
+    <path d="M48 121 83 113l18 5-17 13H50" fill="#e9ffff" opacity=".82"/>
+    <path d="M483 104h37" stroke="#ff6470" stroke-width="8" stroke-linecap="round"/>
+    <path d="M86 149c15 6 29 7 41 5M438 149c17 6 31 7 49 3" stroke="#73e8de" stroke-width="3" opacity=".5"/>
+    <path d="M77 193h413" stroke="#2dd4bf" stroke-opacity=".22" stroke-width="3"/>
+  </g>
+</svg>
