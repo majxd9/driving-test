@@ -1,5 +1,6 @@
 import SpiritHorn from './SpiritHorn';
 import SpiritLights from './SpiritLights';
+import SpiritVolume from './SpiritVolume';
 
 export default function SpiritDriveScene({ className = '', large = false }: { className?: string; large?: boolean }) {
   return (
@@ -12,6 +13,7 @@ export default function SpiritDriveScene({ className = '', large = false }: { cl
       <div className="spirit-scene-reflection" aria-hidden="true" />
       <div className="spirit-scene-controls">
         <SpiritLights compact />
+        <SpiritVolume />
         <SpiritHorn />
       </div>
     </div>
