@@ -20,6 +20,7 @@ export default function Login() {
   const [password,setPassword]=useState('');
   const [error,setError]=useState<string|null>(null);
   const [busy,setBusy]=useState(false);
+  const [loginSuccess,setLoginSuccess]=useState(false);
   const [showSample,setShowSample]=useState(false);
   const [sampleIndex,setSampleIndex]=useState(0);
   const [sampleAnswers,setSampleAnswers]=useState<Record<number,number>>({});
@@ -27,9 +28,14 @@ export default function Login() {
   async function handleSubmit(e:FormEvent){
     e.preventDefault();
     if (busy) return;
-    setError(null); setBusy(true);
-    try { await login(userName.trim(),password); navigate('/',{replace:true}); }
-    catch(err){ setError(err instanceof Error ? err.message : 'تعذر تسجيل الدخول حالياً.'); }
+    setError(null); setLoginSuccess(false); setBusy(true);
+    try {
+      await login(userName.trim(),password);
+      setLoginSuccess(true);
+      await new Promise<void>(resolve => window.setTimeout(resolve, 260));
+      navigate('/',{replace:true});
+    }
+    catch(err){ setLoginSuccess(false); setError(err instanceof Error ? err.message : 'تعذر تسجيل الدخول حالياً.'); }
     finally { setBusy(false); }
   }
 
@@ -38,7 +44,7 @@ export default function Login() {
   const sampleScore=SAMPLE_QUESTIONS.reduce((n,q,i)=>n+(sampleAnswers[i]===q.correct?1:0),0);
   const closeSample=()=>{setShowSample(false);setSampleIndex(0);setSampleAnswers({});};
   const driveDistance = Math.min(150, 12 + (userName.length + password.length) * 4);
-  const signalState = busy ? 'green' : (userName || password) ? 'amber' : 'red';
+  const signalState = loginSuccess ? 'green' : (userName || password) ? 'amber' : 'red';
 
   return <div className="login-v2" dir="rtl">
     <div className="login-v2-glow one"/><div className="login-v2-glow two"/>
@@ -49,13 +55,13 @@ export default function Login() {
         <div className="login-v2-features"><div><b>01</b><span><strong>تدريب منظم</strong><small>قسّم المراجعة حسب القسم الذي تحتاجه</small></span></div><div><b>02</b><span><strong>محاكاة واقعية</strong><small>٣٠ سؤالاً مع عداد زمني واضح</small></span></div><div><b>03</b><span><strong>مراجعة دقيقة</strong><small>شاهد أخطاءك والإجابة الصحيحة بعد الاختبار</small></span></div></div>
       </section>
       <section className="login-v2-panel" style={{'--login-car-x': `${driveDistance}px`} as CSSProperties}>
-        <div className="spirit-login-scene" aria-hidden="true">
-          <div className="spirit-login-road" />
-          <div className="spirit-login-dust" />
-          <div className="spirit-login-smoke" />
-          <div className={`spirit-login-car ${busy ? 'is-go' : ''}`} />
-          <div className="spirit-headlight-glow spirit-beam" />
-          <div className="spirit-login-signal" data-state={signalState}>
+        <div className="spirit-login-scene">
+          <div className="spirit-login-road" aria-hidden="true" />
+          <div className="spirit-login-dust" aria-hidden="true" />
+          <div className="spirit-login-smoke" aria-hidden="true" />
+          <div className={`spirit-login-car ${busy ? 'is-go' : ''}`} aria-hidden="true" />
+          <div className="spirit-headlight-glow spirit-beam" aria-hidden="true" />
+          <div className="spirit-login-signal" data-state={signalState} aria-label={signalState === 'green' ? 'تم تسجيل الدخول بنجاح' : signalState === 'amber' ? 'بيانات تسجيل الدخول قيد الإدخال' : 'بانتظار بيانات تسجيل الدخول'}>
             <span className="spirit-signal-light red" />
             <span className="spirit-signal-light amber" />
             <span className="spirit-signal-light green" />
@@ -66,8 +72,8 @@ export default function Login() {
         <div className="login-v2-panel-head"><span className="login-v2-mini-dot"/> دخول آمن إلى حسابك</div>
         <div className="login-v2-title"><span>مرحباً بعودتك</span><h2>تسجيل الدخول</h2><p>أدخل بيانات حسابك للمتابعة إلى التدريب والاختبارات.</p></div>
         <form onSubmit={handleSubmit} className="login-v2-form">
-          <label>اسم المستخدم<input value={userName} onChange={e=>setUserName(e.target.value)} required autoFocus placeholder="أدخل اسم المستخدم" autoComplete="username" autoCapitalize="none" spellCheck={false}/></label>
-          <label>كلمة المرور<input value={password} onChange={e=>setPassword(e.target.value)} type="password" required placeholder="أدخل كلمة المرور" autoComplete="current-password"/></label>
+          <label>اسم المستخدم<input value={userName} onChange={e=>{setUserName(e.target.value);setLoginSuccess(false);}} required autoFocus placeholder="أدخل اسم المستخدم" autoComplete="username" autoCapitalize="none" spellCheck={false}/></label>
+          <label>كلمة المرور<input value={password} onChange={e=>{setPassword(e.target.value);setLoginSuccess(false);}} type="password" required placeholder="أدخل كلمة المرور" autoComplete="current-password"/></label>
           {error&&<div className="login-v2-error" role="alert">{error}</div>}
           <button type="submit" disabled={busy} className={`login-v2-submit ${busy?'is-moving':''}`}>{busy?'جارٍ تسجيل الدخول…':'تسجيل الدخول'}<span>←</span></button>
         </form>
