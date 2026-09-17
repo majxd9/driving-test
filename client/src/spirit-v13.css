@@ -1,0 +1,62 @@
+/* رخصتي — Spirit v13
+   Cleanup pass: keep one intentional hero car, remove legacy pseudo-car duplicates,
+   and reserve the answer area for actual choices/status UI. */
+
+/* Legacy pseudo cars/signals created by older spirit layers must not stack with the real scene. */
+.home-hero::before,
+.home-hero::after,
+.models-hero::before,
+.models-hero::after,
+.model-card::before,
+.model-card::after,
+.study-premium-card::before{
+  content:none!important;
+  background:none!important;
+  animation:none!important;
+}
+
+/* Only the real SpiritDriveScene carries the hero vehicle. */
+.home-spirit-scene,
+.models-spirit-scene{z-index:0!important;pointer-events:none!important}
+
+/* Question choices have absolute priority over decorative effects. */
+.study-premium-answers,
+.study-premium-option,
+.exam-answers-v2,
+.exam-option-v2{
+  position:relative!important;
+  z-index:80!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+
+/* Compact traffic signal lives in the card chrome, never over an answer. */
+.study-premium-card>.spirit-question-signal,
+.exam-card-v2>.spirit-question-signal{
+  pointer-events:none!important;
+  z-index:8!important;
+}
+
+/* The speedometer is an instrument only; no success/error treatment. */
+.exam-card-v2::before,
+.exam-card-v2:has(.exam-option-v2.is-correct)::before,
+.exam-card-v2:has(.exam-option-v2.is-selected:not(.is-correct))::before{
+  filter:none!important;
+  animation:spirit-v13-gauge 4s ease-in-out infinite!important;
+  opacity:.17!important;
+}
+
+/* Keep the large car direction consistent: mirrored and grounded at the far side. */
+.home-spirit-scene .spirit-scene-car,
+.models-spirit-scene .spirit-scene-car{
+  left:auto!important;
+  right:2%!important;
+  transform:scaleX(-1)!important;
+  transform-origin:center bottom!important;
+}
+@media(max-width:430px){
+  .home-spirit-scene .spirit-scene-car,
+  .models-spirit-scene .spirit-scene-car{right:0!important}
+}
+
+@keyframes spirit-v13-gauge{0%,100%{transform:translateY(0);opacity:.15}50%{transform:translateY(-1px);opacity:.19}}
