@@ -43,8 +43,9 @@ export default function Login() {
   const chosen=sampleAnswers[sampleIndex];
   const sampleScore=SAMPLE_QUESTIONS.reduce((n,q,i)=>n+(sampleAnswers[i]===q.correct?1:0),0);
   const closeSample=()=>{setShowSample(false);setSampleIndex(0);setSampleAnswers({});};
-  const driveDistance = Math.min(150, 12 + (userName.length + password.length) * 4);
-  const signalState = loginSuccess ? 'green' : (userName || password) ? 'amber' : 'red';
+  const credentialLength = userName.length + password.length;
+  const driveDistance = Math.min(132, 8 + credentialLength * 5.5);
+  const signalState = loginSuccess ? 'green' : credentialLength > 0 ? 'amber' : 'red';
 
   return <div className="login-v2" dir="rtl">
     <div className="login-v2-glow one"/><div className="login-v2-glow two"/>
@@ -54,12 +55,17 @@ export default function Login() {
         <div className="login-v2-copy"><span className="login-v2-kicker">استعد قبل يوم الامتحان</span><h1>تدرّب بذكاء.<br/><b>ادخل الاختبار بثقة.</b></h1><p>تدرّب على القواعد والإشارات والميكانيك، ثم اختبر مستواك بمحاكاة كاملة مع مراجعة واضحة لأخطائك.</p></div>
         <div className="login-v2-features"><div><b>01</b><span><strong>تدريب منظم</strong><small>قسّم المراجعة حسب القسم الذي تحتاجه</small></span></div><div><b>02</b><span><strong>محاكاة واقعية</strong><small>٣٠ سؤالاً مع عداد زمني واضح</small></span></div><div><b>03</b><span><strong>مراجعة دقيقة</strong><small>شاهد أخطاءك والإجابة الصحيحة بعد الاختبار</small></span></div></div>
       </section>
-      <section className="login-v2-panel" style={{'--login-car-x': `${driveDistance}px`} as CSSProperties}>
+      <section className="login-v2-panel">
         <div className="spirit-login-scene">
           <div className="spirit-login-road" aria-hidden="true" />
           <div className="spirit-login-dust" aria-hidden="true" />
           <div className="spirit-login-smoke" aria-hidden="true" />
-          <div className={`spirit-login-car ${busy ? 'is-go' : ''}`} aria-hidden="true" />
+          <div
+            className={`spirit-login-car ${busy ? 'is-go ' : ''}${credentialLength > 0 || busy ? 'is-moving' : ''}`}
+            style={{'--login-car-x': `${driveDistance}px`} as CSSProperties}
+            data-progress={credentialLength}
+            aria-hidden="true"
+          />
           <div className="spirit-headlight-glow spirit-beam" aria-hidden="true" />
           <div className="spirit-login-signal" data-state={signalState} aria-label={signalState === 'green' ? 'تم تسجيل الدخول بنجاح' : signalState === 'amber' ? 'بيانات تسجيل الدخول قيد الإدخال' : 'بانتظار بيانات تسجيل الدخول'}>
             <span className="spirit-signal-light red" />
