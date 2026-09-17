@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import './index.css';
@@ -15,6 +16,7 @@ import './stable-options.css';
 import './final-mobile-layout.css';
 import './zero-scroll-explanation.css';
 import './glass-polish.css';
+import './glass-visibility-v2.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><BrowserRouter><AuthProvider><App /></AuthProvider></BrowserRouter></React.StrictMode>
