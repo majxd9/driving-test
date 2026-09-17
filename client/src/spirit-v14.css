@@ -1,0 +1,175 @@
+/* رخصتي — Spirit v14
+   Focused correction pass: clean controls, keyboard-safe login car,
+   visible large-car identity, useful light theme, and neutral answer audio hooks.
+   No question/content geometry changes. */
+
+/* ---- Remove all legacy emoji / tiny card car layers ---- */
+.home-hero::before,.home-hero::after,.home-exam::before,
+.category-card::before,.category-card::after,
+.models-hero::before,.models-hero::after,
+.model-card::before,.model-card::after,
+.login-v2-showcase::before,.login-v2-showcase::after{
+  content:none!important;
+}
+
+/* ---- The large hero scene is the main visual identity ---- */
+.home-spirit-scene,.models-spirit-scene{
+  display:block!important;
+  pointer-events:none!important;
+  z-index:0!important;
+  overflow:visible!important;
+}
+.home-spirit-scene .spirit-scene-car,.models-spirit-scene .spirit-scene-car{
+  left:auto!important;
+  right:1%!important;
+  transform:scaleX(-1)!important;
+  opacity:.78!important;
+  filter:drop-shadow(0 16px 18px rgba(0,0,0,.38)) drop-shadow(0 0 21px rgba(45,212,191,.18))!important;
+}
+.home-spirit-scene .spirit-scene-car::after,.models-spirit-scene .spirit-scene-car::after{
+  width:136px!important;height:80px!important;opacity:.92!important;
+}
+.home-spirit-scene .spirit-scene-smoke,.models-spirit-scene .spirit-scene-smoke{
+  width:168px!important;height:102px!important;opacity:.68!important;
+}
+
+/* ---- Controls feel like actual in-car buttons: icon only ---- */
+.spirit-drive-scene .spirit-scene-controls{
+  position:absolute!important;
+  left:26%!important;
+  right:auto!important;
+  bottom:25%!important;
+  top:auto!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  gap:7px!important;
+  padding:4px!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,rgba(13,23,32,.78),rgba(5,11,17,.72))!important;
+  box-shadow:0 9px 22px rgba(0,0,0,.20),inset 0 1px rgba(255,255,255,.05)!important;
+  pointer-events:auto!important;
+  z-index:20!important;
+}
+.spirit-drive-scene .spirit-lights-control.spirit-lights-compact,
+.spirit-drive-scene .spirit-horn-icon-only{
+  width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;
+  padding:0!important;border-radius:50%!important;
+}
+.spirit-drive-scene .spirit-lights-control.spirit-lights-compact .spirit-lights-icon{width:26px!important;height:26px!important;border-radius:50%!important}
+.spirit-drive-scene .spirit-horn-icon-only svg{width:17px!important;height:17px!important}
+.spirit-drive-scene .spirit-horn-icon-only{color:#cbeee9!important}
+.spirit-drive-scene .spirit-horn-icon-only.is-pressed{box-shadow:0 0 16px rgba(45,212,191,.22),inset 0 1px rgba(255,255,255,.08)!important}
+
+/* ---- Login scene: anchor it directly above the username field ---- */
+@media(max-width:900px){
+  .spirit-login-scene{
+    position:fixed!important;
+    top:var(--login-scene-top,160px)!important;
+    left:10px!important;
+    right:10px!important;
+    width:auto!important;
+    height:88px!important;
+    z-index:700!important;
+    pointer-events:none!important;
+    overflow:visible!important;
+  }
+  .spirit-login-car{
+    left:auto!important;
+    right:48px!important;
+    bottom:10px!important;
+    width:112px!important;
+    height:54px!important;
+    transform:translate3d(calc(var(--login-car-x,8px) * -0.48),0,0) scaleX(-1)!important;
+    transition:transform .18s cubic-bezier(.18,.88,.22,1),filter .18s ease!important;
+    filter:drop-shadow(0 9px 12px rgba(0,0,0,.32)) drop-shadow(0 0 12px rgba(45,212,191,.16))!important;
+  }
+  .spirit-login-smoke{left:19px!important;bottom:20px!important;width:112px!important;height:68px!important;opacity:.80!important}
+  .spirit-login-dust{left:16px!important;bottom:3px!important;width:150px!important;opacity:.66!important}
+  .spirit-headlight-glow{left:71px!important;bottom:22px!important;width:100px!important;height:31px!important;opacity:.76!important}
+  .spirit-login-signal{right:2px!important;top:0!important;width:34px!important;height:71px!important}
+  .login-spirit-controls{
+    position:absolute!important;
+    right:42px!important;
+    bottom:45px!important;
+    display:flex!important;
+    gap:5px!important;
+    align-items:center!important;
+    pointer-events:auto!important;
+    z-index:30!important;
+    transform:scale(.72)!important;
+    transform-origin:right bottom!important;
+  }
+  .login-spirit-controls .spirit-lights-control,
+  .login-spirit-controls .spirit-horn-control{pointer-events:auto!important}
+  .login-spirit-controls .spirit-lights-control.spirit-lights-compact,
+  .login-spirit-controls .spirit-horn-icon-only{width:36px!important;min-width:36px!important;height:36px!important;min-height:36px!important}
+  .login-v2-panel{padding-top:22px!important}
+}
+@media(max-width:430px){
+  .spirit-login-scene{height:82px!important;left:7px!important;right:7px!important}
+  .spirit-login-car{right:42px!important;width:104px!important;height:50px!important;bottom:9px!important}
+  .spirit-login-smoke{left:14px!important;width:106px!important;height:65px!important}
+  .spirit-login-signal{width:32px!important;height:68px!important}
+  .login-spirit-controls{right:37px!important;bottom:42px!important;transform:scale(.64)!important}
+}
+
+/* ---- Light button produces a visible, indirect cockpit theme shift ---- */
+:root[data-spirit-lights='on'] body{background:#09131a!important}
+:root[data-spirit-lights='off'] body{background:#03070b!important}
+:root[data-spirit-lights='on'] .models-page,
+:root[data-spirit-lights='on'] .home-page,
+:root[data-spirit-lights='on'] .study-premium,
+:root[data-spirit-lights='on'] .exam-page-v2{
+  background-image:radial-gradient(circle at 55% 0,rgba(45,212,191,.055),transparent 32%)!important;
+}
+:root[data-spirit-lights='off'] .models-page,
+:root[data-spirit-lights='off'] .home-page,
+:root[data-spirit-lights='off'] .study-premium,
+:root[data-spirit-lights='off'] .exam-page-v2{
+  background-image:radial-gradient(circle at 50% 0,rgba(0,0,0,.38),transparent 42%)!important;
+}
+:root[data-spirit-lights='off'] .spirit-drive-scene .spirit-scene-car{
+  filter:brightness(.70) saturate(.76) drop-shadow(0 12px 15px rgba(0,0,0,.40))!important;
+}
+:root[data-spirit-lights='off'] .spirit-drive-scene .spirit-scene-light-beam{opacity:.07!important}
+:root[data-spirit-lights='off'] .spirit-drive-scene .spirit-scene-smoke{opacity:.46!important}
+
+/* ---- Question signal: stays small and away from answers ---- */
+.study-premium-card > .spirit-question-signal,
+.exam-card-v2 > .spirit-question-signal{
+  position:absolute!important;
+  top:9px!important;
+  left:10px!important;
+  z-index:9!important;
+  pointer-events:none!important;
+}
+.spirit-question-signal-housing{padding:4px 6px!important;gap:4px!important}
+.spirit-question-signal-housing i{width:7px!important;height:7px!important}
+.spirit-question-signal-label{font-size:7px!important}
+
+/* Speedometer remains purely decorative — never answer feedback. */
+.exam-card-v2::before,
+.exam-card-v2:has(.exam-option-v2.is-correct)::before,
+.exam-card-v2:has(.exam-option-v2.is-selected)::before{
+  filter:none!important;
+  opacity:.17!important;
+  animation:none!important;
+}
+
+/* ---- No hover required on touch devices ---- */
+@media(hover:none){
+  .spirit-drive-scene .spirit-scene-car{animation-duration:3.1s!important}
+  .spirit-drive-scene .spirit-lights-control:active,
+  .spirit-drive-scene .spirit-horn-control:active{transform:scale(.95)!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .spirit-drive-scene .spirit-scene-car,
+  .spirit-drive-scene .spirit-scene-car::after,
+  .spirit-drive-scene .spirit-scene-smoke,
+  .spirit-login-car::after,
+  .spirit-login-smoke,
+  .spirit-login-dust{animation:none!important}
+}
