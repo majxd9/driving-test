@@ -4,6 +4,7 @@ import { api } from '../api/client';
 import { Question, QuestionCategory } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
+import SpiritTrafficSignal, { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { ensureImageReady, preloadImages } from '../utils/imagePreload';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
@@ -26,10 +27,14 @@ export default function Study() {
   const [navigating, setNavigating] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
+  const [signalState, setSignalState] = useState<SpiritTrafficState>('idle');
   const navigationLockRef = useRef(false);
+  const signalTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!category) return;
+    if (signalTimerRef.current !== null) window.clearTimeout(signalTimerRef.current);
+    setSignalState('idle');
     setLoading(true);
     setError('');
     setIndex(0);
@@ -54,7 +59,13 @@ export default function Study() {
       .map(q => resolveQuestionImageUrl(q.imageUrl))
       .filter(Boolean);
     preloadImages(sources, 3);
+    if (signalTimerRef.current !== null) window.clearTimeout(signalTimerRef.current);
+    setSignalState('idle');
   }, [questions, index]);
+
+  useEffect(() => () => {
+    if (signalTimerRef.current !== null) window.clearTimeout(signalTimerRef.current);
+  }, []);
 
   const goTo = useCallback(async (nextIndex: number) => {
     if (navigationLockRef.current || nextIndex < 0 || nextIndex >= questions.length || nextIndex === index) return;
@@ -90,6 +101,11 @@ export default function Study() {
   const choose = (i: number) => {
     if (chosen !== undefined) return;
     setAnswers(current => ({ ...current, [q.id]: i }));
+    setSignalState('pending');
+    if (signalTimerRef.current !== null) window.clearTimeout(signalTimerRef.current);
+    signalTimerRef.current = window.setTimeout(() => {
+      setSignalState(i === q.correctAnswerIndex ? 'correct' : 'wrong');
+    }, 480);
   };
 
   return (
@@ -102,31 +118,13 @@ export default function Study() {
           <small>{answered} مجاب · {correct} صحيح</small>
         </div>
         <div className="study-premium-counter-wrap">
-          <button
-            type="button"
-            className="study-premium-counter"
-            aria-label={`السؤال ${index + 1} من ${questions.length}. اضغط للانتقال إلى سؤال آخر`}
-            aria-expanded={jumpOpen}
-            onClick={() => {
-              setJumpValue(String(index + 1));
-              setJumpOpen(open => !open);
-            }}
-          >
+          <button type="button" className="study-premium-counter" aria-label={`السؤال ${index + 1} من ${questions.length}. اضغط للانتقال إلى سؤال آخر`} aria-expanded={jumpOpen} onClick={() => { setJumpValue(String(index + 1)); setJumpOpen(open => !open); }}>
             <b>{index + 1}</b><span>من {questions.length}</span>
           </button>
           {jumpOpen && (
             <div className="question-jump-popover">
               <form onSubmit={(event) => void jumpToQuestion(event)}>
-                <input
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  min={1}
-                  max={questions.length}
-                  value={jumpValue}
-                  onChange={event => setJumpValue(event.target.value.replace(/\D/g, ''))}
-                  autoFocus
-                  aria-label="رقم السؤال"
-                />
+                <input inputMode="numeric" pattern="[0-9]*" min={1} max={questions.length} value={jumpValue} onChange={event => setJumpValue(event.target.value.replace(/\D/g, ''))} autoFocus aria-label="رقم السؤال" />
                 <button type="submit">انتقال</button>
               </form>
               <small>اكتب رقم السؤال من 1 إلى {questions.length}</small>
@@ -139,6 +137,7 @@ export default function Study() {
 
       <main className="study-premium-stage">
         <section className="study-premium-card">
+          <SpiritTrafficSignal state={signalState} />
           <div className="study-premium-meta">
             <div><span className="live-dot" /> سؤال {index + 1}</div>
             <span>{chosen === undefined ? 'اختر إجابة' : 'تمت الإجابة'}</span>
