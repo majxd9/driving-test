@@ -9,29 +9,20 @@
   --spirit-red:#ff5b61;
 }
 
-/* The floating cockpit was too intrusive on compact pages. Controls now live in the page chrome. */
 .spirit-global-cockpit{display:none!important}
 
 /* Small indirect dashboard-style control. */
 .spirit-lights-control.spirit-lights-compact{
-  width:36px!important;
-  min-width:36px!important;
-  height:36px!important;
-  min-height:36px!important;
-  padding:0!important;
-  border-radius:10px!important;
-  justify-content:center!important;
-  gap:0!important;
+  width:36px!important;min-width:36px!important;height:36px!important;min-height:36px!important;
+  padding:0!important;border-radius:10px!important;justify-content:center!important;gap:0!important;
 }
-.spirit-lights-control.spirit-lights-compact .spirit-lights-label{display:none!important}
+.spirit-lights-control.spirit-lights-compact .spirit-lights-label,
 .spirit-lights-control.spirit-lights-compact .spirit-lights-switch{display:none!important}
 .spirit-lights-control.spirit-lights-compact .spirit-lights-icon{width:27px!important;height:27px!important;border-radius:8px!important}
 .spirit-lights-control.spirit-lights-compact.is-on .spirit-lights-icon{box-shadow:0 0 16px rgba(45,212,191,.14)!important}
 .spirit-lights-control.spirit-lights-compact.is-off{opacity:.72!important}
 
-/* =========================================================
-   LOGIN — keyboard-safe car movement + stronger exhaust
-   ========================================================= */
+/* ========================================================= LOGIN — keyboard-safe motion + stronger exhaust */
 .spirit-login-car{
   background-color:transparent!important;
   transform:translate3d(var(--login-car-x,0px),0,0)!important;
@@ -39,40 +30,17 @@
   will-change:transform!important;
   filter:drop-shadow(0 10px 12px rgba(0,0,0,.28)) drop-shadow(0 0 8px rgba(45,212,191,.07))!important;
 }
-.spirit-login-car::before{
-  opacity:.98!important;
-  filter:drop-shadow(0 0 13px rgba(45,212,191,.40))!important;
-}
+.spirit-login-car::before{opacity:.98!important;filter:drop-shadow(0 0 13px rgba(45,212,191,.40))!important}
 .spirit-login-car::after{
-  width:78px!important;
-  height:48px!important;
-  opacity:.18!important;
-  background-color:transparent!important;
+  width:78px!important;height:48px!important;opacity:.18!important;background-color:transparent!important;
   animation:spirit-idle-exhaust-v10 1.9s ease-in-out infinite alternate!important;
 }
-.spirit-login-car.is-driving{
-  filter:drop-shadow(0 10px 13px rgba(0,0,0,.30)) drop-shadow(0 0 14px rgba(45,212,191,.16))!important;
-}
-.spirit-login-car.is-driving::after,
-.spirit-login-car.is-go::after{
-  opacity:.95!important;
-  animation:spirit-driving-exhaust-v10 .62s ease-out infinite!important;
-}
-.spirit-login-car.is-go{
-  filter:drop-shadow(0 10px 13px rgba(0,0,0,.30)) drop-shadow(0 0 20px rgba(45,212,191,.25))!important;
-}
+.spirit-login-car.is-driving{filter:drop-shadow(0 10px 13px rgba(0,0,0,.30)) drop-shadow(0 0 14px rgba(45,212,191,.16))!important}
+.spirit-login-car.is-driving::after,.spirit-login-car.is-go::after{opacity:.95!important;animation:spirit-driving-exhaust-v10 .62s ease-out infinite!important}
+.spirit-login-car.is-go{filter:drop-shadow(0 10px 13px rgba(0,0,0,.30)) drop-shadow(0 0 20px rgba(45,212,191,.25))!important}
 
 @media(max-width:900px){
-  .spirit-login-scene{
-    position:fixed!important;
-    top:max(6px,env(safe-area-inset-top))!important;
-    left:8px!important;
-    right:8px!important;
-    bottom:auto!important;
-    width:auto!important;
-    height:92px!important;
-    z-index:200!important;
-  }
+  .spirit-login-scene{position:fixed!important;top:max(6px,env(safe-area-inset-top))!important;left:8px!important;right:8px!important;bottom:auto!important;width:auto!important;height:92px!important;z-index:200!important}
   .login-v2-panel{padding-top:110px!important}
   .spirit-login-car{left:1px!important;bottom:14px!important;width:110px!important;height:54px!important}
   .spirit-login-road{left:3px!important;right:48px!important;bottom:2px!important;height:18px!important}
@@ -101,150 +69,51 @@
   .spirit-signal-light{width:12px!important;height:12px!important}
 }
 
-/* =========================================================
-   MODELS — keep a real car, but place it cleanly inside each card
-   ========================================================= */
+/* ========================================================= MODELS — clean, visible car + indirect control */
 .models-page .exam-topbar-v2{position:relative!important}
-.models-page .models-lights-control{position:absolute!important;left:56px!important;top:50%!important;transform:translateY(-50%)!important;z-index:10!important}
+.models-page .models-lights-control{position:absolute!important;right:56px!important;left:auto!important;top:50%!important;transform:translateY(-50%)!important;z-index:10!important}
 .models-page .models-lights-control:active{transform:translateY(-50%) scale(.96)!important}
-.models-hero{
-  position:relative!important;
-  overflow:hidden!important;
-  isolation:isolate!important;
-}
+.models-hero{position:relative!important;overflow:hidden!important;isolation:isolate!important}
 .models-hero-vehicle{
-  position:absolute!important;
-  left:7%!important;
-  bottom:7%!important;
-  width:230px!important;
-  height:105px!important;
+  position:absolute!important;left:7%!important;bottom:7%!important;width:230px!important;height:105px!important;
   background:url('/spirit/car.svg') right bottom/178px auto no-repeat,url('/spirit/smoke.svg') left bottom/108px auto no-repeat!important;
   filter:drop-shadow(0 10px 15px rgba(0,0,0,.30)) drop-shadow(0 0 12px rgba(45,212,191,.11))!important;
-  opacity:.46!important;
-  pointer-events:none!important;
-  animation:spirit-models-car-v10 3.8s ease-in-out infinite alternate!important;
-  z-index:0!important;
+  opacity:.46!important;pointer-events:none!important;animation:spirit-models-car-v10 3.8s ease-in-out infinite alternate!important;z-index:0!important;
 }
-.models-hero-vehicle::after{
-  content:""!important;
-  position:absolute!important;
-  right:42px!important;
-  bottom:31px!important;
-  width:105px!important;
-  height:30px!important;
-  background:url('/spirit/headlights.svg') center/contain no-repeat!important;
-  opacity:.62!important;
-  filter:drop-shadow(0 0 12px rgba(45,212,191,.34))!important;
-}
+.models-hero-vehicle::after{content:""!important;position:absolute!important;right:42px!important;bottom:31px!important;width:105px!important;height:30px!important;background:url('/spirit/headlights.svg') center/contain no-repeat!important;opacity:.62!important;filter:drop-shadow(0 0 12px rgba(45,212,191,.34))!important}
 .models-hero > *:not(.models-hero-vehicle){position:relative!important;z-index:2!important}
-
-/* Replace the old card artwork composition: no colored rectangle, smaller car, road contact shadow. */
-.model-card{
-  position:relative!important;
-  overflow:hidden!important;
-  isolation:isolate!important;
-}
+.model-card{position:relative!important;overflow:hidden!important;isolation:isolate!important}
 .model-card::before{
-  content:""!important;
-  position:absolute!important;
-  left:10px!important;
-  bottom:7px!important;
-  width:118px!important;
-  height:55px!important;
-  background-color:transparent!important;
-  background-image:url('/spirit/car.svg'),url('/spirit/smoke.svg')!important;
-  background-size:108px auto,76px auto!important;
-  background-position:right bottom,left bottom!important;
-  background-repeat:no-repeat,no-repeat!important;
-  opacity:.33!important;
-  filter:drop-shadow(0 7px 8px rgba(0,0,0,.27))!important;
-  z-index:0!important;
-  transform:translate3d(0,0,0)!important;
-  animation:spirit-card-car-v10 3.6s ease-in-out infinite alternate!important;
+  content:""!important;position:absolute!important;left:10px!important;bottom:7px!important;width:118px!important;height:55px!important;
+  background-color:transparent!important;background-image:url('/spirit/car.svg'),url('/spirit/smoke.svg')!important;
+  background-size:108px auto,76px auto!important;background-position:right bottom,left bottom!important;background-repeat:no-repeat,no-repeat!important;
+  opacity:.33!important;filter:drop-shadow(0 7px 8px rgba(0,0,0,.27))!important;z-index:0!important;
+  transform:translate3d(0,0,0)!important;animation:spirit-card-car-v10 3.6s ease-in-out infinite alternate!important;
 }
-.model-card::after{
-  background-color:transparent!important;
-  background-image:url('/spirit/road.svg')!important;
-  background-size:100% 100%!important;
-  background-position:left bottom!important;
-  opacity:.11!important;
-  z-index:0!important;
-}
+.model-card::after{background-color:transparent!important;background-image:url('/spirit/road.svg')!important;background-size:100% 100%!important;background-position:left bottom!important;opacity:.11!important;z-index:0!important}
 .model-card > *{position:relative!important;z-index:2!important}
 .model-card:hover::before,.model-card:focus-visible::before{transform:translate3d(-5px,-2px,0)!important;opacity:.42!important}
 
 @media(max-width:700px){
-  .models-page .models-lights-control{left:48px!important;width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important}
+  .models-page .models-lights-control{right:52px!important;width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important}
   .models-hero-vehicle{left:2%!important;bottom:5%!important;width:180px!important;height:86px!important;background-size:142px auto,88px auto!important;opacity:.40!important;animation:spirit-models-car-mobile-v10 3.3s ease-in-out infinite alternate!important}
   .models-hero-vehicle::after{right:28px!important;bottom:26px!important;width:84px!important}
   .model-card::before{left:9px!important;bottom:7px!important;width:105px!important;height:49px!important;background-size:96px auto,68px auto!important;opacity:.29!important;animation:spirit-card-car-mobile-v10 3.3s ease-in-out infinite alternate!important}
 }
 
-/* =========================================================
-   HOME / STUDY / EXAM / RESULT / ADMIN — same car language,
-   stronger light + exhaust without affecting content geometry
-   ========================================================= */
-.home-hero::after{
-  background-color:transparent!important;
-  background-image:url('/spirit/car.svg'),url('/spirit/smoke.svg')!important;
-  background-repeat:no-repeat,no-repeat!important;
-  filter:drop-shadow(0 0 12px rgba(45,212,191,.15))!important;
+/* ========================================================= OTHER PAGES — car + road language, stronger light/exhaust */
+.home-hero::after,.home-exam::before,.result-hero::after,.admin-header::after{
+  background-color:transparent!important;background-image:url('/spirit/car.svg'),url('/spirit/smoke.svg')!important;background-repeat:no-repeat,no-repeat!important;
 }
-.home-exam::before{
-  background-color:transparent!important;
-  background-image:url('/spirit/car.svg'),url('/spirit/smoke.svg')!important;
-  background-repeat:no-repeat,no-repeat!important;
-  filter:drop-shadow(0 0 12px rgba(45,212,191,.12))!important;
-}
-.study-premium-card::after,
-.exam-card-v2::after{
-  background-color:transparent!important;
-  background-image:url('/spirit/car.svg'),url('/spirit/smoke.svg'),url('/spirit/road.svg')!important;
-  background-repeat:no-repeat,no-repeat,no-repeat!important;
-  background-size:92px auto,68px auto,100% 100%!important;
-  background-position:left 9% bottom 9%,left 1% bottom 6%,left bottom!important;
-  opacity:.12!important;
+.study-premium-card::after,.exam-card-v2::after{
+  background-color:transparent!important;background-image:url('/spirit/car.svg'),url('/spirit/smoke.svg'),url('/spirit/road.svg')!important;
+  background-repeat:no-repeat,no-repeat,no-repeat!important;background-size:92px auto,68px auto,100% 100%!important;
+  background-position:left 9% bottom 9%,left 1% bottom 6%,left bottom!important;opacity:.12!important;
   filter:drop-shadow(0 0 9px rgba(45,212,191,.10))!important;
 }
-.result-hero::after{
-  background-color:transparent!important;
-  background-image:url('/spirit/car.svg'),url('/spirit/smoke.svg')!important;
-  background-repeat:no-repeat,no-repeat!important;
-  filter:drop-shadow(0 0 13px rgba(45,212,191,.14))!important;
-}
-.admin-header::after{
-  background-color:transparent!important;
-  background-image:url('/spirit/car.svg'),url('/spirit/smoke.svg')!important;
-  background-repeat:no-repeat,no-repeat!important;
-  filter:drop-shadow(0 0 11px rgba(45,212,191,.11))!important;
-}
-
-/* Make existing car scenes breathe: stronger lights and a visible exhaust pulse. */
-.home-hero::after,
-.home-exam::before,
-.result-hero::after,
-.admin-header::after{
-  animation-duration:3.4s!important;
-}
-:root[data-spirit-lights='on'] .home-hero::after,
-:root[data-spirit-lights='on'] .home-exam::before,
-:root[data-spirit-lights='on'] .result-hero::after,
-:root[data-spirit-lights='on'] .admin-header::after{
-  filter:drop-shadow(0 0 15px rgba(45,212,191,.23)) drop-shadow(0 9px 13px rgba(0,0,0,.25))!important;
-}
-:root[data-spirit-lights='off'] .home-hero::after,
-:root[data-spirit-lights='off'] .home-exam::before,
-:root[data-spirit-lights='off'] .result-hero::after,
-:root[data-spirit-lights='off'] .admin-header::after{
-  filter:brightness(.72) saturate(.72) drop-shadow(0 7px 10px rgba(0,0,0,.22))!important;
-}
-
-/* =========================================================
-   MICRO DETAILS — intentional, not decorative noise
-   ========================================================= */
-.model-card.advanced::before{filter:saturate(1.15) drop-shadow(0 0 10px rgba(245,185,67,.14))!important}
-.study-premium-card:has(.study-premium-option.is-correct) .study-premium-meta,
-.exam-card-v2:has(.exam-option-v2.is-correct) .exam-topbar-v2{filter:drop-shadow(0 0 6px rgba(45,212,191,.06))}
+.home-hero::after,.home-exam::before,.result-hero::after,.admin-header::after{animation-duration:3.4s!important}
+:root[data-spirit-lights='on'] .home-hero::after,:root[data-spirit-lights='on'] .home-exam::before,:root[data-spirit-lights='on'] .result-hero::after,:root[data-spirit-lights='on'] .admin-header::after{filter:drop-shadow(0 0 15px rgba(45,212,191,.23)) drop-shadow(0 9px 13px rgba(0,0,0,.25))!important}
+:root[data-spirit-lights='off'] .home-hero::after,:root[data-spirit-lights='off'] .home-exam::before,:root[data-spirit-lights='off'] .result-hero::after,:root[data-spirit-lights='off'] .admin-header::after{filter:brightness(.72) saturate(.72) drop-shadow(0 7px 10px rgba(0,0,0,.22))!important}
 
 @keyframes spirit-idle-exhaust-v10{
   0%,100%{transform:translate3d(0,2px,0) scale(.82);opacity:.12}
@@ -255,27 +124,9 @@
   42%{transform:translate3d(-12px,-4px,0) scale(1.03);opacity:.85}
   100%{transform:translate3d(-25px,-10px,0) scale(1.26);opacity:0}
 }
-@keyframes spirit-models-car-v10{
-  from{transform:translate3d(0,0,0)}
-  to{transform:translate3d(-13px,-2px,0)}
-}
-@keyframes spirit-models-car-mobile-v10{
-  from{transform:translate3d(0,0,0)}
-  to{transform:translate3d(-9px,-2px,0)}
-}
-@keyframes spirit-card-car-v10{
-  from{transform:translate3d(0,0,0)}
-  to{transform:translate3d(-8px,-1px,0)}
-}
-@keyframes spirit-card-car-mobile-v10{
-  from{transform:translate3d(0,0,0)}
-  to{transform:translate3d(-6px,-1px,0)}
-}
+@keyframes spirit-models-car-v10{from{transform:translate3d(0,0,0)}to{transform:translate3d(-13px,-2px,0)}}
+@keyframes spirit-models-car-mobile-v10{from{transform:translate3d(0,0,0)}to{transform:translate3d(-9px,-2px,0)}}
+@keyframes spirit-card-car-v10{from{transform:translate3d(0,0,0)}to{transform:translate3d(-8px,-1px,0)}}
+@keyframes spirit-card-car-mobile-v10{from{transform:translate3d(0,0,0)}to{transform:translate3d(-6px,-1px,0)}}
 
-@media(prefers-reduced-motion:reduce){
-  .spirit-login-car::after,
-  .spirit-login-car.is-driving::after,
-  .spirit-login-car.is-go::after,
-  .models-hero-vehicle,
-  .model-card::before{animation:none!important}
-}
+@media(prefers-reduced-motion:reduce){.spirit-login-car::after,.spirit-login-car.is-driving::after,.spirit-login-car.is-go::after,.models-hero-vehicle,.model-card::before{animation:none!important}}
