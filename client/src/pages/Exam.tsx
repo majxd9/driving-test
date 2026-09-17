@@ -4,6 +4,8 @@ import { api } from '../api/client';
 import { Question } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
+import SpiritTrafficSignal from '../components/SpiritTrafficSignal';
+import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { ensureImageReady, preloadImages } from '../utils/imagePreload';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 
@@ -31,8 +33,10 @@ export default function Exam() {
   const [navigating, setNavigating] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
+  const [signalState, setSignalState] = useState<SpiritTrafficState>('idle');
   const finishedRef = useRef(false);
   const navigationLockRef = useRef(false);
+  const signalTimerRef = useRef<number | null>(null);
 
   const loadExam = useCallback(async () => {
     const id = Number(modelId) || 1;
@@ -41,7 +45,7 @@ export default function Exam() {
     try {
       const picked = await api.getExamQuestions(id);
       if (picked.length !== 30) throw new Error('تعذر تجهيز ٣٠ سؤالاً للاختبار.');
-      setQuestions(picked); setAnswers({}); setCurrent(0); setSeconds(DURATION); setJumpOpen(false); setJumpValue('1');
+      setQuestions(picked); setAnswers({}); setCurrent(0); setSeconds(DURATION); setJumpOpen(false); setJumpValue('1'); setSignalState('idle');
       finishedRef.current = false; navigationLockRef.current = false;
       const firstThree = picked.slice(0, 3).map(q => resolveQuestionImageUrl(q.imageUrl)).filter(Boolean);
       const first = firstThree[0]; if (first) await ensureImageReady(first, 1600); preloadImages(firstThree.slice(1), 2);
@@ -50,8 +54,9 @@ export default function Exam() {
   }, [modelId]);
 
   useEffect(() => { void loadExam(); }, [loadExam]);
-  useEffect(() => { const sources=questions.slice(current,current+3).map(q=>resolveQuestionImageUrl(q.imageUrl)).filter(Boolean); preloadImages(sources,3); }, [questions,current]);
+  useEffect(() => { const sources=questions.slice(current,current+3).map(q=>resolveQuestionImageUrl(q.imageUrl)).filter(Boolean); preloadImages(sources,3); if(signalTimerRef.current!==null) window.clearTimeout(signalTimerRef.current); setSignalState('idle'); }, [questions,current]);
   useEffect(() => { setImageExpanded(false); }, [current]);
+  useEffect(() => () => { if(signalTimerRef.current!==null) window.clearTimeout(signalTimerRef.current); }, []);
 
   const finish = useCallback(() => {
     if (finishedRef.current || !questions.length) return;
@@ -79,11 +84,15 @@ export default function Exam() {
     await goToQuestion(requested - 1);
   }, [goToQuestion, jumpValue, questions.length]);
 
-  const chooseAnswer = (index:number) => {
-    if (answers[q.id] !== undefined) return;
-    const correct = index === q.correctAnswerIndex;
-    setAnswers(a=>({...a,[q.id]:index}));
+  const q = questions[current];
+  const chooseAnswer = (answerIndex:number) => {
+    if (!q || answers[q.id] !== undefined) return;
+    const correct = answerIndex === q.correctAnswerIndex;
+    setAnswers(a=>({...a,[q.id]:answerIndex}));
     playAnswerFeedback(correct);
+    setSignalState('pending');
+    if(signalTimerRef.current!==null) window.clearTimeout(signalTimerRef.current);
+    signalTimerRef.current=window.setTimeout(()=>setSignalState(correct?'correct':'wrong'),480);
   };
 
   useEffect(()=>{if(loading)return;const timer=setInterval(()=>{setSeconds(s=>{if(s<=1){clearInterval(timer);finish();return 0;}return s-1;});},1000);return()=>clearInterval(timer);},[loading,finish]);
@@ -91,7 +100,7 @@ export default function Exam() {
   if(loading)return <div className="page-shell flex items-center justify-center px-4"><div className="surface-panel w-full max-w-xl p-5"><div className="skeleton h-44 rounded-2xl"/><p className="text-center text-muted text-sm mt-4">جارِ تجهيز أول صورة للاختبار...</p></div></div>;
   if(loadError||!questions.length)return <div className="page-shell flex items-center justify-center px-5"><div className="surface-panel w-full max-w-md text-center p-7"><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-xl font-black mb-2">تعذر تحضير الاختبار</h1><p className="text-muted text-sm leading-relaxed">{loadError??'لم يتم العثور على أسئلة.'}</p><button onClick={loadExam} className="primary-cta mt-5 w-full">إعادة المحاولة</button></div></div>;
 
-  const q=questions[current]; const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
+  const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
   const selectedAnswer = answers[q.id];
   const isCorrectSelection = selectedAnswer !== undefined && selectedAnswer === q.correctAnswerIndex;
   const explanationNeeded = selectedAnswer !== undefined && Boolean(q.explanation);
@@ -119,6 +128,7 @@ export default function Exam() {
     </header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
     <main className="exam-stage-v2"><section className="exam-card-v2">
+      <SpiritTrafficSignal state={signalState} />
       <div className="exam-scroll-v2">
         <div className="exam-image-slot-v2">{q.imageUrl?<button type="button" className="exam-image-v2" onClick={()=>setImageExpanded(true)} aria-label="تكبير صورة السؤال"><OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 92vw, 720px" className="w-full h-full" objectFit="contain"/></button>:<div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
