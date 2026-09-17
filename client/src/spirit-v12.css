@@ -1,0 +1,57 @@
+/* رخصتي — Spirit v12
+   Final composition pass for the current screens. */
+
+/* The hero car replaces the old pseudo-car layers. */
+.home-hero::before,.home-hero::after,.models-hero::before,.models-hero::after{content:none!important;background:none!important;animation:none!important}
+
+/* Model cards stay clean; the large hero vehicle carries the identity here. */
+.model-card::before,.model-card::after{content:none!important;background:none!important;animation:none!important;display:none!important}
+.models-page .exam-topbar-v2::before,.models-page .exam-topbar-v2::after{content:none!important;background:none!important;animation:none!important}
+
+/* Put the dashboard controls next to the car rather than floating in the corner. */
+.spirit-drive-scene .spirit-scene-controls{
+  right:auto!important;
+  left:31%!important;
+  top:auto!important;
+  bottom:27%!important;
+  z-index:12!important;
+}
+.spirit-drive-scene .spirit-scene-car{z-index:7!important}
+.spirit-drive-scene .spirit-scene-light-beam{z-index:4!important}
+.spirit-drive-scene .spirit-scene-smoke{z-index:5!important}
+
+/* Small global cockpit controls use the same physical dashboard language. */
+.spirit-global-controls{
+  position:absolute!important;
+  right:5px!important;
+  top:4px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  pointer-events:auto!important;
+  transform:scale(.68)!important;
+  transform-origin:top right!important;
+}
+.spirit-global-controls .spirit-lights-control,.spirit-global-controls .spirit-horn-control{pointer-events:auto!important}
+.spirit-global-controls .spirit-lights-control{position:static!important;transform:none!important}
+.spirit-global-controls .spirit-horn-control{height:38px!important;min-width:46px!important}
+.spirit-global-cockpit .spirit-global-lights{position:static!important;transform:none!important}
+
+/* Stronger exhaust without turning it into a cloud covering the UI. */
+.spirit-scene-car::after{opacity:.88!important}
+.spirit-global-car::after{opacity:.60!important}
+
+/* Mobile: keep the dashboard control physically close to the car and above fixed nav. */
+@media(max-width:900px){
+  .spirit-drive-scene .spirit-scene-controls{left:28%!important;bottom:30%!important;transform:scale(.68)!important;transform-origin:left bottom!important}
+  .spirit-global-controls{right:4px!important;top:3px!important;transform:scale(.62)!important}
+}
+@media(max-width:430px){
+  .spirit-drive-scene .spirit-scene-controls{left:27%!important;bottom:31%!important;transform:scale(.58)!important}
+  .spirit-global-cockpit{bottom:78px!important}
+  .spirit-global-controls{transform:scale(.56)!important}
+}
+
+/* Neutral speedometer: it remains a visual instrument, never a correct/wrong indicator. */
+.exam-card-v2::before{filter:none!important;animation:none!important;opacity:.18!important}
+.exam-card-v2:has(.exam-option-v2.is-correct)::before,.exam-card-v2:has(.exam-option-v2.is-selected)::before{filter:none!important;animation:none!important;opacity:.18!important}
