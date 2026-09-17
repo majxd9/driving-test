@@ -4,20 +4,16 @@ import { api } from '../api/client';
 import { Question } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
-import SpiritTrafficSignal from '../components/SpiritTrafficSignal';
-import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { ensureImageReady, preloadImages } from '../utils/imagePreload';
-import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 
 const DURATION = 15 * 60;
 const LETTERS = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
 
-const UiIcon = ({name}:{name:'back'|'next'|'finish'|'check'}) => {
+const UiIcon = ({name}:{name:'back'|'next'|'finish'}) => {
   const common={width:19,height:19,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round' as const,strokeLinejoin:'round' as const};
   if(name==='back') return <svg {...common}><path d="M19 12H5M11 18l-6-6 6-6"/></svg>;
   if(name==='next') return <svg {...common}><path d="M5 12h14M13 6l6 6-6 6"/></svg>;
-  if(name==='finish') return <svg {...common}><path d="M12 3 5 6v5c0 4.5 2.9 8.2 7 10 4.1-1.8 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>;
-  return <svg {...common}><path d="m5 12 4 4L19 6"/></svg>;
+  return <svg {...common}><path d="M12 3 5 6v5c0 4.5 2.9 8.2 7 10 4.1-1.8 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>;
 };
 
 export default function Exam() {
@@ -33,10 +29,8 @@ export default function Exam() {
   const [navigating, setNavigating] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
-  const [signalState, setSignalState] = useState<SpiritTrafficState>('idle');
   const finishedRef = useRef(false);
   const navigationLockRef = useRef(false);
-  const signalTimerRef = useRef<number | null>(null);
 
   const loadExam = useCallback(async () => {
     const id = Number(modelId) || 1;
@@ -45,7 +39,7 @@ export default function Exam() {
     try {
       const picked = await api.getExamQuestions(id);
       if (picked.length !== 30) throw new Error('تعذر تجهيز ٣٠ سؤالاً للاختبار.');
-      setQuestions(picked); setAnswers({}); setCurrent(0); setSeconds(DURATION); setJumpOpen(false); setJumpValue('1'); setSignalState('idle');
+      setQuestions(picked); setAnswers({}); setCurrent(0); setSeconds(DURATION); setJumpOpen(false); setJumpValue('1');
       finishedRef.current = false; navigationLockRef.current = false;
       const firstThree = picked.slice(0, 3).map(q => resolveQuestionImageUrl(q.imageUrl)).filter(Boolean);
       const first = firstThree[0]; if (first) await ensureImageReady(first, 1600); preloadImages(firstThree.slice(1), 2);
@@ -54,9 +48,8 @@ export default function Exam() {
   }, [modelId]);
 
   useEffect(() => { void loadExam(); }, [loadExam]);
-  useEffect(() => { const sources=questions.slice(current,current+3).map(q=>resolveQuestionImageUrl(q.imageUrl)).filter(Boolean); preloadImages(sources,3); if(signalTimerRef.current!==null) window.clearTimeout(signalTimerRef.current); setSignalState('idle'); }, [questions,current]);
+  useEffect(() => { const sources=questions.slice(current,current+3).map(q=>resolveQuestionImageUrl(q.imageUrl)).filter(Boolean); preloadImages(sources,3); }, [questions,current]);
   useEffect(() => { setImageExpanded(false); }, [current]);
-  useEffect(() => () => { if(signalTimerRef.current!==null) window.clearTimeout(signalTimerRef.current); }, []);
 
   const finish = useCallback(() => {
     if (finishedRef.current || !questions.length) return;
@@ -87,12 +80,7 @@ export default function Exam() {
   const q = questions[current];
   const chooseAnswer = (answerIndex:number) => {
     if (!q || answers[q.id] !== undefined) return;
-    const correct = answerIndex === q.correctAnswerIndex;
     setAnswers(a=>({...a,[q.id]:answerIndex}));
-    playAnswerFeedback(correct);
-    setSignalState('pending');
-    if(signalTimerRef.current!==null) window.clearTimeout(signalTimerRef.current);
-    signalTimerRef.current=window.setTimeout(()=>setSignalState(correct?'correct':'wrong'),480);
   };
 
   useEffect(()=>{if(loading)return;const timer=setInterval(()=>{setSeconds(s=>{if(s<=1){clearInterval(timer);finish();return 0;}return s-1;});},1000);return()=>clearInterval(timer);},[loading,finish]);
@@ -102,7 +90,6 @@ export default function Exam() {
 
   const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
   const selectedAnswer = answers[q.id];
-  const isCorrectSelection = selectedAnswer !== undefined && selectedAnswer === q.correctAnswerIndex;
   const explanationNeeded = selectedAnswer !== undefined && Boolean(q.explanation);
   return <div className="exam-page-v2" dir="rtl">
     <header className="exam-topbar-v2">
@@ -128,12 +115,11 @@ export default function Exam() {
     </header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
     <main className="exam-stage-v2"><section className="exam-card-v2">
-      <SpiritTrafficSignal state={signalState} />
       <div className="exam-scroll-v2">
         <div className="exam-image-slot-v2">{q.imageUrl?<button type="button" className="exam-image-v2" onClick={()=>setImageExpanded(true)} aria-label="تكبير صورة السؤال"><OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 92vw, 720px" className="w-full h-full" objectFit="contain"/></button>:<div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
-        <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>chooseAnswer(i)} className={`exam-option-v2 ${answers[q.id]===i?'selected':''} ${answers[q.id]===i&&isCorrectSelection?'is-correct':''} ${answers[q.id]===i?'is-selected':''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
-        {explanationNeeded && (<div className="exam-answer-explanation-v2" role="status" aria-live="polite"><div className="exam-answer-explanation-title-v2"><UiIcon name="check"/><span>{q.category === 'Ishara' ? 'شرح الإشارة' : 'الشرح'}</span></div><p>{q.explanation}</p></div>)}
+        <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>chooseAnswer(i)} className={`exam-option-v2 ${answers[q.id]===i?'selected':''} ${answers[q.id]===i?'is-selected':''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<span className="exam-option-selected-dot" aria-hidden="true"/>}</button>)}</div>
+        {explanationNeeded && (<div className="exam-answer-explanation-v2" role="status" aria-live="polite"><div className="exam-answer-explanation-title-v2"><span>{q.category === 'Ishara' ? 'شرح الإشارة' : 'الشرح'}</span></div><p>{q.explanation}</p></div>)}
         <DiagramRenderer question={q}/>
       </div>
       <div className="exam-actions-v2">
