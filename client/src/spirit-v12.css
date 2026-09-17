@@ -1,8 +1,7 @@
-/* رخصتي — Spirit v12.1
-   Safety-first visual correction. Decorative only.
-   Never cover, hide, disable, or alter question choices. */
+/* رخصتي — Spirit v12.2
+   Safety + composition pass. Decorative only; never blocks question choices. */
 
-/* ---------- HARD SAFETY: content always wins ---------- */
+/* ---------- HARD SAFETY: question content always wins ---------- */
 .study-premium-card,
 .study-premium-meta,
 .study-premium-image,
@@ -14,127 +13,59 @@
 .exam-image-slot-v2,
 .exam-question-v2,
 .exam-answers-v2,
-.exam-option-v2{
-  position:relative!important;
-}
+.exam-option-v2{position:relative!important}
 .study-premium-answers,
 .study-premium-option,
 .exam-answers-v2,
-.exam-option-v2{
-  z-index:60!important;
-  visibility:visible!important;
-  opacity:1!important;
-}
-.study-premium-option,
-.exam-option-v2{pointer-events:auto!important}
+.exam-option-v2{z-index:60!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
 
-/* The exam choices remain vertical and visible on phones. */
-.exam-answers-v2{
-  grid-template-columns:1fr!important;
-  grid-template-rows:repeat(4,minmax(0,1fr))!important;
-  grid-auto-rows:minmax(0,1fr)!important;
-  gap:4px!important;
-}
+/* Four exam choices: vertical, readable, visible together. */
+.exam-answers-v2{grid-template-columns:1fr!important;grid-template-rows:repeat(4,minmax(0,1fr))!important;grid-auto-rows:minmax(0,1fr)!important;gap:4px!important}
 .exam-option-v2{overflow:hidden!important}
-.exam-option-text-v2{
-  display:block!important;
-  min-width:0!important;
-  white-space:normal!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-}
+.exam-option-text-v2{display:block!important;min-width:0!important;white-space:normal!important;overflow:hidden!important;text-overflow:ellipsis!important}
 
-/* ---------- REMOVE THE FLOATING CORNER GIMMICK ---------- */
+/* Remove the old floating-corner cockpit that covered the page. */
 .spirit-global-cockpit{display:none!important}
 
-/* ---------- BIG CAR: one clear focal object on Home / Models ---------- */
-.home-spirit-scene,
-.models-spirit-scene{
-  pointer-events:none!important;
-  z-index:0!important;
-  overflow:visible!important;
-}
-.home-spirit-scene .spirit-scene-car,
-.models-spirit-scene .spirit-scene-car{
-  left:auto!important;
-  right:2%!important;
-  transform:scaleX(-1)!important;
-  opacity:.74!important;
+/* ---------- BIG HERO CAR: restored, visible, anchored to the far edge ---------- */
+.home-spirit-scene,.models-spirit-scene{pointer-events:none!important;z-index:0!important;overflow:visible!important}
+.home-spirit-scene .spirit-scene-car,.models-spirit-scene .spirit-scene-car{
+  left:auto!important;right:2%!important;transform:scaleX(-1)!important;opacity:.74!important;
   filter:drop-shadow(0 15px 17px rgba(0,0,0,.34)) drop-shadow(0 0 20px rgba(45,212,191,.19))!important;
-  animation:spirit-v12-big-car 3.8s ease-in-out infinite alternate!important;
+  animation:spirit-v12-big-car 3.8s ease-in-out infinite alternate!important
 }
-.home-spirit-scene .spirit-scene-car::before,
-.models-spirit-scene .spirit-scene-car::before{opacity:1!important}
-.home-spirit-scene .spirit-scene-car::after,
-.models-spirit-scene .spirit-scene-car::after{
-  width:126px!important;height:74px!important;opacity:.86!important;
-}
-.home-spirit-scene .spirit-scene-smoke,
-.models-spirit-scene .spirit-scene-smoke{
-  width:155px!important;height:94px!important;opacity:.62!important;
-}
-
-/* Keep text above the artwork. */
-.home-hero > *:not(.home-spirit-scene),
-.models-hero > *:not(.models-spirit-scene){position:relative!important;z-index:3!important}
+.home-spirit-scene .spirit-scene-car::before,.models-spirit-scene .spirit-scene-car::before{opacity:1!important}
+.home-spirit-scene .spirit-scene-car::after,.models-spirit-scene .spirit-scene-car::after{width:126px!important;height:74px!important;opacity:.86!important}
+.home-spirit-scene .spirit-scene-smoke,.models-spirit-scene .spirit-scene-smoke{width:155px!important;height:94px!important;opacity:.62!important}
+.home-spirit-scene .spirit-scene-controls,.models-spirit-scene .spirit-scene-controls{pointer-events:auto!important;z-index:10!important}
+.home-hero > *:not(.home-spirit-scene),.models-hero > *:not(.models-spirit-scene){position:relative!important;z-index:3!important}
 
 @media(max-width:900px){
-  .home-spirit-scene,
-  .models-spirit-scene{right:-2%!important;width:96%!important;height:48%!important;bottom:0!important}
-  .home-spirit-scene .spirit-scene-car,
-  .models-spirit-scene .spirit-scene-car{right:1%!important;width:224px!important;height:100px!important;bottom:17%!important}
-  .home-spirit-scene .spirit-scene-smoke,
-  .models-spirit-scene .spirit-scene-smoke{width:112px!important;height:68px!important;opacity:.64!important}
+  .home-spirit-scene,.models-spirit-scene{right:-2%!important;width:96%!important;height:48%!important;bottom:0!important}
+  .home-spirit-scene .spirit-scene-car,.models-spirit-scene .spirit-scene-car{right:1%!important;width:224px!important;height:100px!important;bottom:17%!important}
+  .home-spirit-scene .spirit-scene-smoke,.models-spirit-scene .spirit-scene-smoke{width:112px!important;height:68px!important;opacity:.64!important}
 }
 @media(max-width:430px){
-  .home-spirit-scene,
-  .models-spirit-scene{right:-4%!important;width:101%!important;height:44%!important}
-  .home-spirit-scene .spirit-scene-car,
-  .models-spirit-scene .spirit-scene-car{right:0!important;width:192px!important;height:87px!important;bottom:17%!important}
+  .home-spirit-scene,.models-spirit-scene{right:-4%!important;width:101%!important;height:44%!important}
+  .home-spirit-scene .spirit-scene-car,.models-spirit-scene .spirit-scene-car{right:0!important;width:192px!important;height:87px!important;bottom:17%!important}
 }
 
-/* ---------- LOGIN: scene sits lower in the viewport, above the username area ---------- */
+/* ---------- LOGIN: put the scene below the browser/header area and above the form area ---------- */
 @media(max-width:900px){
   .spirit-login-scene{
-    position:fixed!important;
-    top:clamp(120px,23vh,178px)!important;
-    left:10px!important;
-    right:10px!important;
-    width:auto!important;
-    height:86px!important;
-    z-index:700!important;
-    pointer-events:none!important;
+    position:fixed!important;top:clamp(120px,23vh,178px)!important;left:10px!important;right:10px!important;
+    width:auto!important;height:86px!important;z-index:700!important;pointer-events:none!important
   }
   .spirit-login-car{
-    left:8px!important;
-    right:auto!important;
-    bottom:11px!important;
-    width:108px!important;
-    height:52px!important;
+    left:8px!important;right:auto!important;bottom:11px!important;width:108px!important;height:52px!important;
     transform:translate3d(calc(var(--login-car-x,8px) * .30),0,0) scaleX(-1)!important;
-    transition:transform .18s cubic-bezier(.18,.88,.22,1)!important;
+    transition:transform .18s cubic-bezier(.18,.88,.22,1)!important
   }
-  .spirit-login-smoke{
-    left:0!important;
-    bottom:22px!important;
-    width:118px!important;
-    height:72px!important;
-    opacity:.80!important;
-  }
-  .spirit-login-dust{
-    left:0!important;
-    bottom:4px!important;
-    width:156px!important;
-    opacity:.68!important;
-  }
+  .spirit-login-smoke{left:0!important;bottom:22px!important;width:118px!important;height:72px!important;opacity:.80!important}
+  .spirit-login-dust{left:0!important;bottom:4px!important;width:156px!important;opacity:.68!important}
   .spirit-headlight-glow{left:82px!important;bottom:23px!important;width:108px!important;opacity:.78!important}
   .spirit-login-signal{right:0!important;top:0!important;width:34px!important;height:70px!important}
-  .spirit-login-scene .spirit-lights-control{
-    left:50%!important;
-    top:0!important;
-    transform:translateX(-50%) scale(.62)!important;
-    pointer-events:auto!important;
-  }
+  .spirit-login-scene .spirit-lights-control{left:50%!important;top:0!important;transform:translateX(-50%) scale(.62)!important;pointer-events:auto!important}
   .spirit-login-scene .spirit-horn-control{pointer-events:auto!important}
 }
 @media(max-width:430px){
@@ -145,57 +76,52 @@
   .spirit-login-scene .spirit-lights-control{transform:translateX(-50%) scale(.58)!important}
 }
 
-/* ---------- MINIMAL CONTROLS: icon only, like a real cockpit ---------- */
+/* ---------- MINIMAL CONTROLS: icon only, in-car feel ---------- */
 .spirit-horn-icon-only{
-  width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;
-  padding:0!important;display:grid!important;place-items:center!important;border-radius:50%!important;
+  width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;padding:0!important;
+  display:grid!important;place-items:center!important;border-radius:50%!important;
   border:1px solid rgba(148,163,184,.20)!important;
   background:radial-gradient(circle at 35% 30%,#20313d,#071019 72%)!important;
-  color:#d7f7f3!important;
-  box-shadow:inset 0 1px rgba(255,255,255,.06),0 7px 16px rgba(0,0,0,.28)!important;
+  color:#d7f7f3!important;box-shadow:inset 0 1px rgba(255,255,255,.06),0 7px 16px rgba(0,0,0,.28)!important
 }
 .spirit-horn-icon-only svg{width:18px!important;height:18px!important}
 .spirit-horn-icon-only.is-pressed{transform:scale(.94)!important;box-shadow:0 0 18px rgba(45,212,191,.20),inset 0 1px rgba(255,255,255,.08)!important}
-
-/* Compact light control stays a single icon. */
-.spirit-lights-control.spirit-lights-compact{
-  width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;
-  padding:3px!important;border-radius:50%!important;
-}
-.spirit-lights-control.spirit-lights-compact .spirit-lights-label,
-.spirit-lights-control.spirit-lights-compact .spirit-lights-switch{display:none!important}
+.spirit-lights-control.spirit-lights-compact{width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;padding:3px!important;border-radius:50%!important}
+.spirit-lights-control.spirit-lights-compact .spirit-lights-label,.spirit-lights-control.spirit-lights-compact .spirit-lights-switch{display:none!important}
 .spirit-lights-control.spirit-lights-compact .spirit-lights-icon{width:28px!important;height:28px!important;border-radius:50%!important}
 
-/* ---------- ANSWER SOUND IS THE FEEDBACK; SPEEDOMETER NEVER IS ---------- */
-.exam-card-v2::before,
-.exam-card-v2:has(.exam-option-v2.is-correct)::before,
-.exam-card-v2:has(.exam-option-v2.is-selected:not(.is-correct))::before{
-  filter:none!important;
-  animation:spirit-v12-gauge-idle 3.8s ease-in-out infinite!important;
-  opacity:.18!important;
+/* ---------- Question signal: a compact status indicator, never over the choices ---------- */
+.study-premium-card > .spirit-question-signal,.exam-card-v2 > .spirit-question-signal{
+  position:absolute!important;left:12px!important;top:10px!important;z-index:8!important;
+  display:flex!important;align-items:center!important;gap:6px!important;pointer-events:none!important
+}
+.spirit-question-signal-housing{
+  display:flex!important;align-items:center!important;gap:4px!important;padding:5px 6px!important;border-radius:999px!important;
+  background:rgba(6,16,24,.82)!important;border:1px solid rgba(255,255,255,.09)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.05),0 6px 14px rgba(0,0,0,.20)!important
+}
+.spirit-question-signal-housing i{width:8px!important;height:8px!important;border-radius:50%!important;background:#24313d!important;box-shadow:none!important;transition:.2s ease!important}
+.spirit-question-signal.state-idle .spirit-question-signal-housing i.red{background:#ff4f5b!important;box-shadow:0 0 10px rgba(255,79,91,.65)!important}
+.spirit-question-signal.state-pending .spirit-question-signal-housing i.amber{background:#f5b943!important;box-shadow:0 0 10px rgba(245,185,67,.65)!important}
+.spirit-question-signal.state-correct .spirit-question-signal-housing i.green{background:#2dd4bf!important;box-shadow:0 0 11px rgba(45,212,191,.72)!important}
+.spirit-question-signal.state-wrong .spirit-question-signal-housing i.red{background:#ff5b61!important;box-shadow:0 0 11px rgba(255,91,97,.72)!important}
+.spirit-question-signal-label{font-size:8px!important;font-weight:900!important;color:#9eabba!important;min-width:28px!important;text-align:center!important}
+
+/* ---------- Speedometer is neutral and never reacts to correctness ---------- */
+.exam-card-v2::before,.exam-card-v2:has(.exam-option-v2.is-correct)::before,.exam-card-v2:has(.exam-option-v2.is-selected:not(.is-correct))::before{
+  filter:none!important;animation:spirit-v12-gauge-idle 3.8s ease-in-out infinite!important;opacity:.18!important
 }
 
-/* ---------- Small visual theme shift when the headlights are switched off. */
+/* ---------- Headlight switch becomes an indirect visual mode ---------- */
 :root[data-spirit-lights='off'] .home-spirit-scene .spirit-scene-car,
 :root[data-spirit-lights='off'] .models-spirit-scene .spirit-scene-car,
-:root[data-spirit-lights='off'] .spirit-login-car{
-  filter:brightness(.74) saturate(.70) drop-shadow(0 10px 12px rgba(0,0,0,.28))!important;
-}
+:root[data-spirit-lights='off'] .spirit-login-car{filter:brightness(.74) saturate(.70) drop-shadow(0 10px 12px rgba(0,0,0,.28))!important}
 :root[data-spirit-lights='off'] .spirit-scene-light-beam,
 :root[data-spirit-lights='off'] .spirit-headlight-glow{opacity:.08!important}
 
-@keyframes spirit-v12-big-car{
-  from{transform:translate3d(0,0,0) scaleX(-1)}
-  to{transform:translate3d(-13px,-2px,0) scaleX(-1)}
-}
-@keyframes spirit-v12-gauge-idle{
-  0%,100%{transform:translateY(0);opacity:.16}
-  50%{transform:translateY(-1px);opacity:.21}
-}
+@keyframes spirit-v12-big-car{from{transform:translate3d(0,0,0) scaleX(-1)}to{transform:translate3d(-13px,-2px,0) scaleX(-1)}}
+@keyframes spirit-v12-gauge-idle{0%,100%{transform:translateY(0);opacity:.16}50%{transform:translateY(-1px);opacity:.21}}
 
 @media(prefers-reduced-motion:reduce){
-  .home-spirit-scene .spirit-scene-car,
-  .models-spirit-scene .spirit-scene-car,
-  .spirit-login-smoke,
-  .spirit-login-dust{animation:none!important}
+  .home-spirit-scene .spirit-scene-car,.models-spirit-scene .spirit-scene-car,.spirit-login-smoke,.spirit-login-dust{animation:none!important}
 }
