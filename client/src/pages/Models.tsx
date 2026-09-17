@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import SpiritDriveScene from '../components/SpiritDriveScene';
+import SpiritVolume from '../components/SpiritVolume';
 
 const MODELS = [
   { id: 1, label: 'النموذج 1', meta: 'اختبار قياسي', advanced: false },
@@ -23,12 +24,12 @@ export default function Models() {
           <strong>اختبارات المحاكاة</strong>
           <span>اختر نموذجاً وابدأ الاختبار</span>
         </div>
-        <div className="exam-timer-v2">١٥:٠٠</div>
+        <div className="flex items-center gap-2"><SpiritVolume /><div className="exam-timer-v2">١٥:٠٠</div></div>
       </header>
 
       <main className="models-wrap">
         <section className="models-hero">
-          <SpiritDriveScene large className="models-spirit-scene" />
+          <SpiritDriveScene large variant="rear" className="models-spirit-scene" />
           <p className="eyebrow">اختبار الرخصة</p>
           <h1>جاهز للاختبار؟</h1>
           <p>كل نموذج يتكوّن من ٣٠ سؤالاً من قواعد السير والإشارات والميكانيك، بمدة ١٥ دقيقة. تحتاج إلى ٢٥ إجابة صحيحة للنجاح.</p>
