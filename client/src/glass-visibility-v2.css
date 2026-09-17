@@ -1,0 +1,19 @@
+/* Stronger, clearly visible glass treatment — visual only; preserve geometry and layout. */
+:root{--glass-line:rgba(255,255,255,.22);--glass-fill:rgba(255,255,255,.075);--glass-shadow:0 14px 36px rgba(0,0,0,.28)}
+/* Login screen: make the login panel and fields visibly layered like frosted glass. */
+.login-v2-wrap{background:rgba(20,25,34,.78)!important;border:1px solid rgba(255,255,255,.2)!important;box-shadow:0 28px 90px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.12)!important;backdrop-filter:blur(22px) saturate(145%)!important;-webkit-backdrop-filter:blur(22px) saturate(145%)!important}
+.login-v2-showcase{background:linear-gradient(145deg,rgba(35,45,58,.72),rgba(12,17,26,.58))!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important}
+.login-v2-panel{background:linear-gradient(145deg,rgba(34,43,57,.78),rgba(13,18,27,.78))!important;backdrop-filter:blur(24px) saturate(145%)!important;-webkit-backdrop-filter:blur(24px) saturate(145%)!important}
+.login-v2-features>div,.login-v2-trial{background:rgba(255,255,255,.075)!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 8px 22px rgba(0,0,0,.12)!important;backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important}
+.login-v2-form input{background:rgba(5,10,18,.58)!important;border:1px solid rgba(255,255,255,.22)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important}
+.login-v2-form input:focus{background:rgba(15,34,43,.72)!important;box-shadow:0 0 0 3px rgba(45,212,191,.16),inset 0 1px 0 rgba(255,255,255,.1)!important}
+.login-v2-kicker,.login-v2-panel-head{background:rgba(45,212,191,.11)!important;border:1px solid rgba(45,212,191,.25)!important;border-radius:999px;padding:7px 11px}
+.login-v2-submit{box-shadow:0 8px 24px rgba(36,189,151,.2),inset 0 1px 0 rgba(255,255,255,.3)!important}
+/* Shared surfaces: stronger glass edge/highlight without changing dimensions or positioning. */
+.exam-card-v2,.study-premium-card,.exam-option-v2,.study-premium-option,.exam-answer-explanation-v2,.study-explanation-v2,.exam-topbar-v2,.study-topbar-v2,.exam-actions-v2,.study-premium-actions{border-color:rgba(255,255,255,.17)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 8px 24px rgba(0,0,0,.12)!important}
+.exam-card-v2,.study-premium-card{background:linear-gradient(145deg,rgba(31,39,51,.92),rgba(16,21,30,.94))!important}
+.exam-option-v2,.study-premium-option{background:linear-gradient(145deg,rgba(35,43,56,.82),rgba(17,22,31,.9))!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important}
+.exam-option-v2.selected,.study-premium-option.selected{background:linear-gradient(145deg,rgba(45,212,191,.2),rgba(18,45,49,.55))!important;border-color:rgba(45,212,191,.72)!important}
+.exam-answer-explanation-v2,.study-explanation-v2{background:linear-gradient(135deg,rgba(27,66,68,.82),rgba(19,31,43,.84))!important;border-color:rgba(45,212,191,.34)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important}
+.exam-topbar-v2,.study-topbar-v2,.exam-actions-v2,.study-premium-actions{background:rgba(17,23,33,.82)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.login-v2-wrap,.login-v2-panel,.login-v2-showcase,.login-v2-features>div,.login-v2-trial,.exam-option-v2,.study-premium-option,.exam-answer-explanation-v2,.study-explanation-v2{background-color:rgba(28,36,49,.96)!important}}
