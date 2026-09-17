@@ -1,9 +1,12 @@
+import { getSpiritVolume } from './spiritVolume';
+
 type AudioContextConstructor = typeof AudioContext;
 type ExtendedWindow = Window & typeof globalThis & { webkitAudioContext?: AudioContextConstructor };
 
 let context: AudioContext | null = null;
 let master: GainNode | null = null;
 let compressor: DynamicsCompressorNode | null = null;
+let connected = false;
 
 function getContext() {
   const Ctx = ((window as ExtendedWindow).AudioContext || (window as ExtendedWindow).webkitAudioContext);
@@ -11,14 +14,20 @@ function getContext() {
   context ??= new Ctx();
   master ??= context.createGain();
   compressor ??= context.createDynamicsCompressor();
-  master.connect(compressor);
-  compressor.connect(context.destination);
-  compressor.threshold.value = -18;
+
+  if (!connected) {
+    master.connect(compressor);
+    compressor.connect(context.destination);
+    connected = true;
+  }
+
+  compressor.threshold.value = -20;
   compressor.knee.value = 10;
-  compressor.ratio.value = 5;
+  compressor.ratio.value = 4.5;
   compressor.attack.value = 0.004;
-  compressor.release.value = 0.10;
-  master.gain.value = 1.05;
+  compressor.release.value = 0.12;
+  master.gain.value = 0.92;
+
   if (context.state === 'suspended') void context.resume();
   return context;
 }
@@ -29,7 +38,7 @@ function tone(ctx: AudioContext, frequency: number, start: number, duration: num
   osc.type = type;
   osc.frequency.setValueAtTime(frequency, start);
   gain.gain.setValueAtTime(0.0001, start);
-  gain.gain.exponentialRampToValueAtTime(volume, start + 0.010);
+  gain.gain.exponentialRampToValueAtTime(Math.max(volume * getSpiritVolume(), 0.0001), start + 0.012);
   gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
   osc.connect(gain);
   gain.connect(master!);
@@ -39,13 +48,13 @@ function tone(ctx: AudioContext, frequency: number, start: number, duration: num
 
 export function playAnswerFeedback(correct: boolean) {
   const ctx = getContext();
-  if (!ctx) return;
+  if (!ctx || getSpiritVolume() === 0) return;
   const now = ctx.currentTime;
   if (correct) {
-    tone(ctx, 523.25, now, 0.14, 0.12, 'triangle');
-    tone(ctx, 659.25, now + 0.075, 0.20, 0.14, 'triangle');
+    tone(ctx, 523.25, now, 0.14, 0.15, 'triangle');
+    tone(ctx, 659.25, now + 0.075, 0.20, 0.17, 'triangle');
   } else {
-    tone(ctx, 220, now, 0.15, 0.09, 'triangle');
-    tone(ctx, 174.61, now + 0.085, 0.21, 0.085, 'triangle');
+    tone(ctx, 220, now, 0.15, 0.11, 'triangle');
+    tone(ctx, 174.61, now + 0.085, 0.21, 0.10, 'triangle');
   }
 }
