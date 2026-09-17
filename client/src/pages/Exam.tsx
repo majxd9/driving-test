@@ -85,6 +85,7 @@ export default function Exam() {
 
   const q=questions[current]; const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
   const selectedAnswer = answers[q.id];
+  const isCorrectSelection = selectedAnswer !== undefined && selectedAnswer === q.correctAnswerIndex;
   const explanationNeeded = selectedAnswer !== undefined && Boolean(q.explanation);
   return <div className="exam-page-v2" dir="rtl">
     <header className="exam-topbar-v2">
@@ -92,31 +93,13 @@ export default function Exam() {
       <div className="exam-title-v2">
         <strong>اختبار القيادة</strong>
         <div className="exam-question-counter-wrap">
-          <button
-            type="button"
-            className="exam-question-counter"
-            aria-label={`السؤال ${current + 1} من ${questions.length}. اضغط للانتقال إلى سؤال آخر`}
-            aria-expanded={jumpOpen}
-            onClick={() => {
-              setJumpValue(String(current + 1));
-              setJumpOpen(open => !open);
-            }}
-          >
+          <button type="button" className="exam-question-counter" aria-label={`السؤال ${current + 1} من ${questions.length}. اضغط للانتقال إلى سؤال آخر`} aria-expanded={jumpOpen} onClick={() => { setJumpValue(String(current + 1)); setJumpOpen(open => !open); }}>
             السؤال {current + 1} من {questions.length} · انتقال سريع
           </button>
           {jumpOpen && (
             <div className="question-jump-popover">
               <form onSubmit={(event) => void jumpToQuestion(event)}>
-                <input
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  min={1}
-                  max={questions.length}
-                  value={jumpValue}
-                  onChange={event => setJumpValue(event.target.value.replace(/\D/g, ''))}
-                  autoFocus
-                  aria-label="رقم السؤال"
-                />
+                <input inputMode="numeric" pattern="[0-9]*" min={1} max={questions.length} value={jumpValue} onChange={event => setJumpValue(event.target.value.replace(/\D/g, ''))} autoFocus aria-label="رقم السؤال" />
                 <button type="submit">انتقال</button>
               </form>
               <small>اكتب رقم السؤال من 1 إلى {questions.length}</small>
@@ -131,13 +114,8 @@ export default function Exam() {
       <div className="exam-scroll-v2">
         <div className="exam-image-slot-v2">{q.imageUrl?<button type="button" className="exam-image-v2" onClick={()=>setImageExpanded(true)} aria-label="تكبير صورة السؤال"><OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 92vw, 720px" className="w-full h-full" objectFit="contain"/></button>:<div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
-        <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>setAnswers(a=>({...a,[q.id]:i}))} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
-        {explanationNeeded && (
-          <div className="exam-answer-explanation-v2" role="status" aria-live="polite">
-            <div className="exam-answer-explanation-title-v2"><UiIcon name="check"/><span>{q.category === 'Ishara' ? 'شرح الإشارة' : 'الشرح'}</span></div>
-            <p>{q.explanation}</p>
-          </div>
-        )}
+        <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>setAnswers(a=>({...a,[q.id]:i}))} className={`exam-option-v2 ${answers[q.id]===i?'selected':''} ${answers[q.id]===i&&isCorrectSelection?'is-correct':''} ${answers[q.id]===i?'is-selected':''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
+        {explanationNeeded && (<div className="exam-answer-explanation-v2" role="status" aria-live="polite"><div className="exam-answer-explanation-title-v2"><UiIcon name="check"/><span>{q.category === 'Ishara' ? 'شرح الإشارة' : 'الشرح'}</span></div><p>{q.explanation}</p></div>)}
         <DiagramRenderer question={q}/>
       </div>
       <div className="exam-actions-v2">
