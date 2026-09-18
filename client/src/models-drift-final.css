@@ -501,3 +501,64 @@
   .models-page .models-drift-car-wrap{top:126px!important;width:112%!important}
   .models-page .models-drift-car{opacity:.50!important}
 }
+
+/* V8 — override the older .models-hero > * rule.
+   Without this specificity override, the drift stage becomes position:relative,
+   collapses because all its children are absolute, and the car disappears. */
+.models-page .models-hero.models-drift-hero > .models-drift-stage{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  z-index:1!important;
+  display:block!important;
+  visibility:visible!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+}
+.models-page .models-hero.models-drift-hero > .models-drift-stage > .models-drift-car-wrap{
+  position:absolute!important;
+  left:50%!important;
+  top:118px!important;
+  bottom:auto!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  z-index:12!important;
+  width:min(560px,104%)!important;
+  height:auto!important;
+  transform:translateX(-50%)!important;
+}
+.models-page .models-hero.models-drift-hero > .models-drift-stage > .models-drift-car-wrap > .models-drift-car{
+  position:relative!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:.62!important;
+  width:100%!important;
+  height:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  transform:none!important;
+  animation:none!important;
+}
+.models-page .models-hero.models-drift-hero > .models-hero-copy{
+  position:relative!important;
+  z-index:30!important;
+}
+@media(max-width:700px){
+  .models-page .models-hero.models-drift-hero > .models-drift-stage{
+    position:absolute!important;
+    inset:0!important;
+    height:100%!important;
+  }
+  .models-page .models-hero.models-drift-hero > .models-drift-stage > .models-drift-car-wrap{
+    top:132px!important;
+    width:min(520px,112%)!important;
+  }
+}
+@media(max-width:430px){
+  .models-page .models-hero.models-drift-hero > .models-drift-stage > .models-drift-car-wrap{
+    top:126px!important;
+    width:112%!important;
+  }
+}
