@@ -124,11 +124,11 @@ export default function SpiritDrift({ onStateChange }: { onStateChange?: (active
       }}
       onClick={(event) => event.preventDefault()}
       aria-pressed={drifting}
-      aria-label="تفحيط السيارة"
-      title="تفحيط السيارة"
+      aria-label="تجربة تفحيط السيارة"
+      title="تجربة تفحيط السيارة"
     >
       <span className="models-drift-icon" aria-hidden="true">↗</span>
-      <span>{drifting ? 'تفحيط!' : 'تفحيط'}</span>
+      <span>{drifting ? 'تفحيط!' : 'جرب التفحيط'}</span>
     </button>
   );
 }
