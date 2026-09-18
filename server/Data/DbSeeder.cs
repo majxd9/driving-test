@@ -102,9 +102,9 @@ public static class DbSeeder
             }
         }
 
-        // أولاً ننظف النسخ المكررة الناتجة عن عمليات الـseed السابقة،
-        // ثم نضيف أي أسئلة جديدة مرة واحدة فقط.
-        await RemoveDuplicateQuestionsAsync(db);
+        // نعتمد على محتوى السؤال نفسه لمنع تكرار الـseed،
+        // ولا نعتبر اختلاف الصورة أو الـmetadata سبباً لإضافة نسخة جديدة.
+        await RemoveDuplicateSeedQuestionsAsync(db);
         await SeedQuestionsAsync(db);
 
         // بعدها نصحح جميع صور الميكانيك.
@@ -498,61 +498,121 @@ public static class DbSeeder
                    out _);
     }
 
-    private static string CanonicalImageKey(string? imageUrl, QuestionCategory category)
+    private static string NormalizeIdentityPart(string? value)
     {
-        if (string.IsNullOrWhiteSpace(imageUrl)) return string.Empty;
+        if (string.IsNullOrWhiteSpace(value))
+            return string.Empty;
 
-        var value = imageUrl.Trim().Replace('\\', '/');
-        var file = Path.GetFileNameWithoutExtension(value);
-        if (string.IsNullOrWhiteSpace(file)) return value.ToLowerInvariant();
-
-        if (file.StartsWith("sign_", StringComparison.OrdinalIgnoreCase) &&
-            int.TryParse(file[5..], out var number))
-        {
-            return category == QuestionCategory.Mechanic
-                ? $"mechanic_{number}"
-                : $"sign_{number}";
-        }
-
-        if (file.StartsWith("mechanic_", StringComparison.OrdinalIgnoreCase) &&
-            int.TryParse(file[9..], out var mechanicNumber))
-        {
-            return $"mechanic_{mechanicNumber}";
-        }
-
-        return value.ToLowerInvariant();
+        return string.Join(
+            " ",
+            value.Trim().Split(
+                (char[]?)null,
+                StringSplitOptions.RemoveEmptyEntries));
     }
 
-    private static string CanonicalQuestionSignature(Question q)
+    private static string CoreQuestionSignature(
+        QuestionCategory category,
+        string? text,
+        IEnumerable<string>? options)
     {
         return string.Join(
             "|",
-            q.Category,
-            q.Text.Trim(),
-            string.Join("\\u001f", (q.Options ?? new List<string>()).Select(x => x.Trim())),
-            CanonicalImageKey(q.ImageUrl, q.Category),
-            q.DiagramType ?? string.Empty,
-            q.DiagramUrl ?? string.Empty);
+            category,
+            NormalizeIdentityPart(text),
+            string.Join(
+                "\u001f",
+                (options ?? Array.Empty<string>())
+                    .Select(NormalizeIdentityPart)));
     }
 
-    private static async Task RemoveDuplicateQuestionsAsync(AppDbContext db)
+    private static string SeedQuestionSignature(
+        SeedQuestion q,
+        QuestionCategory category)
     {
+        return CoreQuestionSignature(
+            category,
+            q.Text,
+            q.Options);
+    }
+
+    private static async Task RemoveDuplicateSeedQuestionsAsync(
+        AppDbContext db)
+    {
+        var path = Path.Combine(
+            AppContext.BaseDirectory,
+            "Data",
+            "SeedData",
+            "questions.json");
+
+        if (!File.Exists(path))
+            return;
+
+        var json = await File.ReadAllTextAsync(path);
+
+        var items =
+            JsonSerializer.Deserialize<List<SeedQuestion>>(
+                json,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                })
+            ?? new List<SeedQuestion>();
+
+        if (items.Count == 0)
+            return;
+
+        var seedSignatures = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var item in items)
+        {
+            if (!Enum.TryParse<QuestionCategory>(
+                    item.Category,
+                    true,
+                    out var category) ||
+                string.IsNullOrWhiteSpace(item.Text) ||
+                item.Options is not { Count: >= 2 })
+            {
+                continue;
+            }
+
+            seedSignatures.Add(
+                CoreQuestionSignature(
+                    category,
+                    item.Text,
+                    item.Options));
+        }
+
+        if (seedSignatures.Count == 0)
+            return;
+
         var existing = await db.Questions
             .OrderBy(q => q.Id)
             .ToListAsync();
 
-        if (existing.Count < 2) return;
+        if (existing.Count < 2)
+            return;
 
         var seen = new HashSet<string>(StringComparer.Ordinal);
         var duplicates = new List<Question>();
 
         foreach (var question in existing)
         {
-            if (!seen.Add(CanonicalQuestionSignature(question)))
+            var signature = CoreQuestionSignature(
+                question.Category,
+                question.Text,
+                question.Options);
+
+            // ننظف فقط النسخ المكررة التي تنتمي فعلاً إلى questions.json،
+            // وبالتالي لا نحذف أسئلة يدوية مستقلة.
+            if (seedSignatures.Contains(signature) &&
+                !seen.Add(signature))
+            {
                 duplicates.Add(question);
+            }
         }
 
-        if (duplicates.Count == 0) return;
+        if (duplicates.Count == 0)
+            return;
 
         db.Questions.RemoveRange(duplicates);
         await db.SaveChangesAsync();
@@ -584,28 +644,14 @@ public static class DbSeeder
         if (items is null || items.Count == 0)
             return;
 
-        static string SeedQuestionSignature(
-            SeedQuestion q,
-            QuestionCategory category,
-            string? imageUrl)
-        {
-            return string.Join(
-                "|",
-                category,
-                q.Text.Trim(),
-                string.Join(
-                    "\u001f",
-                    (q.Options ?? new List<string>()).Select(x => x.Trim())),
-                CanonicalImageKey(imageUrl, category),
-                q.DiagramType ?? string.Empty,
-                q.DiagramUrl ?? string.Empty);
-        }
-
         var existingSignatures =
             (await db.Questions
                 .AsNoTracking()
+                .Select(q => CoreQuestionSignature(
+                    q.Category,
+                    q.Text,
+                    q.Options))
                 .ToListAsync())
-            .Select(CanonicalQuestionSignature)
             .ToHashSet(StringComparer.Ordinal);
 
         var added = 0;
@@ -635,10 +681,16 @@ public static class DbSeeder
                 continue;
             }
 
+            var signature =
+                SeedQuestionSignature(item, category);
+
+            if (existingSignatures.Contains(signature))
+                continue;
+
             var imageUrl = item.ImageUrl;
 
-            // نطبع صورة السؤال قبل حساب البصمة، حتى اختلاف الامتداد أو
-            // تحويل sign_XXX إلى mechanic_XXX لا ينشئ سؤالاً مكرراً.
+            // نطبع صورة السؤال قبل الحفظ، لكن الصورة ليست جزءاً من هوية
+            // السؤال حتى لا يتكرر السؤال بسبب اختلاف مسار/امتداد الصورة.
             if (category == QuestionCategory.Mechanic &&
                 !string.IsNullOrWhiteSpace(imageUrl))
             {
@@ -656,12 +708,6 @@ public static class DbSeeder
                         $"/mechanic/mechanic_{mechanicNumber}.webp";
                 }
             }
-
-            var signature =
-                SeedQuestionSignature(item, category, imageUrl);
-
-            if (existingSignatures.Contains(signature))
-                continue;
 
             db.Questions.Add(new Question
             {
