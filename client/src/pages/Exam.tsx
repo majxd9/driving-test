@@ -92,8 +92,18 @@ export default function Exam() {
       <div className="exam-title-v2">
         <strong>اختبار القيادة</strong>
         <div className="exam-question-counter-wrap">
-          <button type="button" className="exam-question-counter" aria-label={`السؤال ${current + 1} من ${questions.length}. اضغط للانتقال إلى سؤال آخر`} aria-expanded={jumpOpen} onClick={() => { setJumpValue(String(current + 1)); setJumpOpen(open => !open); }}>
-            السؤال {current + 1} من {questions.length} · انتقال سريع
+          <button
+            type="button"
+            className="exam-question-counter"
+            aria-label={`السؤال ${current + 1} من ${questions.length}. اضغط للانتقال إلى سؤال آخر`}
+            aria-expanded={jumpOpen}
+            onClick={() => { setJumpValue(String(current + 1)); setJumpOpen(open => !open); }}
+          >
+            <span className="exam-counter-label">السؤال</span>
+            <b className="exam-counter-current">{current + 1}</b>
+            <span className="exam-counter-divider">/</span>
+            <b className="exam-counter-total">{questions.length}</b>
+            <span className="exam-counter-jump">انتقال</span>
           </button>
           {jumpOpen && (
             <div className="question-jump-popover">
