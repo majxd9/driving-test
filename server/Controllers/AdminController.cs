@@ -1,6 +1,7 @@
 using DrivingTestApi.Data;
 using DrivingTestApi.DTOs;
 using DrivingTestApi.Models;
+using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -241,6 +242,7 @@ public AdminController(
         _db.Questions.Add(q);
 
         await _db.SaveChangesAsync();
+        QuestionCountCache.ApplyChanges(added: 1, deleted: 0);
 
         return Ok(q);
     }
@@ -297,6 +299,7 @@ public AdminController(
         _db.Questions.Remove(q);
 
         await _db.SaveChangesAsync();
+        QuestionCountCache.ApplyChanges(added: 0, deleted: 1);
 
         return NoContent();
     }
