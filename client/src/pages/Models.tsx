@@ -38,15 +38,6 @@ export default function Models() {
 
       <main className="models-wrap">
         <section className={`models-hero models-drift-hero ${drifting ? 'is-drifting' : ''}`}>
-          <div className="models-hero-copy">
-            <p className="eyebrow">اختبار الرخصة</p>
-            <h1>جاهز للاختبار؟</h1>
-            <p>
-              كل نموذج يتكوّن من ٣٠ سؤالاً من قواعد السير والإشارات والميكانيك،
-              بمدة ١٥ دقيقة. تحتاج إلى ٢٥ إجابة صحيحة للنجاح.
-            </p>
-          </div>
-
           <div className="models-drift-stage" aria-hidden="true">
             <div className="models-drift-horizon" />
             <div className="models-drift-track-surface" />
@@ -66,6 +57,15 @@ export default function Models() {
               <i className="mark-2" />
               <i className="mark-3" />
             </div>
+          </div>
+
+          <div className="models-hero-copy">
+            <p className="eyebrow">اختبار الرخصة</p>
+            <h1>جاهز للاختبار؟</h1>
+            <p>
+              كل نموذج يتكوّن من ٣٠ سؤالاً من قواعد السير والإشارات والميكانيك،
+              بمدة ١٥ دقيقة. تحتاج إلى ٢٥ إجابة صحيحة للنجاح.
+            </p>
           </div>
 
           <SpiritDrift onStateChange={setDrifting} />
