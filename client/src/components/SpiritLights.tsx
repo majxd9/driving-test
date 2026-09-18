@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 
 const STORAGE_KEY = 'driving-spirit-lights';
 
-type Props = { className?: string; compact?: boolean };
+type Props = { className?: string; compact?: boolean; onChange?: (on: boolean) => void };
 
-export default function SpiritLights({ className = '', compact = false }: Props) {
+export default function SpiritLights({ className = '', compact = false, onChange }: Props) {
   const [on, setOn] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) !== 'off';
@@ -26,7 +26,7 @@ export default function SpiritLights({ className = '', compact = false }: Props)
     <button
       type="button"
       className={`spirit-lights-control ${on ? 'is-on' : 'is-off'} ${compact ? 'spirit-lights-compact' : ''} ${className}`}
-      onClick={() => setOn(value => !value)}
+      onClick={() => setOn(value => { const next = !value; onChange?.(next); return next; })}
       aria-pressed={on}
       aria-label={on ? 'تفعيل الوضع المضيء' : 'تفعيل الوضع الهادئ'}
       title={on ? 'الوضع الليلي المضيء — اضغط للتبديل' : 'الوضع الهادئ — اضغط للتبديل'}
