@@ -1,71 +1,92 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none" role="img" aria-label="سيارة رياضية من الأمام">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 420" fill="none" role="img" aria-label="سيارة رياضية من الأمام">
   <defs>
     <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
-      <stop stop-color="#8affea"/>
-      <stop offset=".34" stop-color="#24cdb8"/>
-      <stop offset=".72" stop-color="#148bc8"/>
-      <stop offset="1" stop-color="#083e76"/>
+      <stop stop-color="#76f6e1"/><stop offset=".22" stop-color="#25d7c0"/><stop offset=".58" stop-color="#147eb8"/><stop offset="1" stop-color="#061b35"/>
+    </linearGradient>
+    <linearGradient id="hood" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#2d5f79" stop-opacity=".60"/><stop offset="1" stop-color="#07131f" stop-opacity=".10"/>
     </linearGradient>
     <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
-      <stop stop-color="#244d68"/>
-      <stop offset="1" stop-color="#071522"/>
+      <stop stop-color="#2e5871"/><stop offset=".55" stop-color="#10283a"/><stop offset="1" stop-color="#050e18"/>
     </linearGradient>
-    <linearGradient id="bumper" x1="0" y1="0" x2="1" y2="0">
-      <stop stop-color="#0e4d7e"/>
-      <stop offset=".5" stop-color="#06131e"/>
-      <stop offset="1" stop-color="#0e4d7e"/>
+    <linearGradient id="carbon" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#0a1721"/><stop offset=".5" stop-color="#02070c"/><stop offset="1" stop-color="#0a1721"/>
     </linearGradient>
-    <radialGradient id="lamp">
-      <stop stop-color="#ffffff"/>
-      <stop offset=".2" stop-color="#dbfffb"/>
-      <stop offset=".48" stop-color="#57ead5"/>
-      <stop offset="1" stop-color="#57ead5" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
-      <feGaussianBlur stdDeviation="12"/>
+    <linearGradient id="led" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#ffffff"/><stop offset=".28" stop-color="#dffffb"/><stop offset=".7" stop-color="#69f5df"/><stop offset="1" stop-color="#2dd4bf"/>
+    </linearGradient>
+    <radialGradient id="lampCore"><stop stop-color="#ffffff"/><stop offset=".28" stop-color="#e8fffd"/><stop offset=".62" stop-color="#62f4de" stop-opacity=".45"/><stop offset="1" stop-color="#2dd4bf" stop-opacity="0"/></radialGradient>
+    <filter id="shadow" x="-25%" y="-35%" width="150%" height="190%">
+      <feDropShadow dx="0" dy="22" stdDeviation="18" flood-color="#000" flood-opacity=".45"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#2dd4bf" flood-opacity=".18"/>
     </filter>
-    <filter id="shadow" x="-30%" y="-40%" width="160%" height="190%">
-      <feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#000" flood-opacity=".38"/>
-    </filter>
+    <filter id="blur"><feGaussianBlur stdDeviation="13"/></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="5"/></filter>
   </defs>
 
-  <ellipse cx="320" cy="330" rx="214" ry="17" fill="#02070b" opacity=".48"/>
+  <!-- Ground shadow -->
+  <ellipse cx="350" cy="385" rx="235" ry="19" fill="#02070b" opacity=".55"/>
+
+  <!-- Headlight beams, visually connected to the lamps -->
+  <path d="M185 275L18 356L210 305Z" fill="#dffffb" opacity=".20" filter="url(#blur)"/>
+  <path d="M515 275L682 356L490 305Z" fill="#dffffb" opacity=".20" filter="url(#blur)"/>
+  <path d="M190 277L38 342L205 300Z" fill="#eaffff" opacity=".16"/>
+  <path d="M510 277L662 342L495 300Z" fill="#eaffff" opacity=".16"/>
 
   <g filter="url(#shadow)">
-    <path d="M78 270c5-82 52-124 136-140l46-65c14-20 34-30 60-30h0c26 0 46 10 60 30l46 65c84 16 131 58 136 140l-18 30H96z"
-      fill="url(#body)" stroke="#bafff5" stroke-width="6"/>
+    <!-- Main silhouette -->
+    <path d="M78 302c5-91 54-142 149-164l50-78c15-23 38-35 73-35s58 12 73 35l50 78c95 22 144 73 149 164l-18 43H96z"
+      fill="url(#body)" stroke="#b9fff5" stroke-width="6"/>
 
-    <path d="M205 126l35-50c10-14 22-20 41-21h78c19 1 31 7 41 21l35 50H205z"
-      fill="url(#glass)" stroke="#8cefe6" stroke-width="5"/>
-    <path d="M320 58v67" stroke="#68dfe8" stroke-width="4" opacity=".55"/>
+    <!-- Hood contour -->
+    <path d="M143 184c63-30 132-45 207-45s144 15 207 45" stroke="#d9fffb" stroke-width="3" opacity=".23"/>
+    <path d="M190 151c48-17 102-25 160-25s112 8 160 25" stroke="#7af0e1" stroke-width="4" opacity=".22"/>
 
-    <path d="M122 171c54-24 118-35 198-35s144 11 198 35" stroke="#d4fffb" stroke-width="4" opacity=".22"/>
-    <path d="M104 218c28-29 67-45 109-47l107 0 107 0c42 2 81 18 109 47l-8 57H112z"
-      fill="url(#bumper)" stroke="#67e0df" stroke-width="4"/>
+    <!-- Windshield -->
+    <path d="M203 136l38-59c10-16 25-24 47-26h124c22 2 37 10 47 26l38 59H203z"
+      fill="url(#glass)" stroke="#8df4e9" stroke-width="5"/>
+    <path d="M350 54v78M285 57l-10 75M415 57l10 75" stroke="#63d9e1" stroke-width="3" opacity=".34"/>
+    <path d="M240 86c30-22 68-31 110-31s80 9 110 31" stroke="#d8fffc" stroke-width="3" opacity=".12"/>
 
-    <path d="M136 257c34-27 66-39 111-40h146c45 1 77 13 111 40l-4 34H140z"
-      fill="#06131c" stroke="#2b6b80" stroke-width="4"/>
-    
-    <ellipse cx="151" cy="229" rx="61" ry="35" fill="url(#lamp)" opacity=".65" filter="url(#glow)"/>
-    <ellipse cx="489" cy="229" rx="61" ry="35" fill="url(#lamp)" opacity=".65" filter="url(#glow)"/>
-    <path d="M128 229c17-18 38-28 65-31l21 12c-20 23-49 35-86 33z"
-      fill="#f2fffd" stroke="#9afff2" stroke-width="4"/>
-    <path d="M512 229c-17-18-38-28-65-31l-21 12c20 23 49 35 86 33z"
-      fill="#f2fffd" stroke="#9afff2" stroke-width="4"/>
+    <!-- Shoulder / bumper -->
+    <path d="M103 238c33-40 78-59 133-63l114 0 114 0c55 4 100 23 133 63l-5 88H108z"
+      fill="url(#carbon)" stroke="#68e5df" stroke-width="4"/>
 
-    <path d="M265 233h110l17 39H248z" fill="#081823" stroke="#2f7181" stroke-width="4"/>
-    <path d="M281 247h78" stroke="#6be2d5" stroke-width="5" stroke-linecap="round" opacity=".55"/>
-    <path d="M257 302h126" stroke="#7af2e4" stroke-width="8" stroke-linecap="round" opacity=".6"/>
+    <!-- Aggressive lower intakes -->
+    <path d="M150 300c33-30 69-42 113-44h174c44 2 80 14 113 44l-8 39H158z"
+      fill="#030a11" stroke="#24576e" stroke-width="4"/>
+    <path d="M215 309h270l-14 22H229z" fill="#081d29" stroke="#38bcae" stroke-width="3" opacity=".85"/>
 
-    <circle cx="144" cy="302" r="25" fill="#07131d" stroke="#2e5368" stroke-width="7"/>
-    <circle cx="496" cy="302" r="25" fill="#07131d" stroke="#2e5368" stroke-width="7"/>
+    <!-- Left headlight -->
+    <ellipse cx="164" cy="259" rx="76" ry="44" fill="url(#lampCore)" opacity=".60" filter="url(#soft)"/>
+    <path d="M122 258c17-23 45-36 80-40l28 18c-18 26-48 43-91 42z" fill="#effffe" stroke="#9efff1" stroke-width="4"/>
+    <path d="M137 258c24-12 46-19 70-22" stroke="url(#led)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M140 272c23-2 46-9 67-23" stroke="#b9fff8" stroke-width="3" opacity=".58"/>
 
-    <path d="M98 279h444" stroke="#ecfffc" stroke-width="3" opacity=".18"/>
-    <path d="M220 286c28 11 52 16 100 16s72-5 100-16" stroke="#55dccf" stroke-width="4" opacity=".32"/>
+    <!-- Right headlight -->
+    <ellipse cx="536" cy="259" rx="76" ry="44" fill="url(#lampCore)" opacity=".60" filter="url(#soft)"/>
+    <path d="M578 258c-17-23-45-36-80-40l-28 18c18 26 48 43 91 42z" fill="#effffe" stroke="#9efff1" stroke-width="4"/>
+    <path d="M563 258c-24-12-46-19-70-22" stroke="url(#led)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M560 272c-23-2-46-9-67-23" stroke="#b9fff8" stroke-width="3" opacity=".58"/>
+
+    <!-- Central grille -->
+    <path d="M280 264h140l18 66H262z" fill="#040b12" stroke="#2c697b" stroke-width="4"/>
+    <path d="M292 285h116M300 300h100M309 315h82" stroke="#1d4454" stroke-width="3" opacity=".9"/>
+    <path d="M322 272h56" stroke="#70e8da" stroke-width="4" stroke-linecap="round" opacity=".62"/>
+
+    <!-- DRL strip -->
+    <path d="M205 226c43-14 93-21 145-21s102 7 145 21" stroke="#89fff0" stroke-width="4" opacity=".28"/>
+    <path d="M247 351h206" stroke="#7bf1e4" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+
+    <!-- Front tires -->
+    <circle cx="134" cy="345" r="29" fill="#061019" stroke="#28495c" stroke-width="8"/>
+    <circle cx="134" cy="345" r="10" fill="#2dd4bf" opacity=".72"/>
+    <circle cx="566" cy="345" r="29" fill="#061019" stroke="#28495c" stroke-width="8"/>
+    <circle cx="566" cy="345" r="10" fill="#2dd4bf" opacity=".72"/>
+
+    <!-- Reflections -->
+    <path d="M92 320h516" stroke="#eaffff" stroke-width="3" opacity=".13"/>
+    <path d="M192 177c-38 10-64 23-87 43" stroke="#cafff8" stroke-width="3" opacity=".18"/>
+    <path d="M508 177c38 10 64 23 87 43" stroke="#cafff8" stroke-width="3" opacity=".18"/>
   </g>
-
-  <path d="M150 240L36 326L180 285Z" fill="#d9ffff" opacity=".12"/>
-  <path d="M490 240l114 86-144-41Z" fill="#d9ffff" opacity=".12"/>
-  <path d="M140 235L20 318" stroke="#dffffa" stroke-width="7" opacity=".13" stroke-linecap="round" filter="url(#glow)"/>
-  <path d="M500 235l120 83" stroke="#dffffa" stroke-width="7" opacity=".13" stroke-linecap="round" filter="url(#glow)"/>
 </svg>
