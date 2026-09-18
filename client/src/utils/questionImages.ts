@@ -1,3 +1,5 @@
+import type { Question } from '../types';
+
 const PRIMARY_IMAGE_BASE = '/signs';
 
 // Current traffic-sign library. 236..245 are reviewed SVG illustrations.
@@ -55,4 +57,33 @@ export function resolveQuestionImageUrl(src?: string | null): string {
 
   if (!isCanonicalSignNumber(number)) return '';
   return `${PRIMARY_IMAGE_BASE}/sign_${formatImageNumber(number)}.webp`;
+}
+
+
+
+/**
+ * Shows an image immediately only when the image itself is the subject of the question.
+ * For ordinary questions that use a sign/diagram as a clue, the image stays hidden
+ * until the student chooses an answer.
+ */
+export function shouldShowQuestionImageBeforeAnswer(
+  question: Pick<Question, 'category' | 'text' | 'imageUrl'>,
+): boolean {
+  if (!question.imageUrl) return false;
+
+  const text = question.text.replace(/[«»"“”]/g, '').trim();
+
+  if (/ما معنى هذه الإشارة|ماذا تعني هذه الإشارة|ما معنى هذه العلامة|ماذا تعني هذه العلامة/.test(text)) {
+    return true;
+  }
+
+  if (question.category === 'Mechanic' && /ما اسم هذا الجزء/.test(text)) {
+    return true;
+  }
+
+  if (/ما الذي يوضحه هذا الرسم|الإشارة المرفقة|كما بالصورة/.test(text)) {
+    return true;
+  }
+
+  return false;
 }
