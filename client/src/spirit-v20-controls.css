@@ -201,3 +201,17 @@
   .home-spirit-scene .spirit-scene-headlight-beams i,
   .spirit-nitro-control.is-active .spirit-nitro-icon { animation:none !important; }
 }
+
+
+/* Final light tuning: headlights read as two real beams coming directly from the lamps. */
+.home-spirit-scene .spirit-scene-headlight-beams { filter:blur(4px) !important; opacity:.92 !important; }
+.home-spirit-scene .spirit-scene-headlight-beams i {
+  top:58% !important;
+  height:50% !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.58),rgba(204,255,249,.28) 25%,rgba(78,225,208,.11) 60%,transparent 100%) !important;
+  filter:blur(5px) !important;
+}
+.home-spirit-scene .spirit-scene-headlight-beams i:first-child { box-shadow:0 -2px 18px rgba(220,255,251,.34) !important; }
+.home-spirit-scene .spirit-scene-headlight-beams i:last-child { box-shadow:0 -2px 18px rgba(220,255,251,.34) !important; }
+@media(max-width:900px){ .home-spirit-scene .spirit-scene-headlight-beams{opacity:.75 !important;} }
+@media(max-width:430px){ .home-spirit-scene .spirit-scene-headlight-beams{opacity:.63 !important;} }
