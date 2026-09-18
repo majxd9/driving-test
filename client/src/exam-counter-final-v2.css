@@ -1,0 +1,152 @@
+/* FINAL EXAM QUESTION COUNTER — always visible, compact, tappable, and stable on mobile. */
+.exam-topbar-v2{
+  display:grid!important;
+  grid-template-columns:42px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-height:62px!important;
+  padding:8px 12px!important;
+  box-sizing:border-box!important;
+}
+
+.exam-title-v2{
+  min-width:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:9px!important;
+  overflow:visible!important;
+}
+
+.exam-title-v2>strong{
+  min-width:0!important;
+  flex:1 1 auto!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  line-height:1.2!important;
+}
+
+.exam-question-counter-wrap{
+  position:relative!important;
+  z-index:500!important;
+  flex:0 0 auto!important;
+  display:block!important;
+  min-width:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+
+.exam-question-counter{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  width:126px!important;
+  height:44px!important;
+  min-width:126px!important;
+  min-height:44px!important;
+  padding:4px 8px!important;
+  display:grid!important;
+  grid-template-columns:auto 24px 10px 24px auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:2px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(45,212,191,.38)!important;
+  border-radius:14px!important;
+  background:linear-gradient(180deg,rgba(20,49,57,.94),rgba(7,21,29,.96))!important;
+  color:#eafff9!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.08),0 0 18px rgba(45,212,191,.05)!important;
+  cursor:pointer!important;
+  touch-action:manipulation!important;
+  user-select:none!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+}
+
+.exam-question-counter:hover{
+  border-color:rgba(45,212,191,.72)!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.26),0 0 22px rgba(45,212,191,.10),inset 0 1px rgba(255,255,255,.09)!important;
+}
+
+.exam-question-counter:active{transform:scale(.98)!important}
+
+.exam-counter-label{
+  font-size:9px!important;
+  font-weight:800!important;
+  color:#8fa4af!important;
+}
+
+.exam-counter-current,
+.exam-counter-total{
+  display:block!important;
+  font-size:18px!important;
+  line-height:1!important;
+  font-variant-numeric:tabular-nums!important;
+  text-align:center!important;
+  color:#2dd4bf!important;
+}
+
+.exam-counter-total{color:#e7f2f1!important}
+
+.exam-counter-divider{
+  font-size:12px!important;
+  color:#6f818c!important;
+  text-align:center!important;
+}
+
+.exam-counter-jump{
+  padding-inline-start:5px!important;
+  margin-inline-start:3px!important;
+  border-inline-start:1px solid rgba(255,255,255,.10)!important;
+  font-size:8px!important;
+  font-weight:850!important;
+  color:#9bb3bc!important;
+}
+
+.question-jump-popover{
+  z-index:9999!important;
+}
+
+@media(max-width:700px){
+  .exam-topbar-v2{
+    min-height:60px!important;
+    grid-template-columns:40px minmax(0,1fr) auto!important;
+    gap:8px!important;
+    padding:7px 9px!important;
+  }
+  .exam-title-v2{gap:7px!important}
+  .exam-question-counter{
+    width:108px!important;
+    min-width:108px!important;
+    height:42px!important;
+    min-height:42px!important;
+    grid-template-columns:auto 22px 9px 22px auto!important;
+    border-radius:13px!important;
+  }
+  .exam-counter-current,
+  .exam-counter-total{font-size:17px!important}
+  .exam-counter-label{font-size:8px!important}
+  .exam-counter-jump{font-size:7px!important;padding-inline-start:4px!important}
+}
+
+@media(max-width:430px){
+  .exam-question-counter{
+    width:98px!important;
+    min-width:98px!important;
+    height:40px!important;
+    min-height:40px!important;
+    grid-template-columns:auto 20px 8px 20px auto!important;
+    padding:3px 6px!important;
+    gap:1px!important;
+    border-radius:12px!important;
+  }
+  .exam-counter-current,
+  .exam-counter-total{font-size:16px!important}
+  .exam-counter-label{font-size:7px!important}
+  .exam-counter-jump{font-size:6.5px!important;padding-inline-start:3px!important;margin-inline-start:2px!important}
+  .exam-title-v2>strong{font-size:.86rem!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .exam-question-counter{transition:none!important}
+}
