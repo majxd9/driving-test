@@ -20,6 +20,7 @@ import './glass-visibility-v2.css';
 import './spirit-v20.css';
 import './spirit-v20-controls.css';
 import './login-scene-final.css';
+import './study-final-lock.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -30,3 +31,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </React.StrictMode>
 );
+
