@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import '../models-drift-final.css';
 import SpiritDrift from '../components/SpiritDrift';
 
 const MODELS = [
