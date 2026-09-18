@@ -647,11 +647,11 @@ public static class DbSeeder
         var existingSignatures =
             (await db.Questions
                 .AsNoTracking()
-                .Select(q => CoreQuestionSignature(
-                    q.Category,
-                    q.Text,
-                    q.Options))
                 .ToListAsync())
+            .Select(q => CoreQuestionSignature(
+                q.Category,
+                q.Text,
+                q.Options))
             .ToHashSet(StringComparer.Ordinal);
 
         var added = 0;
