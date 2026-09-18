@@ -81,16 +81,54 @@ export default function Study() {
           <b>{index + 1}</b><span>من {questions.length}</span>
         </div>
       </header>
+
       <div className="study-premium-progress"><span style={{ width: `${progress}%` }} /></div>
+
       <main className="study-premium-stage">
         <section className="study-premium-card">
-          <div className="study-premium-meta"><div><span className="live-dot" /> سؤال {index + 1}</div><span>{chosen === undefined ? 'اختر إجابة' : 'تمت الإجابة'}</span></div>
-          {q.imageUrl ? <div className="study-premium-image"><OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 96vw, 760px" className="study-premium-image-el" objectFit="contain" /></div> : <div className="study-premium-no-image"><span>سؤال نظري</span></div>}
+          <div className="study-premium-meta">
+            <div><span className="live-dot" /> سؤال {index + 1}</div>
+            <span>{chosen === undefined ? 'اختر إجابة' : 'تمت الإجابة'}</span>
+          </div>
+
+          {q.imageUrl ? (
+            <div className="study-premium-image">
+              <OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 96vw, 760px" className="study-premium-image-el" objectFit="contain" />
+            </div>
+          ) : (
+            <div className="study-premium-no-image"><span>سؤال نظري</span></div>
+          )}
+
           <div className="study-premium-question">{q.text}</div>
-          <div className="study-premium-answers">{q.options.map((opt, i) => { const isCorrect = i === q.correctAnswerIndex; const isChosen = i === chosen; let state = ''; if (chosen !== undefined) state = isCorrect ? 'is-correct' : isChosen ? 'is-wrong' : 'is-muted'; return <button key={i} type="button" disabled={chosen !== undefined} onClick={() => choose(i)} className={`study-premium-option ${state}`}><span className="study-premium-letter">{LETTERS[i]}</span><span className="study-premium-option-text">{opt}</span>{chosen !== undefined && isCorrect && <span className="study-premium-check">✓</span>}</button>; })}</div>
-          {chosen !== undefined && q.explanation && <div className="study-premium-explanation"><b>لماذا؟</b><span>{q.explanation}</span></div>}
+
+          <div className="study-premium-answers">
+            {q.options.map((opt, i) => {
+              const isCorrect = i === q.correctAnswerIndex;
+              const isChosen = i === chosen;
+              let state = '';
+              if (chosen !== undefined) state = isCorrect ? 'is-correct' : isChosen ? 'is-wrong' : 'is-muted';
+              return (
+                <button key={i} type="button" disabled={chosen !== undefined} onClick={() => choose(i)} className={`study-premium-option ${state}`}>
+                  <span className="study-premium-letter">{LETTERS[i]}</span>
+                  <span className="study-premium-option-text">{opt}</span>
+                  {chosen !== undefined && isCorrect && <span className="study-premium-check">✓</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {chosen !== undefined && q.explanation && (
+            <div className="study-premium-explanation">
+              <b>لماذا؟</b>
+              <span>{q.explanation}</span>
+            </div>
+          )}
           <div className="study-premium-diagram"><DiagramRenderer question={q} /></div>
-          <nav className="study-premium-actions" aria-label="التنقل بين الأسئلة"><button onClick={prev} disabled={index === 0} className="study-premium-action ghost">السابق</button><button onClick={next} disabled={isLast} className="study-premium-action next">تخطي السؤال <span>←</span></button></nav>
+
+          <nav className="study-premium-actions" aria-label="التنقل بين الأسئلة">
+            <button onClick={prev} disabled={index === 0} className="study-premium-action ghost">السابق</button>
+            <button onClick={next} disabled={isLast} className="study-premium-action next">تخطي السؤال <span>←</span></button>
+          </nav>
         </section>
       </main>
     </div>
