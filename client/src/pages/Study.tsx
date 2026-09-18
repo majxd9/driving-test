@@ -4,6 +4,7 @@ import { api } from '../api/client';
 import { Question, QuestionCategory } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
+import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 import SpiritTrafficSignal from '../components/SpiritTrafficSignal';
 import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { ensureImageReady, preloadImages } from '../utils/imagePreload';
@@ -95,6 +96,7 @@ export default function Study() {
   if (!q) return <div className="study-premium-loading">لا توجد أسئلة بهذا القسم.</div>;
 
   const chosen = answers[q.id];
+  const showImage = Boolean(q.imageUrl && (chosen !== undefined || shouldShowQuestionImageBeforeAnswer(q)));
   const answered = Object.keys(answers).length;
   const correct = questions.filter(x => answers[x.id] === x.correctAnswerIndex).length;
   const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0;
