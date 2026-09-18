@@ -1,5 +1,9 @@
 const inFlight = new Map<string, Promise<boolean>>();
 
+/**
+ * Loads an image and waits for the browser decode pipeline when available.
+ * The promise is cached so repeated preloads never create duplicate requests.
+ */
 export function preloadImage(src: string, priority: 'high' | 'auto' = 'auto'): Promise<boolean> {
   if (!src || typeof window === 'undefined') return Promise.resolve(false);
 
