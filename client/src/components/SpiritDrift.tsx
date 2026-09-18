@@ -124,13 +124,13 @@ export default function SpiritDrift({ onStateChange }: { onStateChange?: (active
   return (
     <button
       type="button"
-      className={`models-drift-control ${drifting ? 'is-drifting' : ''}`}
+      className={`models-drift-trigger-v9 ${drifting ? 'is-drifting' : ''}`}
       onClick={playDrift}
       aria-pressed={drifting}
       aria-label="تجربة تفحيط السيارة"
       title="تجربة تفحيط السيارة"
     >
-      <span className="models-drift-icon" aria-hidden="true">↗</span>
+      <span className="models-drift-trigger-icon-v9" aria-hidden="true">↗</span>
       <span>{drifting ? 'تفحيط!' : 'جرب التفحيط'}</span>
     </button>
   );
