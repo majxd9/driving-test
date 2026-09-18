@@ -910,3 +910,222 @@
   24%{opacity:.56}
   100%{transform:translateX(-70px) rotate(-10deg);opacity:.10}
 }
+
+
+/* =========================================================
+   MODELS DRIFT — FINAL VISIBLE SCENE (inline SVG, no asset dependency)
+   ========================================================= */
+.models-drift-hero{
+  position:relative!important;
+  min-height:330px!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  padding:24px 24px 72px!important;
+}
+.models-drift-hero .models-hero-copy{
+  position:relative!important;
+  z-index:40!important;
+  max-width:760px!important;
+  margin-inline-start:auto!important;
+}
+.models-drift-stage{
+  position:absolute!important;
+  inset:0!important;
+  z-index:5!important;
+  pointer-events:none!important;
+  overflow:hidden!important;
+}
+.models-drift-horizon{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  top:47%!important;
+  height:1px!important;
+  background:linear-gradient(90deg,transparent,rgba(160,220,216,.18),transparent)!important;
+  opacity:.55!important;
+}
+.models-drift-track-surface{
+  position:absolute!important;
+  left:-15%!important;
+  right:-15%!important;
+  bottom:-46px!important;
+  height:230px!important;
+  transform:perspective(420px) rotateX(61deg)!important;
+  transform-origin:bottom center!important;
+  background:
+    linear-gradient(90deg,transparent 0 19%,rgba(233,251,248,.12) 19.2% 19.6%,transparent 20% 39%,rgba(233,251,248,.12) 39.2% 39.6%,transparent 40% 59%,rgba(233,251,248,.12) 59.2% 59.6%,transparent 60% 79%,rgba(233,251,248,.12) 79.2% 79.6%,transparent 80%),
+    linear-gradient(180deg,rgba(18,27,34,.12),rgba(3,7,11,.88))!important;
+  border-top:1px solid rgba(177,223,218,.16)!important;
+  box-shadow:inset 0 45px 60px rgba(0,0,0,.10)!important;
+}
+.models-drift-track-surface:after{
+  content:''!important;
+  position:absolute!important;
+  left:50%!important;
+  bottom:18%!important;
+  width:8px!important;
+  height:62%!important;
+  transform:translateX(-50%)!important;
+  background:repeating-linear-gradient(180deg,rgba(239,255,251,.30) 0 32px,transparent 32px 62px)!important;
+  opacity:.55!important;
+}
+.models-drift-car-wrap{
+  position:absolute!important;
+  z-index:20!important;
+  right:3%!important;
+  bottom:4px!important;
+  width:465px!important;
+  height:250px!important;
+  transform-origin:55% 92%!important;
+}
+.models-drift-car-svg{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  overflow:visible!important;
+  opacity:.96!important;
+  filter:drop-shadow(0 28px 22px rgba(0,0,0,.50)) drop-shadow(0 0 34px rgba(45,212,191,.20))!important;
+  transform:rotate(-4deg)!important;
+  transform-origin:50% 88%!important;
+}
+.models-drift-marks{
+  position:absolute!important;
+  right:10%!important;
+  bottom:38px!important;
+  width:340px!important;
+  height:95px!important;
+  z-index:15!important;
+}
+.models-drift-marks i{
+  position:absolute!important;
+  display:block!important;
+  height:8px!important;
+  border-radius:999px!important;
+  background:linear-gradient(90deg,transparent,rgba(2,7,10,.70),rgba(2,7,10,.16))!important;
+  filter:blur(1px)!important;
+  opacity:.43!important;
+}
+.models-drift-marks .mark-1{right:14%;top:39px;width:175px!important;transform:rotate(-10deg)!important}
+.models-drift-marks .mark-2{right:27%;top:52px;width:145px!important;transform:rotate(-8deg)!important}
+.models-drift-marks .mark-3{right:39%;top:64px;width:116px!important;transform:rotate(-6deg)!important;opacity:.24!important}
+
+.models-drift-smoke-cloud{
+  position:absolute!important;
+  z-index:18!important;
+  border-radius:50%!important;
+  background:
+    radial-gradient(circle at 38% 58%,rgba(235,246,247,.33) 0 10%,transparent 26%),
+    radial-gradient(circle at 66% 43%,rgba(204,222,225,.24) 0 14%,transparent 31%),
+    radial-gradient(circle at 25% 33%,rgba(166,192,198,.18) 0 12%,transparent 30%),
+    radial-gradient(circle at 74% 68%,rgba(196,216,219,.14) 0 9%,transparent 28%)!important;
+  filter:blur(8px)!important;
+  pointer-events:none!important;
+}
+.models-drift-smoke-cloud.smoke-1{right:20%;bottom:16px;width:220px!important;height:150px!important;opacity:.40!important}
+.models-drift-smoke-cloud.smoke-2{right:9%;bottom:7px;width:180px!important;height:125px!important;opacity:.28!important}
+
+.models-drift-hero .models-drift-control{
+  position:absolute!important;
+  left:20px!important;
+  bottom:18px!important;
+  top:auto!important;
+  z-index:70!important;
+  min-width:118px!important;
+  min-height:48px!important;
+  padding:9px 18px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  border-radius:14px!important;
+  background:linear-gradient(180deg,rgba(22,49,57,.98),rgba(6,17,24,.98))!important;
+  border:1px solid rgba(84,231,210,.38)!important;
+  color:#ecfffb!important;
+  box-shadow:0 16px 32px rgba(0,0,0,.35),0 0 28px rgba(45,212,191,.10),inset 0 1px rgba(255,255,255,.08)!important;
+  font-size:12px!important;
+  font-weight:950!important;
+  cursor:pointer!important;
+}
+.models-drift-hero .models-drift-icon{
+  width:30px!important;
+  height:30px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:10px!important;
+  background:rgba(45,212,191,.14)!important;
+  color:#7ef7e4!important;
+  font-size:18px!important;
+}
+.models-drift-hero.is-drifting .models-drift-car-wrap{
+  animation:models-car-drift-final 1.4s cubic-bezier(.16,.84,.2,1) both!important;
+}
+.models-drift-hero.is-drifting .models-drift-track-surface{
+  animation:models-track-drift-final 1.4s ease-out both!important;
+}
+.models-drift-hero.is-drifting .smoke-1{
+  animation:models-smoke-final-a 1.4s ease-out both!important;
+}
+.models-drift-hero.is-drifting .smoke-2{
+  animation:models-smoke-final-b 1.4s .03s ease-out both!important;
+}
+.models-drift-hero.is-drifting .models-drift-marks i{
+  animation:models-marks-final 1.4s ease-out both!important;
+}
+.models-drift-hero.is-drifting .models-drift-control{
+  border-color:rgba(255,100,112,.56)!important;
+  background:linear-gradient(180deg,rgba(72,27,36,.98),rgba(20,8,13,.98))!important;
+}
+.models-drift-hero.is-drifting .models-drift-icon{
+  color:#ff9aa2!important;
+  background:rgba(255,84,98,.14)!important;
+  animation:drift-spin .26s linear infinite!important;
+}
+@keyframes models-car-drift-final{
+  0%{transform:translate3d(26px,0,0) rotate(-4deg)!important}
+  24%{transform:translate3d(-8px,-7px,0) rotate(6deg)!important}
+  48%{transform:translate3d(-34px,-2px,0) rotate(-14deg)!important}
+  68%{transform:translate3d(14px,-4px,0) rotate(12deg)!important}
+  86%{transform:translate3d(-4px,0,0) rotate(-7deg)!important}
+  100%{transform:translate3d(0,0,0) rotate(-4deg)!important}
+}
+@keyframes models-track-drift-final{
+  from{transform:perspective(420px) rotateX(61deg) translateX(15px)!important}
+  to{transform:perspective(420px) rotateX(61deg) translateX(-15px)!important}
+}
+@keyframes models-smoke-final-a{
+  0%{transform:translate3d(20px,5px,0) scale(.44);opacity:0}
+  28%{opacity:.55}
+  100%{transform:translate3d(-74px,-48px,0) scale(1.48);opacity:.03}
+}
+@keyframes models-smoke-final-b{
+  0%{transform:translate3d(17px,4px,0) scale(.40);opacity:0}
+  30%{opacity:.42}
+  100%{transform:translate3d(-56px,-37px,0) scale(1.36);opacity:.02}
+}
+@keyframes models-marks-final{
+  from{transform:translateX(4px) rotate(-10deg);opacity:.10}
+  to{transform:translateX(-82px) rotate(-10deg);opacity:.55}
+}
+@media(max-width:700px){
+  .models-drift-hero{
+    min-height:350px!important;
+    padding:20px 14px 74px!important;
+  }
+  .models-drift-car-wrap{
+    width:330px!important;
+    height:182px!important;
+    right:-2%!important;
+    bottom:8px!important;
+  }
+  .models-drift-track-surface{height:200px!important;bottom:-38px!important}
+  .models-drift-marks{right:4%!important;bottom:32px!important;width:250px!important}
+  .models-drift-marks i{width:125px!important}
+  .models-drift-smoke-cloud.smoke-1{right:13%!important;width:170px!important;height:118px!important}
+  .models-drift-smoke-cloud.smoke-2{right:3%!important;width:140px!important;height:98px!important}
+  .models-drift-hero .models-drift-control{left:12px!important;bottom:12px!important;min-height:44px!important}
+}
+@media(max-width:430px){
+  .models-drift-hero{min-height:360px!important}
+  .models-drift-car-wrap{width:295px!important;height:165px!important;right:-7%!important;bottom:10px!important}
+  .models-drift-track-surface{height:190px!important}
+}
