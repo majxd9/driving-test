@@ -19,6 +19,7 @@ import './glass-polish.css';
 import './glass-visibility-v2.css';
 import './spirit-v20.css';
 import './spirit-v20-controls.css';
+import './login-scene-final.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
