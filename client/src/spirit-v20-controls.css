@@ -368,3 +368,206 @@
   .study-premium-option-text { font-size:12.5px !important; line-height:1.4 !important; -webkit-line-clamp:3 !important; }
   .study-premium-letter { width:29px !important; height:29px !important; flex-basis:29px !important; border-radius:9px !important; font-size:10px !important; }
 }
+
+
+/* =========================================================
+   MODELS — premium drifting car playground
+   ========================================================= */
+.models-page .models-hero{
+  position:relative!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  min-height:245px!important;
+}
+.models-page .models-hero>*:not(.models-spirit-scene):not(.models-drift-art):not(.models-drift-control){
+  position:relative!important;
+  z-index:20!important;
+}
+.models-page .models-spirit-scene{
+  z-index:2!important;
+  opacity:1!important;
+  pointer-events:none!important;
+}
+.models-page .models-spirit-scene .spirit-scene-car{
+  right:4%!important;
+  left:auto!important;
+  bottom:0!important;
+  width:clamp(245px,34vw,390px)!important;
+  height:clamp(125px,19vw,205px)!important;
+  opacity:.24!important;
+  transform:rotate(-2deg) scaleX(-1)!important;
+  transform-origin:center bottom!important;
+  filter:drop-shadow(0 24px 28px rgba(0,0,0,.44)) drop-shadow(0 0 28px rgba(45,212,191,.18)) saturate(1.12)!important;
+  transition:filter .2s ease!important;
+  animation:models-idle-drift 4.8s ease-in-out infinite alternate!important;
+}
+.models-page .models-spirit-scene .spirit-scene-smoke{
+  display:block!important;
+  right:13%!important;
+  left:auto!important;
+  bottom:0!important;
+  width:200px!important;
+  height:120px!important;
+  opacity:.34!important;
+}
+.models-page .models-spirit-scene .spirit-scene-light-beam{
+  opacity:0!important;
+}
+
+.models-drift-art{
+  position:absolute!important;
+  inset:0!important;
+  z-index:4!important;
+  pointer-events:none!important;
+  overflow:hidden!important;
+}
+.models-drift-skid{
+  position:absolute!important;
+  bottom:17px!important;
+  width:145px!important;
+  height:8px!important;
+  border-radius:999px!important;
+  background:linear-gradient(90deg,rgba(5,10,15,.75),rgba(5,10,15,.10))!important;
+  filter:blur(1px)!important;
+  opacity:.42!important;
+  transform:rotate(-7deg)!important;
+}
+.models-drift-skid-a{right:21%!important}
+.models-drift-skid-b{right:29%!important;width:118px!important;bottom:26px!important;transform:rotate(9deg)!important}
+.models-drift-smoke{
+  position:absolute!important;
+  width:120px!important;
+  height:85px!important;
+  border-radius:50%!important;
+  background:
+    radial-gradient(circle at 40% 55%,rgba(220,235,238,.22) 0 11%,transparent 26%),
+    radial-gradient(circle at 67% 40%,rgba(184,205,211,.16) 0 13%,transparent 30%),
+    radial-gradient(circle at 28% 35%,rgba(153,179,189,.11) 0 10%,transparent 26%)!important;
+  filter:blur(5px)!important;
+  opacity:.30!important;
+}
+.models-drift-smoke-a{right:17%;bottom:8px!important}
+.models-drift-smoke-b{right:27%;bottom:3px!important;width:95px!important;height:70px!important;opacity:.22!important}
+
+.models-drift-control{
+  position:absolute!important;
+  left:22px!important;
+  bottom:22px!important;
+  z-index:30!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-height:44px!important;
+  padding:8px 15px!important;
+  border-radius:999px!important;
+  border:1px solid rgba(45,212,191,.28)!important;
+  background:linear-gradient(180deg,rgba(17,40,48,.94),rgba(7,19,27,.97))!important;
+  color:#e9fffa!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.08),0 0 24px rgba(45,212,191,.08)!important;
+  font-size:11px!important;
+  font-weight:950!important;
+  cursor:pointer!important;
+  touch-action:manipulation!important;
+  transition:transform .16s ease,border-color .18s ease,box-shadow .18s ease!important;
+}
+.models-drift-control:hover{transform:translateY(-2px)!important;border-color:rgba(45,212,191,.56)!important;box-shadow:0 15px 34px rgba(0,0,0,.36),0 0 28px rgba(45,212,191,.13),inset 0 1px rgba(255,255,255,.09)!important}
+.models-drift-control:active{transform:scale(.97)!important}
+.models-drift-icon{
+  width:28px!important;
+  height:28px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:rgba(45,212,191,.13)!important;
+  color:#6ff4dd!important;
+  font-size:18px!important;
+  line-height:1!important;
+}
+.models-drift-control.is-drifting{
+  border-color:rgba(255,101,111,.55)!important;
+  box-shadow:0 0 34px rgba(255,83,96,.13),0 15px 32px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.08)!important;
+}
+.models-drift-control.is-drifting .models-drift-icon{
+  color:#ff8d95!important;
+  background:rgba(255,80,93,.13)!important;
+  animation:drift-spin .26s linear infinite!important;
+}
+.models-page .models-drift-control.is-drifting~.models-spirit-scene .spirit-scene-car{
+  animation:models-drifting-car 1.15s cubic-bezier(.18,.8,.22,1) both!important;
+  filter:drop-shadow(0 28px 30px rgba(0,0,0,.48)) drop-shadow(0 0 34px rgba(45,212,191,.24)) saturate(1.16)!important;
+}
+.models-page:has(.models-drift-control.is-drifting) .models-drift-skid{
+  animation:models-skid 1.15s ease-out both!important;
+}
+.models-page:has(.models-drift-control.is-drifting) .models-drift-smoke-a{
+  animation:models-smoke-a 1.15s ease-out both!important;
+}
+.models-page:has(.models-drift-control.is-drifting) .models-drift-smoke-b{
+  animation:models-smoke-b 1.15s ease-out both!important;
+}
+
+@media(max-width:700px){
+  .models-page .models-hero{min-height:245px!important;padding-bottom:38px!important}
+  .models-page .models-spirit-scene .spirit-scene-car{
+    right:2%!important;
+    bottom:-1%!important;
+    width:230px!important;
+    height:125px!important;
+    opacity:.20!important;
+  }
+  .models-drift-control{
+    left:12px!important;
+    bottom:13px!important;
+    min-height:41px!important;
+    padding:7px 12px!important;
+    font-size:10px!important;
+  }
+  .models-drift-icon{width:26px!important;height:26px!important;font-size:17px!important}
+  .models-drift-skid{right:16%!important;width:120px!important;bottom:15px!important}
+  .models-drift-skid-b{right:26%!important;width:96px!important;bottom:23px!important}
+  .models-drift-smoke-a{right:12%!important}
+  .models-drift-smoke-b{right:24%!important}
+}
+@media(max-width:430px){
+  .models-page .models-hero{min-height:250px!important}
+  .models-page .models-spirit-scene .spirit-scene-car{width:205px!important;height:112px!important;opacity:.18!important}
+  .models-drift-control{left:9px!important;bottom:10px!important}
+}
+
+@keyframes models-idle-drift{
+  from{transform:translate3d(0,0,0) rotate(-2deg) scaleX(-1)!important}
+  to{transform:translate3d(-10px,-2px,0) rotate(1deg) scaleX(-1)!important}
+}
+@keyframes models-drifting-car{
+  0%{transform:translate3d(0,0,0) rotate(-2deg) scaleX(-1)!important}
+  30%{transform:translate3d(-12px,-4px,0) rotate(-11deg) scaleX(-1)!important}
+  68%{transform:translate3d(17px,-2px,0) rotate(8deg) scaleX(-1)!important}
+  100%{transform:translate3d(0,0,0) rotate(-2deg) scaleX(-1)!important}
+}
+@keyframes models-skid{
+  0%{transform:translateX(16px) rotate(-7deg);opacity:0}
+  18%{opacity:.55}
+  100%{transform:translateX(-48px) rotate(-7deg);opacity:.16}
+}
+@keyframes models-smoke-a{
+  0%{transform:translate3d(10px,5px,0) scale(.55);opacity:0}
+  42%{opacity:.46}
+  100%{transform:translate3d(-38px,-28px,0) scale(1.25);opacity:.05}
+}
+@keyframes models-smoke-b{
+  0%{transform:translate3d(8px,2px,0) scale(.60);opacity:0}
+  38%{opacity:.36}
+  100%{transform:translate3d(-28px,-19px,0) scale(1.18);opacity:.03}
+}
+@keyframes drift-spin{to{transform:rotate(360deg)}}
+
+@media(prefers-reduced-motion:reduce){
+  .models-page .models-spirit-scene .spirit-scene-car,
+  .models-drift-control.is-drifting .models-drift-icon,
+  .models-page:has(.models-drift-control.is-drifting) .models-drift-skid,
+  .models-page:has(.models-drift-control.is-drifting) .models-drift-smoke-a,
+  .models-page:has(.models-drift-control.is-drifting) .models-drift-smoke-b{animation:none!important}
+}
+
+/* EXAM — do not reveal the explanation while the test is being solved. */
+.exam-page-v2 .exam-answer-explanation-v2{display:none!important}
