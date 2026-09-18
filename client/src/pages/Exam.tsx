@@ -20,6 +20,12 @@ export default function Exam() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [imageExpanded, setImageExpanded] = useState(false);
   const finishedRef = useRef(false);
+  const questionsRef = useRef<Question[]>([]);
+  const answersRef = useRef<Record<number, number>>({});
+  const preloadedImagesRef = useRef(new Set<string>());
+
+  questionsRef.current = questions;
+  answersRef.current = answers;
 
   const loadExam = useCallback(async () => {
     const id = Number(modelId) || 1;
@@ -29,10 +35,13 @@ export default function Exam() {
       const picked = await api.getExamQuestions(id);
       if (picked.length !== 30) throw new Error('تعذر تجهيز ٣٠ سؤالاً للاختبار.');
       setQuestions(picked);
+      questionsRef.current = picked;
       setAnswers({});
+      answersRef.current = {};
       setCurrent(0);
       setSeconds(DURATION);
       finishedRef.current = false;
+      preloadedImagesRef.current.clear();
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : 'تعذر تحميل الأسئلة.');
     } finally {
@@ -41,34 +50,39 @@ export default function Exam() {
   }, [modelId]);
 
   useEffect(() => { void loadExam(); }, [loadExam]);
+
   useEffect(() => {
     questions.slice(current, current + 3).forEach((q, offset) => {
       const src = resolveQuestionImageUrl(q.imageUrl);
-      if (!src) return;
+      if (!src || preloadedImagesRef.current.has(src)) return;
+      preloadedImagesRef.current.add(src);
       const img = new Image();
       img.decoding = 'async';
       img.fetchPriority = offset === 0 ? 'high' : 'auto';
       img.src = src;
     });
   }, [questions, current]);
+
   useEffect(() => { setImageExpanded(false); }, [current]);
 
   const finish = useCallback(() => {
-    if (finishedRef.current || !questions.length) return;
+    const currentQuestions = questionsRef.current;
+    const currentAnswers = answersRef.current;
+    if (finishedRef.current || !currentQuestions.length) return;
     finishedRef.current = true;
     let correct = 0;
-    const reviewQuestions = questions.map(question => {
-      const chosen = answers[question.id];
+    const reviewQuestions = currentQuestions.map(question => {
+      const chosen = currentAnswers[question.id];
       if (chosen === question.correctAnswerIndex) correct++;
       return { question, chosen: chosen ?? null };
     });
-    const answered = Object.keys(answers).length;
+    const answered = Object.keys(currentAnswers).length;
     const wrongQuestionIds = reviewQuestions
       .filter(x => x.chosen !== null && x.chosen !== x.question.correctAnswerIndex)
       .map(x => x.question.id);
     api.submitExamAttempt({
       modelId: Number(modelId) || 1,
-      total: questions.length,
+      total: currentQuestions.length,
       correct,
       answered,
       wrongQuestionIds,
@@ -76,13 +90,13 @@ export default function Exam() {
     navigate('/result', {
       state: {
         correct,
-        total: questions.length,
+        total: currentQuestions.length,
         answered,
         reviewQuestions,
         modelId: Number(modelId) || 1,
       },
     });
-  }, [answers, questions, navigate, modelId]);
+  }, [modelId, navigate]);
 
   useEffect(() => {
     if (loading) return;
