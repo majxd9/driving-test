@@ -106,7 +106,7 @@ export default function Study() {
     const isCorrect = answerIndex === q.correctAnswerIndex;
     setAnswers(current => ({ ...current, [q.id]: answerIndex }));
     setSignalState(isCorrect ? 'correct' : 'wrong');
-    playAnswerFeedback(isCorrect);
+    void playAnswerFeedback(isCorrect);
   };
 
   return (
