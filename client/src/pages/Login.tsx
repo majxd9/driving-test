@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useEffect, useState, FormEvent, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import OptimizedImage from '../components/OptimizedImage';
@@ -25,6 +25,11 @@ export default function Login() {
   const [showSample,setShowSample]=useState(false);
   const [sampleIndex,setSampleIndex]=useState(0);
   const [sampleAnswers,setSampleAnswers]=useState<Record<number,number>>({});
+  const [lightsOn,setLightsOn]=useState(() => { try { return localStorage.getItem('driving-spirit-lights') !== 'off'; } catch { return true; } });
+
+  useEffect(() => {
+    document.documentElement.dataset.loginLights = lightsOn ? 'on' : 'off';
+  }, [lightsOn]);
 
   async function handleSubmit(e:FormEvent){
     e.preventDefault();
@@ -45,8 +50,11 @@ export default function Login() {
   const sampleScore=SAMPLE_QUESTIONS.reduce((n,q,i)=>n+(sampleAnswers[i]===q.correct?1:0),0);
   const closeSample=()=>{setShowSample(false);setSampleIndex(0);setSampleAnswers({});};
   const signalState = loginSuccess ? 'green' : (userName.length + password.length) > 0 ? 'amber' : 'red';
+  const typed = userName.length + password.length;
+  const carProgress = Math.min(1, typed / 24);
+  const carMoving = typed > 0 && !loginSuccess;
 
-  return <div className="login-v2" dir="rtl">
+  return <div className={`login-v2 ${lightsOn ? "login-lights-on" : ""}`} dir="rtl">
     <div className="login-v2-glow one"/><div className="login-v2-glow two"/>
     <main className="login-v2-wrap">
       <section className="login-v2-showcase">
@@ -55,9 +63,14 @@ export default function Login() {
         <div className="login-v2-features"><div><b>01</b><span><strong>تدريب منظم</strong><small>قسّم المراجعة حسب القسم الذي تحتاجه</small></span></div><div><b>02</b><span><strong>محاكاة واقعية</strong><small>٣٠ سؤالاً مع عداد زمني واضح</small></span></div><div><b>03</b><span><strong>مراجعة دقيقة</strong><small>شاهد أخطاءك والإجابة الصحيحة بعد الاختبار</small></span></div></div>
       </section>
       <section className="login-v2-panel">
+        <div className="login-static-hero-car" aria-hidden="true" />
         <div className="login-driving-scene" aria-label="مشهد قيادة تفاعلي">
           <div className="login-driving-road" aria-hidden="true"><span /></div>
-          <div className="login-driving-car" aria-hidden="true"><span className="car-light" /></div>
+          <div className="login-driving-car" aria-hidden="true" style={{'--car-progress': carProgress} as CSSProperties}>
+            <div className="login-driving-car-body" />
+            <span className="login-headlight-beam" />
+          </div>
+          <div className={`login-car-smoke ${carMoving ? 'is-active' : ''}`} aria-hidden="true"><i/><i/><i/></div>
           <div className={`login-traffic-signal state-${signalState}`} role="status" aria-live="polite" aria-label={signalState === 'green' ? 'تم تسجيل الدخول بنجاح' : signalState === 'amber' ? 'بيانات تسجيل الدخول قيد الإدخال' : 'بانتظار بيانات تسجيل الدخول'}>
             <span className="traffic-housing" aria-hidden="true">
               <i className="red" />
@@ -67,10 +80,11 @@ export default function Login() {
             <span className="traffic-base" aria-hidden="true" />
           </div>
           <div className="login-driving-controls" aria-label="أدوات القيادة">
-            <SpiritHorn className="login-scene-control" />
-            <SpiritLights compact className="login-scene-control" />
+            <SpiritHorn variant="deep" className="login-scene-control" />
+            <SpiritLights compact className="login-scene-control" onChange={setLightsOn} />
           </div>
         </div>
+        <div className={`login-light-overlay ${lightsOn ? 'is-on' : ''}`} aria-hidden="true" />
         <div className="login-v2-panel-head"><span className="login-v2-mini-dot"/> دخول آمن إلى حسابك</div>
         <div className="login-v2-title"><span>مرحباً بعودتك</span><h2>تسجيل الدخول</h2><p>أدخل بيانات حسابك للمتابعة إلى التدريب والاختبارات.</p></div>
         <form onSubmit={handleSubmit} className="login-v2-form">
