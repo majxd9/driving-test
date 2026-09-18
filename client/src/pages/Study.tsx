@@ -105,11 +105,8 @@ export default function Study() {
     const isCorrect = i === q.correctAnswerIndex;
     setAnswers(current => ({ ...current, [q.id]: i }));
     playAnswerFeedback(isCorrect);
-    setSignalState('pending');
+    setSignalState(isCorrect ? 'correct' : 'wrong');
     if (signalTimerRef.current !== null) window.clearTimeout(signalTimerRef.current);
-    signalTimerRef.current = window.setTimeout(() => {
-      setSignalState(isCorrect ? 'correct' : 'wrong');
-    }, 480);
   };
 
   return (
@@ -157,7 +154,7 @@ export default function Study() {
 
           <div className="study-premium-question">{q.text}</div>
 
-          <div className="study-premium-answers">
+          <div className="study-premium-answers" style={{ '--option-count': q.options.length } as React.CSSProperties}>
             {q.options.map((opt, i) => {
               const isCorrect = i === q.correctAnswerIndex;
               const isChosen = i === chosen;
