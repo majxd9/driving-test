@@ -286,3 +286,75 @@
     animation:none!important;
   }
 }
+
+
+/* V11 — explicit animation play state.
+   This overrides reduced-motion settings for the user-triggered drift demo:
+   pressing the button is an explicit request to see the effect. */
+.models-page .models-drift-hero-v9.is-drifting .models-drift-vehicle-v10{
+  animation-name:models-drift-v11-car!important;
+  animation-duration:2.15s!important;
+  animation-timing-function:cubic-bezier(.16,.84,.20,1)!important;
+  animation-iteration-count:1!important;
+  animation-fill-mode:both!important;
+  animation-play-state:running!important;
+  opacity:.86!important;
+}
+.models-page .models-drift-hero-v9.is-drifting .models-drift-stage-v10{
+  animation:none!important;
+}
+@keyframes models-drift-v11-car{
+  0%{
+    transform:translate3d(-50%,0,0) rotate(-1deg) scale(1)!important;
+  }
+  10%{
+    transform:translate3d(calc(-50% - 24px),-3px,0) rotate(-6deg) scale(1.01)!important;
+  }
+  24%{
+    transform:translate3d(calc(-50% + 70px),3px,0) rotate(12deg) scale(1.045)!important;
+  }
+  40%{
+    transform:translate3d(calc(-50% + 18px),-5px,0) rotate(3deg) scale(1.025)!important;
+  }
+  56%{
+    transform:translate3d(calc(-50% - 88px),-2px,0) rotate(-14deg) scale(1.055)!important;
+  }
+  72%{
+    transform:translate3d(calc(-50% - 18px),-4px,0) rotate(-5deg) scale(1.03)!important;
+  }
+  87%{
+    transform:translate3d(calc(-50% + 50px),1px,0) rotate(10deg) scale(1.018)!important;
+  }
+  100%{
+    transform:translate3d(-50%,0,0) rotate(-1deg) scale(1)!important;
+  }
+}
+@media(max-width:700px){
+  .models-page .models-drift-hero-v9.is-drifting .models-drift-vehicle-v10{
+    animation-name:models-drift-v11-car-mobile!important;
+    animation-duration:2.15s!important;
+    opacity:.86!important;
+  }
+}
+@keyframes models-drift-v11-car-mobile{
+  0%{transform:translate3d(-50%,0,0) rotate(-1deg) scale(1)!important}
+  12%{transform:translate3d(calc(-50% - 26px),-3px,0) rotate(-6deg) scale(1.015)!important}
+  27%{transform:translate3d(calc(-50% + 82px),3px,0) rotate(13deg) scale(1.05)!important}
+  43%{transform:translate3d(calc(-50% + 15px),-5px,0) rotate(2deg) scale(1.028)!important}
+  60%{transform:translate3d(calc(-50% - 96px),-2px,0) rotate(-15deg) scale(1.06)!important}
+  76%{transform:translate3d(calc(-50% - 16px),-4px,0) rotate(-5deg) scale(1.03)!important}
+  90%{transform:translate3d(calc(-50% + 56px),1px,0) rotate(10deg) scale(1.018)!important}
+  100%{transform:translate3d(-50%,0,0) rotate(-1deg) scale(1)!important}
+}
+
+/* Explicitly keep the user-triggered demo animated even when the OS requests
+   reduced motion. */
+@media(prefers-reduced-motion:reduce){
+  .models-page .models-drift-hero-v9.is-drifting .models-drift-vehicle-v10{
+    animation-name:models-drift-v11-car-mobile!important;
+    animation-duration:2.15s!important;
+    animation-iteration-count:1!important;
+    animation-fill-mode:both!important;
+    animation-play-state:running!important;
+  }
+}
