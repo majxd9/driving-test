@@ -492,7 +492,7 @@
   background:rgba(255,80,93,.13)!important;
   animation:drift-spin .26s linear infinite!important;
 }
-.models-page .models-drift-control.is-drifting~.models-spirit-scene .spirit-scene-car{
+.models-page:has(.models-drift-control.is-drifting) .models-spirit-scene .spirit-scene-car{
   animation:models-drifting-car 1.15s cubic-bezier(.18,.8,.22,1) both!important;
   filter:drop-shadow(0 28px 30px rgba(0,0,0,.48)) drop-shadow(0 0 34px rgba(45,212,191,.24)) saturate(1.16)!important;
 }
