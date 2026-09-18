@@ -63,6 +63,9 @@ export default function Login() {
         <div className="login-v2-features"><div><b>01</b><span><strong>تدريب منظم</strong><small>قسّم المراجعة حسب القسم الذي تحتاجه</small></span></div><div><b>02</b><span><strong>محاكاة واقعية</strong><small>٣٠ سؤالاً مع عداد زمني واضح</small></span></div><div><b>03</b><span><strong>مراجعة دقيقة</strong><small>شاهد أخطاءك والإجابة الصحيحة بعد الاختبار</small></span></div></div>
       </section>
       <section className="login-v2-panel">
+
+        <div className="login-v2-panel-head"><span className="login-v2-mini-dot"/> دخول آمن إلى حسابك</div>
+                <div className="login-v2-title"><span>مرحباً بعودتك</span><h2>تسجيل الدخول</h2><p>أدخل بيانات حسابك للمتابعة إلى التدريب والاختبارات.</p></div>
         <div className="login-static-hero-car" aria-hidden="true" />
         <div className="login-driving-scene" aria-label="مشهد قيادة تفاعلي">
           <div className="login-driving-road" aria-hidden="true"><span /></div>
@@ -85,8 +88,6 @@ export default function Login() {
           </div>
         </div>
         <div className={`login-light-overlay ${lightsOn ? 'is-on' : ''}`} aria-hidden="true" />
-        <div className="login-v2-panel-head"><span className="login-v2-mini-dot"/> دخول آمن إلى حسابك</div>
-        <div className="login-v2-title"><span>مرحباً بعودتك</span><h2>تسجيل الدخول</h2><p>أدخل بيانات حسابك للمتابعة إلى التدريب والاختبارات.</p></div>
         <form onSubmit={handleSubmit} className="login-v2-form">
           <label>اسم المستخدم<input value={userName} onChange={e=>{setUserName(e.target.value);setLoginSuccess(false);}} required autoFocus placeholder="أدخل اسم المستخدم" autoComplete="username" autoCapitalize="none" spellCheck={false}/></label>
           <label>كلمة المرور<input value={password} onChange={e=>{setPassword(e.target.value);setLoginSuccess(false);}} type="password" required placeholder="أدخل كلمة المرور" autoComplete="current-password"/></label>
