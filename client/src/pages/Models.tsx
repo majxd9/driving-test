@@ -30,6 +30,15 @@ export default function Models() {
       <main className="models-wrap">
         <section className="models-hero">
           <SpiritDriveScene large variant="rear" className="models-spirit-scene" />
+          <div className="models-drift-track" aria-hidden="true">
+            <div className="models-track-edge models-track-edge-a" />
+            <div className="models-track-edge models-track-edge-b" />
+            <div className="models-track-dash models-track-dash-a" />
+            <div className="models-track-dash models-track-dash-b" />
+            <div className="models-track-dash models-track-dash-c" />
+            <span className="models-track-cone models-track-cone-a" />
+            <span className="models-track-cone models-track-cone-b" />
+          </div>
           <div className="models-drift-art" aria-hidden="true">
             <div className="models-drift-smoke models-drift-smoke-a" />
             <div className="models-drift-smoke models-drift-smoke-b" />
