@@ -9,7 +9,7 @@ type AudioBus = {
   master: GainNode;
 };
 
-export default function SpiritHorn({ className = '' }: { className?: string }) {
+export default function SpiritHorn({ className = '', variant = 'default' }: { className?: string; variant?: 'default' | 'deep' }) {
   const audioRef = useRef<AudioBus | null>(null);
   const [pressed, setPressed] = useState(false);
 
@@ -43,7 +43,7 @@ export default function SpiritHorn({ className = '' }: { className?: string }) {
 
     const now = ctx.currentTime;
     const volume = getSpiritVolume();
-    const peak = 0.70 * volume;
+    const peak = (variant === 'deep' ? 0.92 : 0.70) * volume;
 
     master.gain.cancelScheduledValues(now);
     master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), now);
@@ -55,37 +55,45 @@ export default function SpiritHorn({ className = '' }: { className?: string }) {
       master.gain.exponentialRampToValueAtTime(0.0001, now + 0.48);
     }
 
-    const tones: [number, number, number, number][] = [
-      [174.61, 0.00, 0.55, 0],
-      [220.00, 0.006, 0.44, 4],
-      [261.63, 0.010, 0.34, -3],
-      [349.23, 0.000, 0.16, 0],
-      [87.31, 0.003, 0.22, 0],
-    ];
+    const tones: [number, number, number, number][] = variant === 'deep'
+      ? [
+          [110.00, 0.000, 0.66, -4],
+          [146.83, 0.004, 0.54, 3],
+          [220.00, 0.010, 0.38, -2],
+          [293.66, 0.016, 0.22, 2],
+          [73.42, 0.002, 0.30, 0],
+        ]
+      : [
+          [174.61, 0.00, 0.55, 0],
+          [220.00, 0.006, 0.44, 4],
+          [261.63, 0.010, 0.34, -3],
+          [349.23, 0.000, 0.16, 0],
+          [87.31, 0.003, 0.22, 0],
+        ];
 
     tones.forEach(([frequency, offset, level, detune]) => {
       const osc = ctx.createOscillator();
       const filter = ctx.createBiquadFilter();
       const gainNode = ctx.createGain();
-      osc.type = 'sawtooth';
+      osc.type = variant === 'deep' ? 'square' : 'sawtooth';
       osc.frequency.setValueAtTime(frequency, now + offset);
       if (detune) osc.detune.setValueAtTime(detune * 10, now + offset);
       osc.frequency.linearRampToValueAtTime(frequency * 1.003, now + offset + 0.08);
       osc.frequency.linearRampToValueAtTime(frequency * 0.998, now + offset + 0.25);
 
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(Math.min(frequency * 3.2, 1150), now + offset);
+      filter.frequency.setValueAtTime(Math.min(frequency * (variant === 'deep' ? 2.5 : 3.2), variant === 'deep' ? 900 : 1150), now + offset);
       filter.Q.value = 0.8;
 
       gainNode.gain.setValueAtTime(0.0001, now + offset);
       gainNode.gain.exponentialRampToValueAtTime(level, now + offset + 0.012);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.47);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + (variant === 'deep' ? 0.58 : 0.47));
 
       osc.connect(filter);
       filter.connect(gainNode);
       gainNode.connect(master);
       osc.start(now + offset);
-      osc.stop(now + 0.50);
+      osc.stop(now + (variant === 'deep' ? 0.62 : 0.50));
     });
 
     // Short mechanical click gives the horn a more physical attack.
@@ -98,14 +106,14 @@ export default function SpiritHorn({ className = '' }: { className?: string }) {
       const click = ctx.createBufferSource();
       const clickGain = ctx.createGain();
       click.buffer = clickBuf;
-      clickGain.gain.value = 0.16 * volume;
+      clickGain.gain.value = (variant === 'deep' ? 0.22 : 0.16) * volume;
       click.connect(clickGain);
       clickGain.connect(master);
       click.start(now);
     }
 
     setPressed(true);
-    window.setTimeout(() => setPressed(false), 280);
+    window.setTimeout(() => setPressed(false), variant === 'deep' ? 420 : 280);
     if (navigator.vibrate) navigator.vibrate([12, 18, 8]);
   };
 
