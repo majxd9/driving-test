@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import '../models-drift-final.css';
 import SpiritDrift from '../components/SpiritDrift';
 
 const MODELS = [
@@ -38,29 +37,21 @@ export default function Models() {
       </header>
 
       <main className="models-wrap">
-        <section className={`models-hero models-drift-hero ${drifting ? 'is-drifting' : ''}`}>
-          <div className="models-drift-stage" aria-hidden="true">
-            <div className="models-drift-horizon" />
-            <div className="models-drift-track-surface" />
-            <div className="models-drift-lights" />
-            <div className="models-drift-smoke-cloud smoke-1" />
-            <div className="models-drift-smoke-cloud smoke-2" />
-            <div className="models-drift-car-wrap">
-              <img
-                className="models-drift-car"
-                src="/spirit/car-front-sport.svg"
-                alt=""
-                draggable={false}
-              />
-            </div>
-            <div className="models-drift-marks" aria-hidden="true">
-              <i className="mark-1" />
-              <i className="mark-2" />
-              <i className="mark-3" />
-            </div>
+        <section className={`models-drift-hero-v9 ${drifting ? 'is-drifting' : ''}`}>
+          <div className="models-drift-stage-v9" aria-hidden="true">
+            <div className="models-drift-road-v9" />
+            <div className="models-drift-glow-v9" />
+            <img
+              className="models-drift-vehicle-v9"
+              src="/spirit/car-front-sport.svg"
+              alt=""
+              draggable={false}
+            />
+            <div className="models-drift-smoke-v9 smoke-a" />
+            <div className="models-drift-smoke-v9 smoke-b" />
           </div>
 
-          <div className="models-hero-copy">
+          <div className="models-hero-copy-v9">
             <p className="eyebrow">اختبار الرخصة</p>
             <h1>جاهز للاختبار؟</h1>
             <p>
