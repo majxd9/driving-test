@@ -121,3 +121,199 @@ html:has(.study-premium),html:has(.study-premium) body,html:has(.study-premium) 
     max-height:40px!important;
   }
 }
+
+
+/* =========================================================
+   ABSOLUTE FINAL STUDY MOBILE GEOMETRY
+   ========================================================= */
+@media(max-width:700px){
+  .study-premium{
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  .study-premium-stage{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    padding:5px!important;
+    overflow:hidden!important;
+  }
+  .study-premium-card{
+    position:relative!important;
+    flex:1 1 auto!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:5px!important;
+    overflow:hidden!important;
+    display:block!important;
+  }
+
+  .study-premium-meta{
+    position:absolute!important;
+    top:5px!important;
+    left:5px!important;
+    right:5px!important;
+    height:18px!important;
+    z-index:20!important;
+  }
+
+  .study-premium-image,
+  .study-premium-no-image{
+    position:absolute!important;
+    top:27px!important;
+    left:5px!important;
+    right:5px!important;
+    width:auto!important;
+    height:112px!important;
+    min-height:112px!important;
+    max-height:112px!important;
+    z-index:10!important;
+  }
+
+  .study-premium-question{
+    position:absolute!important;
+    top:143px!important;
+    left:5px!important;
+    right:5px!important;
+    width:auto!important;
+    height:56px!important;
+    min-height:56px!important;
+    max-height:56px!important;
+    z-index:12!important;
+    overflow:hidden!important;
+  }
+
+  .study-premium-answers{
+    position:absolute!important;
+    top:203px!important;
+    left:5px!important;
+    right:5px!important;
+    bottom:53px!important;
+    width:auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    z-index:30!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:repeat(var(--option-count,4),minmax(0,1fr))!important;
+    gap:5px!important;
+    overflow:hidden!important;
+  }
+
+  .study-premium-option{
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    display:flex!important;
+    align-items:center!important;
+    overflow:hidden!important;
+    padding:7px 9px!important;
+  }
+
+  .study-premium-option-text{
+    font-size:13px!important;
+    line-height:1.38!important;
+    -webkit-line-clamp:3!important;
+    overflow:hidden!important;
+  }
+
+  .study-premium-actions{
+    position:absolute!important;
+    left:5px!important;
+    right:5px!important;
+    bottom:5px!important;
+    width:auto!important;
+    height:43px!important;
+    min-height:43px!important;
+    max-height:43px!important;
+    z-index:200!important;
+    display:grid!important;
+    grid-template-columns:1fr 1.25fr!important;
+    gap:5px!important;
+    margin:0!important;
+    padding:0!important;
+    visibility:visible!important;
+    opacity:1!important;
+  }
+
+  .study-premium-action{
+    width:100%!important;
+    height:43px!important;
+    min-height:43px!important;
+    max-height:43px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    visibility:visible!important;
+    opacity:1!important;
+  }
+
+  .study-premium-card>.spirit-question-signal{
+    top:7px!important;
+    right:7px!important;
+    left:auto!important;
+    z-index:60!important;
+  }
+
+  .study-premium-card>.spirit-question-signal.state-idle{
+    visibility:visible!important;
+    opacity:1!important;
+  }
+  .study-premium-card>.spirit-question-signal.state-pending{
+    visibility:visible!important;
+    opacity:1!important;
+  }
+}
+
+@media(max-width:430px){
+  .study-premium-image,
+  .study-premium-no-image{height:104px!important;min-height:104px!important;max-height:104px!important}
+  .study-premium-question{top:135px!important;height:56px!important;min-height:56px!important;max-height:56px!important}
+  .study-premium-answers{top:195px!important;bottom:51px!important;gap:5px!important}
+  .study-premium-actions{height:41px!important;min-height:41px!important;max-height:41px!important}
+  .study-premium-action{height:41px!important;min-height:41px!important;max-height:41px!important}
+}
+
+/* =========================================================
+   MODELS DRIFT — React-state driven, no :has dependency
+   ========================================================= */
+.models-page.is-drifting .models-spirit-scene .spirit-scene-car{
+  animation:models-drifting-car-premium 1.25s cubic-bezier(.18,.82,.2,1) both!important;
+  filter:drop-shadow(0 28px 30px rgba(0,0,0,.48)) drop-shadow(0 0 36px rgba(45,212,191,.26)) saturate(1.18)!important;
+}
+.models-page.is-drifting .models-drift-skid{
+  animation:models-skid 1.15s ease-out both!important;
+}
+.models-page.is-drifting .models-drift-smoke-a{
+  animation:models-smoke-a 1.15s ease-out both!important;
+}
+.models-page.is-drifting .models-drift-smoke-b{
+  animation:models-smoke-b 1.15s ease-out both!important;
+}
+.models-page.is-drifting .models-track-dash{
+  animation:track-flow 1.15s linear both!important;
+}
+.models-page.is-drifting .models-drift-control{
+  border-color:rgba(255,101,111,.55)!important;
+}
+.models-page.is-drifting .models-drift-icon{
+  color:#ff8d95!important;
+  background:rgba(255,80,93,.15)!important;
+  animation:drift-spin .26s linear infinite!important;
+}
+
+.models-page .models-drift-control{
+  top:auto!important;
+  transform:none!important;
+}
+
+@media(max-width:430px){
+  .models-page .models-hero{
+    min-height:250px!important;
+    padding-bottom:42px!important;
+  }
+}
