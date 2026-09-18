@@ -32,6 +32,11 @@ export default function Exam() {
   const [jumpValue, setJumpValue] = useState('1');
   const finishedRef = useRef(false);
   const navigationLockRef = useRef(false);
+  const questionsRef = useRef<Question[]>([]);
+  const answersRef = useRef<Record<number, number>>({});
+
+  questionsRef.current = questions;
+  answersRef.current = answers;
 
   const loadExam = useCallback(async () => {
     const id = Number(modelId) || 1;
@@ -41,6 +46,8 @@ export default function Exam() {
       const picked = await api.getExamQuestions(id);
       if (picked.length !== 30) throw new Error('تعذر تجهيز ٣٠ سؤالاً للاختبار.');
       setQuestions(picked); setAnswers({}); setCurrent(0); setSeconds(DURATION); setJumpOpen(false); setJumpValue('1');
+      questionsRef.current = picked;
+      answersRef.current = {};
       finishedRef.current = false; navigationLockRef.current = false;
       const firstThree = picked.slice(0, 3).map(q => resolveQuestionImageUrl(q.imageUrl)).filter(Boolean);
       const first = firstThree[0]; if (first) await ensureImageReady(first, 1600); preloadImages(firstThree.slice(1), 2);
@@ -53,15 +60,17 @@ export default function Exam() {
   useEffect(() => { setImageExpanded(false); }, [current]);
 
   const finish = useCallback(() => {
-    if (finishedRef.current || !questions.length) return;
+    const currentQuestions = questionsRef.current;
+    const currentAnswers = answersRef.current;
+    if (finishedRef.current || !currentQuestions.length) return;
     finishedRef.current = true;
     let correct = 0;
-    const reviewQuestions = questions.map(question => { const chosen=answers[question.id]; if(chosen===question.correctAnswerIndex) correct++; return {question,chosen:chosen??null}; });
-    const answered=Object.keys(answers).length;
+    const reviewQuestions = currentQuestions.map(question => { const chosen=currentAnswers[question.id]; if(chosen===question.correctAnswerIndex) correct++; return {question,chosen:chosen??null}; });
+    const answered=Object.keys(currentAnswers).length;
     const wrongQuestionIds=reviewQuestions.filter(x=>x.chosen!==null&&x.chosen!==x.question.correctAnswerIndex).map(x=>x.question.id);
-    api.submitExamAttempt({modelId:Number(modelId)||1,total:questions.length,correct,answered,wrongQuestionIds}).catch(()=>{});
-    navigate('/result',{state:{correct,total:questions.length,answered,reviewQuestions,modelId:Number(modelId)||1}});
-  },[answers,questions,navigate,modelId]);
+    api.submitExamAttempt({modelId:Number(modelId)||1,total:currentQuestions.length,correct,answered,wrongQuestionIds}).catch(()=>{});
+    navigate('/result',{state:{correct,total:currentQuestions.length,answered,reviewQuestions,modelId:Number(modelId)||1}});
+  },[navigate,modelId]);
 
   const goToQuestion = useCallback(async (nextIndex:number) => {
     if(navigationLockRef.current||nextIndex===current||nextIndex<0||nextIndex>=questions.length)return;
