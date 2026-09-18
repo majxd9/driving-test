@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import OptimizedImage from '../components/OptimizedImage';
 import SiteGuide from '../components/SiteGuide';
+import SpiritLights from '../components/SpiritLights';
+import SpiritHorn from '../components/SpiritHorn';
 
 const SAMPLE_QUESTIONS = [
   { text: 'ما معنى هذه الإشارة؟', imageUrl: '/signs/sign_03.webp', options: ['منحدر خطر','طريق ضيق من جهتين','طريق زلقة','منعطف مزدوج، الأول باتجاه اليسار'], correct: 3, explanation: 'تحذّر الإشارة من منعطفين متتاليين، الأول باتجاه اليسار.' },
@@ -42,6 +44,7 @@ export default function Login() {
   const chosen=sampleAnswers[sampleIndex];
   const sampleScore=SAMPLE_QUESTIONS.reduce((n,q,i)=>n+(sampleAnswers[i]===q.correct?1:0),0);
   const closeSample=()=>{setShowSample(false);setSampleIndex(0);setSampleAnswers({});};
+  const signalState = loginSuccess ? 'green' : (userName.length + password.length) > 0 ? 'amber' : 'red';
 
   return <div className="login-v2" dir="rtl">
     <div className="login-v2-glow one"/><div className="login-v2-glow two"/>
@@ -52,9 +55,21 @@ export default function Login() {
         <div className="login-v2-features"><div><b>01</b><span><strong>تدريب منظم</strong><small>قسّم المراجعة حسب القسم الذي تحتاجه</small></span></div><div><b>02</b><span><strong>محاكاة واقعية</strong><small>٣٠ سؤالاً مع عداد زمني واضح</small></span></div><div><b>03</b><span><strong>مراجعة دقيقة</strong><small>شاهد أخطاءك والإجابة الصحيحة بعد الاختبار</small></span></div></div>
       </section>
       <section className="login-v2-panel">
-        <div className="spirit-login-scene" aria-hidden="true">
-          <div className="spirit-login-road" />
-          <div className="spirit-login-car" />
+        <div className="login-driving-scene" aria-label="مشهد قيادة تفاعلي">
+          <div className="login-driving-road" aria-hidden="true"><span /></div>
+          <div className="login-driving-car" aria-hidden="true"><span className="car-light" /></div>
+          <div className={`login-traffic-signal state-${signalState}`} role="status" aria-live="polite" aria-label={signalState === 'green' ? 'تم تسجيل الدخول بنجاح' : signalState === 'amber' ? 'بيانات تسجيل الدخول قيد الإدخال' : 'بانتظار بيانات تسجيل الدخول'}>
+            <span className="traffic-housing" aria-hidden="true">
+              <i className="red" />
+              <i className="amber" />
+              <i className="green" />
+            </span>
+            <span className="traffic-base" aria-hidden="true" />
+          </div>
+          <div className="login-driving-controls" aria-label="أدوات القيادة">
+            <SpiritHorn className="login-scene-control" />
+            <SpiritLights compact className="login-scene-control" />
+          </div>
         </div>
         <div className="login-v2-panel-head"><span className="login-v2-mini-dot"/> دخول آمن إلى حسابك</div>
         <div className="login-v2-title"><span>مرحباً بعودتك</span><h2>تسجيل الدخول</h2><p>أدخل بيانات حسابك للمتابعة إلى التدريب والاختبارات.</p></div>
