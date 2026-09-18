@@ -76,7 +76,7 @@ export default function SpiritNitro({ className = '' }: { className?: string }) 
       turbo.start(now);
       turbo.stop(now + duration + 0.03);
 
-      const buffer = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate);
+      const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * duration), ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < data.length; i += 1) {
         data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
