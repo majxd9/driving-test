@@ -1,4 +1,5 @@
-import { useNavigate, useState } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import SpiritDriveScene from '../components/SpiritDriveScene';
 import SpiritDrift from '../components/SpiritDrift';
 
