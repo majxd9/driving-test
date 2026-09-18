@@ -215,3 +215,156 @@
 .home-spirit-scene .spirit-scene-headlight-beams i:last-child { box-shadow:0 -2px 18px rgba(220,255,251,.34) !important; }
 @media(max-width:900px){ .home-spirit-scene .spirit-scene-headlight-beams{opacity:.75 !important;} }
 @media(max-width:430px){ .home-spirit-scene .spirit-scene-headlight-beams{opacity:.63 !important;} }
+
+
+/* =========================================================
+   STUDY QUESTIONS — fixed geometry, no scrolling, status signal only here
+   ========================================================= */
+.exam-page-v2 .spirit-question-signal { display:none !important; }
+
+.study-premium-card > .spirit-question-signal {
+  position:absolute !important;
+  top:8px !important;
+  left:8px !important;
+  z-index:120 !important;
+  width:52px !important;
+  height:70px !important;
+  margin:0 !important;
+  padding:5px !important;
+  border-radius:12px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:4px !important;
+  background:rgba(8,16,22,.92) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.04) !important;
+  pointer-events:none !important;
+}
+.study-premium-card > .spirit-question-signal.state-idle { visibility:hidden !important; }
+.study-premium-card > .spirit-question-signal.state-pending { visibility:visible !important; }
+.spirit-question-signal-housing {
+  width:28px !important;
+  height:48px !important;
+  padding:4px !important;
+  border-radius:8px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  background:linear-gradient(180deg,#16212a,#071017) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+}
+.spirit-question-signal-housing i { width:10px !important; height:10px !important; border-radius:50% !important; background:#18242c !important; }
+.spirit-question-signal.state-pending .amber { background:#ffc857 !important; box-shadow:0 0 12px rgba(255,200,87,.75) !important; }
+.spirit-question-signal.state-correct .green { background:#39dfb1 !important; box-shadow:0 0 13px rgba(57,223,177,.82) !important; }
+.spirit-question-signal.state-wrong .red { background:#ff5b67 !important; box-shadow:0 0 13px rgba(255,91,103,.82) !important; }
+.spirit-question-signal-label { color:#b9c7d0 !important; font-size:8px !important; font-weight:900 !important; line-height:1 !important; }
+.spirit-question-signal.state-correct .spirit-question-signal-label { color:#63edc4 !important; }
+.spirit-question-signal.state-wrong .spirit-question-signal-label { color:#ff7f89 !important; }
+
+/* The answer region owns a fixed slot in the card. Four options never move when an answer is selected. */
+.study-premium-card {
+  grid-template-rows:18px clamp(120px,21dvh,158px) clamp(64px,9dvh,78px) minmax(0,1fr) 0 0 44px !important;
+  gap:5px !important;
+  overflow:hidden !important;
+}
+.study-premium-meta { min-height:0 !important; }
+.study-premium-image,
+.study-premium-no-image {
+  height:100% !important;
+  min-height:0 !important;
+  max-height:none !important;
+}
+.study-premium-question {
+  height:100% !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow:hidden !important;
+  display:-webkit-box !important;
+  -webkit-box-orient:vertical !important;
+  -webkit-line-clamp:3 !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  font-size:clamp(15px,3.8vw,19px) !important;
+  line-height:1.42 !important;
+  font-weight:900 !important;
+  padding:4px 13px !important;
+}
+.study-premium-answers {
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow:hidden !important;
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  grid-template-rows:repeat(4,minmax(0,1fr)) !important;
+  gap:7px !important;
+  padding:0 !important;
+}
+.study-premium-option {
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  max-height:none !important;
+  flex:none !important;
+  display:flex !important;
+  align-items:center !important;
+  box-sizing:border-box !important;
+  padding:9px 11px !important;
+  border-radius:14px !important;
+  overflow:hidden !important;
+  transform:none !important;
+}
+.study-premium-option-text {
+  min-width:0 !important;
+  max-width:100% !important;
+  font-size:clamp(12.5px,3.45vw,15px) !important;
+  line-height:1.42 !important;
+  font-weight:760 !important;
+  white-space:normal !important;
+  overflow:hidden !important;
+  display:-webkit-box !important;
+  -webkit-box-orient:vertical !important;
+  -webkit-line-clamp:3 !important;
+}
+.study-premium-option:hover,
+.study-premium-option:not(:disabled):hover { transform:none !important; }
+
+/* Explanation appears without pushing the four answer rows or bottom actions. */
+.study-premium-explanation:not(.is-empty) {
+  position:absolute !important;
+  left:10px !important;
+  right:10px !important;
+  top:48px !important;
+  z-index:130 !important;
+  width:auto !important;
+  max-height:min(30dvh,180px) !important;
+  margin:0 !important;
+  padding:11px 13px !important;
+  overflow:hidden !important;
+  border-radius:14px !important;
+  background:rgba(6,19,25,.97) !important;
+  border:1px solid rgba(45,212,191,.30) !important;
+  box-shadow:0 20px 50px rgba(0,0,0,.42) !important;
+  pointer-events:none !important;
+}
+
+@media(max-width:430px) {
+  .study-premium-card {
+    grid-template-rows:17px clamp(112px,19dvh,142px) clamp(60px,8dvh,70px) minmax(0,1fr) 0 0 42px !important;
+    gap:4px !important;
+  }
+  .study-premium-card > .spirit-question-signal { top:6px !important; left:6px !important; width:46px !important; height:62px !important; }
+  .spirit-question-signal-housing { width:24px !important; height:42px !important; }
+  .spirit-question-signal-housing i { width:9px !important; height:9px !important; }
+  .spirit-question-signal-label { font-size:7px !important; }
+  .study-premium-question { font-size:14px !important; line-height:1.38 !important; }
+  .study-premium-answers { gap:6px !important; }
+  .study-premium-option { padding:8px 9px !important; border-radius:12px !important; }
+  .study-premium-option-text { font-size:12.5px !important; line-height:1.4 !important; -webkit-line-clamp:3 !important; }
+  .study-premium-letter { width:29px !important; height:29px !important; flex-basis:29px !important; border-radius:9px !important; font-size:10px !important; }
+}
