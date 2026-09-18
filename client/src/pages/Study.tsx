@@ -172,7 +172,7 @@ export default function Study() {
             <span>{chosen === undefined ? 'اختر إجابة' : 'تمت الإجابة'}</span>
           </div>
 
-          {q.imageUrl ? (
+          {q.imageUrl && showImage ? (
             <div className="study-premium-image">
               <OptimizedImage
                 src={q.imageUrl}
@@ -184,7 +184,7 @@ export default function Study() {
               />
             </div>
           ) : (
-            <div className="study-premium-no-image"><span>سؤال نظري</span></div>
+            <div className="study-premium-no-image" aria-hidden="true" />
           )}
 
           <div className="study-premium-question">{q.text}</div>
