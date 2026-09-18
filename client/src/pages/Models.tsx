@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import DriftCarArt from '../components/DriftCarArt';
 import SpiritDrift from '../components/SpiritDrift';
 
 const MODELS = [
@@ -38,15 +39,10 @@ export default function Models() {
 
       <main className="models-wrap">
         <section className={`models-drift-hero-v9 ${drifting ? 'is-drifting' : ''}`}>
-          <div className="models-drift-stage-v9" aria-hidden="true">
-            <div className="models-drift-road-v9" />
+          <div className="models-drift-stage-v10" aria-hidden="true">
+            <div className="models-drift-road-v10" />
             <div className="models-drift-glow-v9" />
-            <img
-              className="models-drift-vehicle-v9"
-              src="/spirit/car-front-sport.svg"
-              alt=""
-              draggable={false}
-            />
+            <DriftCarArt />
             <div className="models-drift-smoke-v9 smoke-a" />
             <div className="models-drift-smoke-v9 smoke-b" />
           </div>
