@@ -38,34 +38,6 @@ export default function Models() {
 
       <main className="models-wrap">
         <section className={`models-hero models-drift-hero ${drifting ? 'is-drifting' : ''}`}>
-          <div className="models-drift-stage" aria-hidden="true">
-            <div className="models-drift-horizon" />
-            <div className="models-drift-track-surface">
-              <span className="lane-line line-1" />
-              <span className="lane-line line-2" />
-              <span className="lane-line line-3" />
-              <span className="track-edge edge-1" />
-              <span className="track-edge edge-2" />
-            </div>
-            <div className="models-drift-marks">
-              <i className="mark-1" />
-              <i className="mark-2" />
-              <i className="mark-3" />
-            </div>
-            <div className="models-drift-smoke-cloud smoke-1" />
-            <div className="models-drift-smoke-cloud smoke-2" />
-            <div className="models-drift-car-wrap">
-              <img
-                className="models-drift-car"
-                src="/spirit/car-drift-sport.svg"
-                alt=""
-                draggable={false}
-              />
-            </div>
-          </div>
-
-          <SpiritDrift onStateChange={setDrifting} />
-
           <div className="models-hero-copy">
             <p className="eyebrow">اختبار الرخصة</p>
             <h1>جاهز للاختبار؟</h1>
@@ -74,6 +46,29 @@ export default function Models() {
               بمدة ١٥ دقيقة. تحتاج إلى ٢٥ إجابة صحيحة للنجاح.
             </p>
           </div>
+
+          <div className="models-drift-stage" aria-hidden="true">
+            <div className="models-drift-horizon" />
+            <div className="models-drift-track-surface" />
+            <div className="models-drift-lights" />
+            <div className="models-drift-smoke-cloud smoke-1" />
+            <div className="models-drift-smoke-cloud smoke-2" />
+            <div className="models-drift-car-wrap">
+              <img
+                className="models-drift-car"
+                src="/spirit/car-front-sport.svg"
+                alt=""
+                draggable={false}
+              />
+            </div>
+            <div className="models-drift-marks" aria-hidden="true">
+              <i className="mark-1" />
+              <i className="mark-2" />
+              <i className="mark-3" />
+            </div>
+          </div>
+
+          <SpiritDrift onStateChange={setDrifting} />
         </section>
 
         <div className="models-grid">
@@ -88,9 +83,7 @@ export default function Models() {
                 <span className={`model-number ${model.advanced ? 'advanced' : ''}`}>
                   {model.id}
                 </span>
-                <span aria-hidden="true" className="text-xl text-muted">
-                  ←
-                </span>
+                <span aria-hidden="true" className="text-xl text-muted">←</span>
               </span>
               <span className="block mt-4">
                 <strong className="block text-base">{model.label}</strong>
