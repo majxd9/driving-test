@@ -12,6 +12,7 @@ export default function SpiritDriveScene({ className = '', large = false, varian
       <div className="spirit-scene-sky" />
       <div className="spirit-scene-road"><span /></div>
       <div className="spirit-scene-light-beam" />
+      <div className="spirit-scene-headlight-beams"><i/><i/></div>
       <div className="spirit-scene-smoke" />
       <div className="spirit-scene-car" />
       <div className="spirit-scene-reflection" />
