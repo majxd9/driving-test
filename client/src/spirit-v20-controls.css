@@ -571,3 +571,120 @@
 
 /* EXAM — do not reveal the explanation while the test is being solved. */
 .exam-page-v2 .exam-answer-explanation-v2{display:none!important}
+
+
+/* FINAL MODELS DRIFT SCENE — dedicated track + new car */
+.models-page .models-drift-track{
+  position:absolute!important;
+  left:-8%!important;
+  right:-8%!important;
+  bottom:0!important;
+  height:145px!important;
+  z-index:1!important;
+  pointer-events:none!important;
+  overflow:hidden!important;
+  transform:perspective(420px) rotateX(34deg)!important;
+  transform-origin:bottom center!important;
+}
+.models-page .models-track-edge{
+  position:absolute!important;
+  bottom:14px!important;
+  height:9px!important;
+  width:88%!important;
+  border-radius:999px!important;
+  background:linear-gradient(90deg,transparent,rgba(185,226,230,.28),rgba(185,226,230,.07))!important;
+  box-shadow:0 0 20px rgba(120,220,211,.06)!important;
+}
+.models-track-edge-a{right:-2%!important;transform:rotate(-4deg)!important}
+.models-track-edge-b{left:-2%!important;transform:rotate(4deg)!important}
+.models-track-dash{
+  position:absolute!important;
+  bottom:22px!important;
+  width:52px!important;
+  height:6px!important;
+  border-radius:999px!important;
+  background:rgba(213,245,241,.30)!important;
+  box-shadow:0 0 12px rgba(213,245,241,.06)!important;
+}
+.models-track-dash-a{left:42%!important;transform:rotate(-2deg)!important}
+.models-track-dash-b{left:60%!important;transform:rotate(2deg)!important}
+.models-track-dash-c{left:24%!important;transform:rotate(-6deg)!important}
+.models-track-cone{
+  position:absolute!important;
+  bottom:39px!important;
+  width:0!important;
+  height:0!important;
+  border-left:8px solid transparent!important;
+  border-right:8px solid transparent!important;
+  border-bottom:25px solid #f5a623!important;
+  filter:drop-shadow(0 4px 4px rgba(0,0,0,.35))!important;
+  opacity:.62!important;
+}
+.models-track-cone:after{
+  content:''!important;
+  position:absolute!important;
+  left:-12px!important;
+  bottom:-29px!important;
+  width:24px!important;
+  height:4px!important;
+  border-radius:999px!important;
+  background:#f5a623!important;
+}
+.models-track-cone-a{right:11%!important;transform:rotate(-9deg)!important}
+.models-track-cone-b{right:35%!important;transform:rotate(8deg)!important;opacity:.42!important}
+
+.models-page .models-spirit-scene .spirit-scene-car{
+  background:url('/spirit/car-drift-sport.svg') center / contain no-repeat!important;
+  width:clamp(290px,40vw,455px)!important;
+  height:clamp(145px,23vw,245px)!important;
+  right:7%!important;
+  bottom:-1%!important;
+  opacity:.31!important;
+}
+.models-page .models-spirit-scene .spirit-scene-smoke{
+  right:18%!important;
+  bottom:5px!important;
+  width:245px!important;
+  height:140px!important;
+  opacity:.28!important;
+}
+.models-page:has(.models-drift-control.is-drifting) .models-spirit-scene .spirit-scene-car{
+  animation:models-drifting-car-premium 1.25s cubic-bezier(.18,.82,.2,1) both!important;
+}
+.models-page:has(.models-drift-control.is-drifting) .models-drift-art{
+  animation:drift-art-shake .18s linear 6 both!important;
+}
+.models-page:has(.models-drift-control.is-drifting) .models-drift-control{
+  animation:drift-button-pulse .32s ease-in-out 3 both!important;
+}
+.models-page:has(.models-drift-control.is-drifting) .models-track-dash{
+  animation:track-flow 1.15s linear both!important;
+}
+@keyframes models-drifting-car-premium{
+  0%{transform:translate3d(25px,0,0) rotate(0deg) scaleX(-1)!important}
+  22%{transform:translate3d(-8px,-6px,0) rotate(-12deg) scaleX(-1.02)!important}
+  50%{transform:translate3d(-30px,-2px,0) rotate(10deg) scaleX(-1.02)!important}
+  76%{transform:translate3d(8px,-3px,0) rotate(-7deg) scaleX(-1)!important}
+  100%{transform:translate3d(0,0,0) rotate(0deg) scaleX(-1)!important}
+}
+@keyframes drift-art-shake{0%,100%{transform:translateX(0)}50%{transform:translateX(-2px)}}
+@keyframes drift-button-pulse{0%,100%{transform:scale(1)}50%{transform:scale(.96)}}
+@keyframes track-flow{from{opacity:.32}to{opacity:.10}}
+@media(max-width:700px){
+  .models-page .models-drift-track{height:122px!important;bottom:-2px!important}
+  .models-page .models-spirit-scene .spirit-scene-car{
+    width:275px!important;
+    height:145px!important;
+    right:1%!important;
+    bottom:-2%!important;
+    opacity:.25!important;
+  }
+  .models-page .models-spirit-scene .spirit-scene-smoke{right:11%!important;width:190px!important;height:120px!important}
+}
+@media(max-width:430px){
+  .models-page .models-drift-track{height:115px!important}
+  .models-page .models-spirit-scene .spirit-scene-car{width:245px!important;height:132px!important;right:-1%!important;opacity:.22!important}
+  .models-page .models-spirit-scene .spirit-scene-smoke{right:8%!important;width:170px!important;height:105px!important}
+  .models-track-cone{transform:scale(.82)!important}
+  .models-track-dash{width:40px!important;height:5px!important}
+}
