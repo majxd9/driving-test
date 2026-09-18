@@ -6,130 +6,123 @@ type ExtendedWindow = Window & typeof globalThis & { webkitAudioContext?: AudioC
 export default function SpiritDrift({ onStateChange }: { onStateChange?: (active: boolean) => void }) {
   const [drifting, setDrifting] = useState(false);
   const contextRef = useRef<AudioContext | null>(null);
+  const timerRef = useRef<number | null>(null);
 
-  const getAudio = async () => {
+  const getContextSync = () => {
     const Ctx = window.AudioContext || (window as ExtendedWindow).webkitAudioContext;
     if (!Ctx) return null;
-    const ctx = contextRef.current ?? new Ctx();
-    contextRef.current = ctx;
-    if (ctx.state !== 'running') await ctx.resume();
+    contextRef.current ??= new Ctx();
+    const ctx = contextRef.current;
+    if (ctx.state === 'suspended') void ctx.resume();
     return ctx;
   };
 
-  const startAudio = async () => {
-    const ctx = await getAudio();
+  const playDrift = () => {
+    if (drifting) return;
+    const ctx = getContextSync();
     if (!ctx) return;
 
-    const now = ctx.currentTime;
-    const end = now + 1.35;
-
-    const master = ctx.createGain();
-    const compressor = ctx.createDynamicsCompressor();
-    compressor.threshold.value = -26;
-    compressor.knee.value = 10;
-    compressor.ratio.value = 6;
-    compressor.attack.value = 0.002;
-    compressor.release.value = 0.09;
-    master.gain.setValueAtTime(0.0001, now);
-    master.gain.exponentialRampToValueAtTime(0.42, now + 0.025);
-    master.gain.exponentialRampToValueAtTime(0.0001, end);
-    master.connect(compressor).connect(ctx.destination);
-
-    // Engine rev: two detuned oscillators with a realistic pitch rise/fall.
-    for (const [detune, level] of [[0, 0.18], [7, 0.10]] as const) {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
-      osc.type = 'sawtooth';
-      osc.detune.value = detune;
-      osc.frequency.setValueAtTime(95, now);
-      osc.frequency.exponentialRampToValueAtTime(205, now + 0.18);
-      osc.frequency.exponentialRampToValueAtTime(420, now + 0.68);
-      osc.frequency.exponentialRampToValueAtTime(255, end - 0.12);
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(900, now);
-      filter.frequency.exponentialRampToValueAtTime(2400, now + 0.6);
-      filter.frequency.exponentialRampToValueAtTime(1300, end);
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(level, now + 0.035);
-      gain.gain.setValueAtTime(level, now + 0.7);
-      gain.gain.exponentialRampToValueAtTime(0.0001, end);
-      osc.connect(filter).connect(gain).connect(master);
-      osc.start(now);
-      osc.stop(end + 0.03);
-    }
-
-    // Tire squeal: shaped broadband friction, brighter during the hardest part of the slide.
-    const duration = 1.28;
-    const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * duration), ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i += 1) {
-      const t = i / data.length;
-      const envelope = Math.pow(Math.sin(Math.PI * Math.min(1, t * 1.08)), 0.58);
-      const texture = 0.65 + 0.35 * Math.sin(t * 83);
-      data[i] = (Math.random() * 2 - 1) * envelope * texture;
-    }
-    const source = ctx.createBufferSource();
-    const band = ctx.createBiquadFilter();
-    const tyreGain = ctx.createGain();
-    source.buffer = buffer;
-    band.type = 'bandpass';
-    band.Q.value = 2.2;
-    band.frequency.setValueAtTime(720, now + 0.02);
-    band.frequency.exponentialRampToValueAtTime(2600, now + 0.58);
-    band.frequency.exponentialRampToValueAtTime(1500, end - 0.08);
-    tyreGain.gain.setValueAtTime(0.0001, now);
-    tyreGain.gain.exponentialRampToValueAtTime(0.52, now + 0.08);
-    tyreGain.gain.setValueAtTime(0.48, now + 0.58);
-    tyreGain.gain.exponentialRampToValueAtTime(0.0001, end);
-    source.connect(band).connect(tyreGain).connect(master);
-    source.start(now);
-    source.stop(end);
-
-    // Short turbo/pressure hiss on the exit of the slide.
-    const hissBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.30), ctx.sampleRate);
-    const hiss = hissBuffer.getChannelData(0);
-    for (let i = 0; i < hiss.length; i += 1) {
-      const t = i / hiss.length;
-      hiss[i] = (Math.random() * 2 - 1) * (1 - t) * (0.45 + 0.55 * Math.random());
-    }
-    const hissSource = ctx.createBufferSource();
-    const hissFilter = ctx.createBiquadFilter();
-    const hissGain = ctx.createGain();
-    hissSource.buffer = hissBuffer;
-    hissFilter.type = 'highpass';
-    hissFilter.frequency.value = 1700;
-    hissGain.gain.setValueAtTime(0.0001, now + 0.92);
-    hissGain.gain.exponentialRampToValueAtTime(0.16, now + 1.00);
-    hissGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.25);
-    hissSource.connect(hissFilter).connect(hissGain).connect(master);
-    hissSource.start(now + 0.92);
-    hissSource.stop(now + 1.25);
-  };
-
-  const playDrift = async () => {
-    if (drifting) return;
     setDrifting(true);
     onStateChange?.(true);
 
-    try {
-      await startAudio();
-    } catch (error) {
-      console.error('Unable to play drift audio:', error);
-    } finally {
-      window.setTimeout(() => {
-        setDrifting(false);
-        onStateChange?.(false);
-      }, 1400);
+    const now = ctx.currentTime;
+    const end = now + 1.32;
+
+    const master = ctx.createGain();
+    const compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.value = -25;
+    compressor.knee.value = 10;
+    compressor.ratio.value = 6;
+    compressor.attack.value = 0.002;
+    compressor.release.value = 0.08;
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(0.46, now + 0.025);
+    master.gain.exponentialRampToValueAtTime(0.0001, end);
+    master.connect(compressor).connect(ctx.destination);
+
+    for (const [offset, volume] of [[0, 0.17], [5, 0.09]] as const) {
+      const engine = ctx.createOscillator();
+      const engineGain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      engine.type = 'sawtooth';
+      engine.detune.value = offset;
+      engine.frequency.setValueAtTime(90, now);
+      engine.frequency.exponentialRampToValueAtTime(220, now + 0.22);
+      engine.frequency.exponentialRampToValueAtTime(430, now + 0.62);
+      engine.frequency.exponentialRampToValueAtTime(250, end - 0.10);
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(800, now);
+      filter.frequency.exponentialRampToValueAtTime(2600, now + 0.6);
+      filter.frequency.exponentialRampToValueAtTime(1200, end);
+      engineGain.gain.setValueAtTime(0.0001, now);
+      engineGain.gain.exponentialRampToValueAtTime(volume, now + 0.035);
+      engineGain.gain.exponentialRampToValueAtTime(volume * 0.92, now + 0.62);
+      engineGain.gain.exponentialRampToValueAtTime(0.0001, end);
+      engine.connect(filter).connect(engineGain).connect(master);
+      engine.start(now);
+      engine.stop(end + 0.02);
     }
+
+    const tireBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 1.22), ctx.sampleRate);
+    const tireData = tireBuffer.getChannelData(0);
+    for (let i = 0; i < tireData.length; i += 1) {
+      const t = i / tireData.length;
+      const env = Math.pow(Math.sin(Math.PI * Math.min(1, t * 1.08)), 0.52);
+      const grit = 0.6 + 0.4 * Math.sin(t * 91);
+      tireData[i] = (Math.random() * 2 - 1) * env * grit;
+    }
+    const tire = ctx.createBufferSource();
+    const tireFilter = ctx.createBiquadFilter();
+    const tireGain = ctx.createGain();
+    tire.buffer = tireBuffer;
+    tireFilter.type = 'bandpass';
+    tireFilter.Q.value = 2.4;
+    tireFilter.frequency.setValueAtTime(750, now);
+    tireFilter.frequency.exponentialRampToValueAtTime(2700, now + 0.54);
+    tireFilter.frequency.exponentialRampToValueAtTime(1300, end - 0.05);
+    tireGain.gain.setValueAtTime(0.0001, now);
+    tireGain.gain.exponentialRampToValueAtTime(0.58, now + 0.07);
+    tireGain.gain.setValueAtTime(0.52, now + 0.52);
+    tireGain.gain.exponentialRampToValueAtTime(0.0001, end);
+    tire.connect(tireFilter).connect(tireGain).connect(master);
+    tire.start(now);
+    tire.stop(end);
+
+    const hissBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.28), ctx.sampleRate);
+    const hissData = hissBuffer.getChannelData(0);
+    for (let i = 0; i < hissData.length; i += 1) {
+      const t = i / hissData.length;
+      hissData[i] = (Math.random() * 2 - 1) * (1 - t) * (0.45 + Math.random() * 0.55);
+    }
+    const hiss = ctx.createBufferSource();
+    const hissFilter = ctx.createBiquadFilter();
+    const hissGain = ctx.createGain();
+    hiss.buffer = hissBuffer;
+    hissFilter.type = 'highpass';
+    hissFilter.frequency.value = 1800;
+    hissGain.gain.setValueAtTime(0.0001, now + 0.92);
+    hissGain.gain.exponentialRampToValueAtTime(0.17, now + 1.00);
+    hissGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.20);
+    hiss.connect(hissFilter).connect(hissGain).connect(master);
+    hiss.start(now + 0.92);
+    hiss.stop(now + 1.23);
+
+    timerRef.current = window.setTimeout(() => {
+      timerRef.current = null;
+      setDrifting(false);
+      onStateChange?.(false);
+    }, 1360);
   };
 
   return (
     <button
       type="button"
       className={`models-drift-control ${drifting ? 'is-drifting' : ''}`}
-      onPointerDown={() => { void getAudio(); }}
-      onClick={() => { void playDrift(); }}
+      onPointerDown={(event) => {
+        event.preventDefault();
+        playDrift();
+      }}
+      onClick={(event) => event.preventDefault()}
       aria-pressed={drifting}
       aria-label="تفحيط السيارة"
       title="تفحيط السيارة"
