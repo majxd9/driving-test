@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import SpiritDriveScene from '../components/SpiritDriveScene';
 import SpiritDrift from '../components/SpiritDrift';
 
 const MODELS = [
@@ -30,27 +29,35 @@ export default function Models() {
       </header>
 
       <main className="models-wrap">
-        <section className="models-hero">
-          <SpiritDriveScene large variant="rear" className={`models-spirit-scene ${drifting ? 'is-drifting' : ''}`} />
-          <div className="models-drift-track" aria-hidden="true">
-            <div className="models-track-edge models-track-edge-a" />
-            <div className="models-track-edge models-track-edge-b" />
-            <div className="models-track-dash models-track-dash-a" />
-            <div className="models-track-dash models-track-dash-b" />
-            <div className="models-track-dash models-track-dash-c" />
-            <span className="models-track-cone models-track-cone-a" />
-            <span className="models-track-cone models-track-cone-b" />
+        <section className={`models-hero models-drift-hero ${drifting ? 'is-drifting' : ''}`}>
+          <div className="models-drift-scene" aria-hidden="true">
+            <div className="models-drift-road">
+              <span className="models-drift-lane lane-a" />
+              <span className="models-drift-lane lane-b" />
+              <span className="models-drift-lane lane-c" />
+            </div>
+            <div className="models-drift-tire-marks">
+              <i className="mark-a" />
+              <i className="mark-b" />
+              <i className="mark-c" />
+            </div>
+            <div className="models-drift-smoke-cloud smoke-a" />
+            <div className="models-drift-smoke-cloud smoke-b" />
+            <img
+              className="models-drift-car"
+              src="/spirit/car-drift-sport.svg"
+              alt=""
+              draggable={false}
+            />
           </div>
-          <div className="models-drift-art" aria-hidden="true">
-            <div className="models-drift-smoke models-drift-smoke-a" />
-            <div className="models-drift-smoke models-drift-smoke-b" />
-            <div className="models-drift-skid models-drift-skid-a" />
-            <div className="models-drift-skid models-drift-skid-b" />
-          </div>
+
           <SpiritDrift onStateChange={setDrifting} />
-          <p className="eyebrow">اختبار الرخصة</p>
-          <h1>جاهز للاختبار؟</h1>
-          <p>كل نموذج يتكوّن من ٣٠ سؤالاً من قواعد السير والإشارات والميكانيك، بمدة ١٥ دقيقة. تحتاج إلى ٢٥ إجابة صحيحة للنجاح.</p>
+
+          <div className="models-hero-copy">
+            <p className="eyebrow">اختبار الرخصة</p>
+            <h1>جاهز للاختبار؟</h1>
+            <p>كل نموذج يتكوّن من ٣٠ سؤالاً من قواعد السير والإشارات والميكانيك، بمدة ١٥ دقيقة. تحتاج إلى ٢٥ إجابة صحيحة للنجاح.</p>
+          </div>
         </section>
 
         <div className="models-grid">
