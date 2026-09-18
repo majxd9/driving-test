@@ -413,3 +413,91 @@
     animation:none!important;
   }
 }
+
+
+/* HOTFIX v7 — hard isolate the actual car above every legacy layer.
+   The car stays behind the text, but it can never be hidden by old model art. */
+.models-page .models-drift-hero{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  min-height:410px!important;
+}
+.models-page .models-drift-hero::before,
+.models-page .models-drift-hero::after{
+  content:none!important;
+  display:none!important;
+}
+.models-page .models-drift-stage{
+  position:absolute!important;
+  inset:0!important;
+  z-index:1!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:none!important;
+  overflow:hidden!important;
+}
+.models-page .models-drift-car-wrap{
+  position:absolute!important;
+  left:50%!important;
+  top:118px!important;
+  bottom:auto!important;
+  z-index:12!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:min(560px,104%)!important;
+  height:auto!important;
+  margin:0!important;
+  transform:translateX(-50%)!important;
+  will-change:transform!important;
+}
+.models-page .models-drift-car-wrap .models-drift-car{
+  position:relative!important;
+  inset:auto!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:.62!important;
+  width:100%!important;
+  height:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  transform:none!important;
+  animation:none!important;
+}
+.models-page .models-drift-stage .models-drift-lights{
+  z-index:13!important;
+}
+.models-page .models-drift-hero .models-hero-copy{
+  position:relative!important;
+  z-index:30!important;
+  padding-bottom:112px!important;
+}
+.models-page .models-drift-hero .models-drift-control{
+  z-index:40!important;
+}
+.models-page .models-drift-hero.is-drifting .models-drift-car-wrap{
+  animation:models-drift-v7-car 1.45s cubic-bezier(.18,.84,.20,1) both!important;
+}
+.models-page .models-drift-hero.is-drifting .models-drift-car{
+  opacity:.76!important;
+}
+@keyframes models-drift-v7-car{
+  0%{transform:translateX(calc(-50% + 0px)) translateY(0) rotate(0deg) scale(1)}
+  18%{transform:translateX(calc(-50% - 28px)) translateY(-6px) rotate(-3deg) scale(1.012)}
+  42%{transform:translateX(calc(-50% + 62px)) translateY(2px) rotate(8deg) scale(1.035)}
+  64%{transform:translateX(calc(-50% - 68px)) translateY(-5px) rotate(-7deg) scale(1.025)}
+  82%{transform:translateX(calc(-50% + 30px)) translateY(-1px) rotate(3deg) scale(1.01)}
+  100%{transform:translateX(-50%) translateY(0) rotate(0deg) scale(1)}
+}
+@media(max-width:700px){
+  .models-page .models-drift-hero{min-height:410px!important;padding-top:20px!important}
+  .models-page .models-drift-car-wrap{top:132px!important;width:min(520px,112%)!important}
+  .models-page .models-drift-car{opacity:.50!important}
+}
+@media(max-width:430px){
+  .models-page .models-drift-hero{min-height:395px!important}
+  .models-page .models-drift-car-wrap{top:126px!important;width:112%!important}
+  .models-page .models-drift-car{opacity:.50!important}
+}
