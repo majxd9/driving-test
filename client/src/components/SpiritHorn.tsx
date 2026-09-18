@@ -1,80 +1,62 @@
 import { useRef, useState } from 'react';
 
-type SpiritHornProps = {
-  variant?: 'deep' | 'default' | string;
-  className?: string;
-};
+type SpiritHornProps = { variant?: 'deep' | 'default' | string; className?: string };
 
-/**
- * A user-initiated, layered horn synthesized with Web Audio.
- * Creating/resuming the AudioContext inside the click handler avoids autoplay
- * restrictions and does not depend on a remotely hosted audio asset.
- */
+/** User-triggered dual-tone horn; AudioContext is created only after a click. */
 export default function SpiritHorn({ variant = 'default', className = '' }: SpiritHornProps) {
   const contextRef = useRef<AudioContext | null>(null);
   const [playing, setPlaying] = useState(false);
-  const stopRef = useRef<(() => void) | null>(null);
 
   const playHorn = async () => {
-    // Ignore repeated taps while the short horn burst is active.
     if (playing) return;
     setPlaying(true);
-
     try {
       const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!AudioContextClass) throw new Error('Web Audio is not supported');
-
       const ctx = contextRef.current ?? new AudioContextClass();
       contextRef.current = ctx;
       if (ctx.state !== 'running') await ctx.resume();
 
       const now = ctx.currentTime;
-      const duration = variant === 'deep' ? 0.78 : 0.62;
+      const duration = variant === 'deep' ? 0.72 : 0.58;
       const master = ctx.createGain();
       const compressor = ctx.createDynamicsCompressor();
-      compressor.threshold.setValueAtTime(-18, now);
-      compressor.knee.setValueAtTime(16, now);
-      compressor.ratio.setValueAtTime(5, now);
-      compressor.attack.setValueAtTime(0.004, now);
-      compressor.release.setValueAtTime(0.16, now);
+      compressor.threshold.setValueAtTime(-22, now);
+      compressor.knee.setValueAtTime(18, now);
+      compressor.ratio.setValueAtTime(4, now);
+      compressor.attack.setValueAtTime(0.008, now);
+      compressor.release.setValueAtTime(0.18, now);
       master.gain.setValueAtTime(0.0001, now);
-      master.gain.exponentialRampToValueAtTime(0.72, now + 0.035);
-      master.gain.setValueAtTime(0.64, now + duration * 0.58);
+      master.gain.exponentialRampToValueAtTime(0.85, now + 0.025);
+      master.gain.setValueAtTime(0.78, now + duration * 0.62);
       master.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       master.connect(compressor);
       compressor.connect(ctx.destination);
 
-      const fundamentals = variant === 'deep' ? [220, 277.18, 440] : [247, 311.13, 493.88];
-      const oscillators: OscillatorNode[] = [];
-      const gains: GainNode[] = [];
+      // A warm, two-note car-horn chord with a subtle upper harmonic.
+      const fundamentals = variant === 'deep' ? [196, 246.94] : [220, 277.18];
       fundamentals.forEach((frequency, index) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = index === 2 ? 'square' : 'sawtooth';
-        osc.frequency.setValueAtTime(frequency, now);
-        // Tiny pitch bend gives the chord a more horn-like attack.
-        osc.frequency.setValueAtTime(frequency * 1.018, now + 0.045);
-        osc.frequency.setTargetAtTime(frequency, now + 0.075, 0.055);
-        gain.gain.setValueAtTime(index === 2 ? 0.12 : 0.22, now);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(frequency * 0.985, now);
+        osc.frequency.exponentialRampToValueAtTime(frequency, now + 0.045);
+        gain.gain.setValueAtTime(index === 0 ? 0.58 : 0.42, now);
         osc.connect(gain);
         gain.connect(master);
         osc.start(now);
-        osc.stop(now + duration + 0.03);
-        oscillators.push(osc);
-        gains.push(gain);
+        osc.stop(now + duration + 0.02);
       });
-
-      const timer = window.setTimeout(() => {
-        setPlaying(false);
-        stopRef.current = null;
-      }, duration * 1000 + 80);
-      stopRef.current = () => {
-        window.clearTimeout(timer);
-        oscillators.forEach(osc => { try { osc.stop(); } catch { /* already stopped */ } });
-        gains.forEach(gain => { try { gain.disconnect(); } catch { /* already disconnected */ } });
-        try { master.disconnect(); compressor.disconnect(); } catch { /* already disconnected */ }
-        setPlaying(false);
-      };
+      const harmonic = ctx.createOscillator();
+      const harmonicGain = ctx.createGain();
+      harmonic.type = 'sine';
+      harmonic.frequency.setValueAtTime(fundamentals[0] * 2, now);
+      harmonicGain.gain.setValueAtTime(0.08, now);
+      harmonic.connect(harmonicGain);
+      harmonicGain.connect(master);
+      harmonic.start(now);
+      harmonic.stop(now + duration + 0.02);
+      window.setTimeout(() => setPlaying(false), duration * 1000 + 80);
     } catch (error) {
       console.error('Unable to play the driving horn:', error);
       setPlaying(false);
@@ -82,17 +64,12 @@ export default function SpiritHorn({ variant = 'default', className = '' }: Spir
   };
 
   return (
-    <button
-      type="button"
-      className={className}
-      onClick={playHorn}
-      aria-label={playing ? 'الزمور يعمل' : 'تشغيل زمور السيارة'}
-      title="تشغيل زمور السيارة"
-      aria-pressed={playing}
-      disabled={playing}
-      style={{ cursor: playing ? 'default' : 'pointer', touchAction: 'manipulation' }}
-    >
-      <span aria-hidden="true" style={{ fontSize: '1.2em', lineHeight: 1 }}>📢</span>
+    <button type="button" className={`${className} spirit-horn-control${playing ? ' is-pressed' : ''}`} onClick={playHorn}
+      aria-label={playing ? 'الزمور يعمل' : 'تشغيل زمور السيارة'} title="تشغيل زمور السيارة" aria-pressed={playing}
+      disabled={playing} style={{ cursor: playing ? 'default' : 'pointer', touchAction: 'manipulation' }}>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M3 10v4h4l9 4V6l-9 4H3Z"/><path d="M7 14l1.5 5h3L10 15"/><path d="M19 9.5a4 4 0 0 1 0 5M21 7a7 7 0 0 1 0 10"/>
+      </svg>
     </button>
   );
 }
