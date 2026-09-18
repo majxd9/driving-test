@@ -21,8 +21,8 @@ import './spirit-v20.css';
 import './spirit-v20-controls.css';
 import './login-scene-final.css';
 import './study-final-lock.css';
-import './models-drift-final.css';
 import './exam-counter-final-v2.css';
+import './models-drift-final.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
