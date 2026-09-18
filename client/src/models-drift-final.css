@@ -1,107 +1,125 @@
-/* MODELS DRIFT v9
-   Fully isolated class names. No dependency on the legacy drift/model scene.
-   The existing project asset is used directly; the car sits BEHIND the copy. */
+/* DRIFT HERO v10
+   Completely isolated from the older .models-* decorative selectors.
+   The car artwork is embedded in DriftCarArt, so there is no image-path
+   dependency for the hero itself. */
 
 .models-page .models-drift-hero-v9{
   position:relative!important;
   display:block!important;
+  width:100%!important;
   min-height:405px!important;
   padding:24px 0 0!important;
   overflow:hidden!important;
   isolation:isolate!important;
   border-radius:28px!important;
   background:
-    radial-gradient(circle at 73% 25%,rgba(45,212,191,.10),transparent 30%),
-    radial-gradient(circle at 22% 20%,rgba(63,126,255,.07),transparent 28%),
-    linear-gradient(180deg,#07191d 0%,#061217 53%,#02070b 100%)!important;
+    radial-gradient(circle at 76% 24%,rgba(45,212,191,.10),transparent 30%),
+    radial-gradient(circle at 18% 18%,rgba(70,125,255,.06),transparent 28%),
+    linear-gradient(180deg,#07191d 0%,#061318 54%,#02070b 100%)!important;
   box-shadow:0 24px 60px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.06)!important;
 }
 
-.models-page .models-drift-stage-v9{
+.models-page .models-drift-hero-v9 > *{
+  box-sizing:border-box!important;
+}
+
+.models-page .models-drift-stage-v10{
   position:absolute!important;
   inset:0!important;
+  z-index:1!important;
   width:100%!important;
   height:100%!important;
-  z-index:1!important;
+  display:block!important;
   overflow:hidden!important;
   pointer-events:none!important;
 }
 
-.models-page .models-drift-stage-v9::after{
-  content:""!important;
+.models-page .models-drift-road-v10{
   position:absolute!important;
-  inset:0!important;
-  z-index:20!important;
-  pointer-events:none!important;
-  background:linear-gradient(180deg,rgba(4,14,18,.02) 0 43%,rgba(2,7,10,.06) 64%,rgba(1,5,8,.58) 100%)!important;
-}
-
-.models-page .models-drift-road-v9{
-  position:absolute!important;
-  left:-12%!important;
-  right:-12%!important;
-  bottom:-76px!important;
-  height:185px!important;
-  transform:perspective(600px) rotateX(61deg)!important;
+  left:-14%!important;
+  right:-14%!important;
+  bottom:-72px!important;
+  height:190px!important;
+  z-index:1!important;
+  transform:perspective(580px) rotateX(61deg)!important;
   transform-origin:bottom center!important;
+  border-top:1px solid rgba(225,250,247,.14)!important;
   background:
     linear-gradient(90deg,
-      transparent 0 18%,
-      rgba(231,255,251,.12) 18.3% 18.8%,
-      transparent 19.2% 39%,
-      rgba(231,255,251,.10) 39.3% 39.8%,
-      transparent 40.2% 59.5%,
-      rgba(231,255,251,.10) 59.8% 60.3%,
-      transparent 60.7% 80.5%,
-      rgba(231,255,251,.12) 80.8% 81.3%,
-      transparent 81.7%
+      transparent 0 17%,
+      rgba(235,255,251,.12) 17.4% 18%,
+      transparent 18.4% 38.5%,
+      rgba(235,255,251,.10) 38.9% 39.5%,
+      transparent 39.9% 59%,
+      rgba(235,255,251,.10) 59.4% 60%,
+      transparent 60.4% 80%,
+      rgba(235,255,251,.12) 80.4% 81%,
+      transparent 81.4%
     ),
-    linear-gradient(180deg,rgba(20,39,45,.08),rgba(0,4,8,.96))!important;
-  border-top:1px solid rgba(220,248,245,.15)!important;
-  opacity:.95!important;
+    linear-gradient(180deg,rgba(14,30,36,.08),rgba(0,4,8,.96))!important;
 }
 
 .models-page .models-drift-glow-v9{
   position:absolute!important;
   left:50%!important;
-  top:215px!important;
-  width:min(560px,100%)!important;
-  height:165px!important;
+  top:235px!important;
+  width:min(580px,106%)!important;
+  height:145px!important;
   transform:translateX(-50%)!important;
-  z-index:3!important;
+  z-index:2!important;
   pointer-events:none!important;
   background:
-    radial-gradient(ellipse at 20% 44%,rgba(233,255,252,.26),transparent 12%),
-    radial-gradient(ellipse at 80% 44%,rgba(233,255,252,.26),transparent 12%),
-    radial-gradient(ellipse at 50% 58%,rgba(45,212,191,.16),transparent 36%)!important;
+    radial-gradient(ellipse at 20% 48%,rgba(245,255,253,.26),transparent 12%),
+    radial-gradient(ellipse at 80% 48%,rgba(245,255,253,.26),transparent 12%),
+    radial-gradient(ellipse at 50% 60%,rgba(45,212,191,.15),transparent 38%)!important;
   filter:blur(10px)!important;
   mix-blend-mode:screen!important;
   opacity:.92!important;
 }
 
-.models-page .models-drift-vehicle-v9{
+.models-page .models-drift-vehicle-v10{
   position:absolute!important;
   left:50%!important;
-  top:112px!important;
-  z-index:10!important;
-  display:block!important;
-  visibility:visible!important;
-  width:min(570px,108%)!important;
+  top:106px!important;
+  z-index:8!important;
+  width:min(570px,110%)!important;
   height:auto!important;
-  max-width:none!important;
-  margin:0!important;
-  padding:0!important;
+  aspect-ratio:700 / 420!important;
   transform:translateX(-50%) rotate(-1deg)!important;
-  transform-origin:50% 80%!important;
+  transform-origin:50% 82%!important;
   opacity:.62!important;
+  display:block!important;
   pointer-events:none!important;
-  user-select:none!important;
-  -webkit-user-drag:none!important;
+  will-change:transform!important;
   filter:
-    drop-shadow(0 30px 28px rgba(0,0,0,.62))
-    drop-shadow(0 0 30px rgba(60,236,213,.20))!important;
-  will-change:transform,opacity!important;
+    drop-shadow(0 28px 28px rgba(0,0,0,.62))
+    drop-shadow(0 0 32px rgba(70,242,220,.20))!important;
 }
+
+.models-page .models-drift-vehicle-v10 > svg{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  overflow:visible!important;
+}
+
+.models-page .models-drift-smoke-v9{
+  position:absolute!important;
+  z-index:7!important;
+  width:170px!important;
+  height:115px!important;
+  border-radius:50%!important;
+  pointer-events:none!important;
+  background:
+    radial-gradient(circle at 40% 58%,rgba(246,252,252,.28) 0 10%,transparent 28%),
+    radial-gradient(circle at 67% 42%,rgba(208,226,230,.22) 0 14%,transparent 31%),
+    radial-gradient(circle at 27% 35%,rgba(183,205,211,.14) 0 11%,transparent 28%)!important;
+  filter:blur(8px)!important;
+  opacity:.18!important;
+}
+.models-page .models-drift-smoke-v9.smoke-a{left:10%!important;bottom:6px!important}
+.models-page .models-drift-smoke-v9.smoke-b{right:10%!important;bottom:2px!important;width:145px!important;height:98px!important;opacity:.14!important}
 
 .models-page .models-hero-copy-v9{
   position:relative!important;
@@ -109,21 +127,22 @@
   width:100%!important;
   max-width:760px!important;
   margin:0 0 0 auto!important;
-  padding:6px 24px 116px!important;
+  padding:6px 24px 118px!important;
   text-align:right!important;
-  pointer-events:none!important;
 }
 
-.models-page .models-hero-copy-v9 .eyebrow{
-  margin:0 0 7px!important;
-}
+.models-page .models-hero-copy-v9 .eyebrow{margin:0 0 7px!important}
 .models-page .models-hero-copy-v9 h1{
   margin:0 0 11px!important;
+  position:relative!important;
+  z-index:31!important;
 }
 .models-page .models-hero-copy-v9>p:last-child{
   margin:0!important;
   max-width:720px!important;
   line-height:1.95!important;
+  position:relative!important;
+  z-index:31!important;
 }
 
 .models-page .models-drift-trigger-v9{
@@ -131,12 +150,12 @@
   top:18px!important;
   right:18px!important;
   z-index:50!important;
+  min-width:132px!important;
+  min-height:48px!important;
   display:inline-flex!important;
   align-items:center!important;
   justify-content:center!important;
   gap:8px!important;
-  min-width:132px!important;
-  min-height:48px!important;
   padding:8px 15px!important;
   border:1px solid rgba(105,246,225,.54)!important;
   border-radius:999px!important;
@@ -150,17 +169,29 @@
 }
 .models-page .models-drift-trigger-v9:active{transform:scale(.96)!important}
 .models-page .models-drift-trigger-icon-v9{
-  width:30px!important;height:30px!important;min-width:30px!important;
-  display:grid!important;place-items:center!important;border-radius:10px!important;
-  background:rgba(60,225,205,.14)!important;color:#8effe8!important;font-size:18px!important;
+  width:30px!important;
+  height:30px!important;
+  min-width:30px!important;
+  min-height:30px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:10px!important;
+  background:rgba(60,225,205,.14)!important;
+  color:#8effe8!important;
+  font-size:18px!important;
 }
-
-.models-page .models-drift-hero-v9.is-drifting .models-drift-vehicle-v9{
-  animation:models-drift-v9-car 1.45s cubic-bezier(.18,.84,.20,1) both!important;
+.models-page .models-drift-hero-v9.is-drifting .models-drift-vehicle-v10{
+  animation:models-drift-v10-car 1.45s cubic-bezier(.18,.84,.20,1) both!important;
   opacity:.78!important;
 }
-.models-page .models-drift-hero-v9.is-drifting .models-drift-road-v9{
-  animation:models-drift-v9-road 1.45s ease-out both!important;
+.models-page .models-drift-hero-v9.is-drifting .models-drift-road-v10{
+  animation:models-drift-v10-road 1.45s ease-out both!important;
+}
+.models-page .models-drift-hero-v9.is-drifting .models-drift-glow-v9{
+  animation:models-drift-v10-glow 1.45s ease-out both!important;
+}
+.models-page .models-drift-hero-v9.is-drifting .models-drift-smoke-v9{
+  animation:models-drift-v10-smoke 1.45s ease-out both!important;
 }
 .models-page .models-drift-hero-v9.is-drifting .models-drift-trigger-v9{
   border-color:rgba(255,99,111,.74)!important;
@@ -169,43 +200,32 @@
 .models-page .models-drift-hero-v9.is-drifting .models-drift-trigger-icon-v9{
   color:#ffb2b8!important;
   background:rgba(255,82,96,.18)!important;
-  animation:models-drift-v9-spin .22s linear infinite!important;
-}
-.models-page .models-drift-smoke-v9{
-  position:absolute!important;
-  z-index:8!important;
-  border-radius:50%!important;
-  pointer-events:none!important;
-  background:
-    radial-gradient(circle at 40% 58%,rgba(246,252,252,.30) 0 10%,transparent 28%),
-    radial-gradient(circle at 67% 42%,rgba(208,226,230,.24) 0 14%,transparent 31%),
-    radial-gradient(circle at 27% 35%,rgba(183,205,211,.15) 0 11%,transparent 28%)!important;
-  filter:blur(8px)!important;
-  opacity:.20!important;
-}
-.models-page .models-drift-smoke-v9.smoke-a{
-  left:12%!important;bottom:4px!important;width:175px!important;height:118px!important;
-}
-.models-page .models-drift-smoke-v9.smoke-b{
-  right:10%!important;bottom:1px!important;width:145px!important;height:98px!important;
+  animation:models-drift-v10-spin .22s linear infinite!important;
 }
 
-@keyframes models-drift-v9-car{
-  0%{transform:translateX(calc(-50% + 5px)) translateY(0) rotate(-1deg) scale(1)}
-  18%{transform:translateX(calc(-50% - 28px)) translateY(-6px) rotate(-4deg) scale(1.012)}
-  40%{transform:translateX(calc(-50% + 62px)) translateY(2px) rotate(8deg) scale(1.035)}
-  62%{transform:translateX(calc(-50% - 66px)) translateY(-5px) rotate(-7deg) scale(1.025)}
-  82%{transform:translateX(calc(-50% + 30px)) translateY(-1px) rotate(3deg) scale(1.01)}
+@keyframes models-drift-v10-car{
+  0%{transform:translateX(calc(-50% + 0px)) translateY(0) rotate(-1deg) scale(1)}
+  17%{transform:translateX(calc(-50% - 34px)) translateY(-6px) rotate(-4deg) scale(1.015)}
+  38%{transform:translateX(calc(-50% + 66px)) translateY(2px) rotate(9deg) scale(1.04)}
+  60%{transform:translateX(calc(-50% - 72px)) translateY(-5px) rotate(-8deg) scale(1.028)}
+  80%{transform:translateX(calc(-50% + 32px)) translateY(-1px) rotate(4deg) scale(1.012)}
   100%{transform:translateX(-50%) translateY(0) rotate(-1deg) scale(1)}
 }
-@keyframes models-drift-v9-road{
-  from{transform:perspective(600px) rotateX(61deg) translateX(16px)}
-  to{transform:perspective(600px) rotateX(61deg) translateX(-18px)}
+@keyframes models-drift-v10-road{
+  from{transform:perspective(580px) rotateX(61deg) translateX(18px)}
+  to{transform:perspective(580px) rotateX(61deg) translateX(-20px)}
 }
-@keyframes models-drift-v9-spin{
-  from{transform:rotate(0)}
-  to{transform:rotate(360deg)}
+@keyframes models-drift-v10-glow{
+  0%{opacity:.38;transform:translateX(-50%) scale(.94)}
+  46%{opacity:1;transform:translateX(-50%) scale(1.12)}
+  100%{opacity:.92;transform:translateX(-50%) scale(1)}
 }
+@keyframes models-drift-v10-smoke{
+  from{transform:translate3d(20px,6px,0) scale(.45);opacity:0}
+  30%{opacity:.48}
+  to{transform:translate3d(-82px,-42px,0) scale(1.50);opacity:.03}
+}
+@keyframes models-drift-v10-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 
 @media(max-width:700px){
   .models-page .models-drift-hero-v9{
@@ -213,19 +233,18 @@
     padding-top:18px!important;
     border-radius:24px!important;
   }
-  .models-page .models-drift-vehicle-v9{
+  .models-page .models-drift-vehicle-v10{
     top:126px!important;
-    width:min(530px,118%)!important;
-    opacity:.50!important;
+    width:min(530px,120%)!important;
+    opacity:.56!important;
   }
   .models-page .models-drift-glow-v9{
-    top:242px!important;
-    width:105%!important;
+    top:235px!important;
+    width:108%!important;
     height:135px!important;
-    opacity:.80!important;
   }
   .models-page .models-hero-copy-v9{
-    padding:6px 18px 122px!important;
+    padding:6px 18px 120px!important;
   }
   .models-page .models-drift-trigger-v9{
     top:14px!important;
@@ -234,9 +253,9 @@
     min-height:46px!important;
     padding:7px 12px!important;
   }
-  .models-page .models-drift-road-v9{
-    bottom:-66px!important;
-    height:172px!important;
+  .models-page .models-drift-road-v10{
+    bottom:-67px!important;
+    height:175px!important;
   }
 }
 @media(max-width:430px){
@@ -244,24 +263,25 @@
     min-height:400px!important;
     border-radius:22px!important;
   }
-  .models-page .models-drift-vehicle-v9{
-    top:122px!important;
-    width:122%!important;
-    max-width:none!important;
-    opacity:.48!important;
+  .models-page .models-drift-vehicle-v10{
+    top:120px!important;
+    width:124%!important;
+    opacity:.54!important;
   }
   .models-page .models-drift-glow-v9{
-    top:232px!important;
-    width:108%!important;
-    height:135px!important;
+    top:226px!important;
+    width:110%!important;
+    height:132px!important;
   }
   .models-page .models-hero-copy-v9{
-    padding:8px 14px 116px!important;
+    padding:8px 14px 112px!important;
   }
 }
 @media(prefers-reduced-motion:reduce){
-  .models-page .models-drift-hero-v9.is-drifting .models-drift-vehicle-v9,
-  .models-page .models-drift-hero-v9.is-drifting .models-drift-road-v9,
+  .models-page .models-drift-hero-v9.is-drifting .models-drift-vehicle-v10,
+  .models-page .models-drift-hero-v9.is-drifting .models-drift-road-v10,
+  .models-page .models-drift-hero-v9.is-drifting .models-drift-glow-v9,
+  .models-page .models-drift-hero-v9.is-drifting .models-drift-smoke-v9,
   .models-page .models-drift-hero-v9.is-drifting .models-drift-trigger-icon-v9{
     animation:none!important;
   }
