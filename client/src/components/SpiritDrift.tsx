@@ -3,13 +3,14 @@ import { useRef, useState } from 'react';
 type AudioContextConstructor = typeof AudioContext;
 type ExtendedWindow = Window & typeof globalThis & { webkitAudioContext?: AudioContextConstructor };
 
-export default function SpiritDrift() {
+export default function SpiritDrift({ onStateChange }: { onStateChange?: (active: boolean) => void }) {
   const [drifting, setDrifting] = useState(false);
   const contextRef = useRef<AudioContext | null>(null);
 
   const playDrift = async () => {
     if (drifting) return;
     setDrifting(true);
+    onStateChange?.(true);
 
     try {
       const Ctx = window.AudioContext || (window as ExtendedWindow).webkitAudioContext;
@@ -90,7 +91,10 @@ export default function SpiritDrift() {
     } catch {
       // Visual drift still works when Web Audio is unavailable.
     } finally {
-      window.setTimeout(() => setDrifting(false), 1250);
+      window.setTimeout(() => {
+        setDrifting(false);
+        onStateChange?.(false);
+      }, 1250);
     }
   };
 
