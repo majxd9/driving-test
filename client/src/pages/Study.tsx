@@ -29,14 +29,14 @@ export default function Study() {
   const [navigating, setNavigating] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
-  const [signalState, setSignalState] = useState<SpiritTrafficState>('idle');
+  const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
   const navigationLockRef = useRef(false);
   const signalTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!category) return;
     if (signalTimerRef.current !== null) window.clearTimeout(signalTimerRef.current);
-    setSignalState('idle');
+    setSignalState('pending');
     setLoading(true);
     setError('');
     setIndex(0);
@@ -58,7 +58,7 @@ export default function Study() {
     const sources = questions.slice(index, index + 3).map(q => resolveQuestionImageUrl(q.imageUrl)).filter(Boolean);
     preloadImages(sources, 3);
     if (signalTimerRef.current !== null) window.clearTimeout(signalTimerRef.current);
-    setSignalState('idle');
+    setSignalState('pending');
   }, [questions, index]);
 
   useEffect(() => () => {
