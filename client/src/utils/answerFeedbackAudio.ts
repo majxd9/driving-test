@@ -5,11 +5,11 @@ type ExtendedWindow = Window & typeof globalThis & { webkitAudioContext?: AudioC
 
 let context: AudioContext | null = null;
 
-function getContext() {
+async function getContext() {
   const Ctx = ((window as ExtendedWindow).AudioContext || (window as ExtendedWindow).webkitAudioContext);
   if (!Ctx) return null;
   context ??= new Ctx();
-  if (context.state === 'suspended') void context.resume();
+  if (context.state === 'suspended') await context.resume();
   return context;
 }
 
@@ -49,8 +49,8 @@ function softNoise(ctx: AudioContext, start: number, duration: number, volume: n
   source.stop(start + duration);
 }
 
-export function playAnswerFeedback(correct: boolean) {
-  const ctx = getContext();
+export async function playAnswerFeedback(correct: boolean) {
+  const ctx = await getContext();
   if (!ctx) return;
 
   const now = ctx.currentTime;
