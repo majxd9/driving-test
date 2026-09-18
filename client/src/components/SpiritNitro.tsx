@@ -21,83 +21,116 @@ export default function SpiritNitro({ className = '' }: { className?: string }) 
       if (ctx.state !== 'running') await ctx.resume();
 
       const now = ctx.currentTime;
-      const duration = 0.95;
+      const duration = 1.18;
 
       const master = ctx.createGain();
       const compressor = ctx.createDynamicsCompressor();
-      compressor.threshold.setValueAtTime(-22, now);
-      compressor.knee.setValueAtTime(14, now);
-      compressor.ratio.setValueAtTime(6, now);
-      compressor.attack.setValueAtTime(0.003, now);
-      compressor.release.setValueAtTime(0.12, now);
+      compressor.threshold.setValueAtTime(-24, now);
+      compressor.knee.setValueAtTime(12, now);
+      compressor.ratio.setValueAtTime(7, now);
+      compressor.attack.setValueAtTime(0.002, now);
+      compressor.release.setValueAtTime(0.11, now);
       master.gain.setValueAtTime(0.0001, now);
-      master.gain.exponentialRampToValueAtTime(0.66, now + 0.025);
+      master.gain.exponentialRampToValueAtTime(0.72, now + 0.018);
+      master.gain.setValueAtTime(0.63, now + 0.42);
       master.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      master.connect(compressor);
-      compressor.connect(ctx.destination);
+      master.connect(compressor).connect(ctx.destination);
 
-      const engine = ctx.createOscillator();
-      const engineGain = ctx.createGain();
-      engine.type = 'sawtooth';
-      engine.frequency.setValueAtTime(92, now);
-      engine.frequency.exponentialRampToValueAtTime(290, now + 0.28);
-      engine.frequency.exponentialRampToValueAtTime(205, now + 0.92);
-      engineGain.gain.setValueAtTime(0.0001, now);
-      engineGain.gain.exponentialRampToValueAtTime(0.25, now + 0.04);
-      engineGain.gain.setValueAtTime(0.25, now + 0.42);
-      engineGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      engine.connect(engineGain).connect(master);
-      engine.start(now);
-      engine.stop(now + duration + 0.03);
+      // Low engine: a rising V6/V8-like throb with subtle harmonic layers.
+      const low = ctx.createOscillator();
+      const lowGain = ctx.createGain();
+      low.type = 'sawtooth';
+      low.frequency.setValueAtTime(68, now);
+      low.frequency.exponentialRampToValueAtTime(118, now + 0.16);
+      low.frequency.exponentialRampToValueAtTime(250, now + 0.57);
+      low.frequency.exponentialRampToValueAtTime(175, now + 1.08);
+      lowGain.gain.setValueAtTime(0.0001, now);
+      lowGain.gain.exponentialRampToValueAtTime(0.30, now + 0.035);
+      lowGain.gain.setValueAtTime(0.30, now + 0.46);
+      lowGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      low.connect(lowGain).connect(master);
+      low.start(now);
+      low.stop(now + duration + 0.04);
 
-      const highEngine = ctx.createOscillator();
-      const highGain = ctx.createGain();
-      highEngine.type = 'triangle';
-      highEngine.frequency.setValueAtTime(180, now);
-      highEngine.frequency.exponentialRampToValueAtTime(630, now + 0.38);
-      highEngine.frequency.exponentialRampToValueAtTime(360, now + 0.92);
-      highGain.gain.setValueAtTime(0.0001, now);
-      highGain.gain.exponentialRampToValueAtTime(0.09, now + 0.03);
-      highGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      highEngine.connect(highGain).connect(master);
-      highEngine.start(now);
-      highEngine.stop(now + duration + 0.03);
+      // Second harmonic adds mechanical weight instead of a clean synth tone.
+      const mid = ctx.createOscillator();
+      const midGain = ctx.createGain();
+      mid.type = 'square';
+      mid.frequency.setValueAtTime(136, now);
+      mid.frequency.exponentialRampToValueAtTime(500, now + 0.58);
+      mid.frequency.exponentialRampToValueAtTime(348, now + 1.08);
+      midGain.gain.setValueAtTime(0.0001, now);
+      midGain.gain.exponentialRampToValueAtTime(0.10, now + 0.045);
+      midGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      mid.connect(midGain).connect(master);
+      mid.start(now);
+      mid.stop(now + duration + 0.04);
 
+      // Turbo spool: high, narrow tone with an accelerating pitch bend.
       const turbo = ctx.createOscillator();
       const turboGain = ctx.createGain();
+      const turboFilter = ctx.createBiquadFilter();
       turbo.type = 'sine';
-      turbo.frequency.setValueAtTime(620, now);
-      turbo.frequency.exponentialRampToValueAtTime(1480, now + 0.5);
-      turbo.frequency.exponentialRampToValueAtTime(860, now + 0.92);
+      turbo.frequency.setValueAtTime(420, now + 0.10);
+      turbo.frequency.exponentialRampToValueAtTime(1780, now + 0.63);
+      turbo.frequency.exponentialRampToValueAtTime(950, now + 1.12);
+      turboFilter.type = 'bandpass';
+      turboFilter.Q.value = 7;
+      turboFilter.frequency.setValueAtTime(720, now);
+      turboFilter.frequency.exponentialRampToValueAtTime(1800, now + 0.62);
       turboGain.gain.setValueAtTime(0.0001, now);
-      turboGain.gain.exponentialRampToValueAtTime(0.075, now + 0.08);
+      turboGain.gain.exponentialRampToValueAtTime(0.11, now + 0.16);
+      turboGain.gain.setValueAtTime(0.11, now + 0.62);
       turboGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      turbo.connect(turboGain).connect(master);
+      turbo.connect(turboFilter).connect(turboGain).connect(master);
       turbo.start(now);
-      turbo.stop(now + duration + 0.03);
+      turbo.stop(now + duration + 0.04);
 
+      // Intake / boost whoosh.
       const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * duration), ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < data.length; i += 1) {
-        data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+        const fade = Math.sin((i / data.length) * Math.PI);
+        data[i] = (Math.random() * 2 - 1) * fade;
       }
-      const noise = ctx.createBufferSource();
-      const noiseFilter = ctx.createBiquadFilter();
-      const noiseGain = ctx.createGain();
-      noise.buffer = buffer;
-      noiseFilter.type = 'bandpass';
-      noiseFilter.Q.value = 0.65;
-      noiseFilter.frequency.setValueAtTime(650, now);
-      noiseFilter.frequency.exponentialRampToValueAtTime(3000, now + 0.34);
-      noiseFilter.frequency.exponentialRampToValueAtTime(1100, now + 0.9);
-      noiseGain.gain.setValueAtTime(0.0001, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.20, now + 0.05);
-      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      noise.connect(noiseFilter).connect(noiseGain).connect(master);
-      noise.start(now);
-      noise.stop(now + duration);
+      const whoosh = ctx.createBufferSource();
+      const whooshFilter = ctx.createBiquadFilter();
+      const whooshGain = ctx.createGain();
+      whoosh.buffer = buffer;
+      whooshFilter.type = 'bandpass';
+      whooshFilter.Q.value = 0.8;
+      whooshFilter.frequency.setValueAtTime(420, now);
+      whooshFilter.frequency.exponentialRampToValueAtTime(3400, now + 0.56);
+      whooshFilter.frequency.exponentialRampToValueAtTime(950, now + 1.10);
+      whooshGain.gain.setValueAtTime(0.0001, now);
+      whooshGain.gain.exponentialRampToValueAtTime(0.26, now + 0.12);
+      whooshGain.gain.setValueAtTime(0.24, now + 0.55);
+      whooshGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      whoosh.connect(whooshFilter).connect(whooshGain).connect(master);
+      whoosh.start(now);
+      whoosh.stop(now + duration);
 
-      timer = window.setTimeout(() => setPlaying(false), duration * 1000 + 90);
+      // Short pressure-release burst at the end of the boost.
+      const releaseBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.20), ctx.sampleRate);
+      const releaseData = releaseBuffer.getChannelData(0);
+      for (let i = 0; i < releaseData.length; i += 1) {
+        const fade = 1 - i / releaseData.length;
+        releaseData[i] = (Math.random() * 2 - 1) * fade;
+      }
+      const psssh = ctx.createBufferSource();
+      const pssshFilter = ctx.createBiquadFilter();
+      const pssshGain = ctx.createGain();
+      psssh.buffer = releaseBuffer;
+      pssshFilter.type = 'highpass';
+      pssshFilter.frequency.value = 1800;
+      pssshGain.gain.setValueAtTime(0.0001, now + 0.93);
+      pssshGain.gain.exponentialRampToValueAtTime(0.16, now + 0.98);
+      pssshGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.14);
+      psssh.connect(pssshFilter).connect(pssshGain).connect(master);
+      psssh.start(now + 0.93);
+      psssh.stop(now + 1.15);
+
+      timer = window.setTimeout(() => setPlaying(false), duration * 1000 + 100);
     } catch (error) {
       console.error('Unable to play the nitro sound:', error);
       setPlaying(false);
