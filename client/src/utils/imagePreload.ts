@@ -1,9 +1,5 @@
 const inFlight = new Map<string, Promise<boolean>>();
 
-/**
- * Loads an image and waits for the browser decode pipeline when available.
- * The promise is cached so repeated preloads never create duplicate requests.
- */
 export function preloadImage(src: string, priority: 'high' | 'auto' = 'auto'): Promise<boolean> {
   if (!src || typeof window === 'undefined') return Promise.resolve(false);
 
@@ -49,9 +45,14 @@ export async function ensureImageReady(src: string, timeoutMs = 1200): Promise<b
   if (!src) return true;
 
   const preload = preloadImage(src, 'high');
+  let timeoutId: number | undefined;
   const timeout = new Promise<boolean>((resolve) => {
-    window.setTimeout(() => resolve(false), timeoutMs);
+    timeoutId = window.setTimeout(() => resolve(false), timeoutMs);
   });
 
-  return Promise.race([preload, timeout]);
+  try {
+    return await Promise.race([preload, timeout]);
+  } finally {
+    if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+  }
 }
