@@ -1,3 +1,5 @@
+import { forwardRef } from 'react';
+
 const DRIFT_CAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 420" fill="none" aria-hidden="true">
 <defs>
 <linearGradient id="dc-body" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#76f6e1"/><stop offset=".22" stop-color="#25d7c0"/><stop offset=".58" stop-color="#147eb8"/><stop offset="1" stop-color="#061b35"/></linearGradient>
@@ -44,6 +46,8 @@ const DRIFT_CAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 
 <path d="M508 177c38 10 64 23 87 43" stroke="#cafff8" stroke-width="3" opacity=".18"/>
 </g></svg>`;
 
-export default function DriftCarArt() {
-  return <div className="models-drift-vehicle-v10" dangerouslySetInnerHTML={{ __html: DRIFT_CAR_SVG }} />;
-}
+const DriftCarArt = forwardRef<HTMLDivElement>(function DriftCarArt(_, ref) {
+  return <div ref={ref} className="models-drift-vehicle-v10" dangerouslySetInnerHTML={{ __html: DRIFT_CAR_SVG }} />;
+});
+
+export default DriftCarArt;
