@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useState } from 'react-router-dom';
 import SpiritDriveScene from '../components/SpiritDriveScene';
 import SpiritDrift from '../components/SpiritDrift';
 
@@ -15,9 +15,10 @@ const MODELS = [
 
 export default function Models() {
   const navigate = useNavigate();
+  const [drifting, setDrifting] = useState(false);
 
   return (
-    <div className="models-page" dir="rtl">
+    <div className={`models-page ${drifting ? 'is-drifting' : ''}`} dir="rtl">
       <header className="exam-topbar-v2">
         <button onClick={() => navigate('/')} className="exam-back-v2" aria-label="العودة إلى الصفحة الرئيسية">‹</button>
         <div className="exam-title-v2">
@@ -29,7 +30,7 @@ export default function Models() {
 
       <main className="models-wrap">
         <section className="models-hero">
-          <SpiritDriveScene large variant="rear" className="models-spirit-scene" />
+          <SpiritDriveScene large variant="rear" className={`models-spirit-scene ${drifting ? 'is-drifting' : ''}`} />
           <div className="models-drift-track" aria-hidden="true">
             <div className="models-track-edge models-track-edge-a" />
             <div className="models-track-edge models-track-edge-b" />
@@ -45,7 +46,7 @@ export default function Models() {
             <div className="models-drift-skid models-drift-skid-a" />
             <div className="models-drift-skid models-drift-skid-b" />
           </div>
-          <SpiritDrift />
+          <SpiritDrift onStateChange={setDrifting} />
           <p className="eyebrow">اختبار الرخصة</p>
           <h1>جاهز للاختبار؟</h1>
           <p>كل نموذج يتكوّن من ٣٠ سؤالاً من قواعد السير والإشارات والميكانيك، بمدة ١٥ دقيقة. تحتاج إلى ٢٥ إجابة صحيحة للنجاح.</p>
