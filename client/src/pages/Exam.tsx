@@ -4,8 +4,6 @@ import { api } from '../api/client';
 import { Question } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
-import SpiritTrafficSignal from '../components/SpiritTrafficSignal';
-import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { ensureImageReady, preloadImages } from '../utils/imagePreload';
 
 const DURATION = 15 * 60;
@@ -32,7 +30,6 @@ export default function Exam() {
   const [navigating, setNavigating] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
-  const [signalState] = useState<SpiritTrafficState>('idle');
   const finishedRef = useRef(false);
   const navigationLockRef = useRef(false);
 
@@ -113,7 +110,6 @@ export default function Exam() {
     </header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
     <main className="exam-stage-v2"><section className="exam-card-v2">
-      <SpiritTrafficSignal state={signalState} />
       <div className="exam-scroll-v2">
         <div className="exam-image-slot-v2">{q.imageUrl?<button type="button" className="exam-image-v2" onClick={()=>setImageExpanded(true)} aria-label="تكبير صورة السؤال"><OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 92vw, 720px" className="w-full h-full" objectFit="contain"/></button>:<div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
