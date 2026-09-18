@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import SpiritDriveScene from '../components/SpiritDriveScene';
-import SpiritVolume from '../components/SpiritVolume';
-import SpiritHorn from '../components/SpiritHorn';
+import SpiritDrift from '../components/SpiritDrift';
 
 const MODELS = [
   { id: 1, label: 'النموذج 1', meta: 'اختبار قياسي', advanced: false },
@@ -25,12 +24,19 @@ export default function Models() {
           <strong>اختبارات المحاكاة</strong>
           <span>اختر نموذجاً وابدأ الاختبار</span>
         </div>
-        <div className="flex items-center gap-2"><SpiritVolume /><SpiritHorn /><div className="exam-timer-v2">١٥:٠٠</div></div>
+        <div className="flex items-center gap-2"><div className="exam-timer-v2">١٥:٠٠</div></div>
       </header>
 
       <main className="models-wrap">
         <section className="models-hero">
           <SpiritDriveScene large variant="rear" className="models-spirit-scene" />
+          <div className="models-drift-art" aria-hidden="true">
+            <div className="models-drift-smoke models-drift-smoke-a" />
+            <div className="models-drift-smoke models-drift-smoke-b" />
+            <div className="models-drift-skid models-drift-skid-a" />
+            <div className="models-drift-skid models-drift-skid-b" />
+          </div>
+          <SpiritDrift />
           <p className="eyebrow">اختبار الرخصة</p>
           <h1>جاهز للاختبار؟</h1>
           <p>كل نموذج يتكوّن من ٣٠ سؤالاً من قواعد السير والإشارات والميكانيك، بمدة ١٥ دقيقة. تحتاج إلى ٢٥ إجابة صحيحة للنجاح.</p>
