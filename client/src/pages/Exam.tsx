@@ -140,7 +140,7 @@ export default function Exam() {
       <div className="exam-actions-v2">
         <button type="button" onClick={()=>goToQuestion(current-1)} disabled={current===0} className="exam-action-v2 secondary"><UiIcon name="back"/><span>السابق</span></button>
         <button type="button" onClick={finish} className="exam-action-v2 finish"><UiIcon name="finish"/><span>إنهاء الاختبار</span></button>
-        <button type="button" onClick={()=>isLast?finish():goToQuestion(current+1)} disabled={false} className="exam-action-v2 next"><span>{isLast?'عرض النتيجة':'التالي'}</span><UiIcon name="next"/></button>
+        <button type="button" onClick={()=>isLast?finish():goToQuestion(current+1)} className="exam-action-v2 next"><span>{isLast?'عرض النتيجة':'التالي'}</span><UiIcon name="next"/></button>
       </div>
     </section></main>
     {imageExpanded&&q.imageUrl&&<div className="exam-image-modal-v2" onClick={()=>setImageExpanded(false)}><OptimizedImage src={q.imageUrl} alt={`الصورة المكبرة للسؤال ${q.id}`} priority sizes="100vw" className="max-w-full max-h-full" objectFit="contain"/></div>}
