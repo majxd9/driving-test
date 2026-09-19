@@ -67,6 +67,8 @@ builder.Services.Configure<BrotliCompressionProviderOptions>(o => o.Level = Syst
 builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = System.IO.Compression.CompressionLevel.Fastest);
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddSingleton<IAuthLogQueue, AuthLogQueue>();
+builder.Services.AddHostedService<AuthLogWriter>();
 builder.Services.AddCors(options => options.AddPolicy("Frontend", policy => policy.WithOrigins(frontendOrigin).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -77,8 +79,8 @@ using (var scope = app.Services.CreateScope())
 {
     await DbSeeder.SeedAsync(scope.ServiceProvider);
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await QuestionCountCache.InitializeAsync(db);
     await QuestionBankCache.InitializeAsync(db);
+    QuestionCountCache.InitializeFrom(QuestionBankCache.Count);
 }
 
 app.UseHttpsRedirection();
