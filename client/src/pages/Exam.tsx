@@ -75,7 +75,7 @@ export default function Exam() {
   const goToQuestion = useCallback((nextIndex:number) => {
     if(nextIndex===current||nextIndex<0||nextIndex>=questions.length)return;
     const src=resolveQuestionImageUrl(questions[nextIndex]?.imageUrl);
-    if(src) void preloadImages([src], 1);
+    if(src) preloadImages([src], 1);
     setCurrent(nextIndex);
   },[current,questions]);
 
