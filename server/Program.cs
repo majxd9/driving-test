@@ -78,6 +78,7 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedAsync(scope.ServiceProvider);
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await QuestionCountCache.InitializeAsync(db);
+    await QuestionBankCache.InitializeAsync(db);
 }
 
 app.UseHttpsRedirection();
