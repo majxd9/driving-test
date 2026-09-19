@@ -243,6 +243,7 @@ public AdminController(
 
         await _db.SaveChangesAsync();
         QuestionCountCache.ApplyChanges(added: 1, deleted: 0);
+        QuestionBankCache.Invalidate();
 
         return Ok(q);
     }
@@ -283,6 +284,7 @@ public AdminController(
             request.DiagramDescription;
 
         await _db.SaveChangesAsync();
+        QuestionBankCache.Invalidate();
 
         return Ok(q);
     }
@@ -300,6 +302,7 @@ public AdminController(
 
         await _db.SaveChangesAsync();
         QuestionCountCache.ApplyChanges(added: 0, deleted: 1);
+        QuestionBankCache.Invalidate();
 
         return NoContent();
     }
