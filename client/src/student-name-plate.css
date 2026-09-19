@@ -1,163 +1,140 @@
-/* Student name: Syrian-style plate treatment. No greeting text, no keychain. Home only. */
+/* Premium student-name treatment. Designed to match the dark/green visual language of Home. */
 .home-greeting{
   display:flex;
-  justify-content:flex-start;
   align-items:center;
-  margin-bottom:8px;
+  justify-content:flex-start;
+  margin:0 0 14px;
 }
 .student-name-plate{
+  --name-accent:#2dd4bf;
   position:relative;
   display:inline-flex;
   align-items:center;
-  padding:4px;
-  border-radius:10px;
-  transform:rotate(-1.2deg);
-  filter:drop-shadow(0 10px 16px rgba(0,0,0,.22));
-}
-.plate-body{
-  position:relative;
-  display:flex;
-  flex-direction:row;
-  align-items:center;
-  gap:12px;
-  min-width:210px;
-  max-width:min(330px,78vw);
-  min-height:58px;
-  padding:5px 10px 5px 5px;
-  border:3px solid #151a20;
-  border-radius:10px;
+  gap:10px;
+  min-height:48px;
+  max-width:min(300px,78vw);
+  padding:6px 16px 6px 10px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
   background:
-    linear-gradient(180deg,#ffffff 0%,#f7f8f9 45%,#e7eaed 100%);
-  color:#141a22;
+    linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.035)),
+    rgba(9,17,24,.72);
+  color:#f6fbfb;
   box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,.82),
-    inset 0 -4px 0 rgba(0,0,0,.07),
-    0 2px 0 #06090d,
-    0 10px 16px rgba(0,0,0,.15);
+    0 12px 30px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  overflow:hidden;
 }
-.plate-body::before{
+.student-name-plate::before{
   content:"";
   position:absolute;
-  inset:4px;
-  border:1px solid rgba(41,50,60,.28);
-  border-radius:6px;
+  inset:0;
+  background:linear-gradient(100deg,rgba(45,212,191,.14),transparent 36%,transparent 76%,rgba(255,255,255,.035));
   pointer-events:none;
 }
-.plate-country{
+.student-name-plate::after{
+  content:"";
+  position:absolute;
+  top:8px;
+  bottom:8px;
+  right:0;
+  width:3px;
+  border-radius:99px 0 0 99px;
+  background:linear-gradient(180deg,#65e6cf,#18ad91);
+  box-shadow:0 0 14px rgba(45,212,191,.34);
+}
+.student-name-icon{
   position:relative;
   z-index:2;
-  order:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  flex:0 0 46px;
-  width:46px;
-  min-width:46px;
-  height:44px;
-  border-radius:4px;
-  overflow:hidden;
-  background:linear-gradient(180deg,#2a5e9a 0%,#184476 100%);
-  color:#fff;
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  flex:0 0 34px;
+  border-radius:11px;
+  background:linear-gradient(145deg,rgba(45,212,191,.20),rgba(45,212,191,.07));
+  border:1px solid rgba(45,212,191,.28);
+  color:#74ead6;
   box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.16),
-    0 1px 2px rgba(0,0,0,.18);
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 0 20px rgba(45,212,191,.08);
 }
-.plate-flag{
-  width:32px;
-  height:12px;
-  border-radius:1px;
-  background:
-    linear-gradient(to bottom,
-      #ffffff 0 33%,
-      #158447 33% 66%,
-      #15191d 66% 100%);
-  box-shadow:0 0 0 1px rgba(0,0,0,.16);
+.student-name-icon svg{
+  width:18px;
+  height:18px;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
 }
-.plate-country small{
-  margin-top:3px;
-  font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;
-  font-size:10px;
-  line-height:1;
-  letter-spacing:.06em;
-  font-weight:700;
-}
-.plate-body strong{
+.student-name-plate strong{
   position:relative;
   z-index:2;
-  order:1;
-  flex:1 1 auto;
+  display:block;
   min-width:0;
+  max-width:220px;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
-  text-align:center;
   font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;
-  font-size:clamp(22px,4vw,31px);
-  line-height:1.15;
+  font-size:clamp(18px,2.5vw,24px);
+  line-height:1.25;
   font-weight:700;
   letter-spacing:-.02em;
 }
-.plate-dot{
-  position:relative;
-  z-index:2;
-  order:2;
-  width:8px;
-  height:8px;
-  flex:0 0 8px;
-  border-radius:50%;
-  background:#20262d;
-  box-shadow:inset 0 1px 1px rgba(255,255,255,.26);
-}
-.plate-body::after{
-  content:"";
+.student-name-glow{
   position:absolute;
-  top:10px;
-  right:11px;
-  width:7px;
-  height:7px;
+  left:-34px;
+  bottom:-42px;
+  width:120px;
+  height:85px;
   border-radius:50%;
-  background:#1c232a;
-  box-shadow:0 31px 0 #1c232a;
+  background:rgba(45,212,191,.10);
+  filter:blur(26px);
+  pointer-events:none;
 }
-.home-greeting + h1{margin-top:10px}
+.home-greeting + h1{margin-top:0}
 @media(max-width:700px){
   .home-greeting{
     justify-content:center;
-    margin-bottom:6px;
+    margin-bottom:12px;
   }
-  .student-name-plate{transform:rotate(-.8deg)}
-  .plate-body{
-    min-width:190px;
-    max-width:calc(100vw - 56px);
-    min-height:54px;
+  .student-name-plate{
+    min-height:45px;
+    max-width:calc(100vw - 58px);
+    padding:5px 14px 5px 8px;
+    border-radius:15px;
     gap:9px;
-    padding:5px 9px 5px 5px;
   }
-  .plate-country{
-    flex-basis:42px;
-    width:42px;
-    min-width:42px;
-    height:41px;
+  .student-name-icon{
+    width:31px;
+    height:31px;
+    flex-basis:31px;
+    border-radius:10px;
   }
-  .plate-flag{width:29px;height:11px}
-  .plate-country small{font-size:9px;margin-top:2px}
-  .plate-body strong{font-size:clamp(19px,6vw,25px)}
+  .student-name-icon svg{width:17px;height:17px}
+  .student-name-plate strong{
+    max-width:calc(100vw - 115px);
+    font-size:clamp(17px,5.4vw,21px);
+  }
 }
 @media(max-width:430px){
-  .plate-body{
-    min-width:172px;
-    min-height:49px;
-    gap:7px;
-    padding:4px 7px 4px 4px;
+  .student-name-plate{
+    min-height:43px;
+    padding:5px 13px 5px 7px;
+    border-radius:14px;
   }
-  .plate-country{
-    flex-basis:38px;
-    width:38px;
-    min-width:38px;
-    height:37px;
+  .student-name-icon{
+    width:29px;
+    height:29px;
+    flex-basis:29px;
+    border-radius:9px;
   }
-  .plate-flag{width:26px;height:10px}
-  .plate-body strong{font-size:19px}
-  .plate-dot{width:7px;height:7px;flex-basis:7px}
+  .student-name-icon svg{width:16px;height:16px}
+  .student-name-plate strong{
+    max-width:calc(100vw - 106px);
+    font-size:17px;
+  }
 }
