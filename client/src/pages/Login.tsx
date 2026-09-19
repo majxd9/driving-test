@@ -35,10 +35,12 @@ export default function Login() {
     e.preventDefault();
     if (busy) return;
     setError(null); setLoginSuccess(false); setBusy(true);
+    // ابدأ تنزيل حزمة الصفحة التالية بالتوازي مع طلب المصادقة.
+    const homeChunkPromise = import('./Home').catch(() => null);
     try {
       await login(userName.trim(),password);
       setLoginSuccess(true);
-      await new Promise<void>(resolve => window.setTimeout(resolve, 260));
+      void homeChunkPromise;
       navigate('/',{replace:true});
     }
     catch(err){ setLoginSuccess(false); setError(err instanceof Error ? err.message : 'تعذر تسجيل الدخول حالياً.'); }
