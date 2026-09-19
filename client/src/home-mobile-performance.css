@@ -1,0 +1,23 @@
+/* Mobile Home performance guard.
+   Keeps the Home artwork visible while stopping decorative compositor work
+   that is not needed for interaction on small screens. */
+@media (max-width:700px) {
+  .home-page .home-spirit-scene,
+  .home-page .home-spirit-scene * {
+    animation:none !important;
+  }
+
+  .home-page .home-spirit-scene .spirit-scene-car,
+  .home-page .home-spirit-scene .spirit-scene-headlight-beams,
+  .home-page .home-spirit-scene .spirit-scene-headlight-beams i {
+    filter:none !important;
+  }
+
+  .home-page .site-header,
+  .home-page .home-hero,
+  .home-page .category-card,
+  .home-page .home-exam {
+    -webkit-backdrop-filter:none !important;
+    backdrop-filter:none !important;
+  }
+}
