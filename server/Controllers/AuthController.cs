@@ -78,7 +78,7 @@ public class AuthController : ControllerBase
         if (deviceWasAssigned)
             await _db.SaveChangesAsync();
 
-        return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt));
+        return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt, QuestionCountCache.Total));
     }
 
     [HttpPost("logout")]
