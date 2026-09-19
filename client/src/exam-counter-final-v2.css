@@ -150,3 +150,58 @@
 @media(prefers-reduced-motion:reduce){
   .exam-question-counter{transition:none!important}
 }
+
+
+/* Mobile render fix: keep exam navigation in the viewport and force an immediate repaint. */
+@media(max-width:900px){
+  .exam-page-v2 .exam-card-v2{
+    grid-template-rows:minmax(0,1fr)!important;
+  }
+
+  .exam-page-v2 .exam-scroll-v2{
+    padding-bottom:76px!important;
+    overscroll-behavior:contain!important;
+  }
+
+  .exam-page-v2 .exam-actions-v2{
+    position:fixed!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    z-index:120!important;
+    width:100%!important;
+    height:62px!important;
+    min-height:62px!important;
+    max-height:62px!important;
+    margin:0!important;
+    padding:8px 8px max(8px,env(safe-area-inset-bottom))!important;
+    box-sizing:border-box!important;
+    background:linear-gradient(180deg,rgba(7,16,24,.96),rgba(7,16,24,.99))!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    transform:translate3d(0,0,0)!important;
+    will-change:transform!important;
+    contain:layout paint style!important;
+    transition:none!important;
+  }
+
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2,
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2.finish,
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2.next,
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2.secondary{
+    position:relative!important;
+    inset:auto!important;
+    transform:translate3d(0,0,0)!important;
+    transition:none!important;
+  }
+}
+
+@media(max-width:430px){
+  .exam-page-v2 .exam-scroll-v2{padding-bottom:72px!important}
+  .exam-page-v2 .exam-actions-v2{
+    height:60px!important;
+    min-height:60px!important;
+    max-height:60px!important;
+    padding:7px 7px max(7px,env(safe-area-inset-bottom))!important;
+  }
+}
