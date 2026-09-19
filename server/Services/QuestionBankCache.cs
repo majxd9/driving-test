@@ -13,20 +13,25 @@ public static class QuestionBankCache
 {
     private static readonly SemaphoreSlim LoadLock = new(1, 1);
     private static IReadOnlyList<Question> _questions = Array.Empty<Question>();
-    private static bool _initialized;
+    private static int _initialized;
 
     public static int Count => Volatile.Read(ref _questions).Count;
+
+    public static async Task InitializeAsync(AppDbContext db)
+    {
+        await GetAllAsync(db);
+    }
 
     public static async Task<IReadOnlyList<Question>> GetAllAsync(AppDbContext db)
     {
         var cached = Volatile.Read(ref _questions);
-        if (_initialized) return cached;
+        if (Volatile.Read(ref _initialized) == 1) return cached;
 
         await LoadLock.WaitAsync();
         try
         {
             cached = Volatile.Read(ref _questions);
-            if (_initialized) return cached;
+            if (Volatile.Read(ref _initialized) == 1) return cached;
 
             var loaded = await db.Questions
                 .AsNoTracking()
@@ -34,7 +39,7 @@ public static class QuestionBankCache
                 .ToListAsync();
 
             Volatile.Write(ref _questions, loaded);
-            _initialized = true;
+            Volatile.Write(ref _initialized, 1);
             return loaded;
         }
         finally
@@ -54,6 +59,6 @@ public static class QuestionBankCache
     public static void Invalidate()
     {
         Volatile.Write(ref _questions, Array.Empty<Question>());
-        _initialized = false;
+        Volatile.Write(ref _initialized, 0);
     }
 }
