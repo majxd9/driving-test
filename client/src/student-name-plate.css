@@ -1,7 +1,18 @@
-/* Small cartoon Syrian-license-plate treatment for the Home greeting only. */
-.home-greeting{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.student-name-plate{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:42px;max-width:100%;padding:6px 13px;border:2px solid #26364a;border-radius:9px;background:linear-gradient(180deg,#fff 0%,#f0f4f7 100%);color:#172334;box-shadow:0 3px 0 #26364a,0 5px 10px #10203320;transform:rotate(-1deg);vertical-align:middle}
-.student-name-plate:before{content:"";position:absolute;inset:3px;border:1px dashed #9aa8b6;border-radius:5px;pointer-events:none}
-.student-name-plate strong{position:relative;z-index:1;font-size:clamp(15px,2.2vw,20px);font-weight:900;line-height:1.2;overflow-wrap:anywhere}
-.plate-side-mark{position:relative;z-index:1;display:grid;place-items:center;width:23px;height:25px;border-radius:5px;background:#1c477a;color:#fff;font-size:12px;font-weight:900;flex:0 0 auto}
-@media(max-width:480px){.student-name-plate{min-height:38px;padding:5px 9px;gap:7px}.plate-side-mark{width:20px;height:22px;font-size:11px}}
+/* Compact Syrian-plate / keychain inspired student name badge. Home greeting only. */
+.home-greeting{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.student-name-plate{position:relative;display:inline-flex;align-items:center;vertical-align:middle;padding-top:7px;filter:drop-shadow(0 7px 12px rgba(0,0,0,.24));transform:rotate(-1.5deg)}
+.plate-body{position:relative;display:flex;align-items:center;gap:10px;min-height:46px;max-width:min(290px,72vw);padding:6px 11px 6px 7px;border:2px solid #0b1118;border-radius:7px;background:linear-gradient(180deg,#fff 0%,#f2f4f5 46%,#dfe4e7 100%);color:#111923;box-shadow:inset 0 0 0 2px rgba(255,255,255,.72),inset 0 -3px 0 rgba(0,0,0,.08),0 2px 0 #05080c,0 8px 12px rgba(0,0,0,.16)}
+.plate-body::before{content:"";position:absolute;inset:3px;border:1px solid rgba(44,56,68,.35);border-radius:4px;pointer-events:none}
+.plate-country{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;flex-direction:column;flex:0 0 38px;width:38px;min-width:38px;height:34px;margin-left:1px;border-radius:3px;overflow:hidden;background:#214d86;color:#fff;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.plate-country small{position:relative;font-size:9px;line-height:1;letter-spacing:.04em;font-weight:950;margin-top:2px}
+.plate-flag{width:28px;height:10px;border-radius:1px;background:linear-gradient(to bottom,#fff 0 33%,#0a8f4f 33% 66%,#111 66% 100%);box-shadow:0 0 0 1px rgba(0,0,0,.14)}
+.plate-country::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.10),transparent 55%);pointer-events:none}
+.plate-body strong{position:relative;z-index:2;font-size:clamp(17px,2.4vw,23px);line-height:1.15;font-weight:950;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plate-dot{position:relative;z-index:2;width:8px;height:8px;margin-right:1px;flex:0 0 8px;border-radius:50%;background:#202831;box-shadow:inset 0 1px 1px rgba(255,255,255,.25)}
+.plate-chain{position:absolute;top:-1px;right:20px;width:36px;height:14px;z-index:5;pointer-events:none}
+.plate-chain::before{content:"";position:absolute;width:10px;height:10px;right:9px;top:-7px;border:3px solid #8b949c;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.45),0 1px 1px rgba(0,0,0,.25)}
+.plate-chain i{position:absolute;display:block;width:11px;height:7px;border:2px solid #8b949c;border-radius:50%;transform:rotate(14deg);background:transparent;box-shadow:0 1px 1px rgba(0,0,0,.16)}
+.plate-chain i:first-child{right:15px;top:0}.plate-chain i:last-child{right:3px;top:3px;transform:rotate(-12deg)}
+.plate-body::after{content:"";position:absolute;top:11px;right:10px;width:6px;height:6px;border-radius:50%;background:#1c232c;box-shadow:0 20px 0 #1c232c;opacity:.95}
+@media(max-width:700px){.home-greeting{gap:7px}.student-name-plate{padding-top:6px;transform:rotate(-1deg)}.plate-body{min-height:42px;gap:8px;padding:5px 9px 5px 6px;max-width:calc(100vw - 52px)}.plate-country{flex-basis:34px;width:34px;min-width:34px;height:31px}.plate-flag{width:25px;height:9px}.plate-country small{font-size:8px}.plate-body strong{font-size:17px}.plate-dot{width:7px;height:7px;flex-basis:7px}}
+@media(max-width:430px){.student-name-plate{transform:rotate(-.7deg)}.plate-body{min-height:40px;gap:7px;padding:5px 8px 5px 5px}.plate-country{flex-basis:31px;width:31px;min-width:31px;height:29px}.plate-flag{width:23px;height:8px}.plate-body strong{font-size:16px}}
