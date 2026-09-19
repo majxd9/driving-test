@@ -34,10 +34,18 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  login: (userName: string, password: string) =>
-    request<import('../types').LoginResponse>('/api/auth/login', {
-      method: 'POST', body: JSON.stringify({ userName, password, deviceId: getDeviceId() }),
-    }),
+  login: (userName: string, password: string) => {
+    const body = new URLSearchParams({
+      userName,
+      password,
+      deviceId: getDeviceId(),
+    });
+    return request<import('../types').LoginResponse>('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+    });
+  },
   logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
   getQuestions: (category: 'Ser' | 'Ishara' | 'Mechanic') =>
     request<import('../types').Question[]>(`/api/questions?category=${category}`),
