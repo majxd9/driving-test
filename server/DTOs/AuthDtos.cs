@@ -5,3 +5,11 @@ namespace DrivingTestApi.DTOs;
 public record LoginRequest(string UserName, string Password, string DeviceId);
 
 public record LoginResponse(string FullName, string Role, DateTime? AccessExpiresAt, int QuestionCount);
+
+
+public sealed class LoginFormRequest
+{
+    public string UserName { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string DeviceId { get; set; } = string.Empty;
+}
