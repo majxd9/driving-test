@@ -102,18 +102,25 @@ public static class DbSeeder
             }
         }
 
-        // نعتمد على محتوى السؤال نفسه لمنع تكرار الـseed،
-        // ولا نعتبر اختلاف الصورة أو الـmetadata سبباً لإضافة نسخة جديدة.
-        await RemoveDuplicateSeedQuestionsAsync(db);
-        await SeedQuestionsAsync(db);
+        // عمليات seed/repair الشاملة كانت تُنفّذ عند كل إعادة تشغيل
+        // للسيرفر، فتسبب عدة قراءات كاملة لجدول الأسئلة وتؤخر جاهزية الـAPI.
+        // ننفذها فقط على قاعدة فارغة أو عند طلب صريح من إعداد الصيانة.
+        var runMaintenance = config.GetValue<bool>("Maintenance:RunOnStartup");
+        var hasQuestions = await db.Questions.AsNoTracking().AnyAsync();
 
-        // بعدها نصحح جميع صور الميكانيك.
-        // هذا مهم حتى الصور المضافة حديثاً من questions.json
-        // يتم تحويلها أيضاً.
-        await NormalizeQuestionImagesAsync(db);
+        if (!hasQuestions || runMaintenance)
+        {
+            // نعتمد على محتوى السؤال نفسه لمنع تكرار الـseed،
+            // ولا نعتبر اختلاف الصورة أو الـmetadata سبباً لإضافة نسخة جديدة.
+            await RemoveDuplicateSeedQuestionsAsync(db);
+            await SeedQuestionsAsync(db);
 
-        // وأخيراً نصلح الأسئلة غير المكتملة.
-        await RepairIncompleteQuestionsAsync(db);
+            // بعدها نصحح جميع صور الميكانيك.
+            await NormalizeQuestionImagesAsync(db);
+
+            // وأخيراً نصلح الأسئلة غير المكتملة.
+            await RepairIncompleteQuestionsAsync(db);
+        }
     }
 
     private static async Task NormalizeQuestionImagesAsync(AppDbContext db)
