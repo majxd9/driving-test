@@ -159,3 +159,17 @@
     transition:none!important;
   }
 }
+
+
+/* Mobile rendering safeguard for the Home screen.
+   Keeps layout/colors while avoiding large live backdrop-filter surfaces
+   that can force continuous GPU recomposition on mobile browsers. */
+@media(max-width:700px){
+  .home-page .site-header,
+  .home-page .home-hero,
+  .home-page .category-card,
+  .home-page .home-exam{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+}
