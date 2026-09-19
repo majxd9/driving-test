@@ -7,7 +7,7 @@ import DiagramRenderer from '../components/DiagramRenderer';
 import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 import SpiritTrafficSignal from '../components/SpiritTrafficSignal';
 import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
-import { ensureImageReady, preloadImages } from '../utils/imagePreload';
+import { preloadImages } from '../utils/imagePreload';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
@@ -27,11 +27,9 @@ export default function Study() {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [navigating, setNavigating] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
   const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
-  const navigationLockRef = useRef(false);
 
   useEffect(() => {
     if (!category) return;
@@ -44,13 +42,13 @@ export default function Study() {
     setJumpValue('1');
 
     api.getQuestions(category)
-      .then(async (items) => {
+      .then((items) => {
         setQuestions(items);
         const firstThree = items.slice(0, 3)
           .map(q => resolveQuestionImageUrl(q.imageUrl))
           .filter(Boolean);
-        if (firstThree[0]) await ensureImageReady(firstThree[0], 1400);
-        preloadImages(firstThree.slice(1), 2);
+        // ابدأ التحميل مسبقاً لكن لا تمنع ظهور السؤال أو التنقل.
+        preloadImages(firstThree, 3);
       })
       .catch(e => setError(e instanceof Error ? e.message : 'تعذر تحميل الأسئلة.'))
       .finally(() => setLoading(false));
@@ -64,21 +62,16 @@ export default function Study() {
     setSignalState('pending');
   }, [questions, index]);
 
-  const goTo = useCallback(async (nextIndex: number) => {
+  const goTo = useCallback((nextIndex: number) => {
     if (
-      navigationLockRef.current ||
       nextIndex < 0 ||
       nextIndex >= questions.length ||
       nextIndex === index
     ) return;
 
-    navigationLockRef.current = true;
-    setNavigating(true);
     const src = resolveQuestionImageUrl(questions[nextIndex]?.imageUrl);
-    if (src) await ensureImageReady(src, 1200);
+    if (src) void preloadImages([src], 1);
     setIndex(nextIndex);
-    setNavigating(false);
-    navigationLockRef.current = false;
   }, [index, questions]);
 
   const jumpToQuestion = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
@@ -86,7 +79,7 @@ export default function Study() {
     const requested = Number.parseInt(jumpValue, 10);
     if (!Number.isFinite(requested) || requested < 1 || requested > questions.length) return;
     setJumpOpen(false);
-    await goTo(requested - 1);
+    goTo(requested - 1);
   }, [goTo, jumpValue, questions.length]);
 
   if (loading) return <div className="study-premium-loading">جارِ تجهيز التدريب...</div>;
@@ -232,18 +225,18 @@ export default function Study() {
 
           <nav className="study-premium-actions" aria-label="التنقل بين الأسئلة">
             <button
-              onClick={() => void goTo(index - 1)}
-              disabled={index === 0 || navigating}
+              onClick={() => goTo(index - 1)}
+              disabled={index === 0}
               className="study-premium-action ghost"
             >
               السابق
             </button>
             <button
-              onClick={() => void goTo(index + 1)}
-              disabled={isLast || navigating}
+              onClick={() => goTo(index + 1)}
+              disabled={isLast}
               className="study-premium-action next"
             >
-              {navigating ? 'جارٍ التجهيز…' : isLast ? 'انتهى القسم' : 'السؤال التالي'} <span>←</span>
+              {isLast ? 'انتهى القسم' : 'السؤال التالي'} <span>←</span>
             </button>
           </nav>
         </section>
