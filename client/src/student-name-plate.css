@@ -1,0 +1,7 @@
+/* Small cartoon Syrian-license-plate treatment for the Home greeting only. */
+.home-greeting{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.student-name-plate{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:42px;max-width:100%;padding:6px 13px;border:2px solid #26364a;border-radius:9px;background:linear-gradient(180deg,#fff 0%,#f0f4f7 100%);color:#172334;box-shadow:0 3px 0 #26364a,0 5px 10px #10203320;transform:rotate(-1deg);vertical-align:middle}
+.student-name-plate:before{content:"";position:absolute;inset:3px;border:1px dashed #9aa8b6;border-radius:5px;pointer-events:none}
+.student-name-plate strong{position:relative;z-index:1;font-size:clamp(15px,2.2vw,20px);font-weight:900;line-height:1.2;overflow-wrap:anywhere}
+.plate-side-mark{position:relative;z-index:1;display:grid;place-items:center;width:23px;height:25px;border-radius:5px;background:#1c477a;color:#fff;font-size:12px;font-weight:900;flex:0 0 auto}
+@media(max-width:480px){.student-name-plate{min-height:38px;padding:5px 9px;gap:7px}.plate-side-mark{width:20px;height:22px;font-size:11px}}
