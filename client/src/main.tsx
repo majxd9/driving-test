@@ -24,6 +24,7 @@ import './study-final-lock.css';
 import './exam-counter-final-v2.css';
 import './models-drift-final.css';
 import './home-mobile-performance.css';
+import './student-name-plate.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
