@@ -11,6 +11,12 @@ public static class QuestionCountCache
 
     public static int Total => Volatile.Read(ref _total);
 
+    public static void InitializeFrom(int total)
+    {
+        Volatile.Write(ref _total, Math.Max(0, total));
+        Volatile.Write(ref _initialized, true);
+    }
+
     public static async Task InitializeAsync(AppDbContext db)
     {
         if (_initialized) return;

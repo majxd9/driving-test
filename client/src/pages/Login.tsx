@@ -31,6 +31,12 @@ export default function Login() {
     document.documentElement.dataset.loginLights = lightsOn ? 'on' : 'off';
   }, [lightsOn]);
 
+  // تجهيز حزمة الصفحة الرئيسية أثناء بقاء المستخدم في شاشة الدخول،
+  // بحيث لا تبدأ عملية التنزيل لحظة الضغط على تسجيل الدخول.
+  useEffect(() => {
+    void import('./Home').catch(() => null);
+  }, []);
+
   async function handleSubmit(e:FormEvent){
     e.preventDefault();
     if (busy) return;
@@ -38,7 +44,6 @@ export default function Login() {
     try {
       await login(userName.trim(),password);
       setLoginSuccess(true);
-      await new Promise<void>(resolve => window.setTimeout(resolve, 260));
       navigate('/',{replace:true});
     }
     catch(err){ setLoginSuccess(false); setError(err instanceof Error ? err.message : 'تعذر تسجيل الدخول حالياً.'); }

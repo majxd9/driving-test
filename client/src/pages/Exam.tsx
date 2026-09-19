@@ -4,7 +4,7 @@ import { api } from '../api/client';
 import { Question } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
-import { ensureImageReady, preloadImages } from '../utils/imagePreload';
+import { preloadImages } from '../utils/imagePreload';
 import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 
 const DURATION = 15 * 60;
@@ -28,11 +28,9 @@ export default function Exam() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [imageExpanded, setImageExpanded] = useState(false);
-  const [navigating, setNavigating] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
   const finishedRef = useRef(false);
-  const navigationLockRef = useRef(false);
   const questionsRef = useRef<Question[]>([]);
   const answersRef = useRef<Record<number, number>>({});
 
@@ -49,9 +47,10 @@ export default function Exam() {
       setQuestions(picked); setAnswers({}); setCurrent(0); setSeconds(DURATION); setJumpOpen(false); setJumpValue('1');
       questionsRef.current = picked;
       answersRef.current = {};
-      finishedRef.current = false; navigationLockRef.current = false;
+      finishedRef.current = false;
       const firstThree = picked.slice(0, 3).map(q => resolveQuestionImageUrl(q.imageUrl)).filter(Boolean);
-      const first = firstThree[0]; if (first) await ensureImageReady(first, 1600); preloadImages(firstThree.slice(1), 2);
+      // الصور تُحمّل في الخلفية؛ لا نؤخر إظهار الاختبار بانتظار decode.
+      preloadImages(firstThree, 3);
     } catch (err) { setLoadError(err instanceof Error ? err.message : 'تعذر تحميل الأسئلة.'); }
     finally { setLoading(false); }
   }, [modelId]);
@@ -73,24 +72,24 @@ export default function Exam() {
     navigate('/result',{state:{correct,total:currentQuestions.length,answered,reviewQuestions,modelId:Number(modelId)||1}});
   },[navigate,modelId]);
 
-  const goToQuestion = useCallback(async (nextIndex:number) => {
-    if(navigationLockRef.current||nextIndex===current||nextIndex<0||nextIndex>=questions.length)return;
-    navigationLockRef.current=true; setNavigating(true);
-    const src=resolveQuestionImageUrl(questions[nextIndex]?.imageUrl); if(src) await ensureImageReady(src,1200);
-    setCurrent(nextIndex); setNavigating(false); navigationLockRef.current=false;
+  const goToQuestion = useCallback((nextIndex:number) => {
+    if(nextIndex===current||nextIndex<0||nextIndex>=questions.length)return;
+    const src=resolveQuestionImageUrl(questions[nextIndex]?.imageUrl);
+    if(src) preloadImages([src], 1);
+    setCurrent(nextIndex);
   },[current,questions]);
 
-  const jumpToQuestion = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
+  const jumpToQuestion = useCallback((event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const requested = Number.parseInt(jumpValue, 10);
     if (!Number.isFinite(requested) || requested < 1 || requested > questions.length) return;
     setJumpOpen(false);
-    await goToQuestion(requested - 1);
+    goToQuestion(requested - 1);
   }, [goToQuestion, jumpValue, questions.length]);
 
   useEffect(()=>{if(loading)return;const timer=setInterval(()=>{setSeconds(s=>{if(s<=1){clearInterval(timer);finish();return 0;}return s-1;});},1000);return()=>clearInterval(timer);},[loading,finish]);
 
-  if(loading)return <div className="page-shell flex items-center justify-center px-4"><div className="surface-panel w-full max-w-xl p-5"><div className="skeleton h-44 rounded-2xl"/><p className="text-center text-muted text-sm mt-4">جارِ تجهيز أول صورة للاختبار...</p></div></div>;
+  if(loading)return <div className="page-shell flex items-center justify-center px-4"><div className="surface-panel w-full max-w-xl p-5"><div className="skeleton h-44 rounded-2xl"/><p className="text-center text-muted text-sm mt-4">جارِ تجهيز الاختبار...</p></div></div>;
   if(loadError||!questions.length)return <div className="page-shell flex items-center justify-center px-5"><div className="surface-panel w-full max-w-md text-center p-7"><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-xl font-black mb-2">تعذر تحضير الاختبار</h1><p className="text-muted text-sm leading-relaxed">{loadError??'لم يتم العثور على أسئلة.'}</p><button onClick={loadExam} className="primary-cta mt-5 w-full">إعادة المحاولة</button></div></div>;
 
   const q=questions[current]; const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
@@ -139,9 +138,9 @@ export default function Exam() {
         <DiagramRenderer question={q}/>
       </div>
       <div className="exam-actions-v2">
-        <button type="button" onClick={()=>void goToQuestion(current-1)} disabled={current===0||navigating} className="exam-action-v2 secondary"><UiIcon name="back"/><span>السابق</span></button>
+        <button type="button" onClick={()=>goToQuestion(current-1)} disabled={current===0} className="exam-action-v2 secondary"><UiIcon name="back"/><span>السابق</span></button>
         <button type="button" onClick={finish} className="exam-action-v2 finish"><UiIcon name="finish"/><span>إنهاء الاختبار</span></button>
-        <button type="button" onClick={()=>isLast?finish():void goToQuestion(current+1)} disabled={navigating} className="exam-action-v2 next"><span>{navigating?'جارٍ التجهيز…':isLast?'عرض النتيجة':'التالي'}</span><UiIcon name="next"/></button>
+        <button type="button" onClick={()=>isLast?finish():goToQuestion(current+1)} className="exam-action-v2 next"><span>{isLast?'عرض النتيجة':'التالي'}</span><UiIcon name="next"/></button>
       </div>
     </section></main>
     {imageExpanded&&q.imageUrl&&<div className="exam-image-modal-v2" onClick={()=>setImageExpanded(false)}><OptimizedImage src={q.imageUrl} alt={`الصورة المكبرة للسؤال ${q.id}`} priority sizes="100vw" className="max-w-full max-h-full" objectFit="contain"/></div>}

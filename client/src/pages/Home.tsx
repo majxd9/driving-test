@@ -21,8 +21,19 @@ const categories:{key:QuestionCategory;title:string;subtitle:string;path:string;
 ];
 
 export default function Home(){
- const {user,logout}=useAuth();const navigate=useNavigate();const [total,setTotal]=useState<number|null>(null);
- useEffect(()=>{let active=true;fetch(`${import.meta.env.VITE_API_URL||''}/api/questions/count`,{credentials:'include'}).then(r=>r.ok?r.json():Promise.reject()).then(n=>{if(active)setTotal(Number(n));}).catch(()=>{});return()=>{active=false;};},[]);
+ const {user,logout}=useAuth();const navigate=useNavigate();const [total,setTotal]=useState<number|null>(user?.questionCount ?? null);
+ useEffect(()=>{
+  if (user?.questionCount != null) {
+   setTotal(user.questionCount);
+   return;
+  }
+  let active=true;
+  fetch((import.meta.env.VITE_API_URL||'')+'/api/questions/count',{credentials:'include'})
+   .then(r=>r.ok?r.json():Promise.reject())
+   .then(n=>{if(active)setTotal(Number(n));})
+   .catch(()=>{});
+  return()=>{active=false;};
+ },[user?.questionCount]);
  const firstName=user?.fullName?.split(' ')[0]??'';
  return <div className="min-h-screen home-page" dir="rtl">
   <header className="site-header"><div className="max-w-6xl mx-auto px-5 py-3.5 flex items-center justify-between">

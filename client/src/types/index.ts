@@ -18,6 +18,7 @@ export interface LoginResponse {
   fullName: string;
   role: 'Admin' | 'Student';
   accessExpiresAt: string | null;
+  questionCount: number;
 }
 
 export interface Student {
