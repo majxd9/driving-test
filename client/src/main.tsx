@@ -23,6 +23,7 @@ import './login-scene-final.css';
 import './study-final-lock.css';
 import './exam-counter-final-v2.css';
 import './models-drift-final.css';
+import './mobile-performance.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -33,4 +34,3 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </React.StrictMode>
 );
-
