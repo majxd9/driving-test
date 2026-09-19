@@ -1,0 +1,26 @@
+/* Mobile performance guard: preserve the scene's appearance but stop expensive
+   continuously animated layers on touch devices. Desktop effects remain unchanged. */
+@media (hover: none) and (pointer: coarse) {
+  .home-page .spirit-drive-scene,
+  .home-page .spirit-drive-scene *,
+  .home-page .spirit-drive-scene *::before,
+  .home-page .spirit-drive-scene *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  .home-page .spirit-drive-scene {
+    contain: layout paint;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page .spirit-drive-scene,
+  .home-page .spirit-drive-scene *,
+  .home-page .spirit-drive-scene *::before,
+  .home-page .spirit-drive-scene *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
