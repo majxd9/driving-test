@@ -29,8 +29,17 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
-    {
+    [Consumes("application/json")]
+    public Task<ActionResult<LoginResponse>> LoginJson([FromBody] LoginRequest request)
+        => LoginCore(request);
+
+    [HttpPost("login")]
+    [Consumes("application/x-www-form-urlencoded")]
+    public Task<ActionResult<LoginResponse>> LoginForm([FromForm] LoginFormRequest request)
+        => LoginCore(new LoginRequest(request.UserName, request.Password, request.DeviceId));
+
+    private async Task<ActionResult<LoginResponse>> LoginCore(LoginRequest request)
+
         var username = request.UserName?.Trim() ?? string.Empty;
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
@@ -95,7 +104,7 @@ public class AuthController : ControllerBase
         });
 
         return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt, QuestionCountCache.Total));
-    }
+    
 
     [HttpPost("logout")]
     public IActionResult Logout()
