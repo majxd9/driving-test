@@ -1129,3 +1129,14 @@
   .models-drift-car-wrap{width:295px!important;height:165px!important;right:-7%!important;bottom:10px!important}
   .models-drift-track-surface{height:190px!important}
 }
+
+
+/* Mobile rendering safeguard: Home scene remains visually present,
+   but its decorative motion is frozen on small screens so it cannot
+   trigger continuous compositor work behind the Home glass surfaces. */
+@media(max-width:700px){
+  .home-spirit-scene .spirit-scene-car,
+  .home-spirit-scene .spirit-scene-headlight-beams i{
+    animation:none!important;
+  }
+}
