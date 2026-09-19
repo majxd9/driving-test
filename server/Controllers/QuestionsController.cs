@@ -73,7 +73,7 @@ public class QuestionsController : ControllerBase
             if (category == QuestionCategory.Ishara)
             {
                 var priority = unique
-                    .Where(q => Regex.IsMatch(q.ImageUrl ?? string.Empty, @"/signs/sign_(23[6-9]|24[0-5])\\.svg$", RegexOptions.IgnoreCase))
+                    .Where(q => Regex.IsMatch(q.ImageUrl ?? string.Empty, @"/signs/sign_(23[6-9]|24[0-5])\.svg$", RegexOptions.IgnoreCase))
                     .OrderBy(q => q.Id)
                     .ToList();
 
