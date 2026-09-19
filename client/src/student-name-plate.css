@@ -1,140 +1,181 @@
-/* Premium student-name treatment. Designed to match the dark/green visual language of Home. */
+/* Creative student identity badge: corner placement, premium driving-dashboard feel. Home only. */
 .home-greeting{
+  position:relative;
   display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  margin:0 0 14px;
+  align-items:flex-start;
+  justify-content:flex-end;
+  min-height:74px;
+  margin:0 0 4px;
 }
 .student-name-plate{
-  --name-accent:#2dd4bf;
   position:relative;
-  display:inline-flex;
+  display:grid;
+  grid-template-columns:42px auto;
+  grid-template-rows:auto auto;
   align-items:center;
-  gap:10px;
-  min-height:48px;
-  max-width:min(300px,78vw);
-  padding:6px 16px 6px 10px;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:16px;
+  gap:2px 11px;
+  width:max-content;
+  max-width:min(280px,68vw);
+  min-height:62px;
+  padding:9px 14px 9px 11px;
+  border:1px solid rgba(255,255,255,.11);
+  border-radius:18px 8px 18px 18px;
   background:
-    linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.035)),
-    rgba(9,17,24,.72);
-  color:#f6fbfb;
+    linear-gradient(145deg,rgba(20,34,44,.98),rgba(8,18,25,.9));
+  color:#f5fbfa;
   box-shadow:
-    0 12px 30px rgba(0,0,0,.20),
-    inset 0 1px 0 rgba(255,255,255,.07);
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
+    0 16px 34px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 0 0 1px rgba(45,212,191,.04);
   overflow:hidden;
 }
 .student-name-plate::before{
   content:"";
   position:absolute;
-  inset:0;
-  background:linear-gradient(100deg,rgba(45,212,191,.14),transparent 36%,transparent 76%,rgba(255,255,255,.035));
-  pointer-events:none;
+  top:0;
+  right:0;
+  width:54%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,#54e5ce 65%,#20b997);
+  opacity:.95;
 }
 .student-name-plate::after{
   content:"";
   position:absolute;
-  top:8px;
-  bottom:8px;
-  right:0;
-  width:3px;
-  border-radius:99px 0 0 99px;
-  background:linear-gradient(180deg,#65e6cf,#18ad91);
-  box-shadow:0 0 14px rgba(45,212,191,.34);
+  left:0;
+  bottom:0;
+  width:38%;
+  height:2px;
+  background:linear-gradient(90deg,#164c45,transparent);
+  opacity:.9;
+}
+.student-name-kicker{
+  position:relative;
+  z-index:2;
+  grid-column:2;
+  align-self:end;
+  font-family:"Cairo",sans-serif;
+  font-size:9px;
+  line-height:1;
+  font-weight:700;
+  color:rgba(185,231,223,.62);
+  letter-spacing:.01em;
+  margin-bottom:1px;
 }
 .student-name-icon{
   position:relative;
   z-index:2;
+  grid-column:1;
+  grid-row:1 / span 2;
   display:grid;
   place-items:center;
-  width:34px;
-  height:34px;
-  flex:0 0 34px;
-  border-radius:11px;
-  background:linear-gradient(145deg,rgba(45,212,191,.20),rgba(45,212,191,.07));
-  border:1px solid rgba(45,212,191,.28);
-  color:#74ead6;
+  width:40px;
+  height:40px;
+  border-radius:14px;
+  background:linear-gradient(145deg,rgba(45,212,191,.19),rgba(45,212,191,.055));
+  border:1px solid rgba(45,212,191,.25);
+  color:#70ead5;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.07),
-    0 0 20px rgba(45,212,191,.08);
+    0 0 24px rgba(45,212,191,.08);
+}
+.student-name-icon::after{
+  content:"";
+  position:absolute;
+  inset:-5px;
+  border:1px solid rgba(45,212,191,.08);
+  border-radius:18px;
 }
 .student-name-icon svg{
-  width:18px;
-  height:18px;
+  width:20px;
+  height:20px;
   stroke:currentColor;
-  stroke-width:1.8;
+  stroke-width:1.7;
   stroke-linecap:round;
   stroke-linejoin:round;
 }
-.student-name-plate strong{
+.student-name-copy{
   position:relative;
   z-index:2;
-  display:block;
+  grid-column:2;
+  display:flex;
+  align-items:baseline;
+  gap:7px;
   min-width:0;
-  max-width:220px;
+}
+.student-name-copy small{
+  flex:0 0 auto;
+  font-family:"Cairo",sans-serif;
+  font-size:9px;
+  line-height:1;
+  font-weight:700;
+  color:rgba(164,192,188,.52);
+}
+.student-name-copy strong{
+  min-width:0;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
-  font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;
-  font-size:clamp(18px,2.5vw,24px);
-  line-height:1.25;
-  font-weight:700;
-  letter-spacing:-.02em;
+  font-family:"Cairo",sans-serif;
+  font-size:clamp(20px,3vw,28px);
+  line-height:1.08;
+  font-weight:800;
+  letter-spacing:-.035em;
+  color:#fbffff;
+  text-shadow:0 2px 14px rgba(0,0,0,.22);
 }
 .student-name-glow{
   position:absolute;
-  left:-34px;
-  bottom:-42px;
-  width:120px;
-  height:85px;
+  right:-35px;
+  bottom:-48px;
+  width:125px;
+  height:90px;
   border-radius:50%;
-  background:rgba(45,212,191,.10);
-  filter:blur(26px);
+  background:rgba(45,212,191,.12);
+  filter:blur(28px);
   pointer-events:none;
 }
-.home-greeting + h1{margin-top:0}
+.home-greeting + h1{
+  margin-top:2px;
+}
 @media(max-width:700px){
   .home-greeting{
-    justify-content:center;
-    margin-bottom:12px;
+    justify-content:flex-end;
+    min-height:68px;
+    margin-bottom:2px;
   }
   .student-name-plate{
-    min-height:45px;
-    max-width:calc(100vw - 58px);
-    padding:5px 14px 5px 8px;
-    border-radius:15px;
-    gap:9px;
+    max-width:calc(100vw - 54px);
+    min-height:58px;
+    padding:8px 12px 8px 9px;
+    border-radius:16px 7px 16px 16px;
+    grid-template-columns:38px minmax(0,1fr);
+    gap:1px 9px;
   }
   .student-name-icon{
-    width:31px;
-    height:31px;
-    flex-basis:31px;
-    border-radius:10px;
+    width:36px;
+    height:36px;
+    border-radius:12px;
   }
-  .student-name-icon svg{width:17px;height:17px}
-  .student-name-plate strong{
-    max-width:calc(100vw - 115px);
-    font-size:clamp(17px,5.4vw,21px);
-  }
+  .student-name-icon svg{width:18px;height:18px}
+  .student-name-copy strong{font-size:21px}
+  .student-name-kicker{font-size:8px}
+  .student-name-copy small{font-size:8px}
 }
 @media(max-width:430px){
+  .home-greeting{min-height:63px}
   .student-name-plate{
-    min-height:43px;
-    padding:5px 13px 5px 7px;
-    border-radius:14px;
+    max-width:calc(100vw - 42px);
+    min-height:54px;
+    padding:7px 11px 7px 8px;
+    border-radius:15px 6px 15px 15px;
+    grid-template-columns:34px minmax(0,1fr);
   }
   .student-name-icon{
-    width:29px;
-    height:29px;
-    flex-basis:29px;
-    border-radius:9px;
+    width:33px;
+    height:33px;
+    border-radius:11px;
   }
-  .student-name-icon svg{width:16px;height:16px}
-  .student-name-plate strong{
-    max-width:calc(100vw - 106px);
-    font-size:17px;
-  }
+  .student-name-icon svg{width:17px;height:17px}
+  .student-name-copy strong{font-size:19px}
 }
