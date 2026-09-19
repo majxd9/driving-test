@@ -70,7 +70,7 @@ export default function Study() {
     ) return;
 
     const src = resolveQuestionImageUrl(questions[nextIndex]?.imageUrl);
-    if (src) void preloadImages([src], 1);
+    if (src) preloadImages([src], 1);
     setIndex(nextIndex);
   }, [index, questions]);
 
