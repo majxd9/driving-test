@@ -39,7 +39,7 @@ public class AuthController : ControllerBase
         => LoginCore(new LoginRequest(request.UserName, request.Password, request.DeviceId));
 
     private async Task<ActionResult<LoginResponse>> LoginCore(LoginRequest request)
-
+    {
         var username = request.UserName?.Trim() ?? string.Empty;
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
@@ -104,7 +104,7 @@ public class AuthController : ControllerBase
         });
 
         return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt, QuestionCountCache.Total));
-    
+    }
 
     [HttpPost("logout")]
     public IActionResult Logout()
