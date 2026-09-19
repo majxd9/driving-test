@@ -205,3 +205,79 @@
     padding:7px 7px max(7px,env(safe-area-inset-bottom))!important;
   }
 }
+
+
+/* Premium glass for exam navigation — visually frosted, compositor-friendly on mobile. */
+@media(max-width:900px){
+  .exam-page-v2 .exam-actions-v2{
+    overflow:visible!important;
+    border-top:1px solid rgba(255,255,255,.16)!important;
+    background:
+      linear-gradient(180deg,rgba(31,48,59,.82),rgba(9,20,29,.94))!important;
+    box-shadow:
+      0 -14px 34px rgba(0,0,0,.30),
+      inset 0 1px 0 rgba(255,255,255,.12),
+      inset 0 -1px 0 rgba(0,0,0,.28)!important;
+    isolation:isolate!important;
+  }
+
+  .exam-page-v2 .exam-actions-v2::before{
+    content:""!important;
+    position:absolute!important;
+    inset:1px 5px 0!important;
+    z-index:-1!important;
+    pointer-events:none!important;
+    border-radius:22px 22px 0 0!important;
+    background:
+      radial-gradient(circle at 18% 0%,rgba(255,255,255,.13),transparent 30%),
+      radial-gradient(circle at 82% 0%,rgba(45,212,191,.10),transparent 28%),
+      linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.008) 42%,rgba(0,0,0,.10))!important;
+    border:1px solid rgba(255,255,255,.075)!important;
+    border-bottom:0!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07)!important;
+  }
+
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2{
+    border:1px solid rgba(255,255,255,.13)!important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.09),
+      inset 0 -1px 0 rgba(0,0,0,.18),
+      0 7px 18px rgba(0,0,0,.18)!important;
+  }
+
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2.secondary{
+    background:linear-gradient(145deg,rgba(255,255,255,.085),rgba(8,18,27,.56))!important;
+    color:#c3ccd5!important;
+  }
+
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2.finish{
+    background:linear-gradient(145deg,rgba(255,119,114,.17),rgba(43,20,25,.62))!important;
+    border-color:rgba(255,140,134,.28)!important;
+    color:#ffd0cd!important;
+  }
+
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2.next{
+    background:linear-gradient(145deg,rgba(97,234,207,.96),rgba(32,188,163,.90))!important;
+    border-color:rgba(190,255,244,.45)!important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.38),
+      0 8px 24px rgba(45,212,191,.20)!important;
+  }
+
+  /* A small glossy highlight makes the glass read clearly without blur/compositor lag. */
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2::after{
+    content:""!important;
+    position:absolute!important;
+    left:10%!important;
+    right:10%!important;
+    top:1px!important;
+    height:1px!important;
+    border-radius:999px!important;
+    background:rgba(255,255,255,.18)!important;
+    pointer-events:none!important;
+  }
+}
+
+@media(max-width:430px){
+  .exam-page-v2 .exam-actions-v2::before{inset:1px 4px 0!important;border-radius:20px 20px 0 0!important}
+}
