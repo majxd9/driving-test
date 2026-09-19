@@ -22,6 +22,11 @@ const categories:{key:QuestionCategory;title:string;subtitle:string;path:string;
 
 export default function Home(){
  const {user,logout}=useAuth();const navigate=useNavigate();const [total,setTotal]=useState<number|null>(user?.questionCount ?? null);
+
+ useEffect(()=>{
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+ },[]);
+
  useEffect(()=>{
   if (user?.questionCount != null) {
    setTotal(user.questionCount);
@@ -34,6 +39,7 @@ export default function Home(){
    .catch(()=>{});
   return()=>{active=false;};
  },[user?.questionCount]);
+
  const firstName=user?.fullName?.split(' ')[0]??'';
  return <div className="min-h-screen home-page" dir="rtl">
   <header className="site-header"><div className="max-w-6xl mx-auto px-5 py-3.5 flex items-center justify-between">
