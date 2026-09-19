@@ -19,11 +19,7 @@ public class QuestionsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<Question>>> GetByCategory([FromQuery] QuestionCategory category)
     {
-        var questions = await _db.Questions
-            .AsNoTracking()
-            .Where(q => q.Category == category)
-            .OrderBy(q => q.Id)
-            .ToListAsync();
+        var questions = await QuestionBankCache.GetCategoryAsync(_db, category);
 
         Response.Headers.CacheControl = "private,max-age=60,stale-while-revalidate=30";
         return Ok(DeduplicateQuestions(questions));
@@ -50,6 +46,7 @@ public class QuestionsController : ControllerBase
             (Category: QuestionCategory.Mechanic, Count: 6)
         };
 
+        var allQuestions = await QuestionBankCache.GetAllAsync(_db);
         var picked = new List<Question>(30);
         var salts = new Dictionary<QuestionCategory, int>
         {
@@ -60,11 +57,10 @@ public class QuestionsController : ControllerBase
 
         foreach (var (category, count) in required)
         {
-            var source = await _db.Questions
-                .AsNoTracking()
+            var source = allQuestions
                 .Where(q => q.Category == category)
                 .OrderBy(q => q.Id)
-                .ToListAsync();
+                .ToList();
 
             var unique = DeduplicateQuestions(source);
             if (unique.Count < count)
