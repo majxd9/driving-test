@@ -75,7 +75,13 @@ function LightSymbol({ type, className = '' }: { type: LightKey; className?: str
   );
 }
 
-function LightStalk({ active }: { active: LightKey }) {
+function LightStalk({
+  active,
+  onSelect,
+}: {
+  active: LightKey;
+  onSelect: (key: LightKey) => void;
+}) {
   const labels = {
     position: 'موضع',
     low: 'منخفض',
@@ -83,73 +89,150 @@ function LightStalk({ active }: { active: LightKey }) {
     fog: 'ضباب',
   } as const;
 
+  const keys: LightKey[] = ['position', 'low', 'high', 'fog'];
+  const nextLight = keys[(keys.indexOf(active) + 1) % keys.length];
+
   return (
     <div className="stalk-demo">
       <div className="stalk-demo-labels">
-        <span>عصا التحكم بالإضاءة</span>
-        <b>التصميم يختلف بين السيارات — الرمز هو المرجع.</b>
+        <span>مقبض التحكم بالإضاءة</span>
+        <b>اضغط على المقبض أو اختر الرمز القريب منه.</b>
       </div>
 
-      <svg className="stalk-demo-svg" viewBox="0 0 520 210" role="img" aria-label="محاكاة واقعية لعصا التحكم بالإضاءة">
-        <defs>
-          <linearGradient id="stalk-metal" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#626b70" />
-            <stop offset="48%" stopColor="#313b40" />
-            <stop offset="100%" stopColor="#151d22" />
-          </linearGradient>
-          <linearGradient id="stalk-grip" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#424c52" />
-            <stop offset="52%" stopColor="#20292e" />
-            <stop offset="100%" stopColor="#0f171c" />
-          </linearGradient>
-          <linearGradient id="stalk-ring" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#8b969a" />
-            <stop offset="35%" stopColor="#4b575d" />
-            <stop offset="100%" stopColor="#1a2328" />
-          </linearGradient>
-          <filter id="stalk-shadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="0" dy="9" stdDeviation="9" floodOpacity=".35" />
-          </filter>
-        </defs>
+      <div className="stalk-control-stage">
+        <svg
+          className="stalk-demo-svg"
+          viewBox="0 0 520 230"
+          role="img"
+          aria-label="مقبض واقعي للتحكم بأضواء السيارة"
+        >
+          <defs>
+            <linearGradient id="stalk-metal-v4" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#aeb9bd" />
+              <stop offset="22%" stopColor="#69757b" />
+              <stop offset="52%" stopColor="#344047" />
+              <stop offset="100%" stopColor="#11191e" />
+            </linearGradient>
+            <linearGradient id="stalk-grip-v4" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#56636a" />
+              <stop offset="28%" stopColor="#2c373d" />
+              <stop offset="72%" stopColor="#151e24" />
+              <stop offset="100%" stopColor="#090f14" />
+            </linearGradient>
+            <linearGradient id="stalk-collar-v4" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#b4c1c4" />
+              <stop offset="26%" stopColor="#66747a" />
+              <stop offset="65%" stopColor="#2d383e" />
+              <stop offset="100%" stopColor="#0f171c" />
+            </linearGradient>
+            <filter id="stalk-shadow-v4" x="-30%" y="-50%" width="170%" height="200%">
+              <feDropShadow dx="0" dy="11" stdDeviation="9" floodOpacity=".42" />
+            </filter>
+          </defs>
 
-        <ellipse cx="260" cy="176" rx="175" ry="15" fill="#000" opacity=".28" />
-        <path d="M62 112C88 103 119 98 147 98H384" stroke="#0b1115" strokeWidth="37" strokeLinecap="round" opacity=".78" filter="url(#stalk-shadow)" />
-        <path d="M62 106C90 96 120 91 147 91H381" stroke="url(#stalk-metal)" strokeWidth="29" strokeLinecap="round" />
-        <path d="M74 99C101 92 122 89 148 89H370" stroke="#a5afb3" strokeOpacity=".17" strokeWidth="5" strokeLinecap="round" />
+          <ellipse cx="273" cy="184" rx="202" ry="15" fill="#000" opacity=".28" />
 
-        <path d="M372 67V133" stroke="#121a20" strokeWidth="44" strokeLinecap="round" />
-        <path d="M372 67V133" stroke="url(#stalk-ring)" strokeWidth="34" strokeLinecap="round" />
-        <path d="M372 77V124" stroke="#9aa4a8" strokeOpacity=".18" strokeWidth="3" strokeLinecap="round" />
+          <path
+            d="M52 131C76 113 106 103 142 101H328"
+            stroke="#081015"
+            strokeWidth="39"
+            strokeLinecap="round"
+            opacity=".82"
+            filter="url(#stalk-shadow-v4)"
+          />
+          <path
+            d="M52 123C79 105 109 98 143 97H329"
+            stroke="url(#stalk-metal-v4)"
+            strokeWidth="29"
+            strokeLinecap="round"
+          />
+          <path
+            d="M69 116C94 103 114 98 145 97H321"
+            stroke="#e9f1f2"
+            strokeOpacity=".22"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
 
-        <rect x="401" y="66" width="67" height="69" rx="24" fill="url(#stalk-grip)" stroke="#aab5b9" strokeOpacity=".16" />
-        <path d="M418 76V125M432 73V128M446 75V126" stroke="#7c898e" strokeOpacity=".18" strokeWidth="2" />
+          <path
+            d="M324 76V140"
+            stroke="#0b1217"
+            strokeWidth="53"
+            strokeLinecap="round"
+            opacity=".95"
+          />
+          <path
+            d="M324 76V140"
+            stroke="url(#stalk-collar-v4)"
+            strokeWidth="42"
+            strokeLinecap="round"
+          />
+          <path
+            d="M324 82V135"
+            stroke="#dbe6e8"
+            strokeOpacity=".19"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
 
-        <circle cx="372" cy="100" r="27" fill="#11191f" stroke="#a3adb1" strokeOpacity=".20" strokeWidth="2" />
-        <circle cx="372" cy="100" r="22" fill="none" stroke="#59656a" strokeWidth="5" />
-        <path d="M372 76V84M394 100H386M372 124V116M350 100H358" stroke="#d9e5e6" strokeOpacity=".45" strokeWidth="2.5" />
+          <path
+            d="M355 72C369 67 383 66 401 68L463 78Q476 80 480 93V124Q477 139 462 141L399 147Q379 149 362 139Z"
+            fill="url(#stalk-grip-v4)"
+            stroke="#b7c3c6"
+            strokeOpacity=".22"
+            strokeWidth="1.7"
+          />
+          <path
+            d="M378 73L373 142M391 71L387 145M404 71L402 145M418 73L417 142M432 74L433 140M446 76L449 138"
+            stroke="#9aa7ab"
+            strokeOpacity=".16"
+            strokeWidth="2"
+          />
+          <path
+            d="M361 82Q378 89 395 88L462 96"
+            stroke="#edf4f5"
+            strokeOpacity=".12"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
 
-        <g transform="translate(330 30)" opacity=".72">
-          <text x="0" y="0" fill="#c9d7d9" fontSize="11" fontWeight="800">AUTO</text>
-        </g>
+          <circle cx="324" cy="108" r="35" fill="#0b1217" stroke="#c0cbce" strokeOpacity=".15" strokeWidth="2" />
+          <circle cx="324" cy="108" r="29" fill="url(#stalk-collar-v4)" stroke="#9eabad" strokeOpacity=".32" strokeWidth="2" />
+          <circle cx="324" cy="108" r="21" fill="#111a20" stroke="#55636a" strokeWidth="4" />
+          <path d="M324 88V96M344 108H336M324 128V120M304 108H312" stroke="#e7f2f3" strokeOpacity=".58" strokeWidth="2.7" strokeLinecap="round" />
+          <circle cx="324" cy="108" r="4.5" fill="#e8f6f4" opacity=".82" />
 
-        <g transform="translate(382 28)">
-          <text x="0" y="0" fill={active === 'position' ? '#8beadd' : '#718087'} fontSize="11" fontWeight="900">{labels.position}</text>
-          <text x="46" y="0" fill={active === 'low' ? '#8beadd' : '#718087'} fontSize="11" fontWeight="900">{labels.low}</text>
-          <text x="88" y="0" fill={active === 'high' ? '#8beadd' : '#718087'} fontSize="11" fontWeight="900">{labels.high}</text>
-          <text x="126" y="0" fill={active === 'fog' ? '#8beadd' : '#718087'} fontSize="11" fontWeight="900">{labels.fog}</text>
-        </g>
+          <rect x="74" y="154" width="112" height="23" rx="11.5" fill="#081117" stroke="#d5e3e5" strokeOpacity=".10" />
+          <text x="130" y="169" textAnchor="middle" fill="#8ee4d9" fontSize="10" fontWeight="900">
+            {labels[active]}
+          </text>
+        </svg>
 
-        <path d="M372 50V67" stroke={active === 'position' ? '#7ae2d4' : '#647177'} strokeWidth="3" strokeLinecap="round" />
-        <path d="M394 56L404 67" stroke={active === 'low' ? '#7ae2d4' : '#647177'} strokeWidth="3" strokeLinecap="round" />
-        <path d="M413 57L423 68" stroke={active === 'high' ? '#7ae2d4' : '#647177'} strokeWidth="3" strokeLinecap="round" />
-        <path d="M432 59L442 69" stroke={active === 'fog' ? '#7ae2d4' : '#647177'} strokeWidth="3" strokeLinecap="round" />
+        <button
+          type="button"
+          className="stalk-ring-trigger"
+          onClick={() => onSelect(nextLight)}
+          aria-label="تغيير وضع الإضاءة من المقبض"
+          title="اضغط لتغيير وضع الإضاءة"
+        />
 
-        <g transform="translate(22 128)">
-          <rect width="123" height="43" rx="12" fill="#071118" stroke="#71848a" strokeOpacity=".16" />
-          <text x="61" y="18" textAnchor="middle" fill="#6fd8ca" fontSize="9" fontWeight="900">الوضع المحدد</text>
-          <text x="61" y="34" textAnchor="middle" fill="#e7f5f4" fontSize="11" fontWeight="900">{labels[active]}</text>
-        </g>
-      </svg>
+        <div className="stalk-mode-orbit" aria-label="اختيار وضع الإضاءة">
+          {keys.map((key, index) => (
+            <button
+              key={key}
+              type="button"
+              className={\`stalk-mode-button mode-\${index + 1} \${active === key ? 'is-active' : ''}\`}
+              onClick={() => onSelect(key)}
+              aria-label={labels[key]}
+              aria-pressed={active === key}
+              title={labels[key]}
+            >
+              <LightSymbol type={key} />
+              <span>{labels[key]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -157,11 +240,6 @@ function LightStalk({ active }: { active: LightKey }) {
 function LightScene({ active }: { active: LightMode }) {
   return (
     <div className="scene-v3-wrap">
-      <div className="scene-v3-topline">
-        <span>محاكاة مرئية</span>
-        <b>{active.title}</b>
-      </div>
-
       <svg className="scene-v3-svg" viewBox="0 0 900 520" role="img" aria-label={active.sceneTitle}>
         <defs>
           <linearGradient id="v3-sky" x1="0" y1="0" x2="0" y2="1">
@@ -173,15 +251,15 @@ function LightScene({ active }: { active: LightMode }) {
             <stop offset="100%" stopColor="#09151c" />
           </linearGradient>
           <linearGradient id="v3-car-body" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#536168" />
-            <stop offset="30%" stopColor="#26343b" />
-            <stop offset="75%" stopColor="#111b21" />
-            <stop offset="100%" stopColor="#070d11" />
+            <stop offset="0%" stopColor="#92a0a5" />
+            <stop offset="30%" stopColor="#465963" />
+            <stop offset="75%" stopColor="#1b2a33" />
+            <stop offset="100%" stopColor="#0a1319" />
           </linearGradient>
           <linearGradient id="v3-window" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#9cb7c0" stopOpacity=".56" />
-            <stop offset="75%" stopColor="#27434e" stopOpacity=".85" />
-            <stop offset="100%" stopColor="#102129" stopOpacity=".95" />
+            <stop offset="0%" stopColor="#c7dbe0" stopOpacity=".70" />
+            <stop offset="75%" stopColor="#365b69" stopOpacity=".92" />
+            <stop offset="100%" stopColor="#162c37" stopOpacity=".98" />
           </linearGradient>
           <linearGradient id="v3-low-beam" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="#fff8d4" stopOpacity=".72" />
@@ -199,7 +277,7 @@ function LightScene({ active }: { active: LightMode }) {
             <stop offset="100%" stopColor="#fff5c5" stopOpacity="0" />
           </linearGradient>
           <filter id="v3-glow" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="7" result="blur" />
+            <feGaussianBlur stdDeviation="5" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
@@ -234,10 +312,10 @@ function LightScene({ active }: { active: LightMode }) {
           <path d="M620 347L651 349L873 437L873 470L648 366Z" fill="url(#v3-fog-beam)" opacity=".58" />
         </g>
 
-        <g opacity={active.key === 'high' ? .88 : .35}>
+        <g opacity={active.key === 'high' ? .95 : .38}>
           <path d="M738 206h94l22 15v40h-116z" fill="#172a32" stroke="#b9cdd0" strokeOpacity=".18" />
           <path d="M756 206l17-14h38l19 14" fill="#213a44" stroke="#b9cdd0" strokeOpacity=".12" />
-          <rect x="751" y="241" width="15" height="7" rx="3.5" fill="#fff8d5" filter="url(#v3-glow)" />
+          <rect x="751" y="241" width="15" height="7" rx="3.5" fill="#fff8cf" filter="url(#v3-glow)" />
           <rect x="825" y="241" width="15" height="7" rx="3.5" fill="#fff8d5" filter="url(#v3-glow)" />
           <text x="828" y="280" fill="#d5e7e9" fontSize="12" fontWeight="800">مركبة مقابلة</text>
         </g>
@@ -258,7 +336,7 @@ function LightScene({ active }: { active: LightMode }) {
           <path d="M412 375H495" stroke="#b5c8cb" strokeOpacity=".13" strokeWidth="2" />
           <path d="M645 374H689" stroke="#b5c8cb" strokeOpacity=".13" strokeWidth="2" />
           <rect x="664" y="343" width="25" height="16" rx="7" fill="#fff3bf" filter="url(#v3-glow)" />
-          <rect x="671" y="358" width="22" height="14" rx="6" fill="#fff0b2" />
+          <rect x="671" y="358" width="22" height="14" rx="6" fill="#fff6c8" />
           <circle cx="395" cy="363" r="8" fill="#df615f" opacity=".72" />
 
           <path d="M700 335L730 350" stroke="#d7e7e9" strokeOpacity=".12" strokeWidth="4" strokeLinecap="round" />
@@ -271,11 +349,6 @@ function LightScene({ active }: { active: LightMode }) {
           <text x="232" y="111" textAnchor="end" fill="#e4efef" fontSize="13" fontWeight="800">{active.sceneTitle}</text>
         </g>
       </svg>
-
-      <div className="scene-v3-caption">
-        <strong>{active.sceneTitle}</strong>
-        <span>{active.sceneText}</span>
-      </div>
     </div>
   );
 }
@@ -434,7 +507,7 @@ export default function PracticalInfo() {
       <main className="practical-info-main">
         <section className="practical-hero">
           <div className="practical-hero-copy">
-            <span className="practical-eyebrow">درس بصري تفاعلي</span>
+            
             <h1>
               تعلّم أضواء السيارة
               <em> من الرمز إلى الاستخدام.</em>
@@ -532,7 +605,7 @@ export default function PracticalInfo() {
               <strong>{active.summary}</strong>
             </div>
 
-            <LightStalk active={active.key} />
+            <LightStalk active={active.key} onSelect={selectLight} />
 
             <div className="control-remember">
               <span>احفظها بهذه الجملة</span>
