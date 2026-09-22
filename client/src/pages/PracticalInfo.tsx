@@ -855,6 +855,14 @@ export default function PracticalInfo() {
             <p>كل ضغطة على زر أو حركة للمقبض تغيّر المصابيح أمامك مباشرة، من الأمام والخلف.</p>
           </div>
 
+          <LightingControlCarousel
+            mainLight={mainLight}
+            signal={signal}
+            onMainLight={chooseMain}
+            onSignal={chooseSignal}
+            onFlash={doFlash}
+          />
+
           <VehicleScene mainLight={mainLight} signal={signal} />
 
           <div className="selected-state-panel">
@@ -878,14 +886,6 @@ export default function PracticalInfo() {
             </div>
           )}
         </section>
-
-        <LightingControlCarousel
-          mainLight={mainLight}
-          signal={signal}
-          onMainLight={chooseMain}
-          onSignal={chooseSignal}
-          onFlash={doFlash}
-        />
 
         <section className="lighting-state-bank">
           <div className="section-kicker">
