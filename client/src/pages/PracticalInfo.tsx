@@ -535,7 +535,19 @@ function StalkSimulator({
                 >
                   <span><LightSymbol type={item.symbol} /></span>
                   <b>{item.label}</b>
-                  <small>{item.key === 'low' ? 'إنارة الطريق' : item.key === 'high' ? 'مدى أبعد' : item.subtitle ?? ''}</small>
+                  <small>{
+                    item.key === 'off'
+                      ? 'إطفاء'
+                      : item.key === 'position'
+                        ? 'إظهار المركبة'
+                        : item.key === 'auto'
+                          ? 'تشغيل تلقائي'
+                          : item.key === 'low'
+                            ? 'إنارة الطريق'
+                            : item.key === 'frontFog'
+                              ? 'ضباب أمامي'
+                              : 'ضباب خلفي'
+                  }</small>
                 </button>
               ))}
             </div>
