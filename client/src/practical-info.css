@@ -2442,3 +2442,161 @@
 .state-left .carousel-stalk-image{transform:rotate(2deg) scale(1.02) !important}
 .state-high .carousel-stalk-image{transform:translateX(5px) scale(1.02) !important;filter:brightness(1.08)}
 .state-flash .carousel-stalk-image{transform:translateX(-5px) scale(1.02) !important;filter:brightness(1.12)}
+
+
+/* =========================================================
+   LIGHTING LAB V6 — focused interactive flow
+   ========================================================= */
+.carousel-quick-grid{
+  margin-top:12px;
+  margin-bottom:10px;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+.carousel-quick-grid button{
+  min-height:54px;
+  padding:7px 8px;
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr);
+  align-items:center;
+  gap:7px;
+  border-radius:13px;
+  border:1px solid rgba(180,225,228,.08);
+  background:rgba(255,255,255,.024);
+}
+.carousel-quick-grid button svg{width:27px;height:19px}
+.carousel-quick-grid button span{font-size:7.5px}
+.carousel-quick-grid button:hover:not(:disabled){transform:translateY(-1px);border-color:rgba(116,229,216,.20)}
+.carousel-quick-grid button:disabled,
+.carousel-arrow:disabled,
+.sound-toggle:disabled{opacity:.48;cursor:wait}
+
+.carousel-case-card{
+  margin-top:0;
+}
+.carousel-case-main{
+  padding:10px;
+}
+.carousel-case-copy,
+.carousel-action-line{
+  display:none;
+}
+
+/* New clean handle: one clear object, no labels or callouts sitting on top of it. */
+.clean-stalk-stage{
+  position:relative;
+  width:100%;
+  margin-top:2px;
+  border-radius:17px;
+  overflow:hidden;
+  border:1px solid rgba(181,225,228,.09);
+  background:
+    radial-gradient(circle at 50% 45%,rgba(111,203,195,.10),transparent 30%),
+    linear-gradient(180deg,#10232c,#040b10);
+}
+.clean-stalk-svg{
+  display:block;
+  width:100%;
+  height:auto;
+  min-height:265px;
+}
+.clean-stalk-status{
+  position:absolute;
+  right:11px;
+  bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(3,12,17,.86);
+  border:1px solid rgba(129,226,215,.14);
+  box-shadow:0 7px 18px rgba(0,0,0,.20);
+  backdrop-filter:blur(6px);
+}
+.clean-stalk-status span{font-size:6px;color:rgba(234,247,247,.38);font-weight:800}
+.clean-stalk-status b{font-size:8px;color:#bcefe8}
+
+/* Make the active ring visually obvious without any overlapping artwork. */
+.state-off .clean-stalk-svg,
+.state-position .clean-stalk-svg,
+.state-auto .clean-stalk-svg,
+.state-low .clean-stalk-svg,
+.state-high .clean-stalk-svg,
+.state-frontFog .clean-stalk-svg,
+.state-rearFog .clean-stalk-svg,
+.state-flash .clean-stalk-svg,
+.state-right .clean-stalk-svg,
+.state-left .clean-stalk-svg,
+.state-hazard .clean-stalk-svg{
+  animation:clean-stalk-enter .28s ease-out;
+}
+@keyframes clean-stalk-enter{
+  from{opacity:.45;transform:scale(.985)}
+  to{opacity:1;transform:scale(1)}
+}
+
+.carousel-car-focus{
+  margin-top:10px;
+  scroll-margin-top:18vh;
+}
+.carousel-car-focus .vehicle-reference-stage{
+  margin-top:0;
+}
+.vehicle-reference-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+@media(max-width:700px){
+  .carousel-quick-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    margin-top:9px;
+    margin-bottom:8px;
+    gap:6px;
+  }
+  .carousel-quick-grid button{
+    min-height:50px;
+    padding:7px;
+  }
+  .carousel-quick-grid button span{font-size:7px}
+  .carousel-case-card{
+    grid-template-columns:44px minmax(0,1fr) 44px;
+    gap:5px;
+  }
+  .carousel-arrow{
+    min-width:44px;
+    min-height:54px;
+  }
+  .carousel-case-main{
+    padding:6px;
+  }
+  .carousel-case-counter{
+    padding:0 3px 4px;
+  }
+  .carousel-case-copy,
+  .carousel-action-line{
+    display:none;
+  }
+  .clean-stalk-stage{
+    margin-top:0;
+    border-radius:14px;
+  }
+  .clean-stalk-svg{
+    min-height:230px;
+  }
+  .clean-stalk-status{
+    right:7px;
+    bottom:7px;
+    padding:6px 8px;
+  }
+  .clean-stalk-status span{font-size:5px}
+  .clean-stalk-status b{font-size:7px}
+  .carousel-car-focus{margin-top:8px}
+  .carousel-car-focus .vehicle-reference-stage{padding:8px}
+  .carousel-car-focus .vehicle-reference-grid{grid-template-columns:1fr}
+}
+@media(max-width:390px){
+  .clean-stalk-svg{min-height:205px}
+  .carousel-quick-grid button{min-height:47px}
+  .carousel-case-card{grid-template-columns:39px minmax(0,1fr) 39px}
+  .carousel-arrow{min-width:39px}
+}
