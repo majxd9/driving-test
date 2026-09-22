@@ -2292,3 +2292,146 @@
   .carousel-case-copy h3{font-size:14px}
   .carousel-stalk-visual{min-height:175px}
 }
+
+
+/* =========================================================
+   LIGHTING LAB V5 — mobile interaction fix
+   Handle -> buttons -> live car, with no overlay collisions.
+   ========================================================= */
+
+/* Keep the handle large enough to read, but remove decorative
+   overlays that were colliding with the artwork on phones. */
+.carousel-stalk-visual{
+  min-height:0;
+  height:auto;
+  padding:10px 10px 8px;
+  flex-direction:column;
+  gap:5px;
+}
+.carousel-stalk-image{
+  width:min(96%, 420px);
+  max-width:420px;
+  max-height:175px;
+  object-fit:contain;
+  transform:none !important;
+}
+.carousel-stalk-glow{
+  width:45%;
+  height:48%;
+  pointer-events:none;
+}
+.carousel-motion-arrow,
+.carousel-ring-marker{
+  display:none !important;
+}
+.carousel-stalk-state-badge{
+  position:static;
+  z-index:auto;
+  min-width:0;
+  width:auto;
+  max-width:100%;
+  padding:6px 10px;
+  border-radius:999px;
+  text-align:center;
+  backdrop-filter:none;
+}
+.carousel-stalk-state-badge span{
+  display:inline;
+  margin-left:5px;
+  font-size:6px;
+}
+.carousel-stalk-state-badge b{
+  display:inline;
+  margin:0;
+  font-size:8px;
+}
+
+/* Buttons sit immediately under the handle and expose every
+   primary control, including the four-way hazard button. */
+.carousel-quick-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  margin-top:8px;
+}
+.carousel-quick-grid button{
+  min-height:48px;
+  padding:6px 7px;
+}
+.carousel-quick-grid button span{
+  font-size:7px;
+}
+
+/* The live car follows the controls instead of being separated
+   far below the interaction on mobile. */
+.lighting-control-carousel > .vehicle-reference-stage{
+  margin-top:9px;
+}
+.vehicle-reference-stage{
+  padding:10px;
+}
+.vehicle-reference-image--base{
+  opacity:.78;
+  filter:brightness(.70) saturate(.88) contrast(1.05);
+}
+.vehicle-reference-image--lit{
+  opacity:.10;
+}
+
+/* Make the active lights visible without covering the car artwork. */
+.light-low .front .vehicle-reference-image--lit{opacity:.78}
+.light-high .front .vehicle-reference-image--lit{opacity:.94}
+.light-flash .front .vehicle-reference-image--lit{opacity:.98}
+.light-position .front .vehicle-reference-image--lit,
+.light-auto .front .vehicle-reference-image--lit{opacity:.40}
+.light-frontFog .front .vehicle-reference-image--lit{opacity:.52}
+.light-rearFog .rear .vehicle-reference-image--lit{opacity:.86}
+
+@media(max-width:700px){
+  .carousel-stalk-visual{
+    min-height:0;
+    padding:7px 5px 6px;
+  }
+  .carousel-stalk-image{
+    width:98%;
+    max-width:390px;
+    max-height:165px;
+  }
+  .carousel-stalk-state-badge{
+    padding:5px 9px;
+  }
+  .carousel-stalk-state-badge span{font-size:5.5px}
+  .carousel-stalk-state-badge b{font-size:7.5px}
+
+  .carousel-quick-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:5px;
+  }
+  .carousel-quick-grid button{
+    min-height:46px;
+  }
+  .carousel-quick-grid button svg{
+    width:24px;
+    height:18px;
+  }
+
+  .lighting-control-carousel > .vehicle-reference-stage{
+    margin-top:8px;
+  }
+  .vehicle-reference-stage{
+    padding:8px;
+  }
+  .vehicle-reference-grid{
+    grid-template-columns:1fr;
+  }
+  .vehicle-visual{
+    min-height:250px;
+  }
+}
+
+@media(max-width:390px){
+  .carousel-stalk-image{
+    max-height:150px;
+  }
+  .vehicle-visual{
+    min-height:225px;
+  }
+}
