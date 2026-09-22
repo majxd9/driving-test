@@ -58,6 +58,20 @@ export default function Home(){
    <section className="mt-10"><div className="section-heading"><div><p className="eyebrow">مركز التدريب</p><h2>اختر ما تريد مراجعته</h2></div><span className="section-hint">ابدأ من أي قسم، ويمكنك العودة وتغيير القسم لاحقاً.</span></div>
     <div className="grid md:grid-cols-3 gap-4 mt-4">{categories.map(c=><button key={c.key} onClick={()=>navigate(c.path)} className={`category-card ${c.key==='Ser'?'brand':c.key==='Ishara'?'signs':'mek'}`}><div className="category-icon"><Icon type={c.icon}/></div><div className="flex-1 text-right"><h3>{c.title}</h3><p>{c.subtitle}</p></div><span className="arrow"><Icon type="arrow"/></span></button>)}</div>
    </section>
+   <button type="button" className="home-practical-card" onClick={()=>navigate('/practical-info')}>
+    <span className="home-practical-icon" aria-hidden="true">
+     <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 11h9c4 0 7 3 7 7v5H8z"/><path d="M11 11V8h6"/><path d="M25 11h4M25 16h6M25 21h4"/>
+      <path d="M10 24v3h12v-3"/>
+     </svg>
+    </span>
+    <span className="home-practical-copy">
+     <small>تعلم يتجاوز الأسئلة</small>
+     <strong>معلومات عملية إضافية</strong>
+     <em>أضواء السيارة الآن، ثم الغمازات والأزرار ووظائف السيارة لاحقاً.</em>
+    </span>
+    <span className="home-practical-cta">افتح المركز <Icon type="arrow"/></span>
+   </button>
    <section className="home-exam mt-5" onClick={()=>navigate('/models')} role="button" tabIndex={0} onKeyDown={e=>e.key==='Enter'&&navigate('/models')}>
     <div><p className="eyebrow text-white/60">محاكاة اختبار الرخصة</p><h2>اختبر مستواك الآن</h2><p>٣٠ سؤالاً · ١٥ دقيقة · النجاح من ٢٥ إجابة صحيحة</p></div><div className="exam-action">اختيار النموذج <Icon type="arrow"/></div>
    </section>
