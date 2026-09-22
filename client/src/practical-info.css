@@ -377,3 +377,50 @@
   .practical-info-main{padding-left:10px;padding-right:10px}.practical-hero-copy h1{font-size:28px}
   .practical-light-tabs button{min-height:86px}.scene-car{transform:translateX(-50%) scale(.72)}.practical-scene{min-height:395px}
 }
+
+
+/* Home entry card for the new learning center. Kept separate from existing category-card styling. */
+.home-practical-card{
+  width:100%;min-height:104px;margin-top:10px;padding:14px 16px;
+  display:grid;grid-template-columns:58px minmax(0,1fr) auto;align-items:center;gap:14px;
+  text-align:right;color:inherit;cursor:pointer;
+  border:1px solid rgba(174,222,228,.12);border-radius:20px;
+  background:
+    radial-gradient(circle at 76% 50%,rgba(45,212,191,.13),transparent 36%),
+    linear-gradient(135deg,rgba(20,48,61,.78),rgba(8,25,34,.90));
+  box-shadow:0 13px 36px rgba(0,0,0,.12);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.home-practical-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(112,233,219,.30);
+  box-shadow:0 18px 44px rgba(0,0,0,.16);
+}
+.home-practical-icon{
+  width:58px;height:58px;display:grid;place-items:center;border-radius:17px;
+  color:#baf3ec;background:rgba(45,212,191,.085);border:1px solid rgba(104,230,215,.16);
+}
+.home-practical-icon svg{width:32px;height:32px}
+.home-practical-copy{min-width:0;display:flex;flex-direction:column;gap:3px}
+.home-practical-copy small{font-size:8px;color:rgba(230,245,246,.42);font-weight:900}
+.home-practical-copy strong{font-size:18px;letter-spacing:-.025em}
+.home-practical-copy em{font-size:9px;font-style:normal;color:rgba(231,245,246,.50);line-height:1.6}
+.home-practical-cta{
+  min-height:40px;padding:0 13px;border-radius:12px;display:inline-flex;align-items:center;gap:7px;
+  color:#07302e;background:#72e1d4;font-size:10px;font-weight:1000;white-space:nowrap;
+}
+.home-practical-cta svg{width:18px;height:18px}
+@media(max-width:700px){
+  .home-practical-card{min-height:91px;padding:11px 12px;grid-template-columns:45px minmax(0,1fr) auto;gap:9px;border-radius:17px}
+  .home-practical-icon{width:45px;height:45px;border-radius:13px}
+  .home-practical-icon svg{width:26px;height:26px}
+  .home-practical-copy small{font-size:7px}
+  .home-practical-copy strong{font-size:13px}
+  .home-practical-copy em{font-size:7px}
+  .home-practical-cta{min-height:34px;padding:0 9px;font-size:8px;border-radius:10px}
+  .home-practical-cta svg{width:14px;height:14px}
+}
+@media(max-width:390px){
+  .home-practical-card{grid-template-columns:43px minmax(0,1fr);gap:8px}
+  .home-practical-cta{grid-column:2;justify-self:start;margin-top:2px}
+}
