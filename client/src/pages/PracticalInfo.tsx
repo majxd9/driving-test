@@ -390,13 +390,13 @@ function StalkSimulator({
   onSignal: (key: SignalKey) => void;
   onFlash: () => void;
 }) {
-  const ringItems: { key: MainLightKey; label: string; symbol: LightItem['symbol'] }[] = [
-    { key: 'off', label: 'إيقاف', symbol: 'off' },
-    { key: 'position', label: 'موضع', symbol: 'position' },
-    { key: 'auto', label: 'AUTO', symbol: 'auto' },
-    { key: 'low', label: 'منخفض', symbol: 'low' },
-    { key: 'frontFog', label: 'ضباب أمامي', symbol: 'frontFog' },
-    { key: 'rearFog', label: 'ضباب خلفي', symbol: 'rearFog' },
+  const ringItems: { key: MainLightKey; label: string; symbol: LightItem['symbol']; hint: string }[] = [
+    { key: 'off', label: 'إيقاف', symbol: 'off', hint: 'OFF' },
+    { key: 'position', label: 'أضواء الموضع', symbol: 'position', hint: 'PARKING' },
+    { key: 'auto', label: 'أوتوماتيك', symbol: 'auto', hint: 'AUTO' },
+    { key: 'low', label: 'ضوء منخفض', symbol: 'low', hint: 'LOW BEAM' },
+    { key: 'frontFog', label: 'ضباب أمامي', symbol: 'frontFog', hint: 'FRONT FOG' },
+    { key: 'rearFog', label: 'ضباب خلفي', symbol: 'rearFog', hint: 'REAR FOG' },
   ];
 
   const activeLabel =
@@ -405,194 +405,100 @@ function StalkSimulator({
       : signal === 'left'
         ? 'غماز يسار'
         : signal === 'hazard'
-          ? 'تحذير رباعي'
+          ? 'الغماز الرباعي'
           : MAIN_LIGHTS.find(x => x.key === mainLight)?.title ?? 'إضاءة';
 
   return (
-    <div className="stalk-simulator-v2">
-      <div className="stalk-v2-head">
-        <div>
-          <span className="lesson-eyebrow">محاكاة مباشرة</span>
-          <h3>تحكم واضح، ثم شاهد النتيجة على السيارة</h3>
-          <p>على الهاتف اختر من الأزرار الكبيرة أسفل المقبض. على الحاسوب يمكنك أيضاً الضغط على المناطق المرسومة في المقبض.</p>
-        </div>
-        <div className="stalk-v2-status">
-          <small>الحالة الحالية</small>
-          <strong>{activeLabel}</strong>
-        </div>
-      </div>
-
-      <div className="stalk-v2-layout">
-        <div className="stalk-v2-visual">
-          <div className="stalk-v2-visual-label">
-            <span>شكل المقبض</span>
-            <b>الحركة المبيّنة هي المقصودة في هذا النموذج</b>
+    <div className="stalk-lab">
+      <div className="stalk-lab-top">
+        <div className="stalk-reference-card">
+          <div className="stalk-reference-badge">
+            <span>مرجع بصري</span>
+            <b>المقبض كبير حتى يكون واضحاً على الهاتف</b>
           </div>
-
-          <svg viewBox="0 0 900 330" className="stalk-v2-svg" role="img" aria-label="رسم توضيحي لمقبض أضواء السيارة والغمازات">
-            <defs>
-              <linearGradient id="sv2-body" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="#829198" />
-                <stop offset="27%" stopColor="#45545b" />
-                <stop offset="59%" stopColor="#202b31" />
-                <stop offset="100%" stopColor="#0b1115" />
-              </linearGradient>
-              <linearGradient id="sv2-ring" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stopColor="#d7e0e2" />
-                <stop offset="24%" stopColor="#7e8c92" />
-                <stop offset="62%" stopColor="#2c3940" />
-                <stop offset="100%" stopColor="#11181d" />
-              </linearGradient>
-              <filter id="sv2-shadow" x="-30%" y="-80%" width="180%" height="260%">
-                <feDropShadow dx="0" dy="17" stdDeviation="12" floodOpacity=".40" />
-              </filter>
-            </defs>
-
-            <ellipse cx="444" cy="290" rx="346" ry="21" fill="#000" opacity=".29" />
-            <path d="M70 184C170 129 270 105 399 105H685" stroke="#05090c" strokeWidth="62" strokeLinecap="round" opacity=".72" filter="url(#sv2-shadow)" />
-            <path d="M70 173C170 118 270 97 399 97H685" stroke="url(#sv2-body)" strokeWidth="45" strokeLinecap="round" />
-            <path d="M78 160C176 112 272 94 403 94H674" stroke="#eef5f6" strokeOpacity=".16" strokeWidth="6" strokeLinecap="round" />
-
-            <g>
-              <rect x="380" y="61" width="164" height="76" rx="37" fill="#080e12" stroke="#d7e1e3" strokeOpacity=".13" />
-              <rect x="391" y="72" width="142" height="54" rx="27" fill="url(#sv2-ring)" />
-              <line x1="408" y1="98" x2="516" y2="98" stroke="#ecf4f5" strokeOpacity=".13" strokeWidth="2" />
-              <circle cx="409" cy="98" r="18" fill={mainLight === 'off' ? '#162025' : '#1d5352'} stroke={mainLight === 'off' ? '#88979b' : '#93e8df'} strokeOpacity=".65" strokeWidth="2" />
-              <LightSymbol type="off" className="stalk-v2-icon" />
-              <text x="409" y="127" textAnchor="middle" fill="#d6e2e3" fontSize="7" fontWeight="900">OFF</text>
-              <circle cx="454" cy="98" r="18" fill={mainLight === 'position' ? '#1d5b59' : '#162025'} stroke={mainLight === 'position' ? '#9aece2' : '#95a3a7'} strokeOpacity=".40" strokeWidth="2" />
-              <g transform="translate(437 87)"><LightSymbol type="position" /></g>
-              <circle cx="499" cy="98" r="18" fill={mainLight === 'auto' ? '#1d5b59' : '#162025'} stroke={mainLight === 'auto' ? '#9aece2' : '#95a3a7'} strokeOpacity=".40" strokeWidth="2" />
-              <g transform="translate(482 87)"><LightSymbol type="auto" /></g>
-              <circle cx="516" cy="98" r="0" fill="none" />
-            </g>
-
-            <g transform="translate(382 148)">
-              <rect x="0" y="0" width="162" height="44" rx="18" fill="#0a1318" stroke="#b9ced0" strokeOpacity=".10" />
-              <text x="81" y="18" textAnchor="middle" fill="#94e4da" fontSize="8" fontWeight="900">حلقة الإنارة</text>
-              <text x="81" y="32" textAnchor="middle" fill="#bcd1d3" fontSize="7" fontWeight="800">{MAIN_LIGHTS.find(x => x.key === mainLight)?.subtitle ?? activeLabel}</text>
-            </g>
-
-            <g>
-              <path d="M610 228c-3-28-16-50-35-69" fill="none" stroke="#90e3da" strokeOpacity=".44" strokeWidth="4" strokeDasharray="9 8" />
-              <path d="M574 158l-14 4 10 11z" fill="#90e3da" />
-              <text x="675" y="242" textAnchor="middle" fill="#bfe0de" fontSize="10" fontWeight="900">↑ ارفع = غماز يمين</text>
-
-              <path d="M610 228c-3 27-16 50-35 69" fill="none" stroke="#90e3da" strokeOpacity=".30" strokeWidth="4" strokeDasharray="9 8" />
-              <path d="M574 299l-14-4 10-11z" fill="#90e3da" />
-              <text x="675" y="303" textAnchor="middle" fill="#bfe0de" fontSize="10" fontWeight="900">↓ اخفض = غماز يسار</text>
-            </g>
-
-            <g>
-              <path d="M705 104h100" stroke="#90e3da" strokeOpacity=".35" strokeWidth="4" strokeDasharray="9 8" />
-              <path d="M803 104l-13-8v16z" fill="#90e3da" />
-              <text x="753" y="84" textAnchor="middle" fill="#bfe0de" fontSize="10" fontWeight="900">ادفع للأمام = عالي</text>
-
-              <path d="M238 219H134" stroke="#90e3da" strokeOpacity=".35" strokeWidth="4" strokeDasharray="9 8" />
-              <path d="M134 219l13-8v16z" fill="#90e3da" />
-              <text x="184" y="201" textAnchor="middle" fill="#bfe0de" fontSize="10" fontWeight="900">اسحب نحوك = وميض</text>
-            </g>
-
-            <g>
-              <rect x="714" y="151" width="104" height="66" rx="18" fill="#120e0f" stroke="#e4bbbc" strokeOpacity=".15" />
-              <rect x="725" y="162" width="82" height="44" rx="13" fill={signal === 'hazard' ? '#752d2b' : '#3a1d1f'} stroke="#ff9a90" strokeOpacity=".22" />
-              <path d="M766 170 786 198H746Z" fill="none" stroke="#ffb0a8" strokeWidth="4" strokeLinejoin="round" />
-              <path d="M766 179v9M766 192v1" stroke="#ffb0a8" strokeWidth="4" strokeLinecap="round" />
-              <text x="766" y="237" textAnchor="middle" fill="#d7adaa" fontSize="8" fontWeight="900">تحذير رباعي</text>
-            </g>
-          </svg>
-
-          <div className="stalk-v2-current">
-            <span className="stalk-v2-current-icon">
-              {signal ? <LightSymbol type={signal} /> : <LightSymbol type={MAIN_LIGHTS.find(x => x.key === mainLight)?.symbol ?? 'low'} />}
-            </span>
+          <div className="stalk-reference-image-wrap">
+            <img src="/spirit/stalk-lighting.svg" className="stalk-reference-image" alt="رسم توضيحي كبير لمقبض أضواء السيارة والغمازات" />
+            <div className="stalk-reference-callout callout-right">↑ غماز يمين</div>
+            <div className="stalk-reference-callout callout-left">↓ غماز يسار</div>
+            <div className="stalk-reference-callout callout-high">→ عالي</div>
+            <div className="stalk-reference-callout callout-flash">← وميض</div>
+          </div>
+          <div className="stalk-reference-tip">
+            <span className="tip-icon">1</span>
             <div>
-              <small>أنت الآن على</small>
-              <strong>{activeLabel}</strong>
+              <strong>المقبض يشرح «الحركة» — والأزرار تنفذها</strong>
+              <p>بدلاً من مطالبتك بلمس نقطة صغيرة داخل الرسم، اختر الحركة من الزر الكبير ثم راقب السيارة.</p>
             </div>
           </div>
         </div>
 
-        <div className="stalk-v2-controls">
-          <div className="mobile-control-summary">
-            <span>اختر الوظيفة</span>
-            <strong>{MAIN_LIGHTS.find(x => x.key === mainLight)?.title ?? activeLabel}</strong>
+        <div className="stalk-control-panel">
+          <div className="stalk-control-heading">
+            <div>
+              <span className="lesson-eyebrow">المحاكاة</span>
+              <h3>اضغط — وشاهد النتيجة فوراً</h3>
+              <p>كل الوظائف ظاهرة من البداية. لا توجد قائمة مخفية تحتاج فتحها قبل أن ترى الخيارات.</p>
+            </div>
+            <div className="stalk-live-state">
+              <small>الحالة الآن</small>
+              <strong>{activeLabel}</strong>
+            </div>
           </div>
 
-          <details className="mobile-light-menu">
-            <summary>
-              <span>وضع الحلقة</span>
-              <b>{MAIN_LIGHTS.find(x => x.key === mainLight)?.title ?? 'اختر'}</b>
-              <i>⌄</i>
-            </summary>
-            <div className="light-choice-grid">
+          <div className="control-step">
+            <div className="control-step-title">
+              <span>01</span>
+              <div><b>وضع حلقة الإنارة</b><small>اختر الرمز مباشرة</small></div>
+            </div>
+            <div className="ring-choice-grid">
               {ringItems.map(item => (
                 <button
                   type="button"
                   key={item.key}
-                  className={mainLight === item.key ? 'is-active' : ''}
+                  className={'ring-choice ' + (mainLight === item.key ? 'is-active' : '')}
                   onClick={() => onMainLight(item.key)}
+                  aria-pressed={mainLight === item.key}
                 >
-                  <span><LightSymbol type={item.symbol} /></span>
-                  <b>{item.label}</b>
-                  <small>{
-                    item.key === 'off'
-                      ? 'إطفاء'
-                      : item.key === 'position'
-                        ? 'إظهار المركبة'
-                        : item.key === 'auto'
-                          ? 'تشغيل تلقائي'
-                          : item.key === 'low'
-                            ? 'إنارة الطريق'
-                            : item.key === 'frontFog'
-                              ? 'ضباب أمامي'
-                              : 'ضباب خلفي'
-                  }</small>
+                  <span className="ring-choice-icon"><LightSymbol type={item.symbol} /></span>
+                  <span className="ring-choice-copy"><b>{item.label}</b><small>{item.hint}</small></span>
+                  {mainLight === item.key && <i aria-hidden="true">✓</i>}
                 </button>
               ))}
             </div>
-          </details>
+          </div>
 
-          <div className="stalk-motion-section">
-            <div className="stalk-control-title">
-              <span>حركات المقبض</span>
-              <small>اضغط على الحركة نفسها</small>
+          <div className="control-step">
+            <div className="control-step-title">
+              <span>02</span>
+              <div><b>حركة الذراع</b><small>اضغط على الحركة، وليس على المقبض الصغير</small></div>
             </div>
-            <div className="stalk-motion-grid">
-              <button type="button" className={signal === 'right' ? 'is-active' : ''} onClick={() => onSignal('right')}>
-                <span className="motion-icon"><LightSymbol type="right" /></span>
-                <b>ارفع ↑</b>
-                <small>غماز يمين</small>
+            <div className="motion-choice-grid">
+              <button type="button" className={'motion-choice ' + (signal === 'right' ? 'is-active' : '')} onClick={() => onSignal('right')} aria-pressed={signal === 'right'}>
+                <span className="motion-choice-arrow">↑</span><span><b>ارفع</b><small>غماز يمين</small></span>
               </button>
-              <button type="button" className={signal === 'left' ? 'is-active' : ''} onClick={() => onSignal('left')}>
-                <span className="motion-icon"><LightSymbol type="left" /></span>
-                <b>اخفض ↓</b>
-                <small>غماز يسار</small>
+              <button type="button" className={'motion-choice ' + (signal === 'left' ? 'is-active' : '')} onClick={() => onSignal('left')} aria-pressed={signal === 'left'}>
+                <span className="motion-choice-arrow">↓</span><span><b>اخفض</b><small>غماز يسار</small></span>
               </button>
-              <button type="button" className={mainLight === 'high' ? 'is-active' : ''} onClick={() => onMainLight('high')}>
-                <span className="motion-icon"><LightSymbol type="high" /></span>
-                <b>ادفع للأمام</b>
-                <small>الضوء العالي</small>
+              <button type="button" className={'motion-choice ' + (mainLight === 'high' ? 'is-active' : '')} onClick={() => onMainLight('high')} aria-pressed={mainLight === 'high'}>
+                <span className="motion-choice-arrow">→</span><span><b>ادفع للأمام</b><small>الضوء العالي</small></span>
               </button>
-              <button type="button" className={mainLight === 'flash' ? 'is-active' : ''} onClick={onFlash}>
-                <span className="motion-icon"><LightSymbol type="flash" /></span>
-                <b>اسحب نحوك</b>
-                <small>وميض العالي</small>
+              <button type="button" className={'motion-choice ' + (mainLight === 'flash' ? 'is-active' : '')} onClick={onFlash} aria-pressed={mainLight === 'flash'}>
+                <span className="motion-choice-arrow">←</span><span><b>اسحب نحوك</b><small>وميض العالي</small></span>
               </button>
             </div>
           </div>
 
-          <button type="button" className={'hazard-large-button ' + (signal === 'hazard' ? 'is-active' : '')} onClick={() => onSignal('hazard')}>
-            <span className="hazard-large-icon"><LightSymbol type="hazard" /></span>
-            <span><b>زر التحذير الرباعي</b><small>حالة مستقلة عن غماز اليمين واليسار</small></span>
-            <i>{signal === 'hazard' ? 'مفعّل' : 'اضغط'}</i>
+          <button type="button" className={'hazard-command ' + (signal === 'hazard' ? 'is-active' : '')} onClick={() => onSignal('hazard')} aria-pressed={signal === 'hazard'}>
+            <span className="hazard-command-icon"><LightSymbol type="hazard" /></span>
+            <span className="hazard-command-copy"><b>زر التحذير الرباعي</b><small>تشغيل المؤشرات الأربعة معاً في حالة التحذير</small></span>
+            <span className="hazard-command-state">{signal === 'hazard' ? 'مفعّل' : 'تجربة'}</span>
           </button>
-        </div>
-      </div>
 
-      <div className="stalk-v2-help">
-        <span>قاعدة سهلة</span>
-        <b>الحلقة تختار نوع الإنارة، حركة ↑↓ للاتجاه، الدفع للعالي، والسحب للوميض.</b>
+          <div className="stalk-feedback">
+            <span>03</span>
+            <div><b>قاعدة الحفظ</b><p><strong>الحلقة</strong> = نوع الإنارة · <strong>↑↓</strong> = اتجاه الغماز · <strong>→</strong> = العالي · <strong>←</strong> = الوميض.</p></div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -605,153 +511,80 @@ function VehicleScene({
   mainLight: MainLightKey;
   signal: SignalKey | null;
 }) {
-  const low = mainLight === 'low';
-  const high = mainLight === 'high' || mainLight === 'flash';
-  const position = mainLight === 'position' || mainLight === 'auto';
-  const frontFog = mainLight === 'frontFog';
-  const rearFog = mainLight === 'rearFog';
-  const frontLamps = position || low || high || frontFog || rearFog;
-  const rearLamps = position || low || high || frontFog || rearFog;
-  const leftBlink = signal === 'left' || signal === 'hazard';
-  const rightBlink = signal === 'right' || signal === 'hazard';
+  const stageClass = [
+    'vehicle-reference-stage',
+    'light-' + mainLight,
+    signal ? 'signal-' + signal : '',
+  ].filter(Boolean).join(' ');
+
+  const stateText =
+    signal === 'right'
+      ? 'غماز يمين'
+      : signal === 'left'
+        ? 'غماز يسار'
+        : signal === 'hazard'
+          ? 'الغماز الرباعي'
+          : MAIN_LIGHTS.find(item => item.key === mainLight)?.title ?? 'إضاءة';
+
+  const stateSub =
+    signal
+      ? 'مؤشرات الاتجاه تظهر على السيارة مباشرة'
+      : mainLight === 'high'
+        ? 'حزمة طويلة المدى'
+        : mainLight === 'flash'
+          ? 'وميض لحظي'
+          : mainLight === 'frontFog'
+            ? 'ضباب أمامي'
+            : mainLight === 'rearFog'
+              ? 'ضباب خلفي'
+              : mainLight === 'low'
+                ? 'إنارة الطريق'
+                : mainLight === 'position' || mainLight === 'auto'
+                  ? 'إضاءة تعريفية'
+                  : 'الإنارة الرئيسية متوقفة';
 
   return (
-    <div className="vehicle-scene">
-      <div className="vehicle-scene-labels">
-        <div><span>من الأمام</span><b>المصابيح الأمامية + الضباب + غمازات الاتجاه</b></div>
-        <div><span>من الخلف</span><b>أضواء الموضع + الضباب الخلفي + الفرامل والاتجاه</b></div>
+    <div className={stageClass}>
+      <div className="vehicle-stage-header">
+        <div>
+          <span className="lesson-eyebrow">المشهد الحي</span>
+          <h3>السيارة هي شاشة النتيجة</h3>
+          <p>اختر أي وظيفة من الأسفل، وسيتغير موضع الإنارة الذي يهمك أمامك.</p>
+        </div>
+        <div className="vehicle-stage-state"><small>مفعّل الآن</small><strong>{stateText}</strong><span>{stateSub}</span></div>
       </div>
 
-      <svg viewBox="0 0 1200 570" className="vehicle-scene-svg" role="img" aria-label="سيارة من الأمام والخلف مع إظهار حالات الإضاءة">
-        <defs>
-          <linearGradient id="vs-bg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#07131c" />
-            <stop offset="52%" stopColor="#0b1d27" />
-            <stop offset="100%" stopColor="#061016" />
-          </linearGradient>
-          <linearGradient id="vs-body" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#b1bdc1" />
-            <stop offset="20%" stopColor="#718087" />
-            <stop offset="51%" stopColor="#394b54" />
-            <stop offset="82%" stopColor="#1a2b34" />
-            <stop offset="100%" stopColor="#0c161c" />
-          </linearGradient>
-          <linearGradient id="vs-glass" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#e8f4f6" stopOpacity=".76" />
-            <stop offset="44%" stopColor="#6e98a4" stopOpacity=".56" />
-            <stop offset="100%" stopColor="#162f3b" stopOpacity=".95" />
-          </linearGradient>
-          <filter id="vs-light" x="-150%" y="-150%" width="400%" height="400%">
-            <feGaussianBlur stdDeviation="7" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-          <filter id="vs-rear-light" x="-150%" y="-150%" width="400%" height="400%">
-            <feGaussianBlur stdDeviation="5" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-        </defs>
+      <div className="vehicle-reference-grid">
+        <div className="vehicle-reference-card">
+          <div className="vehicle-card-label"><span>01</span><div><b>الأمام</b><small>مصابيح الطريق · الضباب · غماز الاتجاه</small></div></div>
+          <div className="vehicle-visual front">
+            <span className="vehicle-beam beam-left" />
+            <span className="vehicle-beam beam-right" />
+            <span className="vehicle-fog-beam fog-left" />
+            <span className="vehicle-fog-beam fog-right" />
+            <img src="/spirit/car-front-sport.svg" className="vehicle-reference-image vehicle-reference-image--base" alt="السيارة من الأمام" />
+            <img src="/spirit/car-front-sport.svg" className="vehicle-reference-image vehicle-reference-image--lit" alt="" aria-hidden="true" />
+            <span className="vehicle-signal-marker front-left" />
+            <span className="vehicle-signal-marker front-right" />
+          </div>
+          <div className="vehicle-card-caption"><span><i className="legend-white" /> إنارة أمامية</span><span><i className="legend-amber" /> غماز</span></div>
+        </div>
 
-        <rect width="1200" height="570" rx="28" fill="url(#vs-bg)" />
-        <path d="M0 430Q220 335 600 350T1200 430V570H0Z" fill="#08151b" />
-        <path d="M0 570V450Q260 368 600 382T1200 450V570Z" fill="#0f242d" opacity=".78" />
-        <path d="M298 570 483 394M902 570 717 394" stroke="#c7dedf" strokeOpacity=".10" strokeWidth="3" />
-        <path d="M600 392v178" stroke="#cfe1e2" strokeOpacity=".12" strokeWidth="4" strokeDasharray="18 20" />
-
-        <g transform="translate(70 120)">
-          <ellipse cx="255" cy="357" rx="222" ry="25" fill="#000" opacity=".32" />
-          <path d="M35 299Q40 245 89 229L130 169Q164 125 235 125H275Q346 125 380 169L421 229Q470 245 475 299Q469 338 426 347H84Q41 338 35 299Z" fill="url(#vs-body)" stroke="#dce7e9" strokeOpacity=".28" strokeWidth="2.7" />
-          <path d="M128 170Q165 128 235 126H277Q347 128 382 170L362 226H145Z" fill="url(#vs-glass)" stroke="#e2edef" strokeOpacity=".23" strokeWidth="2.2" />
-          <path d="M236 127v98M278 128v98" stroke="#edf6f6" strokeOpacity=".13" strokeWidth="2" />
-          <path d="M92 236h330" stroke="#e5eef0" strokeOpacity=".15" strokeWidth="2" />
-          <path d="M110 278H402" stroke="#e5eef0" strokeOpacity=".08" strokeWidth="2" />
-          <path d="M78 331h355" stroke="#d4e0e2" strokeOpacity=".13" strokeWidth="2" />
-
-          <g>
-            <rect x="92" y="257" width="95" height="57" rx="20" fill="#0a1419" stroke="#cad8da" strokeOpacity=".19" />
-            <rect x="323" y="257" width="95" height="57" rx="20" fill="#0a1419" stroke="#cad8da" strokeOpacity=".19" />
-            <rect x="102" y="266" width="75" height="39" rx="14" fill="#fff7d0" opacity={high ? 1 : low ? .86 : position ? .48 : frontLamps ? .34 : .10} className={mainLight === 'flash' ? 'vehicle-flash' : ''} filter={frontLamps ? "url(#vs-light)" : undefined} />
-            <rect x="333" y="266" width="75" height="39" rx="14" fill="#fff7d0" opacity={high ? 1 : low ? .86 : position ? .48 : frontLamps ? .34 : .10} className={mainLight === 'flash' ? 'vehicle-flash' : ''} filter={frontLamps ? "url(#vs-light)" : undefined} />
-            <ellipse cx="139" cy="284" rx="18" ry="10" fill="#effcff" opacity={high ? 1 : low ? .85 : frontLamps ? .56 : .30} />
-            <ellipse cx="371" cy="284" rx="18" ry="10" fill="#effcff" opacity={high ? 1 : low ? .85 : frontLamps ? .56 : .30} />
-          </g>
-
-          <g>
-            <rect x="191" y="274" width="56" height="24" rx="9" fill="#101e24" stroke="#e1edf0" strokeOpacity=".17" />
-            <rect x="253" y="274" width="56" height="24" rx="9" fill="#101e24" stroke="#e1edf0" strokeOpacity=".17" />
-            <rect x="197" y="280" width="44" height="10" rx="5" fill="#fff0b7" opacity={frontFog ? 1 : .07} filter={frontFog ? "url(#vs-light)" : undefined} />
-            <rect x="259" y="280" width="44" height="10" rx="5" fill="#fff0b7" opacity={frontFog ? 1 : .07} filter={frontFog ? "url(#vs-light)" : undefined} />
-          </g>
-
-          <g>
-            <circle cx="88" cy="318" r="13" fill="#f3b55d" opacity={leftBlink ? 1 : .10} className={leftBlink ? 'vehicle-blink' : ''} filter={leftBlink ? "url(#vs-light)" : undefined} />
-            <circle cx="421" cy="318" r="13" fill="#f3b55d" opacity={rightBlink ? 1 : .10} className={rightBlink ? 'vehicle-blink' : ''} filter={rightBlink ? "url(#vs-light)" : undefined} />
-            <path d="M64 314h-22M82 341l-13 10M421 341l13 10M445 314h22" stroke="#d7e5e7" strokeOpacity=".16" strokeWidth="2" strokeLinecap="round" />
-          </g>
-
-          {low && (
-            <g opacity=".65">
-              <path d="M111 286L-35 243V325L111 297Z" fill="#fff1b1" opacity=".22" />
-              <path d="M409 286l146-43V325l-146-28Z" fill="#fff1b1" opacity=".22" />
-            </g>
-          )}
-
-          {high && (
-            <g opacity=".62">
-              <path d="M102 282L-60 208V278L102 299Z" fill="#fffde2" opacity=".25" />
-              <path d="M418 282l162-74v70l-162 21Z" fill="#fffde2" opacity=".25" />
-            </g>
-          )}
-
-          <rect x="138" y="361" width="234" height="31" rx="15.5" fill="#071118" stroke="#d6e4e5" strokeOpacity=".09" />
-          <text x="255" y="382" textAnchor="middle" fill="#cde1e1" fontSize="11" fontWeight="850">واجهة السيارة الأمامية</text>
-        </g>
-
-        <g transform="translate(655 120)">
-          <ellipse cx="255" cy="357" rx="222" ry="25" fill="#000" opacity=".32" />
-          <path d="M35 299Q40 245 89 229L130 169Q164 125 235 125H275Q346 125 380 169L421 229Q470 245 475 299Q469 338 426 347H84Q41 338 35 299Z" fill="url(#vs-body)" stroke="#dce7e9" strokeOpacity=".27" strokeWidth="2.7" />
-          <path d="M128 170Q165 128 235 126H277Q347 128 382 170L362 226H145Z" fill="url(#vs-glass)" stroke="#e2edef" strokeOpacity=".20" strokeWidth="2.2" />
-          <path d="M236 127v98" stroke="#edf6f6" strokeOpacity=".13" strokeWidth="2" />
-          <path d="M92 236h330" stroke="#e5eef0" strokeOpacity=".12" strokeWidth="2" />
-
-          <g>
-            <rect x="92" y="260" width="100" height="68" rx="23" fill="#0a1419" stroke="#cad8da" strokeOpacity=".18" />
-            <rect x="318" y="260" width="100" height="68" rx="23" fill="#0a1419" stroke="#cad8da" strokeOpacity=".18" />
-            <rect x="102" y="271" width="80" height="43" rx="15" fill="#cf403f" opacity={rearFog ? .98 : rearLamps ? .78 : .24} filter={rearLamps ? "url(#vs-rear-light)" : undefined} />
-            <rect x="328" y="271" width="80" height="43" rx="15" fill="#cf403f" opacity={rearFog ? .98 : rearLamps ? .78 : .24} filter={rearLamps ? "url(#vs-rear-light)" : undefined} />
-            <rect x="118" y="282" width="47" height="13" rx="6.5" fill="#ffefed" opacity={rightBlink ? 1 : .10} className={rightBlink ? 'vehicle-blink' : ''} />
-            <rect x="345" y="282" width="47" height="13" rx="6.5" fill="#ffefed" opacity={leftBlink ? 1 : .10} className={leftBlink ? 'vehicle-blink' : ''} />
-          </g>
-
-          <g>
-            <rect x="193" y="274" width="124" height="53" rx="15" fill="#101c22" stroke="#d4e2e4" strokeOpacity=".13" />
-            <rect x="208" y="286" width="94" height="14" rx="7" fill="#d7e9eb" opacity=".10" />
-            <path d="M215 309h80" stroke="#d5e2e4" strokeOpacity=".13" strokeWidth="2" />
-          </g>
-
-          <g>
-            <rect x="92" y="333" width="96" height="15" rx="7.5" fill="#e24843" opacity={rearFog ? 1 : .16} filter={rearFog ? "url(#vs-rear-light)" : undefined} />
-            <rect x="318" y="333" width="96" height="15" rx="7.5" fill="#e24843" opacity={rearFog ? 1 : .16} filter={rearFog ? "url(#vs-rear-light)" : undefined} />
-          </g>
-
-          <path d="M84 350h342" stroke="#d3e2e3" strokeOpacity=".11" strokeWidth="2" />
-          <rect x="134" y="361" width="234" height="31" rx="15.5" fill="#071118" stroke="#d6e4e5" strokeOpacity=".09" />
-          <text x="251" y="382" textAnchor="middle" fill="#cde1e1" fontSize="11" fontWeight="850">واجهة السيارة الخلفية</text>
-        </g>
-
-        <g transform="translate(30 38)">
-          <rect width="260" height="50" rx="16" fill="#07131a" stroke="#bcdadd" strokeOpacity=".10" />
-          <text x="130" y="22" textAnchor="middle" fill="#83ddd2" fontSize="10" fontWeight="900">الحالة الحالية</text>
-          <text x="130" y="40" textAnchor="middle" fill="#edf7f7" fontSize="14" fontWeight="900">
-            {signal ? (signal === 'right' ? 'غماز يمين' : signal === 'left' ? 'غماز يسار' : 'تحذير رباعي') : (MAIN_LIGHTS.find(x => x.key === mainLight)?.title ?? 'إضاءة')}
-          </text>
-        </g>
-      </svg>
-
-      <div className="scene-legend">
-        <span><i className="lamp lamp-white" /> إنارة أمامية</span>
-        <span><i className="lamp lamp-amber" /> غماز</span>
-        <span><i className="lamp lamp-red" /> إنارة خلفية</span>
+        <div className="vehicle-reference-card">
+          <div className="vehicle-card-label"><span>02</span><div><b>الخلف</b><small>أضواء الخلف · الضباب الخلفي · غماز الاتجاه</small></div></div>
+          <div className="vehicle-visual rear">
+            <img src="/spirit/car-rear.svg" className="vehicle-reference-image vehicle-reference-image--base" alt="السيارة من الخلف" />
+            <img src="/spirit/car-rear.svg" className="vehicle-reference-image vehicle-reference-image--lit" alt="" aria-hidden="true" />
+            <span className="vehicle-rear-fog rear-fog-left" />
+            <span className="vehicle-rear-fog rear-fog-right" />
+            <span className="vehicle-signal-marker rear-left" />
+            <span className="vehicle-signal-marker rear-right" />
+          </div>
+          <div className="vehicle-card-caption"><span><i className="legend-red" /> إنارة خلفية</span><span><i className="legend-amber" /> غماز</span></div>
+        </div>
       </div>
+
+      <div className="vehicle-direction-note"><span>قاعدة بصرية</span><b>الأمام = أرى الطريق · الخلف = أجعل السيارة واضحة للآخرين · الغماز = أخبرهم باتجاهي</b></div>
     </div>
   );
 }
@@ -1005,7 +838,7 @@ export default function PracticalInfo() {
             <span className="lesson-eyebrow">درس عملي</span>
             <h1>تعلّم المقبض كما تمسكه بيدك، وليس كزرّ بعيد على الشاشة.</h1>
             <p>
-              اضغط على الرمز الموجود على الحلقة، ارفع المقبض أو اخفضه، ادفعه للأمام أو اسحبه نحوك.
+              اختر الوظيفة من الأزرار الكبيرة، ثم شاهد كيف تتغير السيارة. صورة المقبض تشرح الحركة بصرياً والنتيجة تظهر أمامك.
               ستتغير السيارة أمامك مباشرة لتربط <b>الحركة → الرمز → النتيجة على الطريق</b>.
             </p>
           </div>
@@ -1051,7 +884,7 @@ export default function PracticalInfo() {
           <div className="section-kicker">
             <span className="lesson-eyebrow">02 · التحكم</span>
             <h2>التحكم من مكان قريب وواضح</h2>
-            <p>على الهاتف ستجد الوظائف أسفل السيارة مباشرة، بأزرار كبيرة سهلة اللمس بدل الأزرار الصغيرة حول المقبض.</p>
+            <p>كل الوظائف الأساسية ظاهرة أمامك، والضغط عليها يغيّر السيارة والمشهد التوضيحي في اللحظة نفسها.</p>
           </div>
 
           <StalkSimulator
