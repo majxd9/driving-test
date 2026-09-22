@@ -1414,3 +1414,479 @@
   .stalk-motion-grid button{min-height:72px}
   .hazard-large-button{min-height:60px}
 }
+
+
+/* =========================================================
+   LIGHTING LAB V3 — clear reference visuals + visible controls
+   ========================================================= */
+
+.stalk-lab{width:100%}
+.stalk-lab-top{
+  display:grid;
+  grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);
+  gap:14px;
+  align-items:stretch;
+}
+.stalk-reference-card,
+.stalk-control-panel{
+  min-width:0;
+  border:1px solid rgba(183,225,228,.09);
+  border-radius:22px;
+  background:linear-gradient(145deg,rgba(5,16,23,.95),rgba(11,29,37,.78));
+  box-shadow:0 18px 42px rgba(0,0,0,.16);
+}
+.stalk-reference-card{padding:12px;overflow:hidden}
+.stalk-reference-badge{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:2px 3px 9px;
+}
+.stalk-reference-badge span{
+  font-size:7px;
+  color:#7de0d5;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.stalk-reference-badge b{font-size:7px;color:rgba(231,246,246,.43)}
+.stalk-reference-image-wrap{
+  position:relative;
+  overflow:hidden;
+  min-height:270px;
+  border-radius:17px;
+  border:1px solid rgba(217,235,237,.07);
+  background:
+    radial-gradient(circle at 50% 47%,rgba(175,211,214,.14),transparent 31%),
+    linear-gradient(180deg,#13232b,#040b10 78%);
+}
+.stalk-reference-image{
+  display:block;
+  width:100%;
+  height:100%;
+  min-height:270px;
+  object-fit:contain;
+  padding:16px 7px;
+}
+.stalk-reference-callout{
+  position:absolute;
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(2,10,14,.86);
+  border:1px solid rgba(123,227,216,.18);
+  color:#def2f0;
+  font-size:7px;
+  font-weight:900;
+  box-shadow:0 8px 20px rgba(0,0,0,.18);
+  backdrop-filter:blur(8px);
+  pointer-events:none;
+}
+.callout-right{right:10px;top:21%}
+.callout-left{right:10px;bottom:19%}
+.callout-high{left:10px;top:23%}
+.callout-flash{left:10px;bottom:17%}
+.stalk-reference-tip{
+  margin-top:8px;
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr);
+  gap:8px;
+  padding:9px;
+  border-radius:14px;
+  background:rgba(45,212,191,.035);
+  border:1px dashed rgba(117,225,214,.13);
+}
+.tip-icon{
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:rgba(45,212,191,.09);
+  color:#8be5da;
+  font-size:8px;
+  font-weight:900;
+}
+.stalk-reference-tip strong{display:block;font-size:8px;line-height:1.45}
+.stalk-reference-tip p{margin:2px 0 0;color:rgba(232,245,246,.33);font-size:6.5px;line-height:1.7}
+
+.stalk-control-panel{padding:13px}
+.stalk-control-heading{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+.stalk-control-heading h3{margin:7px 0 5px;font-size:21px;letter-spacing:-.035em}
+.stalk-control-heading p{margin:0;color:rgba(232,245,246,.39);font-size:8px;line-height:1.8}
+.stalk-live-state{
+  flex:0 0 150px;
+  padding:11px 12px;
+  border-radius:15px;
+  border:1px solid rgba(116,229,216,.15);
+  background:rgba(45,212,191,.05);
+}
+.stalk-live-state small{display:block;color:#76d9ce;font-size:6.5px;font-weight:900}
+.stalk-live-state strong{display:block;margin-top:4px;font-size:11px;line-height:1.3;color:#eefafa}
+
+.control-step{
+  margin-top:11px;
+  padding-top:10px;
+  border-top:1px solid rgba(228,242,243,.06);
+}
+.control-step-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:8px;
+}
+.control-step-title>span{
+  flex:0 0 28px;
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:#13272f;
+  border:1px solid rgba(117,224,213,.15);
+  color:#8ee4db;
+  font-size:7px;
+  font-weight:900;
+}
+.control-step-title b{display:block;font-size:8px}
+.control-step-title small{display:block;margin-top:2px;color:rgba(235,247,247,.30);font-size:6px}
+
+.ring-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.ring-choice{
+  min-height:69px;
+  padding:9px;
+  display:grid;
+  grid-template-columns:45px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  border:1px solid rgba(178,224,228,.08);
+  border-radius:14px;
+  background:rgba(255,255,255,.023);
+  color:#fff;
+  text-align:right;
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:transform .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+.ring-choice:hover{transform:translateY(-1px);background:rgba(255,255,255,.043)}
+.ring-choice.is-active{
+  background:linear-gradient(145deg,rgba(45,212,191,.13),rgba(45,212,191,.045));
+  border-color:rgba(123,232,220,.36);
+  box-shadow:0 10px 22px rgba(20,120,110,.08);
+}
+.ring-choice-icon{
+  width:45px;height:45px;
+  display:grid;place-items:center;
+  border-radius:12px;
+  background:rgba(255,255,255,.045);
+  color:#bcefe9;
+}
+.ring-choice-icon svg{width:34px;height:24px}
+.ring-choice-copy b{display:block;font-size:8px;line-height:1.35}
+.ring-choice-copy small{display:block;margin-top:3px;color:rgba(234,246,247,.31);font-size:6px}
+.ring-choice>i{
+  width:20px;height:20px;
+  display:grid;place-items:center;
+  border-radius:50%;
+  background:#7ee3d8;
+  color:#062025;
+  font-size:8px;
+  font-style:normal;
+  font-weight:900;
+}
+
+.motion-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.motion-choice{
+  min-height:82px;
+  padding:10px;
+  display:grid;
+  grid-template-columns:50px minmax(0,1fr);
+  align-items:center;
+  gap:9px;
+  border:1px solid rgba(178,224,228,.08);
+  border-radius:15px;
+  background:rgba(255,255,255,.023);
+  color:#fff;
+  text-align:right;
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:transform .16s ease,background .16s ease,border-color .16s ease;
+}
+.motion-choice:hover{transform:translateY(-1px);background:rgba(255,255,255,.043)}
+.motion-choice.is-active{background:rgba(45,212,191,.09);border-color:rgba(123,232,220,.35)}
+.motion-choice-arrow{
+  width:50px;height:50px;
+  display:grid;place-items:center;
+  border-radius:14px;
+  background:rgba(255,255,255,.05);
+  color:#9eeae0;
+  font-size:27px;
+  line-height:1;
+}
+.motion-choice b{display:block;font-size:9px;line-height:1.35}
+.motion-choice small{display:block;margin-top:3px;color:rgba(234,246,247,.34);font-size:6.5px}
+
+.hazard-command{
+  width:100%;
+  min-height:71px;
+  margin-top:8px;
+  padding:10px;
+  display:grid;
+  grid-template-columns:48px minmax(0,1fr) auto;
+  align-items:center;
+  gap:9px;
+  border:1px solid rgba(240,126,120,.16);
+  border-radius:15px;
+  background:linear-gradient(145deg,rgba(93,35,34,.18),rgba(255,255,255,.018));
+  color:#fff;
+  text-align:right;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.hazard-command.is-active{
+  border-color:rgba(255,146,138,.50);
+  background:rgba(104,38,37,.30);
+  box-shadow:0 0 24px rgba(255,105,96,.08);
+}
+.hazard-command-icon{
+  width:48px;height:48px;
+  display:grid;place-items:center;
+  border-radius:13px;
+  background:rgba(255,101,94,.11);
+  color:#ffaaa1;
+}
+.hazard-command-icon svg{width:33px;height:25px}
+.hazard-command-copy b{display:block;font-size:8.5px}
+.hazard-command-copy small{display:block;margin-top:3px;color:rgba(239,247,247,.34);font-size:6px;line-height:1.45}
+.hazard-command-state{
+  padding:6px 8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.05);
+  color:rgba(238,247,247,.42);
+  font-size:6px;
+  font-weight:900;
+}
+.hazard-command.is-active .hazard-command-state{background:#ffd1cd;color:#501d1a}
+.stalk-feedback{
+  margin-top:8px;
+  padding:9px 10px;
+  display:grid;
+  grid-template-columns:29px minmax(0,1fr);
+  gap:8px;
+  border-radius:14px;
+  background:rgba(45,212,191,.025);
+  border:1px solid rgba(119,224,213,.08);
+}
+.stalk-feedback>span{
+  width:29px;height:29px;
+  display:grid;place-items:center;
+  border-radius:9px;
+  background:rgba(45,212,191,.07);
+  color:#7bdbd1;
+  font-size:7px;font-weight:900;
+}
+.stalk-feedback b{display:block;font-size:7.5px}
+.stalk-feedback p{margin:3px 0 0;color:rgba(235,247,247,.31);font-size:6.5px;line-height:1.75}
+.stalk-feedback strong{color:#b9eee8}
+
+/* Live vehicle stage using the repository's high-detail car artwork */
+.vehicle-reference-stage{
+  padding:12px;
+  border-radius:20px;
+  border:1px solid rgba(180,224,228,.08);
+  background:
+    radial-gradient(circle at 50% 3%,rgba(75,205,190,.06),transparent 28%),
+    linear-gradient(180deg,rgba(4,12,17,.74),rgba(8,21,28,.94));
+}
+.vehicle-stage-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:10px;
+}
+.vehicle-stage-header h3{margin:7px 0 4px;font-size:20px;letter-spacing:-.035em}
+.vehicle-stage-header p{margin:0;color:rgba(232,245,246,.36);font-size:7.5px;line-height:1.75}
+.vehicle-stage-state{
+  flex:0 0 205px;
+  padding:10px 12px;
+  border-radius:15px;
+  border:1px solid rgba(110,226,214,.13);
+  background:rgba(45,212,191,.04);
+}
+.vehicle-stage-state small{display:block;color:#79dcd2;font-size:6px;font-weight:900}
+.vehicle-stage-state strong{display:block;margin-top:3px;font-size:10px}
+.vehicle-stage-state span{display:block;margin-top:3px;color:rgba(232,245,246,.30);font-size:6px}
+
+.vehicle-reference-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.vehicle-reference-card{
+  min-width:0;
+  overflow:hidden;
+  border:1px solid rgba(215,233,235,.07);
+  border-radius:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.024),rgba(255,255,255,.012));
+}
+.vehicle-card-label{
+  display:flex;align-items:center;gap:8px;padding:10px 11px 7px;
+}
+.vehicle-card-label>span{
+  width:26px;height:26px;display:grid;place-items:center;
+  border-radius:8px;background:#132831;color:#80ded3;font-size:7px;font-weight:900;
+}
+.vehicle-card-label b{display:block;font-size:7.5px}
+.vehicle-card-label small{display:block;margin-top:2px;color:rgba(231,245,246,.30);font-size:5.5px}
+.vehicle-visual{
+  position:relative;
+  min-height:248px;
+  overflow:hidden;
+  display:grid;
+  place-items:center;
+  background:
+    radial-gradient(circle at 50% 52%,rgba(174,218,218,.11),transparent 44%),
+    linear-gradient(180deg,#09151c,#050b10);
+}
+.vehicle-reference-image{
+  position:absolute;
+  inset:0;
+  width:100%;height:100%;
+  object-fit:contain;
+  padding:6px 10px 4px;
+  pointer-events:none;
+}
+.vehicle-reference-image--base{opacity:.50;filter:brightness(.58) saturate(.83) contrast(1.05)}
+.vehicle-reference-image--lit{
+  opacity:.07;
+  filter:brightness(1.13) saturate(1.03) contrast(1.04);
+  transition:opacity .2s ease,filter .2s ease;
+}
+.light-position .front .vehicle-reference-image--lit,
+.light-auto .front .vehicle-reference-image--lit{opacity:.34}
+.light-low .front .vehicle-reference-image--lit{opacity:.70}
+.light-high .front .vehicle-reference-image--lit{opacity:.91;filter:brightness(1.25) saturate(1.08)}
+.light-flash .front .vehicle-reference-image--lit{opacity:.98;filter:brightness(1.36) saturate(1.10)}
+.light-frontFog .front .vehicle-reference-image--lit{opacity:.48}
+.light-position .rear .vehicle-reference-image--lit,
+.light-auto .rear .vehicle-reference-image--lit,
+.light-low .rear .vehicle-reference-image--lit{opacity:.56}
+.light-high .rear .vehicle-reference-image--lit{opacity:.68}
+.light-rearFog .rear .vehicle-reference-image--lit{opacity:.82;filter:brightness(1.15) saturate(1.10)}
+
+.vehicle-beam{
+  position:absolute;z-index:1;top:54%;width:46%;height:31%;border-radius:50%;
+  filter:blur(10px);opacity:0;
+  background:linear-gradient(90deg,rgba(255,250,208,.72),rgba(210,245,255,.02));
+  pointer-events:none;transition:opacity .2s ease;
+}
+.beam-left{left:0;transform:rotate(9deg)}
+.beam-right{right:0;transform:rotate(-9deg);background:linear-gradient(270deg,rgba(255,250,208,.72),rgba(210,245,255,.02))}
+.light-low .vehicle-beam,
+.light-high .vehicle-beam,
+.light-flash .vehicle-beam{opacity:1}
+.light-high .vehicle-beam{height:39%;top:50%}
+.light-flash .vehicle-beam{opacity:.98;height:40%;top:49%}
+
+.vehicle-fog-beam{
+  position:absolute;z-index:1;top:64%;width:27%;height:16%;border-radius:50%;
+  filter:blur(7px);opacity:0;background:rgba(255,235,163,.64);
+}
+.fog-left{left:21%}.fog-right{right:21%}
+.light-frontFog .vehicle-fog-beam{opacity:1}
+
+.vehicle-signal-marker{
+  position:absolute;z-index:4;width:22px;height:22px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,239,180,1) 0%,rgba(247,172,72,.98) 35%,rgba(247,172,72,0) 73%);
+  opacity:0;transform:scale(.72);
+  filter:drop-shadow(0 0 10px rgba(255,175,72,.78));
+}
+.front-left{left:17%;top:58%}.front-right{right:17%;top:58%}
+.rear-left{left:17%;top:58%}.rear-right{right:17%;top:58%}
+.signal-left .front-left,.signal-left .rear-left,
+.signal-right .front-right,.signal-right .rear-right,
+.signal-hazard .front-left,.signal-hazard .front-right,
+.signal-hazard .rear-left,.signal-hazard .rear-right{
+  opacity:1;animation:lighting-indicator-pulse .9s steps(2,end) infinite;
+}
+.vehicle-rear-fog{
+  position:absolute;z-index:3;width:18%;height:12%;top:63%;border-radius:999px;
+  background:radial-gradient(circle,rgba(255,93,80,.98),rgba(201,30,36,.35) 45%,transparent 74%);
+  opacity:0;filter:blur(2px);
+}
+.rear-fog-left{left:23%}.rear-fog-right{right:23%}
+.light-rearFog .vehicle-rear-fog{opacity:1}
+
+.vehicle-card-caption{
+  display:flex;justify-content:center;gap:18px;
+  padding:7px 9px 9px;color:rgba(233,246,247,.40);font-size:6px;
+}
+.vehicle-card-caption span{display:flex;align-items:center;gap:5px}
+.vehicle-card-caption i{width:7px;height:7px;border-radius:50%;display:block}
+.legend-white{background:#f8ffe6;box-shadow:0 0 9px rgba(255,247,209,.75)}
+.legend-amber{background:#f3ad52;box-shadow:0 0 9px rgba(243,173,82,.58)}
+.legend-red{background:#ed4c4c;box-shadow:0 0 9px rgba(237,76,76,.46)}
+.vehicle-direction-note{
+  margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:9px 10px;border-radius:13px;background:rgba(255,255,255,.017);
+  border:1px dashed rgba(181,225,227,.08);
+}
+.vehicle-direction-note span{
+  padding:5px 7px;border-radius:999px;background:rgba(45,212,191,.07);
+  color:#7cddd2;font-size:6px;font-weight:900;
+}
+.vehicle-direction-note b{color:rgba(236,247,247,.39);font-size:6.5px}
+
+@keyframes lighting-indicator-pulse{
+  0%,43%{opacity:1;transform:scale(1)}
+  44%,100%{opacity:.18;transform:scale(.72)}
+}
+
+@media(max-width:960px){
+  .stalk-lab-top{grid-template-columns:1fr}
+  .vehicle-reference-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .stalk-reference-card,.stalk-control-panel{padding:9px;border-radius:18px}
+  .stalk-reference-image-wrap{min-height:250px}
+  .stalk-reference-image{min-height:250px;padding:15px 4px}
+  .stalk-reference-callout{font-size:6.5px;padding:6px 8px}
+  .callout-right,.callout-left{right:7px}
+  .callout-high,.callout-flash{left:7px}
+  .stalk-reference-badge b{display:none}
+  .stalk-control-heading{display:grid;grid-template-columns:1fr;gap:8px}
+  .stalk-control-heading h3{font-size:18px}
+  .stalk-control-heading p{font-size:7px}
+  .stalk-live-state{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 11px}
+  .stalk-live-state strong{margin-top:0;font-size:9px}
+  .ring-choice-grid{grid-template-columns:1fr}
+  .ring-choice{min-height:66px;grid-template-columns:49px minmax(0,1fr) auto;padding:8px}
+  .ring-choice-icon{width:49px;height:49px}
+  .ring-choice-copy b{font-size:9px}
+  .ring-choice-copy small{font-size:6.5px}
+  .motion-choice{min-height:86px;grid-template-columns:54px minmax(0,1fr);padding:9px}
+  .motion-choice-arrow{width:54px;height:54px;font-size:28px}
+  .motion-choice b{font-size:9px}
+  .motion-choice small{font-size:6.5px}
+  .hazard-command{min-height:72px;grid-template-columns:48px minmax(0,1fr) auto}
+  .hazard-command-copy b{font-size:8.5px}
+  .hazard-command-copy small{font-size:6px}
+  .vehicle-reference-stage{padding:9px;border-radius:18px}
+  .vehicle-stage-header{display:grid;grid-template-columns:1fr;gap:7px}
+  .vehicle-stage-header h3{font-size:19px}
+  .vehicle-stage-header p{font-size:7px}
+  .vehicle-stage-state{width:100%}
+  .vehicle-stage-state strong{font-size:9px}
+  .vehicle-stage-state span{font-size:6px}
+  .vehicle-visual{min-height:246px}
+  .vehicle-reference-image{padding:5px 5px 3px}
+  .vehicle-direction-note{align-items:flex-start;justify-content:flex-start;flex-wrap:wrap}
+  .vehicle-direction-note b{font-size:6.5px;line-height:1.65}
+}
+@media(max-width:390px){
+  .stalk-reference-image-wrap,.stalk-reference-image{min-height:220px}
+  .ring-choice{min-height:62px}
+  .motion-choice{min-height:82px}
+  .vehicle-visual{min-height:220px}
+}
