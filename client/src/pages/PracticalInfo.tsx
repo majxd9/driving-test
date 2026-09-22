@@ -222,6 +222,24 @@ const SCENARIOS = [
     diagram: 'turn-right',
   },
   {
+    id: 'rear-fog',
+    tag: 'رؤية شديدة السوء',
+    title: 'استخدام الضباب الخلفي',
+    control: 'rearFog' as ControlKey,
+    sequence: ['تحقق أن الرؤية سيئة فعلاً', 'اختر الضباب الخلفي إذا كانت السيارة مجهزة', 'انتبه للسائقين خلفك', 'أوقفه عندما تتحسن الرؤية'],
+    note: 'الضباب الخلفي شديد السطوع ويُستخدم فقط عندما تكون الحاجة واضحة.',
+    diagram: 'fog',
+  },
+  {
+    id: 'park-night',
+    tag: 'وقوف ليلاً',
+    title: 'مركبة متوقفة وتحتاج أن تكون واضحة',
+    control: 'position' as ControlKey,
+    sequence: ['اختر مكان الوقوف الآمن', 'استخدم إنارة الموضع إذا كانت الحالة تتطلبها', 'اجعل المركبة واضحة', 'لا تعتمد على الموضع لإنارة الطريق'],
+    note: 'التشغيل الفعلي للأضواء أثناء الوقوف يعتمد أيضاً على قواعد المكان وتجهيز السيارة.',
+    diagram: 'hazard',
+  },
+  {
     id: 'overtake',
     tag: 'تجاوز',
     title: 'بدء مناورة تجاوز',
@@ -490,6 +508,14 @@ function StalkSimulator({
           </g>
 
           <g className={signal === 'left' ? 'signal-active' : ''}>
+          <g>
+            <rect x="718" y="214" width="86" height="67" rx="18" fill="#130f10" stroke="#d9b7b8" strokeOpacity=".15" />
+            <rect x="726" y="222" width="70" height="51" rx="14" fill="#5b2222" stroke="#ff8b83" strokeOpacity=".22" />
+            <path d="M761 232 781 263H741Z" fill="none" stroke="#ff9b8f" strokeWidth="4" strokeLinejoin="round" />
+            <path d="M761 242v10M761 257v1" stroke="#ff9b8f" strokeWidth="4" strokeLinecap="round" />
+            <text x="761" y="293" textAnchor="middle" fill="#dcaeac" fontSize="8" fontWeight="900">زر التحذير الرباعي</text>
+          </g>
+
             <path d="M610 230v56" stroke="#0c1318" strokeWidth="20" strokeLinecap="round" />
             <path d="M610 230v56" stroke="url(#stk-body)" strokeWidth="14" strokeLinecap="round" />
             <path d="M610 284l-12-14h24z" fill="#a8f0e7" opacity=".75" />
@@ -707,7 +733,7 @@ function VehicleScene({
 
           <g>
             <rect x="193" y="274" width="124" height="53" rx="15" fill="#101c22" stroke="#d4e2e4" strokeOpacity=".13" />
-            <rect x="208" y="286" width="94" height="14" rx="7" fill="#d7e9eb" opacity={mainLight === 'reverse' ? 1 : .10} />
+            <rect x="208" y="286" width="94" height="14" rx="7" fill="#d7e9eb" opacity=".10" />
             <path d="M215 309h80" stroke="#d5e2e4" strokeOpacity=".13" strokeWidth="2" />
           </g>
 
