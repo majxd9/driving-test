@@ -410,7 +410,7 @@ function StalkStateVisual({ active, mainLight, stageRef }: { active: ControlKey;
   return <div ref={stageRef} className="stalk-demo">
     <div className="stalk-demo-head"><span>المقبض التفاعلي</span><b>{left?'حرّك للأسفل ← غماز يسار':right?'حرّك للأعلى ← غماز يمين':high?'ادفع المقبض للأمام ← العالي':flash?'اسحب المقبض نحوك ← وميض':hazard?'اضغط زر التحذير الرباعي':`لف الحلقة إلى ${ringLabel}`}</b></div>
     <div className="stalk-demo-body">
-      <div className={`stalk-handle ${left?'is-left':''} ${right?'is-right':''} ${high?'is-high':''} ${flash?'is-flash':''}`}><div className="stalk-grip"><i/><i/><i/></div><div className={`stalk-ring ${ring?'is-active':''}`}><span>OFF</span><span>P</span><span>A</span><span>LOW</span><span>FOG</span><em/></div><div className="stalk-tip">↕</div></div>
+      <div className={`stalk-handle ${left?'is-left':''} ${right?'is-right':''} ${high?'is-high':''} ${flash?'is-flash':''}`}><div className="stalk-grip"><i/><i/><i/></div><div className={`stalk-ring ring-${mainLight} ${ring ? 'is-active' : ''}`}><span>OFF</span><span>P</span><span>A</span><span>LOW</span><span>FOG</span><em/></div><div className="stalk-tip"><span>↕</span></div></div>
       <button type="button" className={`stalk-hazard ${hazard?'is-active':''}`} aria-label="الغماز الرباعي"><span>△</span></button>
       <div className="stalk-hint">{left?'↓':right?'↑':high?'→':flash?'←':ring?'↻':'⚠'}</div>
     </div>
