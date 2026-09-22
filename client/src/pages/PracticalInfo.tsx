@@ -845,7 +845,7 @@ export default function PracticalInfo() {
           <div className="lighting-intro-metrics">
             <div><strong>08</strong><span>حالات إنارة رئيسية</span></div>
             <div><strong>03</strong><span>أنوار تعمل تلقائياً</span></div>
-            <div><strong>08</strong><span>مواقف قيادة واقعية</span></div>
+            <div><strong>10</strong><span>مواقف قيادة واقعية</span></div>
           </div>
         </section>
 
