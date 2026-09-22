@@ -588,6 +588,91 @@ function LightingControlCarousel({
   );
 }
 
+function VehicleScene({
+  mainLight,
+  signal,
+}: {
+  mainLight: MainLightKey;
+  signal: SignalKey | null;
+}) {
+  const stageClass = [
+    'vehicle-reference-stage',
+    'light-' + mainLight,
+    signal ? 'signal-' + signal : '',
+  ].filter(Boolean).join(' ');
+
+  const stateText =
+    signal === 'right'
+      ? 'غماز يمين'
+      : signal === 'left'
+        ? 'غماز يسار'
+        : signal === 'hazard'
+          ? 'الغماز الرباعي'
+          : MAIN_LIGHTS.find(item => item.key === mainLight)?.title ?? 'إضاءة';
+
+  const stateSub =
+    signal
+      ? 'مؤشرات الاتجاه تظهر على السيارة مباشرة'
+      : mainLight === 'high'
+        ? 'حزمة طويلة المدى'
+        : mainLight === 'flash'
+          ? 'وميض لحظي'
+          : mainLight === 'frontFog'
+            ? 'ضباب أمامي'
+            : mainLight === 'rearFog'
+              ? 'ضباب خلفي'
+              : mainLight === 'low'
+                ? 'إنارة الطريق'
+                : mainLight === 'position' || mainLight === 'auto'
+                  ? 'إضاءة تعريفية'
+                  : 'الإنارة الرئيسية متوقفة';
+
+  return (
+    <div className={stageClass}>
+      <div className="vehicle-stage-header">
+        <div>
+          <span className="lesson-eyebrow">المشهد الحي</span>
+          <h3>السيارة هي شاشة النتيجة</h3>
+          <p>اختر أي وظيفة من الأسفل، وسيتغير موضع الإنارة الذي يهمك أمامك.</p>
+        </div>
+        <div className="vehicle-stage-state"><small>مفعّل الآن</small><strong>{stateText}</strong><span>{stateSub}</span></div>
+      </div>
+
+      <div className="vehicle-reference-grid">
+        <div className="vehicle-reference-card">
+          <div className="vehicle-card-label"><span>01</span><div><b>الأمام</b><small>مصابيح الطريق · الضباب · غماز الاتجاه</small></div></div>
+          <div className="vehicle-visual front">
+            <span className="vehicle-beam beam-left" />
+            <span className="vehicle-beam beam-right" />
+            <span className="vehicle-fog-beam fog-left" />
+            <span className="vehicle-fog-beam fog-right" />
+            <img src="/spirit/car-front-sport.svg" className="vehicle-reference-image vehicle-reference-image--base" alt="السيارة من الأمام" />
+            <img src="/spirit/car-front-sport.svg" className="vehicle-reference-image vehicle-reference-image--lit" alt="" aria-hidden="true" />
+            <span className="vehicle-signal-marker front-left" />
+            <span className="vehicle-signal-marker front-right" />
+          </div>
+          <div className="vehicle-card-caption"><span><i className="legend-white" /> إنارة أمامية</span><span><i className="legend-amber" /> غماز</span></div>
+        </div>
+
+        <div className="vehicle-reference-card">
+          <div className="vehicle-card-label"><span>02</span><div><b>الخلف</b><small>أضواء الخلف · الضباب الخلفي · غماز الاتجاه</small></div></div>
+          <div className="vehicle-visual rear">
+            <img src="/spirit/car-rear.svg" className="vehicle-reference-image vehicle-reference-image--base" alt="السيارة من الخلف" />
+            <img src="/spirit/car-rear.svg" className="vehicle-reference-image vehicle-reference-image--lit" alt="" aria-hidden="true" />
+            <span className="vehicle-rear-fog rear-fog-left" />
+            <span className="vehicle-rear-fog rear-fog-right" />
+            <span className="vehicle-signal-marker rear-left" />
+            <span className="vehicle-signal-marker rear-right" />
+          </div>
+          <div className="vehicle-card-caption"><span><i className="legend-red" /> إنارة خلفية</span><span><i className="legend-amber" /> غماز</span></div>
+        </div>
+      </div>
+
+      <div className="vehicle-direction-note"><span>قاعدة بصرية</span><b>الأمام = أرى الطريق · الخلف = أجعل السيارة واضحة للآخرين · الغماز = أخبرهم باتجاهي</b></div>
+    </div>
+  );
+}
+
 function ScenarioDiagram({ kind }: { kind: string }) {
   const common = { viewBox: '0 0 440 180', className: 'scenario-svg', role: 'img', 'aria-hidden': true as const };
 
