@@ -1415,3 +1415,201 @@
 .practical-info-page .home-practical-card{
   border-color:rgba(174,222,228,.13);
 }
+
+
+/* =========================================================
+   PRACTICAL INFO V4 — clearer car + control directly on stalk
+   ========================================================= */
+
+.practical-info-page .scene-v3-topline,
+.practical-info-page .scene-v3-caption{
+  display:none!important;
+}
+
+.practical-info-page .practical-scene{
+  background:
+    radial-gradient(circle at 72% 66%,rgba(255,245,201,.07),transparent 20%),
+    linear-gradient(180deg,#0a1a23 0%,#07131a 100%);
+}
+
+.practical-info-page .scene-v3-svg{
+  filter:saturate(1.03) contrast(1.08) brightness(1.07);
+}
+
+.practical-info-page .stalk-demo{
+  position:relative;
+  overflow:visible;
+  padding:14px 10px 10px;
+  background:
+    radial-gradient(circle at 68% 45%,rgba(176,215,216,.09),transparent 28%),
+    linear-gradient(180deg,rgba(3,11,16,.48),rgba(0,0,0,.10));
+}
+
+.practical-info-page .stalk-control-stage{
+  position:relative;
+  margin-top:3px;
+  width:100%;
+  isolation:isolate;
+}
+
+.practical-info-page .stalk-demo-svg{
+  position:relative;
+  z-index:1;
+  width:100%;
+  height:auto;
+}
+
+.practical-info-page .stalk-ring-trigger{
+  position:absolute;
+  z-index:4;
+  top:47%;
+  left:62.3%;
+  width:14%;
+  min-width:54px;
+  aspect-ratio:1;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  border:2px solid transparent;
+  background:transparent;
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.practical-info-page .stalk-ring-trigger:focus-visible{
+  outline:3px solid rgba(126,231,219,.55);
+  outline-offset:4px;
+}
+
+.practical-info-page .stalk-mode-orbit{
+  position:absolute;
+  z-index:5;
+  inset:0;
+  pointer-events:none;
+}
+
+.practical-info-page .stalk-mode-button{
+  position:absolute;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  width:50px;
+  min-width:50px;
+  height:50px;
+  padding:4px;
+  border:1px solid rgba(219,235,236,.15);
+  border-radius:50%;
+  background:linear-gradient(160deg,rgba(25,42,50,.96),rgba(7,17,23,.98));
+  color:#839398;
+  box-shadow:
+    0 6px 12px rgba(0,0,0,.24),
+    inset 0 1px rgba(255,255,255,.08);
+  cursor:pointer;
+  pointer-events:auto;
+  transition:transform .18s ease,background .18s ease,color .18s ease,border-color .18s ease,box-shadow .18s ease;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.practical-info-page .stalk-mode-button svg{
+  width:25px;
+  height:18px;
+}
+
+.practical-info-page .stalk-mode-button span{
+  font-size:7px;
+  line-height:1;
+  font-weight:900;
+}
+
+.practical-info-page .stalk-mode-button.is-active{
+  color:#a9f0e7;
+  border-color:rgba(126,231,219,.52);
+  background:linear-gradient(160deg,rgba(29,68,74,.98),rgba(8,28,34,.99));
+  box-shadow:
+    0 0 0 2px rgba(126,231,219,.10),
+    0 9px 18px rgba(0,0,0,.30),
+    0 0 20px rgba(68,221,205,.13),
+    inset 0 1px rgba(255,255,255,.10);
+  transform:scale(1.05);
+}
+
+.practical-info-page .stalk-mode-button:not(.is-active):hover{
+  transform:translateY(-1px);
+  color:#d2e2e4;
+}
+
+.practical-info-page .stalk-mode-button.mode-1{left:57%;top:12%}
+.practical-info-page .stalk-mode-button.mode-2{left:69.5%;top:29%;transform-origin:center}
+.practical-info-page .stalk-mode-button.mode-3{left:63%;top:60%}
+.practical-info-page .stalk-mode-button.mode-4{left:50%;top:29%}
+
+.practical-info-page .stalk-mode-button.mode-2.is-active,
+.practical-info-page .stalk-mode-button.mode-3.is-active,
+.practical-info-page .stalk-mode-button.mode-4.is-active{
+  transform:scale(1.05);
+}
+
+.practical-info-page .stalk-ring-trigger::after{
+  content:"";
+  position:absolute;
+  inset:11%;
+  border-radius:50%;
+  box-shadow:0 0 0 1px rgba(193,221,224,.04);
+  transition:box-shadow .18s ease,transform .18s ease;
+}
+
+.practical-info-page .stalk-ring-trigger:hover::after{
+  box-shadow:0 0 0 2px rgba(126,231,219,.15),0 0 18px rgba(126,231,219,.08);
+}
+
+@media(max-width:700px){
+  .practical-info-page .stalk-demo{
+    padding:11px 6px 8px;
+  }
+
+  .practical-info-page .stalk-ring-trigger{
+    width:15%;
+    min-width:48px;
+    left:62%;
+    top:47%;
+  }
+
+  .practical-info-page .stalk-mode-button{
+    width:42px;
+    min-width:42px;
+    height:42px;
+    padding:3px;
+  }
+
+  .practical-info-page .stalk-mode-button svg{
+    width:21px;
+    height:15px;
+  }
+
+  .practical-info-page .stalk-mode-button span{
+    font-size:6.5px;
+  }
+
+  .practical-info-page .stalk-mode-button.mode-1{left:56%;top:12%}
+  .practical-info-page .stalk-mode-button.mode-2{left:69%;top:29%}
+  .practical-info-page .stalk-mode-button.mode-3{left:63%;top:61%}
+  .practical-info-page .stalk-mode-button.mode-4{left:49%;top:29%}
+}
+
+@media(max-width:390px){
+  .practical-info-page .stalk-mode-button{
+    width:38px;
+    min-width:38px;
+    height:38px;
+  }
+  .practical-info-page .stalk-mode-button svg{
+    width:19px;
+    height:14px;
+  }
+  .practical-info-page .stalk-mode-button span{
+    display:none;
+  }
+}
