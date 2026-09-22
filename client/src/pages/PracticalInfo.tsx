@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 type MainLightKey =
@@ -377,7 +377,66 @@ function LightSymbol({
   );
 }
 
-function StalkSimulator({
+const PRACTICAL_CASES: {
+  key: ControlKey;
+  label: string;
+  subtitle: string;
+  description: string;
+  action: string;
+  symbol: LightItem['symbol'] | 'left' | 'right' | 'hazard';
+}[] = [
+  ...MAIN_LIGHTS.map(item => ({
+    key: item.key as ControlKey,
+    label: item.title,
+    subtitle: item.subtitle,
+    description: item.use,
+    action: item.action,
+    symbol: item.symbol,
+  })),
+  ...SIGNALS.map(item => ({
+    key: item.key as ControlKey,
+    label: item.title,
+    subtitle: item.subtitle,
+    description: item.use,
+    action: item.action,
+    symbol: item.key,
+  })),
+];
+
+function StalkStateVisual({
+  active,
+  mainLight,
+  signal,
+}: {
+  active: ControlKey;
+  mainLight: MainLightKey;
+  signal: SignalKey | null;
+}) {
+  const ringPosition =
+    mainLight === 'off' ? 'pos-1'
+      : mainLight === 'position' ? 'pos-2'
+        : mainLight === 'auto' ? 'pos-3'
+          : mainLight === 'low' ? 'pos-4'
+            : 'pos-5';
+
+  return (
+    <div className={'carousel-stalk-visual state-' + active}>
+      <div className="carousel-stalk-glow" />
+      <img src="/spirit/stalk-lighting.svg" className="carousel-stalk-image" alt="مقبض أضواء السيارة والغمازات" />
+      <span className={'carousel-ring-marker ' + ringPosition} />
+      <span className="carousel-motion-arrow motion-up">↑</span>
+      <span className="carousel-motion-arrow motion-down">↓</span>
+      <span className="carousel-motion-arrow motion-forward">→</span>
+      <span className="carousel-motion-arrow motion-pull">←</span>
+      <div className="carousel-stalk-state-badge">
+        <span>{signal ? 'حركة الذراع' : 'موضع الحلقة'}</span>
+        <b>{signal === 'right' ? 'ارفع ↑' : signal === 'left' ? 'اخفض ↓' : signal === 'hazard' ? 'تحذير رباعي' : mainLight === 'high' ? 'ادفع →' : mainLight === 'flash' ? 'اسحب ←' : MAIN_LIGHTS.find(item => item.key === mainLight)?.title}</b>
+      </div>
+    </div>
+  );
+}
+
+function LightingControlCarousel({
   mainLight,
   signal,
   onMainLight,
@@ -390,202 +449,142 @@ function StalkSimulator({
   onSignal: (key: SignalKey) => void;
   onFlash: () => void;
 }) {
-  const ringItems: { key: MainLightKey; label: string; symbol: LightItem['symbol']; hint: string }[] = [
-    { key: 'off', label: 'إيقاف', symbol: 'off', hint: 'OFF' },
-    { key: 'position', label: 'أضواء الموضع', symbol: 'position', hint: 'PARKING' },
-    { key: 'auto', label: 'أوتوماتيك', symbol: 'auto', hint: 'AUTO' },
-    { key: 'low', label: 'ضوء منخفض', symbol: 'low', hint: 'LOW BEAM' },
-    { key: 'frontFog', label: 'ضباب أمامي', symbol: 'frontFog', hint: 'FRONT FOG' },
-    { key: 'rearFog', label: 'ضباب خلفي', symbol: 'rearFog', hint: 'REAR FOG' },
-  ];
+  const [index, setIndex] = useState(Math.max(
+    0,
+    PRACTICAL_CASES.findIndex(item => item.key === (signal ?? mainLight)),
+  ));
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const audioRef = useRef<AudioContext | null>(null);
 
-  const activeLabel =
-    signal === 'right'
-      ? 'غماز يمين'
-      : signal === 'left'
-        ? 'غماز يسار'
-        : signal === 'hazard'
-          ? 'الغماز الرباعي'
-          : MAIN_LIGHTS.find(x => x.key === mainLight)?.title ?? 'إضاءة';
+  const current = PRACTICAL_CASES[index] ?? PRACTICAL_CASES[0];
 
-  return (
-    <div className="stalk-lab">
-      <div className="stalk-lab-top">
-        <div className="stalk-reference-card">
-          <div className="stalk-reference-badge">
-            <span>مرجع بصري</span>
-            <b>المقبض كبير حتى يكون واضحاً على الهاتف</b>
-          </div>
-          <div className="stalk-reference-image-wrap">
-            <img src="/spirit/stalk-lighting.svg" className="stalk-reference-image" alt="رسم توضيحي كبير لمقبض أضواء السيارة والغمازات" />
-            <div className="stalk-reference-callout callout-right">↑ غماز يمين</div>
-            <div className="stalk-reference-callout callout-left">↓ غماز يسار</div>
-            <div className="stalk-reference-callout callout-high">→ عالي</div>
-            <div className="stalk-reference-callout callout-flash">← وميض</div>
-          </div>
-          <div className="stalk-reference-tip">
-            <span className="tip-icon">1</span>
-            <div>
-              <strong>المقبض يشرح «الحركة» — والأزرار تنفذها</strong>
-              <p>بدلاً من مطالبتك بلمس نقطة صغيرة داخل الرسم، اختر الحركة من الزر الكبير ثم راقب السيارة.</p>
-            </div>
-          </div>
-        </div>
+  useEffect(() => {
+    const activeKey = signal ?? mainLight;
+    const next = PRACTICAL_CASES.findIndex(item => item.key === activeKey);
+    if (next >= 0) setIndex(next);
+  }, [mainLight, signal]);
 
-        <div className="stalk-control-panel">
-          <div className="stalk-control-heading">
-            <div>
-              <span className="lesson-eyebrow">المحاكاة</span>
-              <h3>اضغط — وشاهد النتيجة فوراً</h3>
-              <p>كل الوظائف ظاهرة من البداية. لا توجد قائمة مخفية تحتاج فتحها قبل أن ترى الخيارات.</p>
-            </div>
-            <div className="stalk-live-state">
-              <small>الحالة الآن</small>
-              <strong>{activeLabel}</strong>
-            </div>
-          </div>
+  const playClick = (kind: 'light' | 'signal') => {
+    if (!soundEnabled || typeof window === 'undefined') return;
+    try {
+      const AudioCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtor) return;
+      const context = audioRef.current ?? new AudioCtor();
+      audioRef.current = context;
+      if (context.state === 'suspended') void context.resume();
 
-          <div className="control-step">
-            <div className="control-step-title">
-              <span>01</span>
-              <div><b>وضع حلقة الإنارة</b><small>اختر الرمز مباشرة</small></div>
-            </div>
-            <div className="ring-choice-grid">
-              {ringItems.map(item => (
-                <button
-                  type="button"
-                  key={item.key}
-                  className={'ring-choice ' + (mainLight === item.key ? 'is-active' : '')}
-                  onClick={() => onMainLight(item.key)}
-                  aria-pressed={mainLight === item.key}
-                >
-                  <span className="ring-choice-icon"><LightSymbol type={item.symbol} /></span>
-                  <span className="ring-choice-copy"><b>{item.label}</b><small>{item.hint}</small></span>
-                  {mainLight === item.key && <i aria-hidden="true">✓</i>}
-                </button>
-              ))}
-            </div>
-          </div>
+      const now = context.currentTime;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(kind === 'signal' ? 460 : 620, now);
+      oscillator.frequency.exponentialRampToValueAtTime(kind === 'signal' ? 690 : 820, now + 0.055);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.035, now + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(now);
+      oscillator.stop(now + 0.08);
+    } catch {
+      // Audio is an optional enhancement; visual interaction must keep working.
+    }
+  };
 
-          <div className="control-step">
-            <div className="control-step-title">
-              <span>02</span>
-              <div><b>حركة الذراع</b><small>اضغط على الحركة، وليس على المقبض الصغير</small></div>
-            </div>
-            <div className="motion-choice-grid">
-              <button type="button" className={'motion-choice ' + (signal === 'right' ? 'is-active' : '')} onClick={() => onSignal('right')} aria-pressed={signal === 'right'}>
-                <span className="motion-choice-arrow">↑</span><span><b>ارفع</b><small>غماز يمين</small></span>
-              </button>
-              <button type="button" className={'motion-choice ' + (signal === 'left' ? 'is-active' : '')} onClick={() => onSignal('left')} aria-pressed={signal === 'left'}>
-                <span className="motion-choice-arrow">↓</span><span><b>اخفض</b><small>غماز يسار</small></span>
-              </button>
-              <button type="button" className={'motion-choice ' + (mainLight === 'high' ? 'is-active' : '')} onClick={() => onMainLight('high')} aria-pressed={mainLight === 'high'}>
-                <span className="motion-choice-arrow">→</span><span><b>ادفع للأمام</b><small>الضوء العالي</small></span>
-              </button>
-              <button type="button" className={'motion-choice ' + (mainLight === 'flash' ? 'is-active' : '')} onClick={onFlash} aria-pressed={mainLight === 'flash'}>
-                <span className="motion-choice-arrow">←</span><span><b>اسحب نحوك</b><small>وميض العالي</small></span>
-              </button>
-            </div>
-          </div>
+  const applyCase = (item: typeof PRACTICAL_CASES[number]) => {
+    setIndex(PRACTICAL_CASES.findIndex(x => x.key === item.key));
+    if (item.key === 'right' || item.key === 'left' || item.key === 'hazard') {
+      onSignal(item.key);
+      playClick('signal');
+    } else if (item.key === 'flash') {
+      onFlash();
+      playClick('light');
+    } else {
+      onMainLight(item.key);
+      playClick('light');
+    }
+  };
 
-          <button type="button" className={'hazard-command ' + (signal === 'hazard' ? 'is-active' : '')} onClick={() => onSignal('hazard')} aria-pressed={signal === 'hazard'}>
-            <span className="hazard-command-icon"><LightSymbol type="hazard" /></span>
-            <span className="hazard-command-copy"><b>زر التحذير الرباعي</b><small>تشغيل المؤشرات الأربعة معاً في حالة التحذير</small></span>
-            <span className="hazard-command-state">{signal === 'hazard' ? 'مفعّل' : 'تجربة'}</span>
-          </button>
-
-          <div className="stalk-feedback">
-            <span>03</span>
-            <div><b>قاعدة الحفظ</b><p><strong>الحلقة</strong> = نوع الإنارة · <strong>↑↓</strong> = اتجاه الغماز · <strong>→</strong> = العالي · <strong>←</strong> = الوميض.</p></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function VehicleScene({
-  mainLight,
-  signal,
-}: {
-  mainLight: MainLightKey;
-  signal: SignalKey | null;
-}) {
-  const stageClass = [
-    'vehicle-reference-stage',
-    'light-' + mainLight,
-    signal ? 'signal-' + signal : '',
-  ].filter(Boolean).join(' ');
-
-  const stateText =
-    signal === 'right'
-      ? 'غماز يمين'
-      : signal === 'left'
-        ? 'غماز يسار'
-        : signal === 'hazard'
-          ? 'الغماز الرباعي'
-          : MAIN_LIGHTS.find(item => item.key === mainLight)?.title ?? 'إضاءة';
-
-  const stateSub =
-    signal
-      ? 'مؤشرات الاتجاه تظهر على السيارة مباشرة'
-      : mainLight === 'high'
-        ? 'حزمة طويلة المدى'
-        : mainLight === 'flash'
-          ? 'وميض لحظي'
-          : mainLight === 'frontFog'
-            ? 'ضباب أمامي'
-            : mainLight === 'rearFog'
-              ? 'ضباب خلفي'
-              : mainLight === 'low'
-                ? 'إنارة الطريق'
-                : mainLight === 'position' || mainLight === 'auto'
-                  ? 'إضاءة تعريفية'
-                  : 'الإنارة الرئيسية متوقفة';
+  const move = (direction: -1 | 1) => {
+    const next = (index + direction + PRACTICAL_CASES.length) % PRACTICAL_CASES.length;
+    applyCase(PRACTICAL_CASES[next]);
+  };
 
   return (
-    <div className={stageClass}>
-      <div className="vehicle-stage-header">
+    <section className="lighting-control-carousel">
+      <div className="carousel-heading">
         <div>
-          <span className="lesson-eyebrow">المشهد الحي</span>
-          <h3>السيارة هي شاشة النتيجة</h3>
-          <p>اختر أي وظيفة من الأسفل، وسيتغير موضع الإنارة الذي يهمك أمامك.</p>
+          <span className="lesson-eyebrow">02 · جرّب المقبض</span>
+          <h2>قلّب الحالات بالأسهم وشاهد التغيير على السيارة</h2>
+          <p>كل ضغطة تنتقل إلى حالة جديدة: المقبض يتغير بصرياً والسيارة تشغّل الضوء المقصود مباشرة.</p>
         </div>
-        <div className="vehicle-stage-state"><small>مفعّل الآن</small><strong>{stateText}</strong><span>{stateSub}</span></div>
+        <button
+          type="button"
+          className={'sound-toggle ' + (soundEnabled ? 'is-on' : '')}
+          onClick={() => setSoundEnabled(value => !value)}
+          aria-pressed={soundEnabled}
+        >
+          <span>{soundEnabled ? '♪' : '×'}</span>
+          {soundEnabled ? 'الصوت مفعّل' : 'الصوت متوقف'}
+        </button>
       </div>
 
-      <div className="vehicle-reference-grid">
-        <div className="vehicle-reference-card">
-          <div className="vehicle-card-label"><span>01</span><div><b>الأمام</b><small>مصابيح الطريق · الضباب · غماز الاتجاه</small></div></div>
-          <div className="vehicle-visual front">
-            <span className="vehicle-beam beam-left" />
-            <span className="vehicle-beam beam-right" />
-            <span className="vehicle-fog-beam fog-left" />
-            <span className="vehicle-fog-beam fog-right" />
-            <img src="/spirit/car-front-sport.svg" className="vehicle-reference-image vehicle-reference-image--base" alt="السيارة من الأمام" />
-            <img src="/spirit/car-front-sport.svg" className="vehicle-reference-image vehicle-reference-image--lit" alt="" aria-hidden="true" />
-            <span className="vehicle-signal-marker front-left" />
-            <span className="vehicle-signal-marker front-right" />
+      <div className="carousel-case-card">
+        <button type="button" className="carousel-arrow carousel-prev" onClick={() => move(-1)} aria-label="الحالة السابقة">‹</button>
+
+        <div className="carousel-case-main">
+          <div className="carousel-case-counter">
+            <span>{String(index + 1).padStart(2, '0')}</span>
+            <i>/ {String(PRACTICAL_CASES.length).padStart(2, '0')}</i>
           </div>
-          <div className="vehicle-card-caption"><span><i className="legend-white" /> إنارة أمامية</span><span><i className="legend-amber" /> غماز</span></div>
+          <div className="carousel-case-copy">
+            <div className="carousel-case-icon"><LightSymbol type={current.symbol} /></div>
+            <div>
+              <span>{current.subtitle}</span>
+              <h3>{current.label}</h3>
+              <p>{current.description}</p>
+            </div>
+          </div>
+          <div className="carousel-action-line">
+            <b>الحركة</b>
+            <span>{current.action}</span>
+          </div>
+          <StalkStateVisual active={current.key} mainLight={mainLight} signal={signal} />
         </div>
 
-        <div className="vehicle-reference-card">
-          <div className="vehicle-card-label"><span>02</span><div><b>الخلف</b><small>أضواء الخلف · الضباب الخلفي · غماز الاتجاه</small></div></div>
-          <div className="vehicle-visual rear">
-            <img src="/spirit/car-rear.svg" className="vehicle-reference-image vehicle-reference-image--base" alt="السيارة من الخلف" />
-            <img src="/spirit/car-rear.svg" className="vehicle-reference-image vehicle-reference-image--lit" alt="" aria-hidden="true" />
-            <span className="vehicle-rear-fog rear-fog-left" />
-            <span className="vehicle-rear-fog rear-fog-right" />
-            <span className="vehicle-signal-marker rear-left" />
-            <span className="vehicle-signal-marker rear-right" />
-          </div>
-          <div className="vehicle-card-caption"><span><i className="legend-red" /> إنارة خلفية</span><span><i className="legend-amber" /> غماز</span></div>
-        </div>
+        <button type="button" className="carousel-arrow carousel-next" onClick={() => move(1)} aria-label="الحالة التالية">›</button>
       </div>
 
-      <div className="vehicle-direction-note"><span>قاعدة بصرية</span><b>الأمام = أرى الطريق · الخلف = أجعل السيارة واضحة للآخرين · الغماز = أخبرهم باتجاهي</b></div>
-    </div>
+      <div className="carousel-hint-row">
+        <span>← السابق</span>
+        <div className="carousel-dots">
+          {PRACTICAL_CASES.map((item, itemIndex) => (
+            <button
+              type="button"
+              key={item.key}
+              className={itemIndex === index ? 'is-active' : ''}
+              onClick={() => applyCase(item)}
+              aria-label={'اختيار ' + item.label}
+            />
+          ))}
+        </div>
+        <span>التالي →</span>
+      </div>
+
+      <div className="carousel-quick-grid">
+        {PRACTICAL_CASES.slice(0, 8).map(item => (
+          <button
+            type="button"
+            key={item.key}
+            className={current.key === item.key ? 'is-active' : ''}
+            onClick={() => applyCase(item)}
+          >
+            <LightSymbol type={item.symbol} />
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -880,29 +879,19 @@ export default function PracticalInfo() {
           )}
         </section>
 
-        <section className="lighting-command-center">
-          <div className="section-kicker">
-            <span className="lesson-eyebrow">02 · التحكم</span>
-            <h2>التحكم من مكان قريب وواضح</h2>
-            <p>كل الوظائف الأساسية ظاهرة أمامك، والضغط عليها يغيّر السيارة والمشهد التوضيحي في اللحظة نفسها.</p>
-          </div>
-
-          <StalkSimulator
-            mainLight={mainLight}
-            signal={signal}
-            onMainLight={chooseMain}
-            onSignal={chooseSignal}
-            onFlash={doFlash}
-          />
-
-          <DashboardIndicator mainLight={mainLight} signal={signal} />
-        </section>
+        <LightingControlCarousel
+          mainLight={mainLight}
+          signal={signal}
+          onMainLight={chooseMain}
+          onSignal={chooseSignal}
+          onFlash={doFlash}
+        />
 
         <section className="lighting-state-bank">
           <div className="section-kicker">
             <span className="lesson-eyebrow">03 · الرموز</span>
             <h2>كل أوضاع الإنارة الأساسية</h2>
-            <p>اضغط على أي رمز وشاهد الفرق في السيارة والمقبض معاً.</p>
+            <p>كل وضع مرتبط بالرمز والحركة والاستخدام العملي.</p>
           </div>
 
           <div className="state-grid">
