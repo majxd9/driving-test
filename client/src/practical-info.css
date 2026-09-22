@@ -2652,3 +2652,23 @@
  .simple-stalk-caption b{font-size:12px!important}
  .carousel-car-focus{margin-top:12px!important}
 }
+
+
+/* Final clean stalk UI */
+.stalk-demo{margin-top:18px;border:1px solid rgba(130,220,211,.18);border-radius:22px;background:linear-gradient(180deg,#0b1b22,#071218);overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+.stalk-demo-head{padding:14px 18px;display:flex;justify-content:space-between;gap:12px;align-items:center;background:rgba(255,255,255,.025);border-bottom:1px solid rgba(255,255,255,.07)}
+.stalk-demo-head span{font-size:12px;color:#9eb5b8}.stalk-demo-head b{font-size:14px;color:#f3f7f7}
+.stalk-demo-body{height:230px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.stalk-handle{position:relative;width:390px;height:100px;transform:rotate(-3deg);transition:transform .45s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 14px 14px rgba(0,0,0,.35))}
+.stalk-handle.is-left{transform:translateY(32px) rotate(-13deg)}.stalk-handle.is-right{transform:translateY(-32px) rotate(8deg)}.stalk-handle.is-high{transform:translateX(34px)}.stalk-handle.is-flash{transform:translateX(-30px) rotate(-7deg)}
+.stalk-grip{position:absolute;left:0;top:25px;width:255px;height:54px;border-radius:27px;background:linear-gradient(180deg,#4d5b60,#1a252a 55%,#0e171b);border:2px solid #6d7d81;box-shadow:inset 0 7px 10px rgba(255,255,255,.1),0 8px 20px rgba(0,0,0,.4)}
+.stalk-grip i{position:absolute;top:9px;width:3px;height:36px;background:rgba(255,255,255,.16);border-radius:4px}.stalk-grip i:nth-child(1){left:38%}.stalk-grip i:nth-child(2){left:53%}.stalk-grip i:nth-child(3){left:68%}
+.stalk-ring{position:absolute;left:220px;top:16px;width:94px;height:72px;border-radius:18px;background:linear-gradient(180deg,#606e73,#202b30);border:2px solid #7f8e92;box-shadow:inset 0 8px 10px rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-around;padding:0 5px;transform:rotate(-4deg);transition:transform .35s}
+.stalk-ring.is-active{transform:rotate(7deg) scale(1.04);box-shadow:0 0 0 3px rgba(130,220,211,.12),inset 0 8px 10px rgba(255,255,255,.08)}
+.stalk-ring span{font-size:8px;color:#dce6e7;font-weight:800;writing-mode:vertical-rl}.stalk-ring em{position:absolute;top:-10px;left:44px;width:3px;height:15px;border-radius:3px;background:#8be5da}
+.stalk-tip{position:absolute;right:0;top:23px;width:92px;height:58px;border-radius:20px 30px 30px 20px;background:linear-gradient(180deg,#536167,#151f24);border:2px solid #6d7d81;color:#a9c1c3;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:800}
+.stalk-hazard{position:absolute;right:18px;top:20px;width:56px;height:56px;border-radius:50%;border:2px solid #718185;background:#18262b;color:#aebfc1;box-shadow:0 8px 18px rgba(0,0,0,.35);cursor:pointer;transition:.25s}.stalk-hazard.is-active{background:#3b2420;color:#ffb06b;box-shadow:0 0 0 6px rgba(255,153,84,.12)}
+.stalk-hazard span{font-size:25px}.stalk-hint{position:absolute;bottom:15px;font-size:27px;color:#8be5da;opacity:.9;animation:stalkPulse 1.1s ease-in-out infinite}
+.stalk-demo-footer{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;padding:11px;border-top:1px solid rgba(255,255,255,.07)}.stalk-demo-footer span{font-size:11px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.045);color:#83999c}.stalk-demo-footer .on{background:rgba(139,229,218,.13);color:#aef1e8;border:1px solid rgba(139,229,218,.2)}
+@keyframes stalkPulse{50%{transform:scale(1.16);opacity:.55}}
+@media(max-width:700px){.stalk-demo-head{display:block}.stalk-demo-head b{display:block;margin-top:6px;font-size:12px}.stalk-demo-body{height:195px}.stalk-handle{transform:scale(.7) rotate(-3deg)}.stalk-handle.is-left{transform:scale(.7) translateY(27px) rotate(-13deg)}.stalk-handle.is-right{transform:scale(.7) translateY(-27px) rotate(8deg)}.stalk-handle.is-high{transform:scale(.7) translateX(25px)}.stalk-handle.is-flash{transform:scale(.7) translateX(-25px) rotate(-7deg)}.stalk-hazard{right:12px;top:14px}.stalk-demo-footer{gap:4px}.stalk-demo-footer span{font-size:10px;padding:6px 8px}}
