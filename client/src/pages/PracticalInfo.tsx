@@ -96,7 +96,7 @@ function LightStalk({
     <div className="stalk-demo">
       <div className="stalk-demo-labels">
         <span>مقبض التحكم بالإضاءة</span>
-        <b>اضغط على المقبض أو اختر الرمز القريب منه.</b>
+        <b>التحكم من نفس المقبض: اضغط على الحلقة لتبديل الوضع.</b>
       </div>
 
       <div className="stalk-control-stage">
@@ -104,29 +104,29 @@ function LightStalk({
           className="stalk-demo-svg"
           viewBox="0 0 520 230"
           role="img"
-          aria-label="مقبض واقعي للتحكم بأضواء السيارة"
+          aria-label={\`مقبض واقعي للتحكم بأضواء السيارة — الوضع الحالي: \${labels[active]}\`}
         >
           <defs>
-            <linearGradient id="stalk-metal-v4" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#aeb9bd" />
-              <stop offset="22%" stopColor="#69757b" />
-              <stop offset="52%" stopColor="#344047" />
-              <stop offset="100%" stopColor="#11191e" />
+            <linearGradient id="stalk-metal-v5" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#b8c3c6" />
+              <stop offset="22%" stopColor="#707d83" />
+              <stop offset="55%" stopColor="#354148" />
+              <stop offset="100%" stopColor="#10181d" />
             </linearGradient>
-            <linearGradient id="stalk-grip-v4" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#56636a" />
-              <stop offset="28%" stopColor="#2c373d" />
+            <linearGradient id="stalk-grip-v5" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#5d6b71" />
+              <stop offset="28%" stopColor="#2e3940" />
               <stop offset="72%" stopColor="#151e24" />
-              <stop offset="100%" stopColor="#090f14" />
+              <stop offset="100%" stopColor="#080e13" />
             </linearGradient>
-            <linearGradient id="stalk-collar-v4" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#b4c1c4" />
-              <stop offset="26%" stopColor="#66747a" />
-              <stop offset="65%" stopColor="#2d383e" />
-              <stop offset="100%" stopColor="#0f171c" />
+            <linearGradient id="stalk-collar-v5" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#bdc8ca" />
+              <stop offset="26%" stopColor="#6d7a80" />
+              <stop offset="65%" stopColor="#303b41" />
+              <stop offset="100%" stopColor="#11181d" />
             </linearGradient>
-            <filter id="stalk-shadow-v4" x="-30%" y="-50%" width="170%" height="200%">
-              <feDropShadow dx="0" dy="11" stdDeviation="9" floodOpacity=".42" />
+            <filter id="stalk-shadow-v5" x="-30%" y="-50%" width="170%" height="200%">
+              <feDropShadow dx="0" dy="11" stdDeviation="9" floodOpacity=".40" />
             </filter>
           </defs>
 
@@ -138,73 +138,59 @@ function LightStalk({
             strokeWidth="39"
             strokeLinecap="round"
             opacity=".82"
-            filter="url(#stalk-shadow-v4)"
+            filter="url(#stalk-shadow-v5)"
           />
           <path
             d="M52 123C79 105 109 98 143 97H329"
-            stroke="url(#stalk-metal-v4)"
+            stroke="url(#stalk-metal-v5)"
             strokeWidth="29"
             strokeLinecap="round"
           />
           <path
             d="M69 116C94 103 114 98 145 97H321"
-            stroke="#e9f1f2"
+            stroke="#f1f6f7"
             strokeOpacity=".22"
             strokeWidth="4"
             strokeLinecap="round"
           />
 
-          <path
-            d="M324 76V140"
-            stroke="#0b1217"
-            strokeWidth="53"
-            strokeLinecap="round"
-            opacity=".95"
-          />
-          <path
-            d="M324 76V140"
-            stroke="url(#stalk-collar-v4)"
-            strokeWidth="42"
-            strokeLinecap="round"
-          />
-          <path
-            d="M324 82V135"
-            stroke="#dbe6e8"
-            strokeOpacity=".19"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
+          <path d="M324 76V140" stroke="#0b1217" strokeWidth="53" strokeLinecap="round" opacity=".95" />
+          <path d="M324 76V140" stroke="url(#stalk-collar-v5)" strokeWidth="42" strokeLinecap="round" />
+          <path d="M324 82V135" stroke="#e4eeee" strokeOpacity=".18" strokeWidth="4" strokeLinecap="round" />
 
           <path
             d="M355 72C369 67 383 66 401 68L463 78Q476 80 480 93V124Q477 139 462 141L399 147Q379 149 362 139Z"
-            fill="url(#stalk-grip-v4)"
-            stroke="#b7c3c6"
+            fill="url(#stalk-grip-v5)"
+            stroke="#bdc9cc"
             strokeOpacity=".22"
             strokeWidth="1.7"
           />
           <path
             d="M378 73L373 142M391 71L387 145M404 71L402 145M418 73L417 142M432 74L433 140M446 76L449 138"
-            stroke="#9aa7ab"
+            stroke="#a2afb3"
             strokeOpacity=".16"
             strokeWidth="2"
           />
           <path
             d="M361 82Q378 89 395 88L462 96"
-            stroke="#edf4f5"
+            stroke="#f1f6f7"
             strokeOpacity=".12"
             strokeWidth="3"
             strokeLinecap="round"
           />
 
-          <circle cx="324" cy="108" r="35" fill="#0b1217" stroke="#c0cbce" strokeOpacity=".15" strokeWidth="2" />
-          <circle cx="324" cy="108" r="29" fill="url(#stalk-collar-v4)" stroke="#9eabad" strokeOpacity=".32" strokeWidth="2" />
-          <circle cx="324" cy="108" r="21" fill="#111a20" stroke="#55636a" strokeWidth="4" />
-          <path d="M324 88V96M344 108H336M324 128V120M304 108H312" stroke="#e7f2f3" strokeOpacity=".58" strokeWidth="2.7" strokeLinecap="round" />
-          <circle cx="324" cy="108" r="4.5" fill="#e8f6f4" opacity=".82" />
+          <circle cx="324" cy="108" r="35" fill="#0b1217" stroke="#c8d2d5" strokeOpacity=".16" strokeWidth="2" />
+          <circle cx="324" cy="108" r="29" fill="url(#stalk-collar-v5)" stroke="#aab6ba" strokeOpacity=".34" strokeWidth="2" />
+          <circle cx="324" cy="108" r="21" fill="#111a20" stroke="#5b696f" strokeWidth="4" />
+          <path d="M324 88V96M344 108H336M324 128V120M304 108H312" stroke="#edf6f6" strokeOpacity=".62" strokeWidth="2.7" strokeLinecap="round" />
+          <circle cx="324" cy="108" r="4.5" fill="#effaf8" opacity=".90" />
 
-          <rect x="74" y="154" width="112" height="23" rx="11.5" fill="#081117" stroke="#d5e3e5" strokeOpacity=".10" />
-          <text x="130" y="169" textAnchor="middle" fill="#8ee4d9" fontSize="10" fontWeight="900">
+          <rect x="72" y="153" width="118" height="25" rx="12.5" fill="#081117" stroke="#d5e3e5" strokeOpacity=".10" />
+          <text x="131" y="170" textAnchor="middle" fill="#9ae9df" fontSize="11" fontWeight="900">
             {labels[active]}
+          </text>
+          <text x="324" y="171" textAnchor="middle" fill="#bfe7e3" fontSize="10" fontWeight="800" opacity=".82">
+            اضغط هنا
           </text>
         </svg>
 
@@ -212,141 +198,173 @@ function LightStalk({
           type="button"
           className="stalk-ring-trigger"
           onClick={() => onSelect(nextLight)}
-          aria-label="تغيير وضع الإضاءة من المقبض"
-          title="اضغط لتغيير وضع الإضاءة"
+          aria-label={\`اضغط على المقبض لتبديل الإضاءة من \${labels[active]} إلى \${labels[nextLight]}\`}
+          title={\`اضغط على المقبض — التالي: \${labels[nextLight]}\`}
         />
-
-        <div className="stalk-mode-orbit" aria-label="اختيار وضع الإضاءة">
-          {keys.map((key, index) => (
-            <button
-              key={key}
-              type="button"
-              className={\`stalk-mode-button mode-\${index + 1} \${active === key ? 'is-active' : ''}\`}
-              onClick={() => onSelect(key)}
-              aria-label={labels[key]}
-              aria-pressed={active === key}
-              title={labels[key]}
-            >
-              <LightSymbol type={key} />
-              <span>{labels[key]}</span>
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );
 }
 
 function LightScene({ active }: { active: LightMode }) {
+  const frontMainOn = active.key === 'low' || active.key === 'high';
+  const frontFogOn = active.key === 'fog';
+  const frontPositionOn = active.key === 'position';
+  const rearPositionOn = active.key === 'position';
+
   return (
-    <div className="scene-v3-wrap">
-      <svg className="scene-v3-svg" viewBox="0 0 900 520" role="img" aria-label={active.sceneTitle}>
+    <div className="scene-v4-wrap">
+      <svg
+        className="scene-v4-svg"
+        viewBox="0 0 900 470"
+        role="img"
+        aria-label={\`\${active.title}: توضيح أماكن الإضاءة من الأمام والخلف\`}
+      >
         <defs>
-          <linearGradient id="v3-sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#07131d" />
-            <stop offset="100%" stopColor="#132832" />
+          <linearGradient id="v4-bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#081721" />
+            <stop offset="55%" stopColor="#0d222d" />
+            <stop offset="100%" stopColor="#071219" />
           </linearGradient>
-          <linearGradient id="v3-road" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#20333b" />
-            <stop offset="100%" stopColor="#09151c" />
+          <linearGradient id="v4-body-front" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#9caeb3" />
+            <stop offset="26%" stopColor="#5a6c73" />
+            <stop offset="62%" stopColor="#283b44" />
+            <stop offset="100%" stopColor="#101c23" />
           </linearGradient>
-          <linearGradient id="v3-car-body" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#92a0a5" />
-            <stop offset="30%" stopColor="#465963" />
-            <stop offset="75%" stopColor="#1b2a33" />
-            <stop offset="100%" stopColor="#0a1319" />
+          <linearGradient id="v4-body-rear" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#84989e" />
+            <stop offset="28%" stopColor="#4f636b" />
+            <stop offset="64%" stopColor="#24363f" />
+            <stop offset="100%" stopColor="#0e1a21" />
           </linearGradient>
-          <linearGradient id="v3-window" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#c7dbe0" stopOpacity=".70" />
-            <stop offset="75%" stopColor="#365b69" stopOpacity=".92" />
-            <stop offset="100%" stopColor="#162c37" stopOpacity=".98" />
+          <linearGradient id="v4-glass" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#d9ecef" stopOpacity=".72" />
+            <stop offset="100%" stopColor="#244553" stopOpacity=".94" />
           </linearGradient>
-          <linearGradient id="v3-low-beam" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#fff8d4" stopOpacity=".72" />
-            <stop offset="55%" stopColor="#fff1aa" stopOpacity=".30" />
-            <stop offset="100%" stopColor="#fff1aa" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="v3-high-beam" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#fffde0" stopOpacity=".78" />
-            <stop offset="55%" stopColor="#fff3ad" stopOpacity=".34" />
-            <stop offset="100%" stopColor="#fff3ad" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="v3-fog-beam" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#fff6ca" stopOpacity=".66" />
-            <stop offset="70%" stopColor="#fff5c5" stopOpacity=".18" />
-            <stop offset="100%" stopColor="#fff5c5" stopOpacity="0" />
-          </linearGradient>
-          <filter id="v3-glow" x="-80%" y="-80%" width="260%" height="260%">
+          <filter id="v4-front-glow" x="-150%" y="-150%" width="400%" height="400%">
+            <feGaussianBlur stdDeviation="7" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <filter id="v4-rear-glow" x="-150%" y="-150%" width="400%" height="400%">
             <feGaussianBlur stdDeviation="5" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
 
-        <rect width="900" height="520" fill="url(#v3-sky)" />
-        <circle cx="760" cy="96" r="31" fill="#d7e6e7" opacity=".12" />
-        <circle cx="760" cy="96" r="22" fill="#f3f5ea" opacity=".16" />
+        <rect width="900" height="470" rx="24" fill="url(#v4-bg)" />
 
-        <path d="M0 312H900V520H0Z" fill="#0b171d" />
-        <path d="M0 520V356Q320 276 450 280T900 356V520Z" fill="url(#v3-road)" />
-        <path d="M450 282V520" stroke="#e1efef" strokeOpacity=".22" strokeWidth="5" strokeDasharray="25 28" />
-        <path d="M130 520L357 302" stroke="#dceaea" strokeOpacity=".15" strokeWidth="4" />
-        <path d="M770 520L543 302" stroke="#dceaea" strokeOpacity=".15" strokeWidth="4" />
+        <g opacity=".9">
+          <rect x="44" y="30" width="370" height="46" rx="16" fill="#071219" stroke="#b6d9dc" strokeOpacity=".10" />
+          <text x="229" y="59" textAnchor="middle" fill="#ecf7f7" fontSize="16" fontWeight="900">من الأمام</text>
+          <text x="229" y="87" textAnchor="middle" fill="#83dfd3" fontSize="10" fontWeight="800">المصابيح التي تنير الطريق</text>
 
-        <g className={active.key === 'position' ? 'is-on' : ''}>
-          <circle cx="628" cy="300" r="12" fill="#a7eee5" opacity=".82" filter="url(#v3-glow)" />
-          <circle cx="657" cy="306" r="7" fill="#a7eee5" opacity=".58" filter="url(#v3-glow)" />
+          <rect x="486" y="30" width="370" height="46" rx="16" fill="#071219" stroke="#b6d9dc" strokeOpacity=".10" />
+          <text x="671" y="59" textAnchor="middle" fill="#ecf7f7" fontSize="16" fontWeight="900">من الخلف</text>
+          <text x="671" y="87" textAnchor="middle" fill="#83dfd3" fontSize="10" fontWeight="800">مصابيح ظهور المركبة</text>
         </g>
 
-        <g className="v3-beam v3-beam-low" style={{ opacity: active.key === 'low' ? 1 : 0 }}>
-          <path d="M614 312L650 306L880 372L880 426L648 338Z" fill="url(#v3-low-beam)" />
-          <path d="M618 325L650 321L870 409L870 447L645 345Z" fill="url(#v3-low-beam)" opacity=".55" />
+        <g transform="translate(78 103)">
+          <ellipse cx="151" cy="313" rx="135" ry="19" fill="#000" opacity=".35" />
+          <path
+            d="M28 264Q31 219 66 205L92 170Q112 144 151 138H211Q250 144 270 170L296 205Q331 219 334 264Q331 297 300 305H62Q31 297 28 264Z"
+            fill="url(#v4-body-front)"
+            stroke="#d8e6e8"
+            strokeOpacity=".24"
+            strokeWidth="2.4"
+          />
+          <path
+            d="M89 171Q111 145 151 139H210Q250 145 273 171L257 205H104Z"
+            fill="url(#v4-glass)"
+            stroke="#dcecee"
+            strokeOpacity=".22"
+            strokeWidth="2"
+          />
+          <path d="M151 140V204M211 145L211 204" stroke="#e0edef" strokeOpacity=".16" strokeWidth="2" />
+          <path d="M87 217H274" stroke="#e5eff0" strokeOpacity=".17" strokeWidth="2" />
+          <path d="M102 252H87Q71 252 65 266" stroke="#e5eff0" strokeOpacity=".12" strokeWidth="3" strokeLinecap="round" />
+          <path d="M199 252H286Q302 252 309 266" stroke="#e5eff0" strokeOpacity=".12" strokeWidth="3" strokeLinecap="round" />
+          <rect x="110" y="235" width="52" height="28" rx="11" fill="#111c22" stroke="#d9e7e8" strokeOpacity=".14" />
+          <path d="M125 245H147M125 252H147" stroke="#b7cbcf" strokeOpacity=".24" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="67" cy="270" r="8" fill="#0a1116" stroke="#859a9f" strokeOpacity=".18" strokeWidth="3" />
+          <circle cx="270" cy="270" r="8" fill="#0a1116" stroke="#859a9f" strokeOpacity=".18" strokeWidth="3" />
+
+          <rect x="48" y="219" width="54" height="33" rx="12" fill="#071116" stroke="#dfe9e9" strokeOpacity=".20" />
+          <rect x="234" y="219" width="54" height="33" rx="12" fill="#071116" stroke="#dfe9e9" strokeOpacity=".20" />
+          <rect x="54" y="225" width="42" height="21" rx="8" fill="#fff7d3"
+            opacity={frontMainOn ? 1 : frontPositionOn ? .62 : .14}
+            filter={frontMainOn ? "url(#v4-front-glow)" : undefined}
+          />
+          <rect x="240" y="225" width="42" height="21" rx="8" fill="#fff7d3"
+            opacity={frontMainOn ? 1 : frontPositionOn ? .62 : .14}
+            filter={frontMainOn ? "url(#v4-front-glow)" : undefined}
+          />
+
+          <circle cx="96" cy="277" r="10" fill="#f7f8f1" opacity={frontPositionOn ? .95 : .12} filter={frontPositionOn ? "url(#v4-front-glow)" : undefined} />
+          <circle cx="240" cy="277" r="10" fill="#f7f8f1" opacity={frontPositionOn ? .95 : .12} filter={frontPositionOn ? "url(#v4-front-glow)" : undefined} />
+
+          <rect x="123" y="274" width="28" height="13" rx="6.5" fill="#fff4bf" opacity={frontFogOn ? 1 : .12} filter={frontFogOn ? "url(#v4-front-glow)" : undefined} />
+          <rect x="185" y="274" width="28" height="13" rx="6.5" fill="#fff4bf" opacity={frontFogOn ? 1 : .12} filter={frontFogOn ? "url(#v4-front-glow)" : undefined} />
+
+          <g opacity={active.key === 'low' ? .55 : active.key === 'high' ? .95 : 0}>
+            <path d="M54 231L-4 210L-4 252L54 240Z" fill="#fff1ad" opacity=".36" />
+            <path d="M282 231L340 210L340 252L282 240Z" fill="#fff1ad" opacity=".36" />
+          </g>
+          <g opacity={active.key === 'high' ? .95 : 0}>
+            <path d="M50 229L-14 184L-14 216L50 239Z" fill="#fffbd7" opacity=".30" />
+            <path d="M286 229L350 184L350 216L286 239Z" fill="#fffbd7" opacity=".30" />
+          </g>
+
+          <g transform="translate(17 322)">
+            <rect width="268" height="28" rx="14" fill="#071219" stroke="#d0e1e2" strokeOpacity=".08" />
+            <text x="134" y="18" textAnchor="middle" fill="#bedddd" fontSize="9.5" fontWeight="800">
+              {active.key === 'fog' ? 'أضواء الضباب الأمامية' : active.key === 'position' ? 'أضواء الموضع الأمامية' : active.key === 'high' ? 'الضوء العالي' : 'الضوء المنخفض'}
+            </text>
+          </g>
         </g>
 
-        <g className="v3-beam v3-beam-high" style={{ opacity: active.key === 'high' ? 1 : 0 }}>
-          <path d="M614 302L648 308L886 230L886 290L648 326Z" fill="url(#v3-high-beam)" />
-          <path d="M625 315L651 320L890 290L890 350L648 337Z" fill="url(#v3-high-beam)" opacity=".52" />
-        </g>
+        <g transform="translate(520 103)">
+          <ellipse cx="151" cy="313" rx="135" ry="19" fill="#000" opacity=".35" />
+          <path
+            d="M28 264Q31 219 66 205L92 170Q112 144 151 138H211Q250 144 270 170L296 205Q331 219 334 264Q331 297 300 305H62Q31 297 28 264Z"
+            fill="url(#v4-body-rear)"
+            stroke="#d8e6e8"
+            strokeOpacity=".22"
+            strokeWidth="2.4"
+          />
+          <path
+            d="M91 171Q112 145 151 139H210Q250 145 272 171L254 205H106Z"
+            fill="url(#v4-glass)"
+            stroke="#dcecee"
+            strokeOpacity=".20"
+            strokeWidth="2"
+          />
+          <path d="M151 140V205" stroke="#e0edef" strokeOpacity=".15" strokeWidth="2" />
+          <path d="M88 219H274" stroke="#e5eff0" strokeOpacity=".12" strokeWidth="2" />
 
-        <g className="v3-beam v3-beam-fog" style={{ opacity: active.key === 'fog' ? 1 : 0 }}>
-          <path d="M618 330L648 334L887 402L887 448L648 353Z" fill="url(#v3-fog-beam)" />
-          <path d="M620 347L651 349L873 437L873 470L648 366Z" fill="url(#v3-fog-beam)" opacity=".58" />
-        </g>
+          <rect x="47" y="230" width="59" height="43" rx="15" fill="#0a151b" stroke="#d5e3e5" strokeOpacity=".16" />
+          <rect x="227" y="230" width="59" height="43" rx="15" fill="#0a151b" stroke="#d5e3e5" strokeOpacity=".16" />
+          <rect x="53" y="236" width="47" height="31" rx="11" fill="#ff4b45" opacity={rearPositionOn ? 1 : .20} filter={rearPositionOn ? "url(#v4-rear-glow)" : undefined} />
+          <rect x="233" y="236" width="47" height="31" rx="11" fill="#ff4b45" opacity={rearPositionOn ? 1 : .20} filter={rearPositionOn ? "url(#v4-rear-glow)" : undefined} />
 
-        <g opacity={active.key === 'high' ? .95 : .38}>
-          <path d="M738 206h94l22 15v40h-116z" fill="#172a32" stroke="#b9cdd0" strokeOpacity=".18" />
-          <path d="M756 206l17-14h38l19 14" fill="#213a44" stroke="#b9cdd0" strokeOpacity=".12" />
-          <rect x="751" y="241" width="15" height="7" rx="3.5" fill="#fff8cf" filter="url(#v3-glow)" />
-          <rect x="825" y="241" width="15" height="7" rx="3.5" fill="#fff8d5" filter="url(#v3-glow)" />
-          <text x="828" y="280" fill="#d5e7e9" fontSize="12" fontWeight="800">مركبة مقابلة</text>
-        </g>
+          <rect x="126" y="246" width="50" height="25" rx="8" fill="#101b21" stroke="#b9cace" strokeOpacity=".15" />
+          <path d="M138 254H164M138 262H164" stroke="#c6d6d8" strokeOpacity=".20" strokeWidth="2" strokeLinecap="round" />
 
-        <g filter="url(#v3-glow)">
-          <ellipse cx="535" cy="408" rx="204" ry="25" fill="#000" opacity=".34" />
-        </g>
+          <path d="M76 287H226" stroke="#d4e1e2" strokeOpacity=".13" strokeWidth="2" />
+          <circle cx="67" cy="270" r="8" fill="#0a1116" stroke="#859a9f" strokeOpacity=".18" strokeWidth="3" />
+          <circle cx="270" cy="270" r="8" fill="#0a1116" stroke="#859a9f" strokeOpacity=".18" strokeWidth="3" />
 
-        <g>
-          <ellipse cx="536" cy="425" rx="195" ry="27" fill="#000" opacity=".38" />
-          <path d="M370 390Q372 357 405 343L460 298Q483 280 531 280H590Q628 282 657 312L690 346Q708 363 707 390L701 410Q695 425 666 430H409Q379 425 370 390Z" fill="url(#v3-car-body)" stroke="#c7d8db" strokeOpacity=".24" strokeWidth="2.4" />
-          <path d="M462 300Q483 280 531 280H589Q626 282 655 311L617 326H482Z" fill="url(#v3-window)" stroke="#d5e6e8" strokeOpacity=".19" />
-          <path d="M519 282V325M615 286L616 326" stroke="#d7e6e8" strokeOpacity=".20" strokeWidth="2" />
-          <path d="M409 344L456 330H640L681 349" stroke="#d6e4e6" strokeOpacity=".20" strokeWidth="2" />
-          <path d="M394 390Q388 402 402 413H681L695 396" fill="#0b141a" opacity=".64" />
-          <path d="M402 413H694" stroke="#9fb2b7" strokeOpacity=".14" strokeWidth="2" />
-          <path d="M426 425Q430 442 447 442T468 425M612 425Q616 442 633 442T654 425" stroke="#070d11" strokeWidth="14" strokeLinecap="round" />
-          <path d="M412 375H495" stroke="#b5c8cb" strokeOpacity=".13" strokeWidth="2" />
-          <path d="M645 374H689" stroke="#b5c8cb" strokeOpacity=".13" strokeWidth="2" />
-          <rect x="664" y="343" width="25" height="16" rx="7" fill="#fff3bf" filter="url(#v3-glow)" />
-          <rect x="671" y="358" width="22" height="14" rx="6" fill="#fff6c8" />
-          <circle cx="395" cy="363" r="8" fill="#df615f" opacity=".72" />
+          <g opacity={rearPositionOn ? 1 : .18}>
+            <rect x="50" y="282" width="47" height="10" rx="5" fill="#d94d48" />
+            <rect x="237" y="282" width="47" height="10" rx="5" fill="#d94d48" />
+          </g>
 
-          <path d="M700 335L730 350" stroke="#d7e7e9" strokeOpacity=".12" strokeWidth="4" strokeLinecap="round" />
-          <path d="M712 349L744 363" stroke="#d7e7e9" strokeOpacity=".10" strokeWidth="4" strokeLinecap="round" />
-        </g>
-
-        <g>
-          <rect x="55" y="63" width="205" height="66" rx="18" fill="#071118" fillOpacity=".86" stroke="#b0d4d6" strokeOpacity=".13" />
-          <text x="232" y="88" textAnchor="end" fill="#87ddd2" fontSize="12" fontWeight="900">{active.title}</text>
-          <text x="232" y="111" textAnchor="end" fill="#e4efef" fontSize="13" fontWeight="800">{active.sceneTitle}</text>
+          <g transform="translate(17 322)">
+            <rect width="268" height="28" rx="14" fill="#071219" stroke="#d0e1e2" strokeOpacity=".08" />
+            <text x="134" y="18" textAnchor="middle" fill="#bedddd" fontSize="9.5" fontWeight="800">
+              {rearPositionOn ? 'تظهر بوضوح عند وضع الموضع' : 'الخلف يوضح مكان مصابيح الموضع'}
+            </text>
+          </g>
         </g>
       </svg>
     </div>
@@ -582,7 +600,7 @@ export default function PracticalInfo() {
           </div>
         </section>
 
-        <section className="practical-learning-grid">
+        <section className="practical-learning-grid" aria-label="أماكن أضواء السيارة والتحكم بها">
           <div className="practical-scene">
             <LightScene active={active} />
           </div>
@@ -591,7 +609,7 @@ export default function PracticalInfo() {
             <div className="control-head">
               <div>
                 <span className="practical-eyebrow">الخطوة 02</span>
-                <h3>شوفه على السيارة</h3>
+                <h3>تحكم من المقبض نفسه</h3>
                 <p>{active.technical}</p>
               </div>
 
