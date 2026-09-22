@@ -621,6 +621,8 @@ function VehicleScene({
   const position = mainLight === 'position' || mainLight === 'auto';
   const frontFog = mainLight === 'frontFog';
   const rearFog = mainLight === 'rearFog';
+  const frontLamps = position || low || high || frontFog || rearFog;
+  const rearLamps = position || low || high || frontFog || rearFog;
   const leftBlink = signal === 'left' || signal === 'hazard';
   const rightBlink = signal === 'right' || signal === 'hazard';
 
@@ -678,10 +680,10 @@ function VehicleScene({
           <g>
             <rect x="92" y="257" width="95" height="57" rx="20" fill="#0a1419" stroke="#cad8da" strokeOpacity=".19" />
             <rect x="323" y="257" width="95" height="57" rx="20" fill="#0a1419" stroke="#cad8da" strokeOpacity=".19" />
-            <rect x="102" y="266" width="75" height="39" rx="14" fill="#fff7d0" opacity={high ? 1 : low ? .86 : position ? .48 : .10} filter={(high || low || position) ? "url(#vs-light)" : undefined} />
-            <rect x="333" y="266" width="75" height="39" rx="14" fill="#fff7d0" opacity={high ? 1 : low ? .86 : position ? .48 : .10} filter={(high || low || position) ? "url(#vs-light)" : undefined} />
-            <ellipse cx="139" cy="284" rx="18" ry="10" fill="#effcff" opacity={high ? 1 : low ? .85 : .30} />
-            <ellipse cx="371" cy="284" rx="18" ry="10" fill="#effcff" opacity={high ? 1 : low ? .85 : .30} />
+            <rect x="102" y="266" width="75" height="39" rx="14" fill="#fff7d0" opacity={high ? 1 : low ? .86 : position ? .48 : frontLamps ? .34 : .10} className={mainLight === 'flash' ? 'vehicle-flash' : ''} filter={frontLamps ? "url(#vs-light)" : undefined} />
+            <rect x="333" y="266" width="75" height="39" rx="14" fill="#fff7d0" opacity={high ? 1 : low ? .86 : position ? .48 : frontLamps ? .34 : .10} className={mainLight === 'flash' ? 'vehicle-flash' : ''} filter={frontLamps ? "url(#vs-light)" : undefined} />
+            <ellipse cx="139" cy="284" rx="18" ry="10" fill="#effcff" opacity={high ? 1 : low ? .85 : frontLamps ? .56 : .30} />
+            <ellipse cx="371" cy="284" rx="18" ry="10" fill="#effcff" opacity={high ? 1 : low ? .85 : frontLamps ? .56 : .30} />
           </g>
 
           <g>
@@ -692,8 +694,8 @@ function VehicleScene({
           </g>
 
           <g>
-            <circle cx="88" cy="318" r="13" fill="#f3b55d" opacity={leftBlink ? 1 : .10} filter={leftBlink ? "url(#vs-light)" : undefined} />
-            <circle cx="421" cy="318" r="13" fill="#f3b55d" opacity={rightBlink ? 1 : .10} filter={rightBlink ? "url(#vs-light)" : undefined} />
+            <circle cx="88" cy="318" r="13" fill="#f3b55d" opacity={leftBlink ? 1 : .10} className={leftBlink ? 'vehicle-blink' : ''} filter={leftBlink ? "url(#vs-light)" : undefined} />
+            <circle cx="421" cy="318" r="13" fill="#f3b55d" opacity={rightBlink ? 1 : .10} className={rightBlink ? 'vehicle-blink' : ''} filter={rightBlink ? "url(#vs-light)" : undefined} />
             <path d="M64 314h-22M82 341l-13 10M421 341l13 10M445 314h22" stroke="#d7e5e7" strokeOpacity=".16" strokeWidth="2" strokeLinecap="round" />
           </g>
 
@@ -725,10 +727,10 @@ function VehicleScene({
           <g>
             <rect x="92" y="260" width="100" height="68" rx="23" fill="#0a1419" stroke="#cad8da" strokeOpacity=".18" />
             <rect x="318" y="260" width="100" height="68" rx="23" fill="#0a1419" stroke="#cad8da" strokeOpacity=".18" />
-            <rect x="102" y="271" width="80" height="43" rx="15" fill="#cf403f" opacity={rearFog || position ? .88 : .32} filter={(rearFog || position) ? "url(#vs-rear-light)" : undefined} />
-            <rect x="328" y="271" width="80" height="43" rx="15" fill="#cf403f" opacity={rearFog || position ? .88 : .32} filter={(rearFog || position) ? "url(#vs-rear-light)" : undefined} />
-            <rect x="118" y="282" width="47" height="13" rx="6.5" fill="#ffefed" opacity={rightBlink ? 1 : .10} />
-            <rect x="345" y="282" width="47" height="13" rx="6.5" fill="#ffefed" opacity={leftBlink ? 1 : .10} />
+            <rect x="102" y="271" width="80" height="43" rx="15" fill="#cf403f" opacity={rearFog ? .98 : rearLamps ? .78 : .24} filter={rearLamps ? "url(#vs-rear-light)" : undefined} />
+            <rect x="328" y="271" width="80" height="43" rx="15" fill="#cf403f" opacity={rearFog ? .98 : rearLamps ? .78 : .24} filter={rearLamps ? "url(#vs-rear-light)" : undefined} />
+            <rect x="118" y="282" width="47" height="13" rx="6.5" fill="#ffefed" opacity={rightBlink ? 1 : .10} className={rightBlink ? 'vehicle-blink' : ''} />
+            <rect x="345" y="282" width="47" height="13" rx="6.5" fill="#ffefed" opacity={leftBlink ? 1 : .10} className={leftBlink ? 'vehicle-blink' : ''} />
           </g>
 
           <g>
