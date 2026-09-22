@@ -104,7 +104,7 @@ function LightStalk({
           className="stalk-demo-svg"
           viewBox="0 0 520 230"
           role="img"
-          aria-label={\`مقبض واقعي للتحكم بأضواء السيارة — الوضع الحالي: \${labels[active]}\`}
+          aria-label={`مقبض واقعي للتحكم بأضواء السيارة — الوضع الحالي: ${labels[active]}`}
         >
           <defs>
             <linearGradient id="stalk-metal-v5" x1="0" y1="0" x2="0" y2="1">
@@ -198,8 +198,8 @@ function LightStalk({
           type="button"
           className="stalk-ring-trigger"
           onClick={() => onSelect(nextLight)}
-          aria-label={\`اضغط على المقبض لتبديل الإضاءة من \${labels[active]} إلى \${labels[nextLight]}\`}
-          title={\`اضغط على المقبض — التالي: \${labels[nextLight]}\`}
+          aria-label={`اضغط على المقبض لتبديل الإضاءة من ${labels[active]} إلى ${labels[nextLight]}`}
+          title={`اضغط على المقبض — التالي: ${labels[nextLight]}`}
         />
       </div>
     </div>
@@ -218,7 +218,7 @@ function LightScene({ active }: { active: LightMode }) {
         className="scene-v4-svg"
         viewBox="0 0 900 470"
         role="img"
-        aria-label={\`\${active.title}: توضيح أماكن الإضاءة من الأمام والخلف\`}
+        aria-label={`${active.title}: توضيح أماكن الإضاءة من الأمام والخلف`}
       >
         <defs>
           <linearGradient id="v4-bg" x1="0" y1="0" x2="1" y2="1">
