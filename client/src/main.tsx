@@ -25,6 +25,7 @@ import './exam-counter-final-v2.css';
 import './models-drift-final.css';
 import './home-mobile-performance.css';
 import './student-name-plate.css';
+import './vehicle-lighting-guide.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -9,6 +9,7 @@ import SpiritTrafficSignal from '../components/SpiritTrafficSignal';
 import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { preloadImages } from '../utils/imagePreload';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
+import VehicleLightingGuide from '../components/VehicleLightingGuide';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -222,6 +223,7 @@ export default function Study() {
           </div>
 
           <div className="study-premium-diagram"><DiagramRenderer question={q} /></div>
+          <VehicleLightingGuide questionText={q.text} />
 
           <nav className="study-premium-actions" aria-label="التنقل بين الأسئلة">
             <button
