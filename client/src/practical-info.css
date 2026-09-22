@@ -2672,3 +2672,38 @@
 .stalk-demo-footer{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;padding:11px;border-top:1px solid rgba(255,255,255,.07)}.stalk-demo-footer span{font-size:11px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.045);color:#83999c}.stalk-demo-footer .on{background:rgba(139,229,218,.13);color:#aef1e8;border:1px solid rgba(139,229,218,.2)}
 @keyframes stalkPulse{50%{transform:scale(1.16);opacity:.55}}
 @media(max-width:700px){.stalk-demo-head{display:block}.stalk-demo-head b{display:block;margin-top:6px;font-size:12px}.stalk-demo-body{height:195px}.stalk-handle{transform:scale(.7) rotate(-3deg)}.stalk-handle.is-left{transform:scale(.7) translateY(27px) rotate(-13deg)}.stalk-handle.is-right{transform:scale(.7) translateY(-27px) rotate(8deg)}.stalk-handle.is-high{transform:scale(.7) translateX(25px)}.stalk-handle.is-flash{transform:scale(.7) translateX(-25px) rotate(-7deg)}.stalk-hazard{right:12px;top:14px}.stalk-demo-footer{gap:4px}.stalk-demo-footer span{font-size:10px;padding:6px 8px}}
+
+
+/* Strong, visible handle movement */
+.stalk-demo .stalk-handle{transform-origin:92% 50%!important;will-change:transform!important}
+.stalk-demo .stalk-handle.is-left{animation:stalkMoveLeft .58s cubic-bezier(.2,.8,.2,1) both!important}
+.stalk-demo .stalk-handle.is-right{animation:stalkMoveRight .58s cubic-bezier(.2,.8,.2,1) both!important}
+.stalk-demo .stalk-handle.is-high{animation:stalkMoveHigh .58s cubic-bezier(.2,.8,.2,1) both!important}
+.stalk-demo .stalk-handle.is-flash{animation:stalkMoveFlash .58s cubic-bezier(.2,.8,.2,1) both!important}
+.stalk-demo .stalk-ring{transform-origin:50% 50%!important}
+.stalk-demo .stalk-ring.ring-off{transform:rotate(-22deg)!important}
+.stalk-demo .stalk-ring.ring-position{transform:rotate(-7deg)!important}
+.stalk-demo .stalk-ring.ring-auto{transform:rotate(5deg)!important}
+.stalk-demo .stalk-ring.ring-low{transform:rotate(18deg)!important}
+.stalk-demo .stalk-ring.ring-frontFog{transform:rotate(32deg)!important}
+.stalk-demo .stalk-ring.ring-rearFog{transform:rotate(45deg)!important}
+.stalk-demo .stalk-ring.is-active{box-shadow:0 0 0 4px rgba(139,229,218,.18),0 0 25px rgba(139,229,218,.12),inset 0 8px 10px rgba(255,255,255,.08)!important}
+.stalk-demo .stalk-tip{will-change:transform}
+.stalk-demo .is-high .stalk-tip{box-shadow:0 0 0 3px rgba(255,240,180,.16),0 0 28px rgba(255,235,160,.16)}
+.stalk-demo .is-flash .stalk-tip{box-shadow:0 0 0 3px rgba(255,240,180,.2),0 0 32px rgba(255,235,160,.2)}
+.stalk-demo .stalk-hazard.is-active{animation:hazardPulse .65s ease-out both!important}
+@keyframes stalkMoveLeft{0%{transform:rotate(-3deg)}45%{transform:translateY(42px) rotate(-18deg)}100%{transform:translateY(30px) rotate(-13deg)}}
+@keyframes stalkMoveRight{0%{transform:rotate(-3deg)}45%{transform:translateY(-42px) rotate(13deg)}100%{transform:translateY(-30px) rotate(8deg)}}
+@keyframes stalkMoveHigh{0%{transform:rotate(-3deg)}45%{transform:translateX(48px) rotate(1deg)}100%{transform:translateX(32px) rotate(0)}}
+@keyframes stalkMoveFlash{0%{transform:rotate(-3deg)}45%{transform:translateX(-42px) rotate(-11deg)}100%{transform:translateX(-28px) rotate(-7deg)}}
+@keyframes hazardPulse{40%{transform:scale(1.18);filter:brightness(1.45)}100%{transform:scale(1)}}
+@media(max-width:700px){
+  .stalk-demo .stalk-handle.is-left{animation:stalkMoveLeftMobile .58s cubic-bezier(.2,.8,.2,1) both!important}
+  .stalk-demo .stalk-handle.is-right{animation:stalkMoveRightMobile .58s cubic-bezier(.2,.8,.2,1) both!important}
+  .stalk-demo .stalk-handle.is-high{animation:stalkMoveHighMobile .58s cubic-bezier(.2,.8,.2,1) both!important}
+  .stalk-demo .stalk-handle.is-flash{animation:stalkMoveFlashMobile .58s cubic-bezier(.2,.8,.2,1) both!important}
+  @keyframes stalkMoveLeftMobile{0%{transform:scale(.7) rotate(-3deg)}45%{transform:scale(.7) translateY(38px) rotate(-18deg)}100%{transform:scale(.7) translateY(27px) rotate(-13deg)}}
+  @keyframes stalkMoveRightMobile{0%{transform:scale(.7) rotate(-3deg)}45%{transform:scale(.7) translateY(-38px) rotate(13deg)}100%{transform:scale(.7) translateY(-27px) rotate(8deg)}}
+  @keyframes stalkMoveHighMobile{0%{transform:scale(.7) rotate(-3deg)}45%{transform:scale(.7) translateX(38px)}100%{transform:scale(.7) translateX(25px)}}
+  @keyframes stalkMoveFlashMobile{0%{transform:scale(.7) rotate(-3deg)}45%{transform:scale(.7) translateX(-38px) rotate(-11deg)}100%{transform:scale(.7) translateX(-25px) rotate(-7deg)}}
+}
