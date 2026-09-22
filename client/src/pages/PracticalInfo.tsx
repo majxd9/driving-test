@@ -464,30 +464,46 @@ function LightingControlCarousel({
     if (next >= 0) setIndex(next);
   }, [mainLight, signal]);
 
-  const playClick = (kind: 'light' | 'signal') => {
-    if (!soundEnabled || typeof window === 'undefined') return;
+  const getAudioContext = () => {
+    if (typeof window === 'undefined') return null;
+    const AudioCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtor) return null;
+    const context = audioRef.current ?? new AudioCtor();
+    audioRef.current = context;
+    return context;
+  };
+
+  const playClick = async (kind: 'light' | 'signal') => {
+    if (!soundEnabled) return;
     try {
-      const AudioCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtor) return;
-      const context = audioRef.current ?? new AudioCtor();
-      audioRef.current = context;
-      if (context.state === 'suspended') void context.resume();
+      const context = getAudioContext();
+      if (!context) return;
+      if (context.state === 'suspended') await context.resume();
 
       const now = context.currentTime;
       const oscillator = context.createOscillator();
       const gain = context.createGain();
       oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(kind === 'signal' ? 460 : 620, now);
-      oscillator.frequency.exponentialRampToValueAtTime(kind === 'signal' ? 690 : 820, now + 0.055);
+      oscillator.frequency.setValueAtTime(kind === 'signal' ? 520 : 700, now);
+      oscillator.frequency.exponentialRampToValueAtTime(kind === 'signal' ? 760 : 920, now + 0.045);
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.035, now + 0.008);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
+      gain.gain.exponentialRampToValueAtTime(0.085, now + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.095);
       oscillator.connect(gain);
       gain.connect(context.destination);
       oscillator.start(now);
-      oscillator.stop(now + 0.08);
+      oscillator.stop(now + 0.10);
     } catch {
-      // Audio is an optional enhancement; visual interaction must keep working.
+      // Audio is optional; the visual interaction must always continue.
+    }
+  };
+
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    if (next) {
+      const context = getAudioContext();
+      if (context?.state === 'suspended') void context.resume();
     }
   };
 
@@ -521,7 +537,7 @@ function LightingControlCarousel({
         <button
           type="button"
           className={'sound-toggle ' + (soundEnabled ? 'is-on' : '')}
-          onClick={() => setSoundEnabled(value => !value)}
+          onClick={toggleSound}
           aria-pressed={soundEnabled}
         >
           <span>{soundEnabled ? '♪' : '×'}</span>
@@ -555,6 +571,23 @@ function LightingControlCarousel({
         <button type="button" className="carousel-arrow carousel-next" onClick={() => move(1)} aria-label="الحالة التالية">›</button>
       </div>
 
+      <div className="carousel-quick-grid">
+        {PRACTICAL_CASES.map(item => (
+          <button
+            type="button"
+            key={item.key}
+            className={current.key === item.key ? 'is-active' : ''}
+            onClick={() => applyCase(item)}
+          >
+            <LightSymbol type={item.symbol} />
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </div>
+
+
+      <VehicleScene mainLight={mainLight} signal={signal} />
+
       <div className="carousel-hint-row">
         <span>← السابق</span>
         <div className="carousel-dots">
@@ -571,19 +604,6 @@ function LightingControlCarousel({
         <span>التالي →</span>
       </div>
 
-      <div className="carousel-quick-grid">
-        {PRACTICAL_CASES.slice(0, 8).map(item => (
-          <button
-            type="button"
-            key={item.key}
-            className={current.key === item.key ? 'is-active' : ''}
-            onClick={() => applyCase(item)}
-          >
-            <LightSymbol type={item.symbol} />
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </div>
     </section>
   );
 }
@@ -947,8 +967,6 @@ export default function PracticalInfo() {
             onSignal={chooseSignal}
             onFlash={doFlash}
           />
-
-          <VehicleScene mainLight={mainLight} signal={signal} />
 
           <div className="selected-state-panel">
             <div className="selected-state-icon">
