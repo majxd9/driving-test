@@ -424,3 +424,228 @@
   .home-practical-card{grid-template-columns:43px minmax(0,1fr);gap:8px}
   .home-practical-cta{grid-column:2;justify-self:start;margin-top:2px}
 }
+
+
+/* =========================================================
+   PRACTICAL INFO V2 — accurate forward light scene + readability
+   Technical basis: UNECE road-traffic lighting definitions.
+   ========================================================= */
+
+/* Text is intentionally larger than the original lesson so the page works as a study tool. */
+.practical-info-page .practical-hero-copy>p{
+  font-size:16px;
+  line-height:2;
+  color:rgba(238,248,249,.78);
+}
+.practical-info-page .practical-section-title h2{font-size:31px}
+.practical-info-page .practical-section-title p{font-size:12px;color:rgba(231,245,246,.58)}
+.practical-info-page .tab-copy b{font-size:14px}
+.practical-info-page .tab-copy small{font-size:10px}
+.practical-info-page .tab-copy em{font-size:10px;line-height:1.45}
+.practical-info-page .control-head h3{font-size:23px}
+.practical-info-page .control-head p{font-size:10px}
+.practical-info-page .control-why strong{font-size:12px;line-height:1.9}
+.practical-info-page .control-why span{font-size:9px}
+.practical-info-page .stalk-note span{font-size:9px}
+.practical-info-page .stalk-note b{font-size:11px;line-height:1.8}
+.practical-info-page .detail-card>div:nth-child(2)>span{font-size:10px}
+.practical-info-page .detail-card h3{font-size:17px}
+.practical-info-page .detail-list span{font-size:11px;line-height:1.9}
+.practical-info-page .detail-card p{font-size:11px;line-height:1.95}
+.practical-info-page .memory-copy h2{font-size:24px}
+.practical-info-page .memory-copy p{font-size:12px}
+.practical-info-page .memory-grid b{font-size:12px}
+.practical-info-page .memory-grid small{font-size:9px}
+.practical-info-page .check-intro h2{font-size:29px}
+.practical-info-page .check-intro>p{font-size:12px}
+.practical-info-page .check-rule b{font-size:11px;line-height:1.85}
+.practical-info-page .check-card h3{font-size:18px;line-height:1.75}
+.practical-info-page .check-options button>b{font-size:12px;line-height:1.65}
+.practical-info-page .check-feedback span{font-size:11px;line-height:1.85}
+.practical-info-page .practical-source-note b{font-size:11px}
+.practical-info-page .practical-source-note span{font-size:10px;line-height:1.8}
+.practical-info-page .practical-source-note small{font-size:9px;line-height:1.8}
+
+/* New vehicle scene. The car points to the RIGHT; every headlight beam starts at the front
+   lamps and travels only to the right. This removes the old ambiguous "beam behind car" look. */
+.practical-scene .scene-v2-wrap{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  border-radius:inherit;
+  background:#08141b;
+}
+.practical-scene .scene-v2-svg{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+}
+.scene-v2-direction{
+  position:absolute;
+  top:58px;
+  right:28px;
+  z-index:18;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 11px;
+  border:1px solid rgba(210,238,240,.15);
+  border-radius:999px;
+  background:rgba(3,11,16,.74);
+  color:#d9eded;
+  font-size:12px;
+  font-weight:900;
+  box-shadow:0 8px 24px rgba(0,0,0,.20);
+}
+.scene-v2-direction span{
+  color:#86e8dc;
+  font-size:18px;
+  line-height:1;
+}
+.scene-v2-beam{
+  opacity:0;
+  transition:opacity .24s ease;
+}
+.scene-v2-oncoming,
+.scene-v2-warning{
+  opacity:0;
+  transition:opacity .24s ease;
+}
+.practical-learning-grid.mode-position .scene-v2-beam-position{opacity:1}
+.practical-learning-grid.mode-low .scene-v2-beam-low{opacity:1}
+.practical-learning-grid.mode-high .scene-v2-beam-high{opacity:1}
+.practical-learning-grid.mode-high .scene-v2-oncoming,
+.practical-learning-grid.mode-high .scene-v2-warning{opacity:1}
+.practical-learning-grid.mode-fog .scene-v2-beam-fog{opacity:1}
+
+.scene-v2-caption{
+  position:absolute;
+  left:18px;
+  right:18px;
+  bottom:17px;
+  z-index:20;
+  padding:14px 16px;
+  border:1px solid rgba(224,241,242,.12);
+  border-radius:16px;
+  background:rgba(3,11,16,.86);
+  box-shadow:0 14px 35px rgba(0,0,0,.24);
+}
+.scene-v2-caption strong{
+  display:block;
+  font-size:14px;
+  line-height:1.4;
+  color:#f2fbfb;
+}
+.scene-v2-caption span{
+  display:block;
+  margin-top:5px;
+  color:rgba(237,248,249,.70);
+  font-size:11px;
+  line-height:1.85;
+}
+
+/* Make the control illustration read as a steering-column light stalk rather than a flat pill. */
+.practical-info-page .stalk-body{
+  height:118px;
+  border-radius:24px 70px 70px 24px;
+  background:linear-gradient(180deg,#4d5a60 0%,#222e34 42%,#111a20 100%);
+}
+.practical-info-page .stalk-grip{
+  left:4%;
+  right:27%;
+  top:23px;
+  height:70px;
+  border-radius:42px;
+  background:linear-gradient(180deg,#56636a,#252f35);
+  transform:rotate(-1deg);
+}
+.practical-info-page .stalk-collar{
+  right:12%;
+  top:22px;
+  width:70px;
+  height:74px;
+  border-radius:19px;
+  background:linear-gradient(180deg,#424e54,#1e292f);
+}
+.practical-info-page .stalk-ticks{
+  right:4%;
+  top:31px;
+  height:58px;
+}
+.practical-info-page .stalk-collar span,
+.practical-info-page .stalk-collar b{
+  font-size:8px;
+}
+
+/* Slightly clearer standard-style lamp graphics. */
+.practical-info-page .tab-icon svg,
+.practical-info-page .symbol-large svg,
+.practical-info-page .memory-icon svg{
+  filter:drop-shadow(0 2px 6px rgba(166,239,231,.08));
+}
+.practical-info-page .tab-icon,
+.practical-info-page .symbol-large,
+.practical-info-page .memory-icon{
+  color:#c9f4ef;
+}
+
+/* The fourth detail card is now a reference card, not a local-law card. */
+.practical-info-page .detail-card.legal .detail-icon{
+  color:#9fd4ff;
+}
+
+/* Mobile readability and scene composition. */
+@media(max-width:700px){
+  .practical-info-page .practical-hero-copy>p{font-size:13px;line-height:1.95}
+  .practical-info-page .practical-section-title h2{font-size:25px}
+  .practical-info-page .practical-section-title p{font-size:9px}
+  .practical-info-page .tab-copy b{font-size:10px}
+  .practical-info-page .tab-copy small{font-size:7.5px}
+  .practical-info-page .tab-copy em{font-size:7.5px}
+  .practical-info-page .control-head h3{font-size:19px}
+  .practical-info-page .control-head p{font-size:8px}
+  .practical-info-page .control-why strong{font-size:10px;line-height:1.85}
+  .practical-info-page .detail-card>div:nth-child(2)>span{font-size:8px}
+  .practical-info-page .detail-card h3{font-size:15px}
+  .practical-info-page .detail-list span{font-size:9.5px;line-height:1.85}
+  .practical-info-page .detail-card p{font-size:9.5px;line-height:1.9}
+  .practical-info-page .memory-copy h2{font-size:21px}
+  .practical-info-page .memory-copy p{font-size:9px}
+  .practical-info-page .memory-grid b{font-size:10px}
+  .practical-info-page .memory-grid small{font-size:8px}
+  .practical-info-page .check-intro h2{font-size:23px}
+  .practical-info-page .check-intro>p{font-size:9px}
+  .practical-info-page .check-rule b{font-size:9px;line-height:1.8}
+  .practical-info-page .check-card h3{font-size:14px}
+  .practical-info-page .check-options button>b{font-size:10px}
+  .practical-info-page .check-feedback span{font-size:9px}
+  .practical-info-page .practical-source-note b{font-size:10px}
+  .practical-info-page .practical-source-note span{font-size:8px;line-height:1.85}
+  .practical-info-page .practical-source-note small{font-size:8px}
+
+  .practical-scene .scene-v2-wrap{border-radius:19px}
+  .scene-v2-direction{
+    top:52px;
+    right:11px;
+    padding:6px 9px;
+    font-size:9px;
+  }
+  .scene-v2-direction span{font-size:15px}
+  .scene-v2-caption{
+    left:10px;
+    right:10px;
+    bottom:10px;
+    padding:10px 12px;
+    border-radius:13px;
+  }
+  .scene-v2-caption strong{font-size:11px}
+  .scene-v2-caption span{font-size:8.5px;line-height:1.75}
+}
+
+/* Keep the right-facing vehicle / forward beams legible on narrow screens. */
+@media(max-width:480px){
+  .scene-v2-direction{top:49px;right:9px}
+  .scene-v2-svg{transform:scale(1.05);transform-origin:55% 62%}
+}
