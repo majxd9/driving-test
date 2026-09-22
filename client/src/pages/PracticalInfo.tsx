@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 type MainLightKey =
@@ -412,7 +412,7 @@ function StalkStateVisual({
   active: ControlKey;
   mainLight: MainLightKey;
   signal: SignalKey | null;
-  stageRef?: React.RefObject<HTMLDivElement | null>;
+  stageRef?: RefObject<HTMLDivElement | null>;
 }) {
   const ringPosition =
     mainLight === 'off' ? 1
