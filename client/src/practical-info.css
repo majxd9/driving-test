@@ -2435,3 +2435,10 @@
     min-height:225px;
   }
 }
+
+
+/* Preserve a clean physical response for the handle without overlay arrows. */
+.state-right .carousel-stalk-image{transform:rotate(-2deg) scale(1.02) !important}
+.state-left .carousel-stalk-image{transform:rotate(2deg) scale(1.02) !important}
+.state-high .carousel-stalk-image{transform:translateX(5px) scale(1.02) !important;filter:brightness(1.08)}
+.state-flash .carousel-stalk-image{transform:translateX(-5px) scale(1.02) !important;filter:brightness(1.12)}
