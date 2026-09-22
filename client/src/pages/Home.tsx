@@ -68,7 +68,7 @@ export default function Home(){
     <span className="home-practical-copy">
      <small>تعلم يتجاوز الأسئلة</small>
      <strong>معلومات عملية إضافية</strong>
-     <em>أضواء السيارة الآن، ثم الغمازات والأزرار ووظائف السيارة لاحقاً.</em>
+     <em>أضواء السيارة والغمازات مع محاكاة المقبض وحالات القيادة الواقعية.</em>
     </span>
     <span className="home-practical-cta">افتح المركز <Icon type="arrow"/></span>
    </button>
