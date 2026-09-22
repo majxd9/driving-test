@@ -403,202 +403,38 @@ const PRACTICAL_CASES: {
   })),
 ];
 
-function StalkStateVisual({
-  active,
-  mainLight,
-  signal,
-  stageRef,
-}: {
-  active: ControlKey;
-  mainLight: MainLightKey;
-  signal: SignalKey | null;
-  stageRef?: RefObject<HTMLDivElement | null>;
-}) {
-  const isLeft = active === 'left';
-  const isRight = active === 'right';
-  const isHazard = active === 'hazard';
-  const isHigh = active === 'high';
-  const isFlash = active === 'flash';
-  const isRing = !isLeft && !isRight && !isHazard && !isHigh && !isFlash;
-
-  const ringLabel =
-    mainLight === 'off' ? 'OFF' :
-    mainLight === 'position' ? 'P' :
-    mainLight === 'auto' ? 'A' :
-    mainLight === 'low' ? 'LOW' :
-    mainLight === 'frontFog' ? 'FOG' :
-    mainLight === 'rearFog' ? 'REAR FOG' : 'LIGHT';
-
-  return (
-    <div ref={stageRef} className={`simple-stalk-stage state-${active}`}>
-      <div className="simple-stalk-caption">
-        <span>المقبض</span>
-        <b>{isLeft ? '↓ يسار' : isRight ? '↑ يمين' : isHazard ? 'اضغط التحذير' : isHigh ? '→ العالي' : isFlash ? '← وميض' : `لف الحلقة: ${ringLabel}`}</b>
-      </div>
-
-      <div className="simple-stalk-board">
-        <div className="simple-stalk-body">
-          <div className="simple-stalk-grip">
-            <span className="grip-line" />
-            <span className="grip-line" />
-            <span className="grip-line" />
-            <span className="grip-end" />
-          </div>
-          <div className={`simple-stalk-ring ${isRing ? 'ring-active' : ''}`}>
-            <span>OFF</span><span>P</span><span>A</span><span>LOW</span><span>FOG</span>
-            <i className="ring-pointer" />
-          </div>
-          <div className={`simple-stalk-tip ${isLeft ? 'move-left' : isRight ? 'move-right' : isHigh ? 'move-high' : isFlash ? 'move-flash' : ''}`}>
-            <span className="tip-mark">↕</span>
-          </div>
-          {isHazard && <div className="hazard-button"><span>△</span></div>}
-        </div>
-
-        <div className="stalk-direction-row">
-          <span className={isLeft ? 'active' : ''}>↓ يسار</span>
-          <span className={isRight ? 'active' : ''}>↑ يمين</span>
-          <span className={isHigh ? 'active' : ''}>→ عالي</span>
-          <span className={isFlash ? 'active' : ''}>← وميض</span>
-        </div>
-      </div>
+function StalkStateVisual({ active, mainLight, stageRef }: { active: ControlKey; mainLight: MainLightKey; stageRef?: RefObject<HTMLDivElement | null> }) {
+  const left=active==='left', right=active==='right', high=active==='high', flash=active==='flash', hazard=active==='hazard';
+  const ring=!left&&!right&&!high&&!flash&&!hazard;
+  const ringLabel=mainLight==='off'?'OFF':mainLight==='position'?'P':mainLight==='auto'?'A':mainLight==='low'?'LOW':mainLight==='frontFog'?'FOG':mainLight==='rearFog'?'REAR FOG':'LIGHT';
+  return <div ref={stageRef} className="stalk-demo">
+    <div className="stalk-demo-head"><span>المقبض التفاعلي</span><b>{left?'حرّك للأسفل ← غماز يسار':right?'حرّك للأعلى ← غماز يمين':high?'ادفع المقبض للأمام ← العالي':flash?'اسحب المقبض نحوك ← وميض':hazard?'اضغط زر التحذير الرباعي':`لف الحلقة إلى ${ringLabel}`}</b></div>
+    <div className="stalk-demo-body">
+      <div className={`stalk-handle ${left?'is-left':''} ${right?'is-right':''} ${high?'is-high':''} ${flash?'is-flash':''}`}><div className="stalk-grip"><i/><i/><i/></div><div className={`stalk-ring ${ring?'is-active':''}`}><span>OFF</span><span>P</span><span>A</span><span>LOW</span><span>FOG</span><em/></div><div className="stalk-tip">↕</div></div>
+      <button type="button" className={`stalk-hazard ${hazard?'is-active':''}`} aria-label="الغماز الرباعي"><span>△</span></button>
+      <div className="stalk-hint">{left?'↓':right?'↑':high?'→':flash?'←':ring?'↻':'⚠'}</div>
     </div>
-  );
+    <div className="stalk-demo-footer"><span className={left?'on':''}>يسار ↓</span><span className={right?'on':''}>يمين ↑</span><span className={high?'on':''}>عالي →</span><span className={flash?'on':''}>وميض ←</span><span className={hazard?'on':''}>تحذير ⚠</span></div>
+  </div>;
 }
 
-function LightingControlCarousel({
-  mainLight,
-  signal,
-  onMainLight,
-  onSignal,
-  onFlash,
-}: {
-  mainLight: MainLightKey;
-  signal: SignalKey | null;
-  onMainLight: (key: MainLightKey) => void;
-  onSignal: (key: SignalKey) => void;
-  onFlash: () => void;
-}) {
-  const [index, setIndex] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<AudioContext | null>(null);
-  const handleRef = useRef<HTMLDivElement | null>(null);
-  const carRef = useRef<HTMLDivElement | null>(null);
-  const restoreScrollRef = useRef(0);
-
-  const current = PRACTICAL_CASES[index] ?? PRACTICAL_CASES[0];
-
-  useEffect(() => {
-    const key = signal ?? mainLight;
-    const found = PRACTICAL_CASES.findIndex(x => x.key === key);
-    if (found >= 0 && !isPlaying) setIndex(found);
-  }, [mainLight, signal, isPlaying]);
-
-  const clickSound = () => {
-    if (!soundEnabled || typeof window === 'undefined') return;
-    try {
-      const Ctx = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!Ctx) return;
-      const ctx = audioRef.current ?? new Ctx();
-      audioRef.current = ctx;
-      if (ctx.state === 'suspended') void ctx.resume();
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(760, now);
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.055, now + 0.006);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.085);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.09);
-    } catch {}
-  };
-
-  const applyCase = (item: typeof PRACTICAL_CASES[number]) => {
-    setIndex(PRACTICAL_CASES.findIndex(x => x.key === item.key));
-    if (item.key === 'right' || item.key === 'left' || item.key === 'hazard') onSignal(item.key);
-    else if (item.key === 'flash') onFlash();
-    else onMainLight(item.key);
-  };
-
-  const sleep = (ms: number) => new Promise<void>(resolve => window.setTimeout(resolve, ms));
-
-  const runInteraction = async (item: typeof PRACTICAL_CASES[number]) => {
-    if (isPlaying) return;
-    setIsPlaying(true);
-    restoreScrollRef.current = window.scrollY;
-
-    // Start audio directly from the user gesture before any await.
-    clickSound();
-    applyCase(item);
-
-    await sleep(120);
-    handleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    await sleep(850);
-
-    clickSound();
-    await sleep(250);
-    carRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    await sleep(950);
-
-    window.scrollTo({ top: restoreScrollRef.current, behavior: 'smooth' });
-    await sleep(650);
-    setIsPlaying(false);
-  };
-
-  const select = (item: typeof PRACTICAL_CASES[number]) => {
-    void runInteraction(item);
-  };
-
-  const move = (dir: -1 | 1) => {
-    const next = (index + dir + PRACTICAL_CASES.length) % PRACTICAL_CASES.length;
-    void runInteraction(PRACTICAL_CASES[next]);
-  };
-
-  return (
-    <section className="lighting-control-carousel">
-      <div className="carousel-heading">
-        <div>
-          <span className="lesson-eyebrow">02 · جرّب المقبض</span>
-          <h2>شغّل الوظيفة وشاهد نتيجتها</h2>
-          <p>اضغط أي وظيفة: ننتقل للمقبض، نوضح الحركة، ثم نعرض النتيجة على السيارة ونرجع لمكانك.</p>
-        </div>
-        <button type="button" className={`sound-toggle ${soundEnabled ? 'is-on' : ''}`} onClick={() => setSoundEnabled(v => !v)} disabled={isPlaying}>
-          <span>{soundEnabled ? '♪' : '×'}</span>{soundEnabled ? 'الصوت مفعّل' : 'الصوت متوقف'}
-        </button>
-      </div>
-
-      <div className="carousel-quick-grid">
-        {PRACTICAL_CASES.map(item => (
-          <button type="button" key={item.key} className={current.key === item.key ? 'is-active' : ''} onClick={() => select(item)} disabled={isPlaying}>
-            <LightSymbol type={item.symbol} />
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="carousel-case-card">
-        <button type="button" className="carousel-arrow carousel-prev" onClick={() => move(-1)} disabled={isPlaying} aria-label="الحالة السابقة">‹</button>
-        <div className="carousel-case-main">
-          <div className="carousel-case-counter"><span>{String(index + 1).padStart(2, '0')}</span><i>/ {String(PRACTICAL_CASES.length).padStart(2, '0')}</i></div>
-          <div className="carousel-case-copy">
-            <div className="carousel-case-icon"><LightSymbol type={current.symbol} /></div>
-            <div><span>{current.subtitle}</span><h3>{current.label}</h3><p>{current.description}</p></div>
-          </div>
-          <div className="carousel-action-line"><b>الحركة</b><span>{current.action}</span></div>
-          <StalkStateVisual active={current.key} mainLight={mainLight} signal={signal} stageRef={handleRef} />
-        </div>
-        <button type="button" className="carousel-arrow carousel-next" onClick={() => move(1)} disabled={isPlaying} aria-label="الحالة التالية">›</button>
-      </div>
-
-      <div className="carousel-car-focus" ref={carRef}>
-        <VehicleScene mainLight={mainLight} signal={signal} />
-      </div>
-    </section>
-  );
+function LightingControlCarousel({mainLight,signal,onMainLight,onSignal,onFlash}:{mainLight:MainLightKey;signal:SignalKey|null;onMainLight:(key:MainLightKey)=>void;onSignal:(key:SignalKey)=>void;onFlash:()=>void;}) {
+  const [index,setIndex]=useState(0),[soundEnabled,setSoundEnabled]=useState(true),[isPlaying,setIsPlaying]=useState(false);
+  const audioRef=useRef<AudioContext|null>(null),handleRef=useRef<HTMLDivElement|null>(null),carRef=useRef<HTMLDivElement|null>(null),restoreRef=useRef(0);
+  const current=PRACTICAL_CASES[index]??PRACTICAL_CASES[0];
+  useEffect(()=>{const key=signal??mainLight;const found=PRACTICAL_CASES.findIndex(x=>x.key===key);if(found>=0&&!isPlaying)setIndex(found)},[mainLight,signal,isPlaying]);
+  const sound=()=>{if(!soundEnabled||typeof window==='undefined')return;try{const Ctx=window.AudioContext||(window as typeof window & {webkitAudioContext?:typeof AudioContext}).webkitAudioContext;if(!Ctx)return;const ctx=audioRef.current??new Ctx();audioRef.current=ctx;if(ctx.state==='suspended')void ctx.resume();const t=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();o.type='square';o.frequency.setValueAtTime(820,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.06,t+.005);g.gain.exponentialRampToValueAtTime(.0001,t+.08);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+.085)}catch{}};
+  const apply=(item:typeof PRACTICAL_CASES[number])=>{setIndex(PRACTICAL_CASES.findIndex(x=>x.key===item.key));if(item.key==='left'||item.key==='right'||item.key==='hazard')onSignal(item.key);else if(item.key==='flash')onFlash();else onMainLight(item.key)};
+  const wait=(ms:number)=>new Promise<void>(r=>window.setTimeout(r,ms));
+  const run=async(item:typeof PRACTICAL_CASES[number])=>{if(isPlaying)return;setIsPlaying(true);restoreRef.current=window.scrollY;sound();apply(item);await wait(120);handleRef.current?.scrollIntoView({behavior:'smooth',block:'center'});await wait(800);sound();await wait(180);carRef.current?.scrollIntoView({behavior:'smooth',block:'center'});await wait(1000);window.scrollTo({top:restoreRef.current,behavior:'smooth'});await wait(650);setIsPlaying(false)};
+  const select=(item:typeof PRACTICAL_CASES[number])=>void run(item);
+  const move=(dir:-1|1)=>void run(PRACTICAL_CASES[(index+dir+PRACTICAL_CASES.length)%PRACTICAL_CASES.length]);
+  return <section className="lighting-control-carousel">
+    <div className="carousel-heading"><div><span className="lesson-eyebrow">02 · جرّب المقبض</span><h2>شغّل الوظيفة وشاهد نتيجتها</h2><p>اضغط أي زر: ننتقل للمقبض، نوضح الحركة، ثم نعرض النتيجة على السيارة ونرجع لمكانك.</p></div><button type="button" className={`sound-toggle ${soundEnabled?'is-on':''}`} onClick={()=>setSoundEnabled(v=>!v)} disabled={isPlaying}><span>{soundEnabled?'♪':'×'}</span>{soundEnabled?'الصوت مفعّل':'الصوت متوقف'}</button></div>
+    <div className="carousel-quick-grid">{PRACTICAL_CASES.map(item=><button type="button" key={item.key} className={current.key===item.key?'is-active':''} onClick={()=>select(item)} disabled={isPlaying}><LightSymbol type={item.symbol}/><span>{item.label}</span></button>)}</div>
+    <div className="carousel-case-card"><button type="button" className="carousel-arrow carousel-prev" onClick={()=>move(-1)} disabled={isPlaying} aria-label="الحالة السابقة">‹</button><div className="carousel-case-main"><div className="carousel-case-counter"><span>{String(index+1).padStart(2,'0')}</span><i>/ {String(PRACTICAL_CASES.length).padStart(2,'0')}</i></div><div className="carousel-case-copy"><div className="carousel-case-icon"><LightSymbol type={current.symbol}/></div><div><span>{current.subtitle}</span><h3>{current.label}</h3><p>{current.description}</p></div></div><div className="carousel-action-line"><b>الحركة</b><span>{current.action}</span></div><StalkStateVisual active={current.key} mainLight={mainLight} stageRef={handleRef}/></div><button type="button" className="carousel-arrow carousel-next" onClick={()=>move(1)} disabled={isPlaying} aria-label="الحالة التالية">›</button></div>
+    <div className="carousel-car-focus" ref={carRef}><VehicleScene mainLight={mainLight} signal={signal}/></div>
+  </section>;
 }
 
 function VehicleScene({
