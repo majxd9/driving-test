@@ -2600,3 +2600,55 @@
   .carousel-case-card{grid-template-columns:39px minmax(0,1fr) 39px}
   .carousel-arrow{min-width:39px}
 }
+
+
+/* Clean mobile-first lighting simulator */
+.simple-stalk-stage{margin:18px 0 0;border-radius:24px;background:linear-gradient(145deg,#071217,#10232b);border:1px solid rgba(255,255,255,.10);padding:14px;overflow:hidden}
+.simple-stalk-caption{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;padding:0 4px}
+.simple-stalk-caption span{font-size:12px;color:#91a8ad;font-weight:800}
+.simple-stalk-caption b{font-size:13px;color:#e9f7f5}
+.simple-stalk-board{position:relative;min-height:235px;border-radius:20px;background:radial-gradient(circle at 55% 40%,rgba(87,160,153,.12),transparent 45%),#050d12;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.simple-stalk-body{position:relative;width:min(92%,620px);height:155px;margin:auto}
+.simple-stalk-body:before{content:"";position:absolute;left:2%;right:18%;top:58px;height:42px;border-radius:30px;background:linear-gradient(180deg,#9aa8ad,#34444a 35%,#101a1f 75%,#050a0d);box-shadow:0 10px 24px rgba(0,0,0,.55)}
+.simple-stalk-grip{position:absolute;left:0;right:31%;top:53px;height:52px;border-radius:28px;background:linear-gradient(180deg,#6f8086,#202d32 45%,#0a1115);box-shadow:inset 0 2px 5px rgba(255,255,255,.18),0 12px 20px rgba(0,0,0,.45);transform-origin:right center;transition:transform .38s cubic-bezier(.2,.8,.2,1)}
+.simple-stalk-grip:after{content:"";position:absolute;right:4%;top:7px;width:30%;height:5px;border-radius:5px;background:rgba(255,255,255,.12)}
+.grip-line{position:absolute;top:10px;bottom:10px;width:2px;background:rgba(0,0,0,.35);border-radius:2px}
+.grip-line:nth-child(1){right:27%}.grip-line:nth-child(2){right:19%}.grip-line:nth-child(3){right:11%}
+.grip-end{position:absolute;right:-1px;top:0;width:54px;height:52px;border-radius:50%;background:linear-gradient(145deg,#596970,#121c21);border:1px solid rgba(255,255,255,.15)}
+.simple-stalk-ring{position:absolute;right:27%;top:38px;width:145px;height:82px;border-radius:24px;background:linear-gradient(180deg,#d0d8da,#53636a 25%,#1b272d 70%,#080e12);display:flex;align-items:center;justify-content:space-evenly;padding:0 9px;box-shadow:0 10px 22px rgba(0,0,0,.55);transition:transform .4s ease,filter .3s ease}
+.simple-stalk-ring span{font-size:8px;font-weight:900;color:#dbe8e8;opacity:.62}
+.simple-stalk-ring span:nth-child(4){font-size:7px}
+.ring-pointer{position:absolute;bottom:-9px;left:50%;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid #8be0d7;transform:translateX(-50%)}
+.ring-active{filter:drop-shadow(0 0 10px rgba(120,230,216,.32));transform:rotate(2deg)}
+.simple-stalk-tip{position:absolute;right:8%;top:48px;width:58px;height:62px;border-radius:28px;background:linear-gradient(145deg,#8d9ba0,#26353b 45%,#080f13);box-shadow:0 12px 22px rgba(0,0,0,.55);transition:transform .42s cubic-bezier(.2,.8,.2,1)}
+.tip-mark{position:absolute;inset:0;display:grid;place-items:center;color:#d9e8e9;font-size:20px;font-weight:900}
+.state-left .simple-stalk-grip,.state-left .simple-stalk-tip{transform:rotate(-9deg) translateY(16px)}
+.state-right .simple-stalk-grip,.state-right .simple-stalk-tip{transform:rotate(9deg) translateY(-16px)}
+.state-high .simple-stalk-grip,.state-high .simple-stalk-tip{transform:translateX(20px)}
+.state-flash .simple-stalk-grip,.state-flash .simple-stalk-tip{transform:translateX(-20px)}
+.state-hazard .simple-stalk-body:after{content:"";position:absolute;right:2%;top:5px;width:48px;height:48px;border-radius:50%;background:#9d312e;box-shadow:0 0 0 5px #161e22,0 0 22px rgba(255,70,50,.45)}
+.hazard-button{position:absolute;right:2%;top:5px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:900;font-size:20px;z-index:2}
+.stalk-direction-row{position:absolute;bottom:10px;left:10px;right:10px;display:flex;justify-content:center;gap:7px;flex-wrap:wrap}
+.stalk-direction-row span{font-size:10px;color:#81979c;background:#0d1a20;border:1px solid rgba(255,255,255,.08);padding:5px 8px;border-radius:999px}
+.stalk-direction-row span.active{color:#dffcf8;border-color:#6bd8ce;background:#16433f}
+@media(max-width:600px){
+ .lighting-control-carousel{overflow:hidden}
+ .carousel-heading{gap:10px}
+ .carousel-heading h2{font-size:20px;line-height:1.3}
+ .carousel-heading p{font-size:12px;line-height:1.65}
+ .carousel-quick-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;margin-bottom:10px}
+ .carousel-quick-grid button{min-height:64px!important;padding:7px 4px!important;border-radius:13px!important}
+ .carousel-quick-grid svg{width:27px!important;height:20px!important}
+ .carousel-quick-grid span{font-size:10px!important}
+ .carousel-case-card{display:grid!important;grid-template-columns:36px minmax(0,1fr) 36px!important;gap:4px!important;align-items:start!important}
+ .carousel-case-main{min-width:0!important}
+ .carousel-arrow{width:34px!important;height:34px!important;margin-top:28px!important}
+ .carousel-case-copy{gap:8px!important}
+ .carousel-case-copy h3{font-size:18px!important}
+ .carousel-action-line{font-size:11px!important}
+ .simple-stalk-stage{padding:10px!important;border-radius:18px!important}
+ .simple-stalk-board{min-height:215px!important}
+ .simple-stalk-body{width:96%!important;transform:scale(.92);transform-origin:center}
+ .simple-stalk-caption b{font-size:12px!important}
+ .carousel-car-focus{margin-top:12px!important}
+}
