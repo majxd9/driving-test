@@ -64,3 +64,15 @@ button:disabled{cursor:not-allowed;}
   .study-question-card{min-height:0;}
   .study-question-card .exam-answer-list{min-height:316px;}
 }
+
+
+/* HOME: compact practical-info entry */
+.home-practical-card{width:100%!important;height:auto!important;min-height:82px!important;margin-top:20px!important;padding:14px 16px!important;display:flex!important;align-items:center!important;gap:14px!important;text-align:right!important;border:1px solid #33363E!important;border-radius:18px!important;background:linear-gradient(135deg,#20262b,#181d21)!important;color:#F1EFE9!important;box-shadow:0 10px 30px #0003!important}
+.home-practical-icon{width:44px!important;height:44px!important;flex:0 0 44px!important;border-radius:14px!important;background:#16332B!important;color:#22B588!important;display:grid!important;place-items:center!important}
+.home-practical-icon svg{width:25px!important;height:25px!important}
+.home-practical-copy{min-width:0!important;flex:1!important;display:flex!important;flex-direction:column!important;gap:2px!important}
+.home-practical-copy small{font-size:9px!important;color:#22B588!important;font-weight:800!important}
+.home-practical-copy strong{font-size:14px!important;font-weight:900!important}
+.home-practical-copy em{font-style:normal!important;font-size:10px!important;line-height:1.55!important;color:#9C9FA6!important;display:block!important}
+.home-practical-cta{display:inline-flex!important;align-items:center!important;gap:6px!important;white-space:nowrap!important;padding:8px 10px!important;border-radius:11px!important;background:#ffffff08!important;border:1px solid #ffffff10!important;font-size:10px!important;font-weight:800!important;color:#DDE6E6!important}
+@media(max-width:700px){.home-practical-card{min-height:70px!important;margin-top:14px!important;padding:10px!important;gap:9px!important;border-radius:15px!important}.home-practical-icon{width:38px!important;height:38px!important;flex-basis:38px!important;border-radius:11px!important}.home-practical-icon svg{width:21px!important;height:21px!important}.home-practical-copy strong{font-size:12px!important}.home-practical-copy em{font-size:9px!important}.home-practical-cta{padding:7px 8px!important;font-size:9px!important}}
