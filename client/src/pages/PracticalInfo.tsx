@@ -8,10 +8,11 @@ type LightMode = {
   title: string;
   technical: string;
   short: string;
-  why: string;
+  summary: string;
+  identify: string;
   when: string[];
-  avoid: string[];
-  steps: string[];
+  mistakes: string[];
+  remember: string;
   sceneTitle: string;
   sceneText: string;
 };
@@ -33,9 +34,9 @@ function LightSymbol({ type, className = '' }: { type: LightKey; className?: str
       <svg {...common}>
         <path d="M10 17h25c8 0 13 6 15 15H10V17Z" />
         <path d="M61 17h29" />
-        <path d="M61 26h29" />
-        <path d="M61 35h29" />
-        <path d="M61 44h23" />
+        <path d="M61 27h29" />
+        <path d="M61 37h29" />
+        <path d="M61 47h22" />
       </svg>
     );
   }
@@ -44,9 +45,9 @@ function LightSymbol({ type, className = '' }: { type: LightKey; className?: str
     return (
       <svg {...common}>
         <path d="M10 13h23c8 0 14 7 16 19H10V13Z" />
-        <path d="m61 18 24 10" />
-        <path d="m61 29 26 10" />
-        <path d="m61 40 20 7" />
+        <path d="m61 19 25 9" />
+        <path d="m61 30 25 9" />
+        <path d="m61 41 19 7" />
       </svg>
     );
   }
@@ -55,10 +56,10 @@ function LightSymbol({ type, className = '' }: { type: LightKey; className?: str
     return (
       <svg {...common}>
         <path d="M10 13h23c8 0 14 7 16 19H10V13Z" />
-        <path d="M61 12h28" />
-        <path d="M61 23h31" />
-        <path d="M61 34h31" />
-        <path d="M61 45h28" />
+        <path d="M61 12h30" />
+        <path d="M61 23h30" />
+        <path d="M61 34h30" />
+        <path d="M61 45h30" />
       </svg>
     );
   }
@@ -66,127 +67,212 @@ function LightSymbol({ type, className = '' }: { type: LightKey; className?: str
   return (
     <svg {...common}>
       <path d="M10 13h23c8 0 14 7 16 19H10V13Z" />
-      <path d="m61 14 22 9" />
-      <path d="M61 25h25" />
-      <path d="m61 36 22-9" />
+      <path d="m61 15 21 8" />
+      <path d="M61 26h25" />
+      <path d="m61 37 21-8" />
       <path d="M87 13c-8 7 8 10-1 16s8 11 0 20" />
     </svg>
   );
 }
 
+function LightStalk({ active }: { active: LightKey }) {
+  const labels = {
+    position: 'موضع',
+    low: 'منخفض',
+    high: 'عالٍ',
+    fog: 'ضباب',
+  } as const;
+
+  return (
+    <div className="stalk-demo">
+      <div className="stalk-demo-labels">
+        <span>عصا التحكم بالإضاءة</span>
+        <b>التصميم يختلف بين السيارات — الرمز هو المرجع.</b>
+      </div>
+
+      <svg className="stalk-demo-svg" viewBox="0 0 520 210" role="img" aria-label="محاكاة واقعية لعصا التحكم بالإضاءة">
+        <defs>
+          <linearGradient id="stalk-metal" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#626b70" />
+            <stop offset="48%" stopColor="#313b40" />
+            <stop offset="100%" stopColor="#151d22" />
+          </linearGradient>
+          <linearGradient id="stalk-grip" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#424c52" />
+            <stop offset="52%" stopColor="#20292e" />
+            <stop offset="100%" stopColor="#0f171c" />
+          </linearGradient>
+          <linearGradient id="stalk-ring" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#8b969a" />
+            <stop offset="35%" stopColor="#4b575d" />
+            <stop offset="100%" stopColor="#1a2328" />
+          </linearGradient>
+          <filter id="stalk-shadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="9" stdDeviation="9" floodOpacity=".35" />
+          </filter>
+        </defs>
+
+        <ellipse cx="260" cy="176" rx="175" ry="15" fill="#000" opacity=".28" />
+        <path d="M62 112C88 103 119 98 147 98H384" stroke="#0b1115" strokeWidth="37" strokeLinecap="round" opacity=".78" filter="url(#stalk-shadow)" />
+        <path d="M62 106C90 96 120 91 147 91H381" stroke="url(#stalk-metal)" strokeWidth="29" strokeLinecap="round" />
+        <path d="M74 99C101 92 122 89 148 89H370" stroke="#a5afb3" strokeOpacity=".17" strokeWidth="5" strokeLinecap="round" />
+
+        <path d="M372 67V133" stroke="#121a20" strokeWidth="44" strokeLinecap="round" />
+        <path d="M372 67V133" stroke="url(#stalk-ring)" strokeWidth="34" strokeLinecap="round" />
+        <path d="M372 77V124" stroke="#9aa4a8" strokeOpacity=".18" strokeWidth="3" strokeLinecap="round" />
+
+        <rect x="401" y="66" width="67" height="69" rx="24" fill="url(#stalk-grip)" stroke="#aab5b9" strokeOpacity=".16" />
+        <path d="M418 76V125M432 73V128M446 75V126" stroke="#7c898e" strokeOpacity=".18" strokeWidth="2" />
+
+        <circle cx="372" cy="100" r="27" fill="#11191f" stroke="#a3adb1" strokeOpacity=".20" strokeWidth="2" />
+        <circle cx="372" cy="100" r="22" fill="none" stroke="#59656a" strokeWidth="5" />
+        <path d="M372 76V84M394 100H386M372 124V116M350 100H358" stroke="#d9e5e6" strokeOpacity=".45" strokeWidth="2.5" />
+
+        <g transform="translate(330 30)" opacity=".72">
+          <text x="0" y="0" fill="#c9d7d9" fontSize="11" fontWeight="800">AUTO</text>
+        </g>
+
+        <g transform="translate(382 28)">
+          <text x="0" y="0" fill={active === 'position' ? '#8beadd' : '#718087'} fontSize="11" fontWeight="900">{labels.position}</text>
+          <text x="46" y="0" fill={active === 'low' ? '#8beadd' : '#718087'} fontSize="11" fontWeight="900">{labels.low}</text>
+          <text x="88" y="0" fill={active === 'high' ? '#8beadd' : '#718087'} fontSize="11" fontWeight="900">{labels.high}</text>
+          <text x="126" y="0" fill={active === 'fog' ? '#8beadd' : '#718087'} fontSize="11" fontWeight="900">{labels.fog}</text>
+        </g>
+
+        <path d="M372 50V67" stroke={active === 'position' ? '#7ae2d4' : '#647177'} strokeWidth="3" strokeLinecap="round" />
+        <path d="M394 56L404 67" stroke={active === 'low' ? '#7ae2d4' : '#647177'} strokeWidth="3" strokeLinecap="round" />
+        <path d="M413 57L423 68" stroke={active === 'high' ? '#7ae2d4' : '#647177'} strokeWidth="3" strokeLinecap="round" />
+        <path d="M432 59L442 69" stroke={active === 'fog' ? '#7ae2d4' : '#647177'} strokeWidth="3" strokeLinecap="round" />
+
+        <g transform="translate(22 128)">
+          <rect width="123" height="43" rx="12" fill="#071118" stroke="#71848a" strokeOpacity=".16" />
+          <text x="61" y="18" textAnchor="middle" fill="#6fd8ca" fontSize="9" fontWeight="900">الوضع المحدد</text>
+          <text x="61" y="34" textAnchor="middle" fill="#e7f5f4" fontSize="11" fontWeight="900">{labels[active]}</text>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
 function LightScene({ active }: { active: LightMode }) {
   return (
-    <div className="scene-v2-wrap">
-      <div className="scene-v2-direction">أمام السيارة <span>→</span></div>
-      <svg
-        className="scene-v2-svg"
-        viewBox="0 0 720 420"
-        role="img"
-        aria-label={`محاكاة ${active.title} مع اتجاه الضوء إلى الأمام`}
-      >
+    <div className="scene-v3-wrap">
+      <div className="scene-v3-topline">
+        <span>محاكاة مرئية</span>
+        <b>{active.title}</b>
+      </div>
+
+      <svg className="scene-v3-svg" viewBox="0 0 900 520" role="img" aria-label={active.sceneTitle}>
         <defs>
-          <linearGradient id="scene-v2-sky" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="v3-sky" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#07131d" />
-            <stop offset="100%" stopColor="#10232c" />
+            <stop offset="100%" stopColor="#132832" />
           </linearGradient>
-          <linearGradient id="scene-v2-road" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#172a33" />
-            <stop offset="100%" stopColor="#08141b" />
+          <linearGradient id="v3-road" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#20333b" />
+            <stop offset="100%" stopColor="#09151c" />
           </linearGradient>
-          <linearGradient id="scene-v2-car" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#2b3d46" />
-            <stop offset="55%" stopColor="#15252e" />
-            <stop offset="100%" stopColor="#070f14" />
+          <linearGradient id="v3-car-body" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#536168" />
+            <stop offset="30%" stopColor="#26343b" />
+            <stop offset="75%" stopColor="#111b21" />
+            <stop offset="100%" stopColor="#070d11" />
           </linearGradient>
-          <linearGradient id="scene-v2-glass" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#8db4bf" stopOpacity=".52" />
-            <stop offset="100%" stopColor="#1b3440" stopOpacity=".86" />
+          <linearGradient id="v3-window" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#9cb7c0" stopOpacity=".56" />
+            <stop offset="75%" stopColor="#27434e" stopOpacity=".85" />
+            <stop offset="100%" stopColor="#102129" stopOpacity=".95" />
           </linearGradient>
-          <linearGradient id="scene-v2-low" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#fff4bd" stopOpacity=".56" />
-            <stop offset="100%" stopColor="#fff4bd" stopOpacity="0" />
+          <linearGradient id="v3-low-beam" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#fff8d4" stopOpacity=".72" />
+            <stop offset="55%" stopColor="#fff1aa" stopOpacity=".30" />
+            <stop offset="100%" stopColor="#fff1aa" stopOpacity="0" />
           </linearGradient>
-          <linearGradient id="scene-v2-high" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#fff5c5" stopOpacity=".52" />
+          <linearGradient id="v3-high-beam" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#fffde0" stopOpacity=".78" />
+            <stop offset="55%" stopColor="#fff3ad" stopOpacity=".34" />
+            <stop offset="100%" stopColor="#fff3ad" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="v3-fog-beam" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#fff6ca" stopOpacity=".66" />
+            <stop offset="70%" stopColor="#fff5c5" stopOpacity=".18" />
             <stop offset="100%" stopColor="#fff5c5" stopOpacity="0" />
           </linearGradient>
-          <linearGradient id="scene-v2-fog" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#fff5cb" stopOpacity=".46" />
-            <stop offset="75%" stopColor="#fff5cb" stopOpacity=".10" />
-            <stop offset="100%" stopColor="#fff5cb" stopOpacity="0" />
-          </linearGradient>
-          <filter id="scene-v2-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <filter id="v3-glow" x="-80%" y="-80%" width="260%" height="260%">
             <feGaussianBlur stdDeviation="7" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
 
-        <rect width="720" height="420" rx="28" fill="url(#scene-v2-sky)" />
-        <path d="M0 265H720V420H0Z" fill="#0a171e" />
-        <path d="M0 420V320Q250 235 360 235T720 320V420Z" fill="url(#scene-v2-road)" />
-        <path d="M360 236L360 420" stroke="#dfecea" strokeOpacity=".22" strokeWidth="4" strokeDasharray="18 22" />
-        <path d="M120 420L305 260" stroke="#dfecea" strokeOpacity=".12" strokeWidth="3" />
-        <path d="M600 420L415 260" stroke="#dfecea" strokeOpacity=".12" strokeWidth="3" />
+        <rect width="900" height="520" fill="url(#v3-sky)" />
+        <circle cx="760" cy="96" r="31" fill="#d7e6e7" opacity=".12" />
+        <circle cx="760" cy="96" r="22" fill="#f3f5ea" opacity=".16" />
 
-        <g className="scene-v2-beam scene-v2-beam-position" filter="url(#scene-v2-glow)">
-          <circle cx="320" cy="282" r="10" fill="#9feee4" opacity=".85" />
-          <circle cx="336" cy="292" r="7" fill="#9feee4" opacity=".70" />
-          <circle cx="126" cy="304" r="6" fill="#9feee4" opacity=".38" />
+        <path d="M0 312H900V520H0Z" fill="#0b171d" />
+        <path d="M0 520V356Q320 276 450 280T900 356V520Z" fill="url(#v3-road)" />
+        <path d="M450 282V520" stroke="#e1efef" strokeOpacity=".22" strokeWidth="5" strokeDasharray="25 28" />
+        <path d="M130 520L357 302" stroke="#dceaea" strokeOpacity=".15" strokeWidth="4" />
+        <path d="M770 520L543 302" stroke="#dceaea" strokeOpacity=".15" strokeWidth="4" />
+
+        <g className={active.key === 'position' ? 'is-on' : ''}>
+          <circle cx="628" cy="300" r="12" fill="#a7eee5" opacity=".82" filter="url(#v3-glow)" />
+          <circle cx="657" cy="306" r="7" fill="#a7eee5" opacity=".58" filter="url(#v3-glow)" />
         </g>
 
-        <g className="scene-v2-beam scene-v2-beam-low">
-          <path d="M319 280L332 287L610 345L610 297Z" fill="url(#scene-v2-low)" />
-          <path d="M334 286L346 292L615 360L615 322Z" fill="url(#scene-v2-low)" opacity=".64" />
+        <g className="v3-beam v3-beam-low" style={{ opacity: active.key === 'low' ? 1 : 0 }}>
+          <path d="M614 312L650 306L880 372L880 426L648 338Z" fill="url(#v3-low-beam)" />
+          <path d="M618 325L650 321L870 409L870 447L645 345Z" fill="url(#v3-low-beam)" opacity=".55" />
         </g>
 
-        <g className="scene-v2-beam scene-v2-beam-high">
-          <path d="M319 280L332 287L655 225L655 270Z" fill="url(#scene-v2-high)" />
-          <path d="M334 286L346 292L660 245L660 291Z" fill="url(#scene-v2-high)" opacity=".64" />
+        <g className="v3-beam v3-beam-high" style={{ opacity: active.key === 'high' ? 1 : 0 }}>
+          <path d="M614 302L648 308L886 230L886 290L648 326Z" fill="url(#v3-high-beam)" />
+          <path d="M625 315L651 320L890 290L890 350L648 337Z" fill="url(#v3-high-beam)" opacity=".52" />
         </g>
 
-        <g className="scene-v2-beam scene-v2-beam-fog">
-          <path d="M319 293L334 300L620 362L620 330Z" fill="url(#scene-v2-fog)" />
-          <path d="M332 300L346 307L610 382L610 350Z" fill="url(#scene-v2-fog)" opacity=".72" />
+        <g className="v3-beam v3-beam-fog" style={{ opacity: active.key === 'fog' ? 1 : 0 }}>
+          <path d="M618 330L648 334L887 402L887 448L648 353Z" fill="url(#v3-fog-beam)" />
+          <path d="M620 347L651 349L873 437L873 470L648 366Z" fill="url(#v3-fog-beam)" opacity=".58" />
         </g>
 
-        <g className="scene-v2-oncoming">
-          <rect x="518" y="131" width="86" height="46" rx="13" fill="#1a2d36" stroke="#bed3d7" strokeOpacity=".16" />
-          <path d="M535 132L552 121H570L589 132" fill="#203740" stroke="#bed3d7" strokeOpacity=".12" />
-          <rect x="528" y="154" width="14" height="8" rx="4" fill="#fff7c7" filter="url(#scene-v2-glow)" />
-          <rect x="580" y="154" width="14" height="8" rx="4" fill="#fff7c7" filter="url(#scene-v2-glow)" />
-          <text x="610" y="190" fill="#dceced" fillOpacity=".58" fontSize="12" fontWeight="700">مركبة مقابلة</text>
+        <g opacity={active.key === 'high' ? .88 : .35}>
+          <path d="M738 206h94l22 15v40h-116z" fill="#172a32" stroke="#b9cdd0" strokeOpacity=".18" />
+          <path d="M756 206l17-14h38l19 14" fill="#213a44" stroke="#b9cdd0" strokeOpacity=".12" />
+          <rect x="751" y="241" width="15" height="7" rx="3.5" fill="#fff8d5" filter="url(#v3-glow)" />
+          <rect x="825" y="241" width="15" height="7" rx="3.5" fill="#fff8d5" filter="url(#v3-glow)" />
+          <text x="828" y="280" fill="#d5e7e9" fontSize="12" fontWeight="800">مركبة مقابلة</text>
         </g>
 
-        <g className="scene-v2-car">
-          <ellipse cx="237" cy="345" rx="137" ry="27" fill="#000" fillOpacity=".36" />
-          <rect x="133" y="288" width="22" height="55" rx="10" fill="#080f14" stroke="#b9ced3" strokeOpacity=".15" />
-          <rect x="320" y="286" width="22" height="55" rx="10" fill="#080f14" stroke="#b9ced3" strokeOpacity=".15" />
-          <path
-            d="M112 308Q116 279 148 270L192 229Q210 212 244 214H278Q302 217 320 238L344 266Q358 280 356 307L349 324Q345 334 329 337H136Q118 333 112 308Z"
-            fill="url(#scene-v2-car)"
-            stroke="#c4d9dd"
-            strokeOpacity=".24"
-            strokeWidth="2.2"
-          />
-          <path d="M192 229Q210 212 244 214H278Q301 217 320 239L284 251H204Z" fill="url(#scene-v2-glass)" stroke="#d6e9ec" strokeOpacity=".18" />
-          <path d="M203 229L202 249M283 217L285 250" stroke="#d6e9ec" strokeOpacity=".17" strokeWidth="2" />
-          <path d="M158 270L194 254H304L328 272" stroke="#c4d9dd" strokeOpacity=".20" strokeWidth="2" />
-          <path d="M128 305Q120 317 132 326H348L354 307" fill="#0a141a" fillOpacity=".62" />
-          <rect x="318" y="273" width="26" height="15" rx="7" fill="#fff6c5" />
-          <rect x="323" y="290" width="24" height="14" rx="7" fill="#fff6c5" />
-          <circle cx="127" cy="302" r="7" fill="#d95f55" fillOpacity=".72" />
-          <path d="M336 270L346 275L346 303L337 307" stroke="#f8f6e0" strokeOpacity=".4" strokeWidth="2" />
-          <path d="M173 322H304" stroke="#bcd2d6" strokeOpacity=".18" strokeWidth="2" />
-          <path d="M176 338Q180 352 194 352T212 338M291 338Q295 352 309 352T327 338" stroke="#060d12" strokeWidth="11" strokeLinecap="round" />
-          <path d="M110 318H94M110 327H96" stroke="#e1ecee" strokeOpacity=".13" strokeWidth="3" strokeLinecap="round" />
+        <g filter="url(#v3-glow)">
+          <ellipse cx="535" cy="408" rx="204" ry="25" fill="#000" opacity=".34" />
         </g>
 
-        <g className="scene-v2-warning">
-          <rect x="438" y="212" width="235" height="40" rx="12" fill="#07131a" fillOpacity=".86" stroke="#8adfd5" strokeOpacity=".28" />
-          <text x="656" y="237" textAnchor="end" fill="#dff8f4" fontSize="13" fontWeight="800">عند احتمال إبهار الآخرين: اخفض الضوء</text>
+        <g>
+          <ellipse cx="536" cy="425" rx="195" ry="27" fill="#000" opacity=".38" />
+          <path d="M370 390Q372 357 405 343L460 298Q483 280 531 280H590Q628 282 657 312L690 346Q708 363 707 390L701 410Q695 425 666 430H409Q379 425 370 390Z" fill="url(#v3-car-body)" stroke="#c7d8db" strokeOpacity=".24" strokeWidth="2.4" />
+          <path d="M462 300Q483 280 531 280H589Q626 282 655 311L617 326H482Z" fill="url(#v3-window)" stroke="#d5e6e8" strokeOpacity=".19" />
+          <path d="M519 282V325M615 286L616 326" stroke="#d7e6e8" strokeOpacity=".20" strokeWidth="2" />
+          <path d="M409 344L456 330H640L681 349" stroke="#d6e4e6" strokeOpacity=".20" strokeWidth="2" />
+          <path d="M394 390Q388 402 402 413H681L695 396" fill="#0b141a" opacity=".64" />
+          <path d="M402 413H694" stroke="#9fb2b7" strokeOpacity=".14" strokeWidth="2" />
+          <path d="M426 425Q430 442 447 442T468 425M612 425Q616 442 633 442T654 425" stroke="#070d11" strokeWidth="14" strokeLinecap="round" />
+          <path d="M412 375H495" stroke="#b5c8cb" strokeOpacity=".13" strokeWidth="2" />
+          <path d="M645 374H689" stroke="#b5c8cb" strokeOpacity=".13" strokeWidth="2" />
+          <rect x="664" y="343" width="25" height="16" rx="7" fill="#fff3bf" filter="url(#v3-glow)" />
+          <rect x="671" y="358" width="22" height="14" rx="6" fill="#fff0b2" />
+          <circle cx="395" cy="363" r="8" fill="#df615f" opacity=".72" />
+
+          <path d="M700 335L730 350" stroke="#d7e7e9" strokeOpacity=".12" strokeWidth="4" strokeLinecap="round" />
+          <path d="M712 349L744 363" stroke="#d7e7e9" strokeOpacity=".10" strokeWidth="4" strokeLinecap="round" />
+        </g>
+
+        <g>
+          <rect x="55" y="63" width="205" height="66" rx="18" fill="#071118" fillOpacity=".86" stroke="#b0d4d6" strokeOpacity=".13" />
+          <text x="232" y="88" textAnchor="end" fill="#87ddd2" fontSize="12" fontWeight="900">{active.title}</text>
+          <text x="232" y="111" textAnchor="end" fill="#e4efef" fontSize="13" fontWeight="800">{active.sceneTitle}</text>
         </g>
       </svg>
-      <div className="scene-v2-caption">
+
+      <div className="scene-v3-caption">
         <strong>{active.sceneTitle}</strong>
         <span>{active.sceneText}</span>
       </div>
@@ -198,130 +284,122 @@ const LIGHTS: LightMode[] = [
   {
     key: 'position',
     title: 'أنوار الموضع',
-    technical: 'Front / rear position lamps',
-    short: 'تُظهر المركبة وتحدد عرضها',
-    why: 'هذه الأنوار هدفها الأساسي جعل وجود المركبة وأبعادها أوضح للآخرين. ليست مصممة لإضاءة طريق القيادة لمسافة بعيدة.',
+    technical: 'Position lamps',
+    short: 'لتوضيح وجود المركبة وعرضها',
+    summary: 'وظيفتها الأساسية أن تجعل المركبة أوضح للآخرين، خصوصاً عندما لا تكون هناك حاجة لإضاءة الطريق لمسافة بعيدة.',
+    identify: 'رمز المصباح يكون قريباً من شكل مصباح أمامي مع خطوط قصيرة ومتوازية.',
     when: [
-      'تُستخدم لإظهار وجود المركبة وتحديد عرضها.',
-      'تعمل كجزء من منظومة إضاءة المركبة، حسب تجهيز السيارة.',
-      'لا تعتمد عليها وحدها لرؤية الطريق عندما تكون الإضاءة غير كافية.',
+      'عندما تحتاج إلى إظهار وجود المركبة وأبعادها بوضوح.',
+      'مع الإضاءة المحيطة الضعيفة عندما تكون هذه الأنوار جزءاً من الوضع المناسب للسيارة.',
+      'تذكّر أنها ليست بديلاً عن الضوء الذي ينير الطريق أمامك.',
     ],
-    avoid: [
-      'لا تعتبرها بديلاً عن المصابيح التي تُنير الطريق.',
-      'لا تحفظ اسمها فقط؛ افهم وظيفتها: أن تُرى المركبة بوضوح.',
+    mistakes: [
+      'الخلط بينها وبين الضوء المنخفض: الموضع يساعد الآخرين على رؤيتك، والمنخفض يساعدك على رؤية الطريق.',
+      'اعتبارها كافية وحدها عندما تحتاج فعلياً إلى إضاءة الطريق.',
     ],
-    steps: [
-      'تعرّف على رمزها في سيارتك.',
-      'تأكد أن الأنوار المطلوبة تعمل فعلاً قبل القيادة ليلاً.',
-      'عند الحاجة إلى رؤية الطريق، استخدم المصباح المناسب لذلك.',
-    ],
-    sceneTitle: 'الهدف: أن تُرى المركبة بوضوح',
-    sceneText: 'تظهر العلامات الضوئية حول المركبة من دون رسم حزمة إضاءة طويلة أمامها.',
+    remember: 'أن تُرى',
+    sceneTitle: 'علامات ضوئية حول المركبة',
+    sceneText: 'لا نرسم شعاعاً طويلاً؛ التركيز هنا على ظهور المركبة وحدودها.',
   },
   {
     key: 'low',
     title: 'الضوء المنخفض',
-    technical: 'Dipped / passing beam',
-    short: 'يركّز الضوء على الطريق أمامك',
-    why: 'حزمة الإضاءة المنخفضة تضيء الطريق أمام المركبة مع تقليل احتمال إبهار مستخدمي الطريق الآخرين.',
+    technical: 'Dipped / low beam',
+    short: 'ينير الطريق أمامك بدون رفع الحزمة',
+    summary: 'هو الوضع اليومي الأساسي لإضاءة الطريق عندما تكون هناك حاجة للرؤية أمام السيارة مع الحد من إبهار الآخرين.',
+    identify: 'رمزه يشبه المصباح مع خطوط مائلة للأسفل أو متجهة إلى أسفل الطريق.',
     when: [
-      'عندما تحتاج إلى إضاءة الطريق أمامك.',
-      'عند وجود مركبة مقابلة أو عندما قد تسبب الحزمة العالية إبهاراً.',
-      'في ظروف الرؤية الضعيفة عندما تكون الإضاءة الأمامية مطلوبة.',
+      'أثناء القيادة عندما تحتاج إلى إضاءة واضحة للطريق أمامك.',
+      'عند وجود مركبة مقابلة أو عندما يصبح الضوء العالي مزعجاً للآخرين.',
+      'عندما تكون الإضاءة الطبيعية غير كافية وتحتاج إلى رؤية الطريق بوضوح.',
     ],
-    avoid: [
-      'لا ترفع الحزمة إلى العالي لمجرد أنك تريد رؤية أبعد.',
-      'لا تستخدم أي وضع إنارة بطريقة تسبب إبهاراً للآخرين.',
+    mistakes: [
+      'استخدام العالي بدلاً منه مع وجود حركة مقابلة.',
+      'الاعتقاد أن رفع الحزمة دائماً يعني رؤية أفضل؛ المهم أن تكون الرؤية مناسبة بدون إبهار.',
     ],
-    steps: [
-      'شغّل الحزمة المنخفضة من التحكم الخاص بسيارتك.',
-      'وجّه انتباهك إلى الطريق وإلى المركبات المقابلة.',
-      'ابقَ على الحزمة المناسبة كلما كان العالي قد يسبب إبهاراً.',
-    ],
-    sceneTitle: 'الضوء ينتشر أمام السيارة وعلى سطح الطريق',
-    sceneText: 'المنخفض أقصر وأكثر توجيهاً للأسفل من العالي، لذلك يناسب التقابل ويقلل الإبهار.',
+    remember: 'أن ترى الطريق',
+    sceneTitle: 'حزمة قصيرة ومتجهة إلى سطح الطريق',
+    sceneText: 'لاحظ كيف تبقى الحزمة منخفضة أمام السيارة ولا تمتد إلى أعلى مجال رؤية السائق المقابل.',
   },
   {
     key: 'high',
     title: 'الضوء العالي',
-    technical: 'Main / driving beam',
-    short: 'إضاءة أبعد على الطريق',
-    why: 'مصمم لإضاءة الطريق لمسافة أبعد. استخدامه يرتبط دائماً بشرط أساسي: ألا يسبب إبهاراً لمستخدمي الطريق الآخرين.',
+    technical: 'Main / high beam',
+    short: 'إضاءة أبعد عندما يكون الطريق خالياً',
+    summary: 'يوجّه الضوء لمسافة أبعد عندما تسمح حالة الطريق بذلك، ويجب خفضه عندما قد يسبب إبهاراً للآخرين.',
+    identify: 'رمزه يشبه المصباح مع خطوط أفقية متوازية مستقيمة إلى الأمام.',
     when: [
-      'عندما تكون الرؤية الليلية بحاجة إلى إضاءة أبعد.',
-      'عندما لا توجد مركبة أو شخص قد يتأذى أو يُبهر من الحزمة.',
-      'عند الانتقال بين أوضاع الإنارة بحسب تغير حالة الطريق.',
+      'عندما تكون الرؤية الليلية بحاجة إلى مدى أبعد والطريق يسمح بذلك.',
+      'عندما لا توجد مركبة مقابلة أو مستخدم طريق قد يتعرض للإبهار.',
+      'خفضه فور تغيّر وضع الطريق وظهور شخص أو مركبة في مجال الضوء.',
     ],
-    avoid: [
-      'عند ظهور مركبة مقابلة وتعرض سائقها للإبهار.',
-      'عندما تكون الحزمة ستزعج مستخدم طريق آخر أمامك أو بالقرب منك.',
+    mistakes: [
+      'تركه مرتفعاً أثناء التقابل أو عندما يتأذى مستخدم الطريق من شدة الضوء.',
+      'استخدامه تلقائياً لمجرد أن الطريق مظلم دون النظر إلى حركة المرور.',
     ],
-    steps: [
-      'تأكد أولاً أن الحزمة لن تبهر الآخرين.',
-      'شغّل العالي عندما تكون الرؤية وحالة الطريق تسمحان بذلك.',
-      'اخفضه فوراً عندما يصبح الإبهار محتملاً.',
-    ],
-    sceneTitle: 'الهدف: رؤية أبعد — مع ضبط الحزمة عند التقابل',
-    sceneText: 'الحزمة تمتد إلى الأمام لمسافة أبعد، ويظهر أمامها تنبيه واضح عند وجود مركبة مقابلة.',
+    remember: 'أن ترى أبعد',
+    sceneTitle: 'حزمة طويلة إلى الأمام',
+    sceneText: 'في هذا الوضع تصل الإضاءة أبعد، وتظهر المركبة المقابلة كتذكير بضرورة خفض الحزمة عند التقابل.',
   },
   {
     key: 'fog',
     title: 'أضواء الضباب',
     technical: 'Front fog lamps',
-    short: 'لتحسين الرؤية في ظروف صعبة',
-    why: 'الضوء الضبابي الأمامي مخصص لتحسين إضاءة الطريق في الضباب الكثيف أو الثلج أو المطر الغزير أو ظروف مشابهة.',
+    short: 'حزمة عريضة وقريبة من الأرض',
+    summary: 'تساعد على تحسين الرؤية عندما تصبح الرؤية صعبة بسبب الضباب الكثيف أو الظروف الجوية المشابهة، مع بقاء القيادة متناسبة مع مدى الرؤية.',
+    identify: 'رمزها يشبه المصباح مع خطوط أفقية يتقاطع معها الخط المميز للضباب.',
     when: [
-      'عندما تكون الرؤية متأثرة بشدة بالضباب أو ظروف جوية مشابهة.',
-      'عندما تكون أضواء الضباب في السيارة مناسبة للحالة وتحتاج فعلاً إلى تحسين الرؤية.',
-      'مع تخفيف السرعة وملاءمة القيادة لمدى الرؤية.',
+      'عندما تنخفض الرؤية بشكل واضح بسبب الضباب الكثيف أو الثلج أو المطر الغزير أو ظروف مشابهة.',
+      'عندما تكون المركبة مجهزة بهذه المصابيح ويكون استخدامها مناسباً للحالة.',
+      'مع تخفيض السرعة وعدم الاعتماد على المصباح وحده لتحديد مسافة التوقف.',
     ],
-    avoid: [
-      'لا تستخدمه لمجرد أن الجو مظلم فقط.',
-      'لا تجعل المصابيح بديلاً عن تخفيض السرعة والانتباه للرؤية.',
+    mistakes: [
+      'تشغيلها فقط لأن الوقت ليلاً بدون وجود ظرف رؤية صعب.',
+      'رفع السرعة لأن الطريق يبدو مضاءً؛ الرؤية الفعلية هي التي تحدد سرعة القيادة.',
     ],
-    steps: [
-      'تعرّف على رمز مصباح الضباب في سيارتك.',
-      'استخدمه عندما تستدعي حالة الرؤية ذلك.',
-      'أوقفه عندما تتحسن الظروف وتعود الإضاءة العادية كافية.',
-    ],
-    sceneTitle: 'الضباب: حزمة منخفضة وقريبة من سطح الطريق',
-    sceneText: 'المشهد يوضح حزمة عريضة ومنخفضة بدلاً من شعاع طويل مرتفع.',
+    remember: 'تحسين الرؤية الصعبة',
+    sceneTitle: 'حزمة منخفضة وعريضة',
+    sceneText: 'تنتشر الإضاءة قريباً من سطح الطريق بدل أن تصعد كشعاع طويل أمام السيارة.',
   },
 ];
 
 const MINI_CHECKS = [
   {
-    q: 'ما الوظيفة الأساسية لأنوار الموضع؟',
-    options: ['إضاءة الطريق لمسافة بعيدة', 'إظهار وجود المركبة وتحديد عرضها', 'اختراق الضباب الكثيف'],
-    correct: 1,
-    note: 'اتفاقية فيينا تميز أنوار الموضع عن مصابيح إضاءة الطريق: وظيفتها إظهار وجود المركبة وعرضها.',
-  },
-  {
-    q: 'متى يصبح الضوء العالي غير مناسب؟',
-    options: ['عندما قد يسبب إبهاراً لمستخدم طريق آخر', 'عندما تريد رؤية أبعد', 'عندما يكون الطريق واسعاً'],
+    q: 'ما الفكرة الأساسية لأنوار الموضع؟',
+    options: ['أن تُرى المركبة بوضوح', 'أن تصل الإضاءة لأبعد مسافة', 'أن تستبدل الضوء العالي'],
     correct: 0,
-    note: 'المبدأ الأساسي هو تجنب إبهار الآخرين، حتى عند استخدام الحزمة التي تضيء لمسافة أبعد.',
+    note: 'أنوار الموضع مرتبطة بإظهار المركبة وحدودها، وليست بإنارة الطريق لمسافة طويلة.',
   },
   {
-    q: 'ما الفرق الرئيسي بين المنخفض والعالي؟',
-    options: ['المنخفض يضيء الطريق أمامك بحزمة أكثر انخفاضاً، والعالي يصل لمسافة أبعد', 'لا يوجد فرق في اتجاه الحزمة', 'العالي مخصص فقط للوقوف'],
+    q: 'متى تخفّض الضوء العالي؟',
+    options: ['عندما قد يسبب إبهاراً لمستخدم طريق آخر', 'كلما كان الطريق واسعاً', 'فقط عند التوقف'],
     correct: 0,
-    note: 'التعريفات الفنية في UNECE تميز بين passing beam لإضاءة الطريق دون إبهار، وdriving beam لإضاءة الطريق لمسافة طويلة.',
+    note: 'القاعدة العملية هنا بسيطة: عندما يصبح الإبهار محتملاً، انتقل إلى الوضع المناسب للطريق.',
   },
   {
-    q: 'ما الاستخدام الصحيح لمصابيح الضباب الأمامية؟',
-    options: ['لأي قيادة ليلية عادية', 'لتحسين إضاءة الطريق في الضباب الكثيف أو الثلج أو المطر الغزير أو ظروف مشابهة', 'بدلاً من خفض السرعة'],
-    correct: 1,
-    note: 'هذا هو التعريف الفني لمصباح الضباب الأمامي في اتفاقية المرور على الطرق التابعة للأمم المتحدة.',
+    q: 'كيف تميّز المنخفض عن العالي بسرعة؟',
+    options: ['المنخفض يوجّه الحزمة أكثر إلى الأسفل، والعالي أبعد إلى الأمام', 'لا يوجد فرق بصري', 'العالي مخصص للوقوف فقط'],
+    correct: 0,
+    note: 'اربط شكل الرمز باتجاه الحزمة في المشهد، لا تحفظ الاسم وحده.',
+  },
+  {
+    q: 'متى تفكر بأضواء الضباب الأمامية؟',
+    options: ['عند صعوبة الرؤية بسبب ظروف جوية مناسبة', 'في كل قيادة ليلية', 'عندما تريد أن تسير أسرع'],
+    correct: 0,
+    note: 'الضباب ليس مجرد بديل للضوء العادي؛ فائدته مرتبطة بظروف رؤية صعبة.',
   },
 ];
 
 export default function PracticalInfo() {
   const navigate = useNavigate();
-  const [activeKey, setActiveKey] = useState<LightKey>('high');
+  const [activeKey, setActiveKey] = useState<LightKey>('low');
   const [checkIndex, setCheckIndex] = useState(0);
   const [selectedCheck, setSelectedCheck] = useState<number | null>(null);
-  const active = useMemo(() => LIGHTS.find(item => item.key === activeKey) ?? LIGHTS[2], [activeKey]);
+
+  const active = useMemo(
+    () => LIGHTS.find(item => item.key === activeKey) ?? LIGHTS[1],
+    [activeKey],
+  );
   const check = MINI_CHECKS[checkIndex];
 
   const selectLight = (key: LightKey) => {
@@ -333,38 +411,64 @@ export default function PracticalInfo() {
     <div className="practical-info-page" dir="rtl">
       <header className="practical-info-header">
         <div className="practical-info-header-inner">
-          <button className="practical-back" type="button" onClick={() => navigate('/')} aria-label="العودة إلى الرئيسية">
+          <button
+            className="practical-back"
+            type="button"
+            onClick={() => navigate('/')}
+            aria-label="العودة إلى الرئيسية"
+          >
             <span>→</span>
           </button>
+
           <div className="practical-brand">
             <span>مركز المعرفة العملية</span>
             <strong>معلومات عملية إضافية</strong>
           </div>
-          <div className="practical-header-badge"><span>01</span> أضواء السيارة</div>
+
+          <div className="practical-header-badge">
+            <span>01</span> أضواء السيارة
+          </div>
         </div>
       </header>
 
       <main className="practical-info-main">
         <section className="practical-hero">
           <div className="practical-hero-copy">
-            <span className="practical-eyebrow">شرح بصري مبسّط</span>
-            <h1>افهم الأضواء <em>بالشكل والاتجاه والاستخدام.</em></h1>
+            <span className="practical-eyebrow">درس بصري تفاعلي</span>
+            <h1>
+              تعلّم أضواء السيارة
+              <em> من الرمز إلى الاستخدام.</em>
+            </h1>
             <p>
-              تعرّف على وظيفة كل ضوء، اتجاه حزمته، ومتى يكون استخدامه مناسباً.
-              الشرح هنا مبني على التعريفات الفنية الدولية، مع صياغة عملية تناسب المذاكرة.
+              بدل حفظ أسماء الأزرار فقط، اربط كل رمز بوظيفته وباتجاه الحزمة وبالظرف الذي تحتاجه فيه.
+              اضغط على أي ضوء وشاهد الفرق فوراً.
             </p>
+
             <div className="practical-hero-stats">
-              <div><b>04</b><span>أنواع في هذا الدرس</span></div>
-              <div><b>01</b><span>مشهد توضيحي</span></div>
-              <div><b>100%</b><span>بدون نص قانون سوري</span></div>
+              <div>
+                <b>04</b>
+                <span>أوضاع رئيسية</span>
+              </div>
+              <div>
+                <b>01</b>
+                <span>محاكاة السيارة</span>
+              </div>
+              <div>
+                <b>04</b>
+                <span>أسئلة تثبيت</span>
+              </div>
             </div>
           </div>
+
           <div className="practical-hero-visual" aria-hidden="true">
             <div className="hero-dashboard-ring ring-a" />
             <div className="hero-dashboard-ring ring-b" />
             <div className="hero-dashboard-panel">
-              <div className="hero-speed">HEADLIGHTS</div>
-              <div className="hero-icon"><LightSymbol type="high" /></div>
+              <div className="hero-speed">LIGHT CONTROL</div>
+              <div className="hero-icon">
+                <LightSymbol type={active.key} />
+              </div>
+              <div className="hero-active-mode">{active.title}</div>
               <div className="hero-bars"><i /><i /><i /><i /></div>
             </div>
             <span className="hero-orbit-dot dot-a" />
@@ -375,10 +479,10 @@ export default function PracticalInfo() {
         <section className="practical-light-picker" aria-labelledby="lights-picker-title">
           <div className="practical-section-title">
             <div>
-              <span className="practical-eyebrow">الموضوع 01</span>
-              <h2 id="lights-picker-title">اختر نوع الضوء</h2>
+              <span className="practical-eyebrow">الخطوة 01</span>
+              <h2 id="lights-picker-title">اختَر الضوء</h2>
             </div>
-            <p>انظر للرمز أولاً، ثم اربطه بالمشهد والوظيفة.</p>
+            <p>ابدأ بالرمز، ثم شاهد شكله على الطريق وتعرّف على استخدامه.</p>
           </div>
 
           <div className="practical-light-tabs" role="tablist" aria-label="أنواع أضواء السيارة">
@@ -397,111 +501,105 @@ export default function PracticalInfo() {
                   <small>{item.technical}</small>
                   <em>{item.short}</em>
                 </span>
-                <i className="tab-state">{activeKey === item.key ? '✓' : String(LIGHTS.indexOf(item) + 1).padStart(2, '0')}</i>
+                <i className="tab-state">
+                  {activeKey === item.key ? '✓' : String(LIGHTS.indexOf(item) + 1).padStart(2, '0')}
+                </i>
               </button>
             ))}
           </div>
         </section>
 
-        <section className={`practical-learning-grid mode-${active.key}`}>
-          <div className="practical-scene" aria-label={active.sceneTitle}>
-            <div className="scene-topline">
-              <span>المحاكاة البصرية</span>
-              <b>{active.title}</b>
-            </div>
+        <section className="practical-learning-grid">
+          <div className="practical-scene">
             <LightScene active={active} />
           </div>
 
           <aside className="practical-control-card">
             <div className="control-head">
               <div>
-                <span className="practical-eyebrow">الخلاصة في سطر</span>
-                <h3>{active.title}</h3>
+                <span className="practical-eyebrow">الخطوة 02</span>
+                <h3>شوفه على السيارة</h3>
                 <p>{active.technical}</p>
               </div>
-              <div className="symbol-large"><LightSymbol type={active.key} /></div>
-            </div>
 
-            <div className="control-stalk" aria-hidden="true">
-              <div className="stalk-body">
-                <div className="stalk-grip" />
-                <div className="stalk-collar">
-                  <b>OFF</b>
-                  <span>◌</span>
-                  <span>◉</span>
-                  <span>◉◉</span>
-                </div>
-                <div className="stalk-ticks"><i /><i /><i /><i /></div>
-              </div>
-              <div className="stalk-note">
-                <span>مهم</span>
-                <b>رمز الإضاءة هو الأهم؛ شكل الذراع والمفتاح يختلف بين السيارات.</b>
+              <div className="symbol-large">
+                <LightSymbol type={active.key} />
               </div>
             </div>
 
-            <div className="control-why">
-              <span>الفكرة التي تحفظها</span>
-              <strong>{active.why}</strong>
+            <div className="control-summary">
+              <span>وظيفته باختصار</span>
+              <strong>{active.summary}</strong>
+            </div>
+
+            <LightStalk active={active.key} />
+
+            <div className="control-remember">
+              <span>احفظها بهذه الجملة</span>
+              <b>{active.remember}</b>
             </div>
           </aside>
         </section>
 
-        <section className="practical-details" aria-label="تفاصيل استخدام الضوء">
-          <article className="detail-card when">
+        <section className="practical-details" aria-label="شرح استخدام الضوء">
+          <article className="detail-card">
             <div className="detail-icon">01</div>
             <div>
-              <span>متى يفيد؟</span>
-              <h3>المواقف الأساسية</h3>
-              <div className="detail-list">
-                {active.when.map((item, index) => (
-                  <div key={item}><b>{String(index + 1).padStart(2, '0')}</b><span>{item}</span></div>
-                ))}
-              </div>
+              <span>كيف أتعرف عليه؟</span>
+              <h3>من الرمز</h3>
+              <p>{active.identify}</p>
             </div>
           </article>
 
-          <article className="detail-card do">
+          <article className="detail-card detail-when">
             <div className="detail-icon">02</div>
             <div>
-              <span>طريقة التفكير</span>
-              <h3>ثلاث خطوات سهلة</h3>
+              <span>متى أستخدمه؟</span>
+              <h3>الموقف الذي تحتاجه فيه</h3>
               <div className="detail-list">
-                {active.steps.map((item, index) => (
-                  <div key={item}><b>{String(index + 1).padStart(2, '0')}</b><span>{item}</span></div>
+                {active.when.map((item, index) => (
+                  <div key={item}>
+                    <b>{String(index + 1).padStart(2, '0')}</b>
+                    <span>{item}</span>
+                  </div>
                 ))}
               </div>
             </div>
           </article>
 
-          <article className="detail-card avoid">
+          <article className="detail-card detail-warning">
             <div className="detail-icon">03</div>
             <div>
-              <span>تجنّب الخطأ</span>
-              <h3>لا تستخدمه بهذا الشكل</h3>
+              <span>لا تخلط بينهما</span>
+              <h3>الأخطاء الشائعة</h3>
               <div className="detail-list compact">
-                {active.avoid.map((item, index) => (
-                  <div key={item}><b>{index === 0 ? '!' : '↺'}</b><span>{item}</span></div>
+                {active.mistakes.map((item, index) => (
+                  <div key={item}>
+                    <b>{index === 0 ? '!' : '↺'}</b>
+                    <span>{item}</span>
+                  </div>
                 ))}
               </div>
             </div>
           </article>
 
-          <article className="detail-card legal">
-            <div className="detail-icon">04</div>
+          <article className="detail-card detail-visual">
+            <div className="detail-icon"><LightSymbol type={active.key} /></div>
             <div>
-              <span>المعلومة الأساسية</span>
-              <h3>المرجع الفني</h3>
-              <p>{active.why}</p>
+              <span>اربط الرمز بالمشهد</span>
+              <h3>{active.sceneTitle}</h3>
+              <p>{active.sceneText}</p>
             </div>
           </article>
         </section>
 
         <section className="practical-memory">
           <div className="memory-copy">
-            <span className="practical-eyebrow">طريقة الحفظ</span>
-            <h2>أربع كلمات تكفي كبداية</h2>
-            <p>أن تُرى ← أن ترى ← أن ترى أبعد ← أن تحسّن الرؤية في الجو الصعب.</p>
+            <span className="practical-eyebrow">الخطوة 03</span>
+            <h2>طريقة حفظ أسرع</h2>
+            <p>لا تحفظ الاسم وحده. اسأل: هل الهدف أن أُرى؟ أم أن أرى؟ أم أن أرى أبعد؟ أم أن أحسّن الرؤية في ظرف صعب؟</p>
           </div>
+
           <div className="memory-grid">
             {LIGHTS.map(item => (
               <button
@@ -511,7 +609,7 @@ export default function PracticalInfo() {
                 onClick={() => selectLight(item.key)}
               >
                 <span className="memory-icon"><LightSymbol type={item.key} /></span>
-                <b>{item.key === 'position' ? 'أظهرني' : item.key === 'low' ? 'أنر طريقي' : item.key === 'high' ? 'أنر أبعد' : 'حسّن الرؤية'}</b>
+                <b>{item.remember}</b>
                 <small>{item.title}</small>
               </button>
             ))}
@@ -520,30 +618,34 @@ export default function PracticalInfo() {
 
         <section className="practical-check">
           <div className="check-intro">
-            <span className="practical-eyebrow">تأكد أنك فهمت</span>
-            <h2>اختبار سريع من داخل الدرس</h2>
-            <p>هذا الجزء للتعلّم، وليس لاحتساب نتيجة اختبار القيادة.</p>
+            <span className="practical-eyebrow">الخطوة 04</span>
+            <h2>اختبر فهمك قبل أن تكمل</h2>
+            <p>أجب من فهمك للمشهد والوظيفة. هذا الاختبار للتعلّم داخل الدرس فقط.</p>
             <div className="check-rule">
-              <span>قاعدة سهلة</span>
-              <b>اسأل نفسك أولاً: ماذا أريد من الضوء الآن؟ أن أُرى، أم أن أرى، أم أن أرى أبعد؟</b>
+              <span>قاعدة ذهبية</span>
+              <b>شوف الرمز → افهم اتجاه الضوء → اربطه بحالة الطريق.</b>
             </div>
           </div>
 
           <div className="check-card">
             <div className="check-top">
               <span>{String(checkIndex + 1).padStart(2, '0')} / {String(MINI_CHECKS.length).padStart(2, '0')}</span>
-              <b>اختبر فهمك</b>
+              <b>اختبار سريع</b>
             </div>
+
             <h3>{check.q}</h3>
+
             <div className="check-options">
               {check.options.map((option, index) => {
-                const state = selectedCheck === null
-                  ? ''
-                  : index === check.correct
-                    ? 'is-correct'
-                    : index === selectedCheck
-                      ? 'is-wrong'
-                      : 'is-muted';
+                const state =
+                  selectedCheck === null
+                    ? ''
+                    : index === check.correct
+                      ? 'is-correct'
+                      : index === selectedCheck
+                        ? 'is-wrong'
+                        : 'is-muted';
+
                 return (
                   <button
                     key={option}
@@ -561,9 +663,13 @@ export default function PracticalInfo() {
             </div>
 
             {selectedCheck !== null && (
-              <div className={`check-feedback ${selectedCheck === check.correct ? 'good' : 'bad'}`}>
+              <div className={'check-feedback ' + (selectedCheck === check.correct ? 'good' : 'bad')}>
                 <strong>{selectedCheck === check.correct ? 'إجابة صحيحة' : 'راجع المعلومة'}</strong>
-                <span>{selectedCheck === check.correct ? 'ممتاز. اربط الوظيفة دائماً باتجاه الحزمة والظرف.' : check.note}</span>
+                <span>
+                  {selectedCheck === check.correct
+                    ? 'ممتاز. اربط الإجابة دائماً بالمشهد، وليس بالحفظ العشوائي.'
+                    : check.note}
+                </span>
               </div>
             )}
 
@@ -575,20 +681,11 @@ export default function PracticalInfo() {
                 setSelectedCheck(null);
               }}
             >
-              {checkIndex === MINI_CHECKS.length - 1 ? 'إعادة المجموعة' : 'السؤال التالي'} <span>←</span>
+              {checkIndex === MINI_CHECKS.length - 1 ? 'إعادة الأسئلة' : 'السؤال التالي'}
+              <span>←</span>
             </button>
           </div>
         </section>
-
-        <footer className="practical-source-note">
-          <div>
-            <b>المصادر التي بُني عليها هذا الدرس</b>
-            <span>الأمم المتحدة UNECE — Convention on Road Traffic (1968)، Annex 5: Vehicle lighting and light-signalling devices؛ وUN Regulation No. 121 لتعريفات وأجهزة التحكم والإشارات الضوئية.</span>
-          </div>
-          <small>
-            للاستخدام التعليمي العام: القواعد القانونية الدقيقة تختلف حسب الدولة. هذا الدرس يشرح الوظيفة الفنية ومبادئ الاستخدام الآمن، ولا يستبدل دليل السيارة أو قواعد البلد الذي تقود فيه.
-          </small>
-        </footer>
       </main>
     </div>
   );
