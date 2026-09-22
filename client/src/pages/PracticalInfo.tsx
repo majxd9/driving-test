@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { useEffect, useMemo, useRef, useState, type Ref } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 type MainLightKey =
@@ -403,7 +403,7 @@ const PRACTICAL_CASES: {
   })),
 ];
 
-function StalkStateVisual({ active, mainLight, stageRef }: { active: ControlKey; mainLight: MainLightKey; stageRef?: RefObject<HTMLDivElement | null> }) {
+function StalkStateVisual({ active, mainLight, stageRef }: { active: ControlKey; mainLight: MainLightKey; stageRef?: Ref<HTMLDivElement> }) {
   const left=active==='left', right=active==='right', high=active==='high', flash=active==='flash', hazard=active==='hazard';
   const ring=!left&&!right&&!high&&!flash&&!hazard;
   const ringLabel=mainLight==='off'?'OFF':mainLight==='position'?'P':mainLight==='auto'?'A':mainLight==='low'?'LOW':mainLight==='frontFog'?'FOG':mainLight==='rearFog'?'REAR FOG':'LIGHT';
