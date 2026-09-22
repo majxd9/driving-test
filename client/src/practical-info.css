@@ -1613,3 +1613,136 @@
     display:none;
   }
 }
+
+
+/* =========================================================
+   PRACTICAL INFO V5 — clear front/rear car view + direct stalk
+   ========================================================= */
+
+.practical-info-page .practical-learning-grid{
+  grid-template-columns:minmax(0,1.34fr) minmax(350px,.66fr);
+  gap:18px;
+  align-items:stretch;
+}
+
+.practical-info-page .practical-scene{
+  min-height:420px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  overflow:visible;
+}
+
+.practical-info-page .scene-v4-wrap{
+  position:relative;
+  width:100%;
+  min-height:420px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  border-radius:0;
+  background:transparent;
+}
+
+.practical-info-page .scene-v4-svg{
+  width:100%;
+  height:auto;
+  display:block;
+  filter:none;
+}
+
+.practical-info-page .scene-v4-svg > rect:first-child{
+  opacity:.72;
+}
+
+.practical-info-page .stalk-ring-trigger{
+  top:47%;
+  left:62.3%;
+  width:18%;
+  min-width:62px;
+  border:0;
+}
+
+.practical-info-page .stalk-ring-trigger::before{
+  content:'';
+  position:absolute;
+  inset:13%;
+  border-radius:50%;
+  border:2px solid rgba(154,239,229,.20);
+  box-shadow:
+    0 0 0 5px rgba(126,231,219,.035),
+    0 0 25px rgba(126,231,219,.10);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+
+.practical-info-page .stalk-ring-trigger:hover::before{
+  transform:scale(1.05);
+  border-color:rgba(154,239,229,.46);
+  box-shadow:
+    0 0 0 6px rgba(126,231,219,.055),
+    0 0 30px rgba(126,231,219,.17);
+}
+
+.practical-info-page .stalk-ring-trigger:active::before{
+  transform:scale(.96);
+}
+
+.practical-info-page .stalk-ring-trigger:focus-visible{
+  outline:3px solid rgba(126,231,219,.52);
+  outline-offset:5px;
+}
+
+.practical-info-page .stalk-mode-orbit{
+  display:none!important;
+}
+
+.practical-info-page .stalk-demo-labels b{
+  color:rgba(227,241,242,.55);
+}
+
+@media(max-width:980px){
+  .practical-info-page .practical-scene{
+    min-height:390px;
+  }
+
+  .practical-info-page .scene-v4-wrap{
+    min-height:390px;
+  }
+
+  .practical-info-page .stalk-ring-trigger{
+    width:17%;
+    min-width:58px;
+  }
+}
+
+@media(max-width:700px){
+  .practical-info-page .practical-scene,
+  .practical-info-page .scene-v4-wrap{
+    min-height:0;
+  }
+
+  .practical-info-page .scene-v4-svg{
+    width:100%;
+    height:auto;
+  }
+
+  .practical-info-page .stalk-ring-trigger{
+    width:20%;
+    min-width:56px;
+    left:62%;
+    top:47%;
+  }
+
+  .practical-info-page .stalk-demo-svg{
+    margin-top:2px;
+  }
+}
+
+@media(max-width:390px){
+  .practical-info-page .stalk-ring-trigger{
+    width:21%;
+    min-width:52px;
+  }
+}
