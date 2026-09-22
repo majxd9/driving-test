@@ -414,110 +414,52 @@ function StalkStateVisual({
   signal: SignalKey | null;
   stageRef?: RefObject<HTMLDivElement | null>;
 }) {
-  const ringPosition =
-    mainLight === 'off' ? 1
-      : mainLight === 'position' ? 2
-        : mainLight === 'auto' ? 3
-          : mainLight === 'low' ? 4
-            : 5;
+  const isLeft = active === 'left';
+  const isRight = active === 'right';
+  const isHazard = active === 'hazard';
+  const isHigh = active === 'high';
+  const isFlash = active === 'flash';
+  const isRing = !isLeft && !isRight && !isHazard && !isHigh && !isFlash;
 
-  const motion =
-    signal === 'right'
-      ? '↑ ارفع الذراع'
-      : signal === 'left'
-        ? '↓ اخفض الذراع'
-        : signal === 'hazard'
-          ? '⚠ اضغط زر الرباعي'
-          : mainLight === 'high'
-            ? '→ ادفع المقبض'
-            : mainLight === 'flash'
-              ? '← اسحب المقبض'
-              : '↻ لف حلقة الإنارة';
+  const ringLabel =
+    mainLight === 'off' ? 'OFF' :
+    mainLight === 'position' ? 'P' :
+    mainLight === 'auto' ? 'A' :
+    mainLight === 'low' ? 'LOW' :
+    mainLight === 'frontFog' ? 'FOG' :
+    mainLight === 'rearFog' ? 'REAR FOG' : 'LIGHT';
 
   return (
-    <div ref={stageRef} className={'clean-stalk-stage state-' + active}>
-      <svg className="clean-stalk-svg" viewBox="0 0 760 300" role="img" aria-label="مقبض أضواء السيارة والغمازات">
-        <defs>
-          <linearGradient id="stalk-metal" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stopColor="#aebbc0" />
-            <stop offset=".2" stopColor="#66777e" />
-            <stop offset=".55" stopColor="#26343a" />
-            <stop offset="1" stopColor="#0b1318" />
-          </linearGradient>
-          <linearGradient id="stalk-ring" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="#e4ebed" />
-            <stop offset=".18" stopColor="#7d8d93" />
-            <stop offset=".52" stopColor="#35444a" />
-            <stop offset="1" stopColor="#121c21" />
-          </linearGradient>
-          <filter id="stalk-shadow" x="-20%" y="-40%" width="140%" height="180%">
-            <feDropShadow dx="0" dy="14" stdDeviation="12" floodColor="#000" floodOpacity=".55" />
-          </filter>
-          <filter id="stalk-glow">
-            <feGaussianBlur stdDeviation="7" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-        </defs>
+    <div ref={stageRef} className={`simple-stalk-stage state-${active}`}>
+      <div className="simple-stalk-caption">
+        <span>المقبض</span>
+        <b>{isLeft ? '↓ يسار' : isRight ? '↑ يمين' : isHazard ? 'اضغط التحذير' : isHigh ? '→ العالي' : isFlash ? '← وميض' : `لف الحلقة: ${ringLabel}`}</b>
+      </div>
 
-        <rect x="18" y="18" width="724" height="264" rx="28" fill="#08141b" stroke="#d8e8ea" strokeOpacity=".09" />
-        <ellipse cx="380" cy="232" rx="275" ry="18" fill="#000" opacity=".30" />
+      <div className="simple-stalk-board">
+        <div className="simple-stalk-body">
+          <div className="simple-stalk-grip">
+            <span className="grip-line" />
+            <span className="grip-line" />
+            <span className="grip-line" />
+            <span className="grip-end" />
+          </div>
+          <div className={`simple-stalk-ring ${isRing ? 'ring-active' : ''}`}>
+            <span>OFF</span><span>P</span><span>A</span><span>LOW</span><span>FOG</span>
+            <i className="ring-pointer" />
+          </div>
+          <div className={`simple-stalk-tip ${isLeft ? 'move-left' : isRight ? 'move-right' : isHigh ? 'move-high' : isFlash ? 'move-flash' : ''}`}>
+            <span className="tip-mark">↕</span>
+          </div>
+          {isHazard && <div className="hazard-button"><span>△</span></div>}
+        </div>
 
-        <g filter="url(#stalk-shadow)">
-          <path d="M70 190C184 136 285 111 392 108H636" stroke="#03080c" strokeWidth="78" strokeLinecap="round" />
-          <path d="M70 178C186 126 288 103 395 100H636" stroke="url(#stalk-metal)" strokeWidth="58" strokeLinecap="round" />
-          <path d="M76 163C185 119 289 98 396 95H626" stroke="#f4fbfc" strokeOpacity=".10" strokeWidth="7" strokeLinecap="round" />
-
-          <g transform="translate(328 64)">
-            <rect x="0" y="0" width="236" height="78" rx="30" fill="#070c10" stroke="#e7f0f1" strokeOpacity=".12" />
-            <rect x="10" y="10" width="216" height="58" rx="23" fill="url(#stalk-ring)" />
-            {[22, 64, 106, 148, 190].map((x, idx) => (
-              <g key={x}>
-                <circle
-                  cx={x}
-                  cy="39"
-                  r="21"
-                  fill={idx + 1 === ringPosition ? '#1b615c' : '#172329'}
-                  stroke={idx + 1 === ringPosition ? '#a4efe6' : '#aab8bc'}
-                  strokeOpacity={idx + 1 === ringPosition ? '.88' : '.38'}
-                  strokeWidth={idx + 1 === ringPosition ? '3' : '2'}
-                />
-                <text x={x} y="43" textAnchor="middle" fill="#eaf7f6" fontSize="8" fontWeight="800">
-                  {['OFF','P','A','LOW','FOG'][idx]}
-                </text>
-              </g>
-            ))}
-          </g>
-
-          <g className="stalk-end-guide">
-            <path d="M620 82h76" stroke="#83e0d7" strokeWidth="3" strokeDasharray="7 7" />
-            <path d="m693 75 14 7-14 7z" fill="#83e0d7" />
-          </g>
-        </g>
-
-        <g className="stalk-direction-hint">
-          <path d="M176 238h74" stroke="#6ed8ce" strokeWidth="3" strokeDasharray="6 6" />
-          <path d="m177 231-14 7 14 7z" fill="#6ed8ce" />
-          <text x="275" y="242" fill="#b9e9e4" fontSize="11" fontWeight="800">اسحب · وميض</text>
-
-          <path d="M570 46h84" stroke="#6ed8ce" strokeWidth="3" strokeDasharray="6 6" />
-          <path d="m651 39 14 7-14 7z" fill="#6ed8ce" />
-          <text x="664" y="51" fill="#b9e9e4" fontSize="11" fontWeight="800">ادفع · عالي</text>
-        </g>
-
-        <g className="stalk-signal-hints">
-          <path d="M596 92c36-25 47-42 48-61" fill="none" stroke="#efb25d" strokeWidth="3" strokeDasharray="7 7" />
-          <path d="m637 29 9 13-14-3z" fill="#efb25d" />
-          <text x="650" y="20" fill="#f3c77f" fontSize="10" fontWeight="800">رفع = يمين</text>
-
-          <path d="M615 142c27 15 35 28 35 43" fill="none" stroke="#efb25d" strokeWidth="3" strokeDasharray="7 7" />
-          <path d="m644 181 7 13-13-7z" fill="#efb25d" />
-          <text x="650" y="207" fill="#f3c77f" fontSize="10" fontWeight="800">خفض = يسار</text>
-        </g>
-      </svg>
-
-      <div className="clean-stalk-status">
-        <span>الحركة الحالية</span>
-        <b>{motion}</b>
+        <div className="stalk-direction-row">
+          <span className={isLeft ? 'active' : ''}>↓ يسار</span>
+          <span className={isRight ? 'active' : ''}>↑ يمين</span>
+          <span className={isHigh ? 'active' : ''}>→ عالي</span>
+          <span className={isFlash ? 'active' : ''}>← وميض</span>
+        </div>
       </div>
     </div>
   );
@@ -536,10 +478,7 @@ function LightingControlCarousel({
   onSignal: (key: SignalKey) => void;
   onFlash: () => void;
 }) {
-  const [index, setIndex] = useState(Math.max(
-    0,
-    PRACTICAL_CASES.findIndex(item => item.key === (signal ?? mainLight)),
-  ));
+  const [index, setIndex] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
@@ -550,99 +489,73 @@ function LightingControlCarousel({
   const current = PRACTICAL_CASES[index] ?? PRACTICAL_CASES[0];
 
   useEffect(() => {
-    const activeKey = signal ?? mainLight;
-    const next = PRACTICAL_CASES.findIndex(item => item.key === activeKey);
-    if (next >= 0 && !isPlaying) setIndex(next);
+    const key = signal ?? mainLight;
+    const found = PRACTICAL_CASES.findIndex(x => x.key === key);
+    if (found >= 0 && !isPlaying) setIndex(found);
   }, [mainLight, signal, isPlaying]);
 
-  const getAudioContext = () => {
-    if (typeof window === 'undefined') return null;
-    const AudioCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtor) return null;
-    const context = audioRef.current ?? new AudioCtor();
-    audioRef.current = context;
-    return context;
-  };
-
-  const playClick = async (kind: 'light' | 'signal') => {
-    if (!soundEnabled) return;
+  const clickSound = () => {
+    if (!soundEnabled || typeof window === 'undefined') return;
     try {
-      const context = getAudioContext();
-      if (!context) return;
-      if (context.state === 'suspended') await context.resume();
-
-      const now = context.currentTime;
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = 'triangle';
-      oscillator.frequency.setValueAtTime(kind === 'signal' ? 520 : 680, now);
-      oscillator.frequency.exponentialRampToValueAtTime(kind === 'signal' ? 740 : 900, now + 0.06);
+      const Ctx = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = audioRef.current ?? new Ctx();
+      audioRef.current = ctx;
+      if (ctx.state === 'suspended') void ctx.resume();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(760, now);
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.07, now + 0.008);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-      oscillator.start(now);
-      oscillator.stop(now + 0.125);
-    } catch {
-      // Audio is optional; visual interaction must continue.
-    }
+      gain.gain.exponentialRampToValueAtTime(0.055, now + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.085);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.09);
+    } catch {}
   };
 
-  const toggleSound = () => {
-    const next = !soundEnabled;
-    setSoundEnabled(next);
-    if (next) {
-      const context = getAudioContext();
-      if (context?.state === 'suspended') void context.resume();
-    }
+  const applyCase = (item: typeof PRACTICAL_CASES[number]) => {
+    setIndex(PRACTICAL_CASES.findIndex(x => x.key === item.key));
+    if (item.key === 'right' || item.key === 'left' || item.key === 'hazard') onSignal(item.key);
+    else if (item.key === 'flash') onFlash();
+    else onMainLight(item.key);
   };
 
-  const setCase = (item: typeof PRACTICAL_CASES[number]) => {
-    const nextIndex = PRACTICAL_CASES.findIndex(x => x.key === item.key);
-    setIndex(nextIndex);
-
-    if (item.key === 'right' || item.key === 'left' || item.key === 'hazard') {
-      onSignal(item.key);
-      void playClick('signal');
-    } else if (item.key === 'flash') {
-      onFlash();
-      void playClick('light');
-    } else {
-      onMainLight(item.key);
-      void playClick('light');
-    }
-  };
-
-  const scrollToCenter = (node: HTMLElement | null) => {
-    if (!node) return;
-    node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
+  const sleep = (ms: number) => new Promise<void>(resolve => window.setTimeout(resolve, ms));
 
   const runInteraction = async (item: typeof PRACTICAL_CASES[number]) => {
     if (isPlaying) return;
     setIsPlaying(true);
     restoreScrollRef.current = window.scrollY;
 
-    setCase(item);
-    await new Promise(resolve => window.setTimeout(resolve, 80));
+    // Start audio directly from the user gesture before any await.
+    clickSound();
+    applyCase(item);
 
-    scrollToCenter(handleRef.current);
-    await new Promise(resolve => window.setTimeout(resolve, 700));
+    await sleep(120);
+    handleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    await sleep(850);
 
-    scrollToCenter(carRef.current);
-    await new Promise(resolve => window.setTimeout(resolve, 1000));
+    clickSound();
+    await sleep(250);
+    carRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    await sleep(950);
 
     window.scrollTo({ top: restoreScrollRef.current, behavior: 'smooth' });
-    await new Promise(resolve => window.setTimeout(resolve, 600));
-
+    await sleep(650);
     setIsPlaying(false);
   };
 
-  const move = (direction: -1 | 1) => {
-    const nextIndex = (index + direction + PRACTICAL_CASES.length) % PRACTICAL_CASES.length;
-    const item = PRACTICAL_CASES[nextIndex];
+  const select = (item: typeof PRACTICAL_CASES[number]) => {
     void runInteraction(item);
+  };
+
+  const move = (dir: -1 | 1) => {
+    const next = (index + dir + PRACTICAL_CASES.length) % PRACTICAL_CASES.length;
+    void runInteraction(PRACTICAL_CASES[next]);
   };
 
   return (
@@ -650,30 +563,17 @@ function LightingControlCarousel({
       <div className="carousel-heading">
         <div>
           <span className="lesson-eyebrow">02 · جرّب المقبض</span>
-          <h2>اختر الوظيفة وشاهدها على المقبض والسيارة</h2>
-          <p>عند الضغط، سنأخذك تلقائياً للمقبض، نوضح الحركة، ثم ننتقل للسيارة، وبعدها نعيدك لمكانك.</p>
+          <h2>شغّل الوظيفة وشاهد نتيجتها</h2>
+          <p>اضغط أي وظيفة: ننتقل للمقبض، نوضح الحركة، ثم نعرض النتيجة على السيارة ونرجع لمكانك.</p>
         </div>
-        <button
-          type="button"
-          className={'sound-toggle ' + (soundEnabled ? 'is-on' : '')}
-          onClick={toggleSound}
-          aria-pressed={soundEnabled}
-          disabled={isPlaying}
-        >
-          <span>{soundEnabled ? '♪' : '×'}</span>
-          {soundEnabled ? 'الصوت مفعّل' : 'الصوت متوقف'}
+        <button type="button" className={`sound-toggle ${soundEnabled ? 'is-on' : ''}`} onClick={() => setSoundEnabled(v => !v)} disabled={isPlaying}>
+          <span>{soundEnabled ? '♪' : '×'}</span>{soundEnabled ? 'الصوت مفعّل' : 'الصوت متوقف'}
         </button>
       </div>
 
       <div className="carousel-quick-grid">
         {PRACTICAL_CASES.map(item => (
-          <button
-            type="button"
-            key={item.key}
-            className={current.key === item.key ? 'is-active' : ''}
-            onClick={() => void runInteraction(item)}
-            disabled={isPlaying}
-          >
+          <button type="button" key={item.key} className={current.key === item.key ? 'is-active' : ''} onClick={() => select(item)} disabled={isPlaying}>
             <LightSymbol type={item.symbol} />
             <span>{item.label}</span>
           </button>
@@ -682,32 +582,15 @@ function LightingControlCarousel({
 
       <div className="carousel-case-card">
         <button type="button" className="carousel-arrow carousel-prev" onClick={() => move(-1)} disabled={isPlaying} aria-label="الحالة السابقة">‹</button>
-
         <div className="carousel-case-main">
-          <div className="carousel-case-counter">
-            <span>{String(index + 1).padStart(2, '0')}</span>
-            <i>/ {String(PRACTICAL_CASES.length).padStart(2, '0')}</i>
-          </div>
+          <div className="carousel-case-counter"><span>{String(index + 1).padStart(2, '0')}</span><i>/ {String(PRACTICAL_CASES.length).padStart(2, '0')}</i></div>
           <div className="carousel-case-copy">
             <div className="carousel-case-icon"><LightSymbol type={current.symbol} /></div>
-            <div>
-              <span>{current.subtitle}</span>
-              <h3>{current.label}</h3>
-              <p>{current.description}</p>
-            </div>
+            <div><span>{current.subtitle}</span><h3>{current.label}</h3><p>{current.description}</p></div>
           </div>
-          <div className="carousel-action-line">
-            <b>الحركة</b>
-            <span>{current.action}</span>
-          </div>
-          <StalkStateVisual
-            active={current.key}
-            mainLight={mainLight}
-            signal={signal}
-            stageRef={handleRef}
-          />
+          <div className="carousel-action-line"><b>الحركة</b><span>{current.action}</span></div>
+          <StalkStateVisual active={current.key} mainLight={mainLight} signal={signal} stageRef={handleRef} />
         </div>
-
         <button type="button" className="carousel-arrow carousel-next" onClick={() => move(1)} disabled={isPlaying} aria-label="الحالة التالية">›</button>
       </div>
 
