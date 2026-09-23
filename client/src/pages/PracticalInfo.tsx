@@ -90,6 +90,8 @@ const MAIN_LIGHTS: LightItem[] = [
   },
 ];
 
+const RING_LIGHTS = MAIN_LIGHTS.filter(item => item.key !== 'high');
+
 const FLASH_ITEM: LightItem = {
   key: 'flash',
   title: 'وميض العالي',
@@ -423,7 +425,7 @@ function HandleIllustration({
         <div className="practice-block">
           <div className="practice-block-head"><span>لف الحلقة</span><small>{MAIN_LIGHTS.length} أوضاع</small></div>
           <div className="ring-choice-grid">
-            {MAIN_LIGHTS.map(item => (
+            {RING_LIGHTS.map(item => (
               <button
                 key={item.key}
                 type="button"
@@ -812,7 +814,7 @@ export default function PracticalInfo() {
   const chooseMain = (key: MainLightKey) => {
     setMainLight(key);
     setSignal(null);
-    setMovementMode('ring');
+    setMovementMode(key === 'high' ? 'push' : 'ring');
     setFlashActive(false);
     if (key === 'rearFog') setVehicleView('rear');
     else setVehicleView('front');
