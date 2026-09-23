@@ -763,7 +763,7 @@ export default function PracticalInfo() {
   const [tab, setTab] = useState<TabKey>('practice');
   const [mainLight, setMainLight] = useState<MainLightKey>('low');
   const [signal, setSignal] = useState<SignalKey | null>(null);
-  const [movement, setMovement] = useState<'ring' | 'left' | 'right' | 'push' | 'pull' | 'hazard' | 'idle'>('ring');
+  const [movement, setMovementMode] = useState<'ring' | 'left' | 'right' | 'push' | 'pull' | 'hazard' | 'idle'>('ring');
   const [flashActive, setFlashActive] = useState(false);
   const [flashCount, setFlashCount] = useState(0);
   const [vehicleView, setVehicleView] = useState<VehicleView>('front');
@@ -784,8 +784,8 @@ export default function PracticalInfo() {
     return () => window.clearTimeout(timer);
   }, [flashActive]);
 
-  const setMovement = (next: 'ring' | 'left' | 'right' | 'push' | 'pull' | 'hazard' | 'idle') => {
-    setMovementState(next);
+  const applyMovement = (next: 'ring' | 'left' | 'right' | 'push' | 'pull' | 'hazard' | 'idle') => {
+    setMovementMode(next);
     if (next === 'left' || next === 'right' || next === 'hazard') {
       setSignal(next);
       setFlashActive(false);
@@ -809,14 +809,10 @@ export default function PracticalInfo() {
     setSignal(null);
   };
 
-  const setMovementState = (next: 'ring' | 'left' | 'right' | 'push' | 'pull' | 'hazard' | 'idle') => {
-    setMovement(next);
-  };
-
   const chooseMain = (key: MainLightKey) => {
     setMainLight(key);
     setSignal(null);
-    setMovement('ring');
+    setMovementMode('ring');
     setFlashActive(false);
     if (key === 'rearFog') setVehicleView('rear');
     else setVehicleView('front');
@@ -824,14 +820,14 @@ export default function PracticalInfo() {
 
   const chooseSignal = (key: SignalKey) => {
     setSignal(key);
-    setMovement(key);
+    setMovementMode(key);
     setFlashActive(false);
     setVehicleView(key === 'hazard' ? 'rear' : 'front');
   };
 
   const triggerFlash = () => {
     setSignal(null);
-    setMovement('pull');
+    setMovementMode('pull');
     setFlashCount(value => value + 1);
     setFlashActive(true);
   };
@@ -941,7 +937,7 @@ export default function PracticalInfo() {
                   <div className="lever-action-grid">
                     <button type="button" className={movement === 'right' ? 'is-selected' : ''} onClick={() => chooseSignal('right')}><span className="lever-arrow">↑</span><b>غماز يمين</b><small>ارفع</small></button>
                     <button type="button" className={movement === 'left' ? 'is-selected' : ''} onClick={() => chooseSignal('left')}><span className="lever-arrow">↓</span><b>غماز يسار</b><small>اخفض</small></button>
-                    <button type="button" className={movement === 'push' ? 'is-selected' : ''} onClick={() => setMovementState('push')}><span className="lever-arrow">→</span><b>العالي</b><small>ادفع</small></button>
+                    <button type="button" className={movement === 'push' ? 'is-selected' : ''} onClick={() => applyMovement('push')}><span className="lever-arrow">→</span><b>العالي</b><small>ادفع</small></button>
                     <button type="button" className={movement === 'pull' ? 'is-selected' : ''} onClick={triggerFlash}><span className="lever-arrow">←</span><b>وميض</b><small>اسحب لحظياً</small></button>
                   </div>
 
