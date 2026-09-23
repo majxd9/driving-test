@@ -421,34 +421,7 @@ function HandleIllustration({
         </div>
       </div>
 
-      <div className="handle-practice-controls">
-        <div className="practice-block">
-          <div className="practice-block-head"><span>لف الحلقة</span><small>{MAIN_LIGHTS.length} أوضاع</small></div>
-          <div className="ring-choice-grid">
-            {RING_LIGHTS.map(item => (
-              <button
-                key={item.key}
-                type="button"
-                className={mainLight === item.key && !flashActive ? 'is-selected' : ''}
-                onClick={() => item.key !== 'flash' && undefined}
-              >
-                <span className="choice-icon"><LightSymbol type={item.symbol} /></span>
-                <span><b>{item.title}</b><small>{item.subtitle}</small></span>
-              </button>
-            ))}
-          </div>
-        </div>
 
-        <div className="practice-block lever-actions">
-          <div className="practice-block-head"><span>حرّك الذراع</span><small>تجربة فورية</small></div>
-          <div className="lever-action-grid">
-            <button type="button" className={signal === 'right' ? 'is-selected' : ''} onClick={() => undefined}><span>↑</span><b>غماز يمين</b><small>ارفع</small></button>
-            <button type="button" className={signal === 'left' ? 'is-selected' : ''} onClick={() => undefined}><span>↓</span><b>غماز يسار</b><small>اخفض</small></button>
-            <button type="button" className={mainLight === 'high' && !flashActive ? 'is-selected' : ''} onClick={() => undefined}><span>→</span><b>العالي</b><small>ادفع</small></button>
-            <button type="button" className={flashActive ? 'is-selected' : ''} onClick={() => undefined}><span>←</span><b>وميض</b><small>اسحب لحظياً</small></button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
