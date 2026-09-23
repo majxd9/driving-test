@@ -76,8 +76,6 @@ const SCENARIOS = [
   { id: 'overtake', tag: 'تجاوز', title: 'بدء مناورة تجاوز', control: 'left' as const, sequence: ['تأكد من السماح بالتجاوز', 'مرآة ونقطة عمياء', 'غماز', 'مناورة آمنة ثم عودة للمسار'], note: 'لا يكفي تشغيل الغماز وحده؛ القرار مرتبط بالطريق والرؤية والأنظمة المرورية.', diagram: 'overtake' },
 ];
 
-const LIGHT_CONTROL_ITEMS = [...MAIN_LIGHTS, FLASH_ITEM];
-const LETTERS = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
 
 function LightSymbol({ type, className = '', filled = false }: {
   type: LightItem['symbol'] | 'left' | 'right' | 'hazard' | 'sun' | 'brake' | 'reverse';
@@ -268,7 +266,6 @@ export default function PracticalInfo() {
     setSelectedScenario(SCENARIOS.find(item => item.control === control)?.id ?? selectedScenario);
     if (control === 'left' || control === 'right' || control === 'hazard') chooseSignal(control);
     else chooseMain(control);
-    window.requestAnimationFrame(() => document.querySelector('.interactive-lab')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   };
 
   const activeHandle = flashActive ? 'flash' : signal ?? mainLight;
@@ -336,7 +333,7 @@ export default function PracticalInfo() {
                 <div className="state-explainer-icon"><LightSymbol type={activeSignal?.symbol ?? (flashActive ? 'flash' : activeLight.symbol)} /></div>
                 <div className="state-explainer-copy"><span>كيف تستخدمه؟</span><h3>{currentTitle}</h3><p>{currentAction}</p></div>
                 <div className="state-explainer-block"><span>متى؟</span><p>{currentUse}</p></div>
-                <div className="state-explainer-block caution"><span>انتبه</span><p>{currentCaution}</p></div>
+                <div className="state-explainer-block caution"><span>{activeSignal ? 'مثال' : 'انتبه'}</span><p>{currentCaution}</p></div>
               </div>
 
               <DashboardIndicator mainLight={mainLight} signal={signal} />
