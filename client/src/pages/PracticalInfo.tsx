@@ -895,7 +895,7 @@ export default function PracticalInfo() {
                 <div className="practice-controls-panel">
                   <div className="panel-title"><span>1</span><div><b>اختر وظيفة الإنارة</b><small>لف الحلقة</small></div></div>
                   <div className="ring-choice-grid">
-                    {MAIN_LIGHTS.map(item => (
+                    {RING_LIGHTS.map(item => (
                       <button
                         key={item.key}
                         type="button"
