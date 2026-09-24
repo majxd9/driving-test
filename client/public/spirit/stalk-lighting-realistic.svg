@@ -1,83 +1,125 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" fill="none" role="img" aria-label="مقبض إضاءة وغمازات واقعي">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" role="img" aria-label="مقبض إضاءة وغمازات واقعي ثلاثي الأبعاد">
   <defs>
-    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#c8d2d5"/><stop offset=".16" stop-color="#75848b"/><stop offset=".46" stop-color="#37464d"/><stop offset=".78" stop-color="#17242a"/><stop offset="1" stop-color="#070f14"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#142c35"/>
+      <stop offset=".45" stop-color="#07151b"/>
+      <stop offset="1" stop-color="#02070a"/>
     </linearGradient>
-    <linearGradient id="bodyTop" x1="0" y1="0" x2="0" y2="1">
-      <stop stop-color="#eef4f5" stop-opacity=".30"/><stop offset=".25" stop-color="#a9b5b9" stop-opacity=".10"/><stop offset="1" stop-color="#0b1419" stop-opacity="0"/>
+    <linearGradient id="plastic" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#819096"/>
+      <stop offset=".14" stop-color="#4d5b61"/>
+      <stop offset=".46" stop-color="#28353b"/>
+      <stop offset=".8" stop-color="#111b20"/>
+      <stop offset="1" stop-color="#050b0f"/>
     </linearGradient>
-    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#d6e0e2"/><stop offset=".25" stop-color="#7c8b90"/><stop offset="1" stop-color="#152127"/>
+    <linearGradient id="plasticEdge" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#b4c1c5"/>
+      <stop offset=".35" stop-color="#64737a"/>
+      <stop offset="1" stop-color="#172328"/>
     </linearGradient>
-    <radialGradient id="collar" cx=".28" cy=".18" r="1">
-      <stop stop-color="#e7eef0"/><stop offset=".16" stop-color="#a7b4b8"/><stop offset=".42" stop-color="#55646b"/><stop offset=".68" stop-color="#26343a"/><stop offset="1" stop-color="#0a1217"/>
+    <radialGradient id="ring" cx=".32" cy=".22" r=".95">
+      <stop stop-color="#e1e8ea"/>
+      <stop offset=".18" stop-color="#a4b0b4"/>
+      <stop offset=".43" stop-color="#55646a"/>
+      <stop offset=".70" stop-color="#26343a"/>
+      <stop offset="1" stop-color="#0a1217"/>
     </radialGradient>
-    <linearGradient id="button" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#4b5a60"/><stop offset=".32" stop-color="#27373d"/><stop offset="1" stop-color="#091217"/>
-    </linearGradient>
-    <pattern id="micro" width="10" height="10" patternUnits="userSpaceOnUse">
-      <path d="M0 8L8 0M3 10L10 3" stroke="#ffffff" stroke-opacity=".035" stroke-width="1"/>
-    </pattern>
-    <filter id="shadow" x="-30%" y="-50%" width="180%" height="230%">
-      <feDropShadow dx="0" dy="26" stdDeviation="24" flood-color="#000" flood-opacity=".58"/>
+    <radialGradient id="button" cx=".38" cy=".26" r=".9">
+      <stop stop-color="#36464c"/>
+      <stop offset=".6" stop-color="#18262d"/>
+      <stop offset="1" stop-color="#070e12"/>
+    </radialGradient>
+    <filter id="shadow" x="-40%" y="-60%" width="190%" height="230%">
+      <feDropShadow dx="0" dy="28" stdDeviation="24" flood-color="#000" flood-opacity=".58"/>
     </filter>
-    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="13"/></filter>
+    <filter id="softGlow"><feGaussianBlur stdDeviation="14"/></filter>
+    <linearGradient id="accentGlow" x1="0" x2="1">
+      <stop stop-color="#89e6db" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#89e6db" stop-opacity=".16"/>
+      <stop offset="1" stop-color="#89e6db" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="micro" width="11" height="11" patternUnits="userSpaceOnUse">
+      <path d="M0 9L9 0M4 11L11 4" stroke="#dfe8e9" stroke-opacity=".025" stroke-width="1"/>
+    </pattern>
   </defs>
 
-  <ellipse cx="588" cy="560" rx="470" ry="32" fill="#000" opacity=".34" filter="url(#soft)"/>
+  <rect width="1200" height="680" fill="url(#bg)"/>
+  <ellipse cx="610" cy="592" rx="475" ry="34" fill="#000" opacity=".42"/>
+  <ellipse cx="605" cy="400" rx="470" ry="230" fill="url(#accentGlow)" opacity=".45" filter="url(#softGlow)"/>
 
   <g filter="url(#shadow)">
-    <path d="M126 446 C232 378 344 327 477 300 C619 272 754 246 918 221" stroke="#050a0e" stroke-width="120" stroke-linecap="round"/>
-    <path d="M126 430 C234 358 345 311 480 284 C622 256 752 231 919 205" stroke="url(#body)" stroke-width="94" stroke-linecap="round"/>
-    <path d="M126 411 C238 340 349 299 488 271 C629 243 755 218 905 194" stroke="url(#bodyTop)" stroke-width="15" stroke-linecap="round"/>
-    <path d="M126 430 C234 358 345 311 480 284 C622 256 752 231 919 205" stroke="url(#micro)" stroke-width="90" stroke-linecap="round" opacity=".85"/>
-    <path d="M133 457 C241 389 354 343 479 318 C622 289 753 263 923 238" stroke="#000" stroke-opacity=".40" stroke-width="19" stroke-linecap="round"/>
+    <!-- main shaft -->
+    <path d="M128 454 C235 380 342 334 472 310 C620 281 746 261 914 233" stroke="#050a0e" stroke-width="118" stroke-linecap="round"/>
+    <path d="M128 438 C236 364 343 319 476 294 C620 267 750 246 916 219" stroke="url(#plastic)" stroke-width="92" stroke-linecap="round"/>
+    <path d="M128 419 C237 347 348 306 484 280 C630 252 754 230 904 206" stroke="#f0f6f7" stroke-opacity=".13" stroke-width="14" stroke-linecap="round"/>
+    <path d="M133 463 C240 394 352 352 476 330 C617 305 750 283 921 255" stroke="#000" stroke-opacity=".44" stroke-width="18" stroke-linecap="round"/>
+    <path d="M128 438 C236 364 343 319 476 294 C620 267 750 246 916 219" stroke="url(#micro)" stroke-width="88" stroke-linecap="round" opacity=".9"/>
 
-    <path d="M105 403 C73 425 77 468 107 493 C139 520 183 516 217 489 L265 449 L198 356Z" fill="url(#edge)" stroke="#d1dcdf" stroke-opacity=".16" stroke-width="4"/>
-    <path d="M92 436l86 63M89 457l73 48M111 414l85 62M123 395l79 61" stroke="#eef5f6" stroke-opacity=".08" stroke-width="8" stroke-linecap="round"/>
-    <path d="M114 407l69 76" stroke="#0a1217" stroke-opacity=".55" stroke-width="3"/>
+    <!-- grip end -->
+    <path d="M105 411 C72 435 76 478 110 501 C145 525 187 517 216 494 L269 454 L198 361Z" fill="url(#plasticEdge)" stroke="#c7d4d7" stroke-opacity=".12" stroke-width="4"/>
+    <path d="M98 435l83 61M90 457l67 48M116 413l83 62" stroke="#dfe7e8" stroke-opacity=".07" stroke-width="8" stroke-linecap="round"/>
 
-    <g transform="translate(544 207) rotate(-10)">
-      <rect x="0" y="0" width="326" height="148" rx="60" fill="#070d11" stroke="#dce7e8" stroke-opacity=".18" stroke-width="5"/>
-      <rect x="14" y="14" width="298" height="120" rx="50" fill="url(#collar)" stroke="#f6fafa" stroke-opacity=".20" stroke-width="3"/>
-      <rect x="28" y="29" width="270" height="89" rx="39" fill="#17252b" opacity=".86"/>
-      <path d="M38 74H287" stroke="#edf4f5" stroke-opacity=".12" stroke-width="3"/>
-      <path d="M64 41v66M117 39v70M170 37v74M223 39v70M276 43v62" stroke="#ffffff" stroke-opacity=".035" stroke-width="2"/>
+    <!-- multifunction ring collar -->
+    <g transform="translate(548 212) rotate(-10)">
+      <rect x="0" y="0" width="316" height="142" rx="58" fill="#070d11" stroke="#dce7e8" stroke-opacity=".16" stroke-width="5"/>
+      <rect x="14" y="14" width="288" height="114" rx="48" fill="url(#ring)" stroke="#f6fafa" stroke-opacity=".17" stroke-width="3"/>
+      <rect x="28" y="28" width="260" height="86" rx="38" fill="#17242a" opacity=".86"/>
+      <path d="M37 71H278" stroke="#edf4f5" stroke-opacity=".13" stroke-width="3"/>
+      <circle cx="47" cy="71" r="29" fill="#101a1f" stroke="#aab8bc" stroke-opacity=".45" stroke-width="3"/>
+      <circle cx="100" cy="71" r="29" fill="#101a1f" stroke="#aab8bc" stroke-opacity=".45" stroke-width="3"/>
+      <circle cx="153" cy="71" r="29" fill="#1b5553" stroke="#98eee4" stroke-opacity=".74" stroke-width="3"/>
+      <circle cx="206" cy="71" r="29" fill="#101a1f" stroke="#aab8bc" stroke-opacity=".45" stroke-width="3"/>
+      <circle cx="259" cy="71" r="29" fill="#101a1f" stroke="#aab8bc" stroke-opacity=".45" stroke-width="3"/>
 
-      <g transform="translate(33 52)" fill="none" stroke="#eef5f6" stroke-width="3" stroke-linecap="round">
-        <circle cx="17" cy="20" r="9"/><path d="M17 1v-7M17 46v-7M0 20h-7M41 20h7M4 7 0 2M34 33l5 5M4 33 0 38M34 7l5-5"/>
+      <g transform="translate(30 51)" fill="none" stroke="#edf5f5" stroke-width="3" stroke-linecap="round">
+        <circle cx="17" cy="20" r="9"/><path d="M17 1v-7M17 46v-7M0 20h-7M41 20h7"/>
       </g>
-      <g transform="translate(86 50)" fill="none" stroke="#eef5f6" stroke-width="3" stroke-linecap="round">
+      <g transform="translate(83 49)" fill="none" stroke="#edf5f5" stroke-width="3" stroke-linecap="round">
         <path d="M4 5h24c6 0 9 6 10 15H4z"/><path d="M52 2v36M63 5v30M74 9v22"/>
       </g>
-      <g transform="translate(139 48)" fill="none" stroke="#f1fffd" stroke-width="3" stroke-linecap="round">
+      <g transform="translate(136 47)" fill="none" stroke="#effffe" stroke-width="3" stroke-linecap="round">
         <circle cx="17" cy="24" r="9"/><path d="M17 6V0M17 48v-7M1 24h-6M33 24h6M7 14 3 10M29 34l5 5M29 14l5-4"/>
-        <text x="42" y="29" fill="#f1fffd" stroke="none" font-size="17" font-family="Arial" font-weight="800">A</text>
+        <text x="41" y="29" fill="#effffe" stroke="none" font-size="16" font-family="Arial" font-weight="800">A</text>
       </g>
-      <g transform="translate(192 48)" fill="none" stroke="#f1fffd" stroke-width="3" stroke-linecap="round">
+      <g transform="translate(189 47)" fill="none" stroke="#effffe" stroke-width="3" stroke-linecap="round">
         <path d="M4 5h24c6 0 9 6 10 15H4z"/><path d="m51 8 31 11M51 24l31 11M51 40l24 9"/>
       </g>
-      <g transform="translate(245 49)" fill="none" stroke="#f1fffd" stroke-width="3" stroke-linecap="round">
+      <g transform="translate(242 48)" fill="none" stroke="#effffe" stroke-width="3" stroke-linecap="round">
         <path d="M4 5h24c6 0 9 6 10 15H4z"/><path d="M51 2h31M51 18h31M51 34h31"/>
       </g>
 
-      <text x="50" y="129" text-anchor="middle" fill="#dfe8ea" font-size="9" font-family="Arial" font-weight="800">OFF</text>
-      <text x="103" y="129" text-anchor="middle" fill="#dfe8ea" font-size="9" font-family="Arial" font-weight="800">PARK</text>
-      <text x="156" y="129" text-anchor="middle" fill="#e8fffb" font-size="9" font-family="Arial" font-weight="900">AUTO</text>
-      <text x="209" y="129" text-anchor="middle" fill="#dfe8ea" font-size="9" font-family="Arial" font-weight="800">LOW</text>
-      <text x="262" y="129" text-anchor="middle" fill="#dfe8ea" font-size="9" font-family="Arial" font-weight="800">FOG</text>
-      <rect x="148" y="-17" width="16" height="25" rx="8" fill="#86e4da"/>
+      <text x="47" y="123" text-anchor="middle" fill="#dbe7e9" font-size="9" font-family="Arial" font-weight="800">OFF</text>
+      <text x="100" y="123" text-anchor="middle" fill="#dbe7e9" font-size="9" font-family="Arial" font-weight="800">PARK</text>
+      <text x="153" y="123" text-anchor="middle" fill="#dbe7e9" font-size="9" font-family="Arial" font-weight="800">AUTO</text>
+      <text x="206" y="123" text-anchor="middle" fill="#dbe7e9" font-size="9" font-family="Arial" font-weight="800">LOW</text>
+      <text x="259" y="123" text-anchor="middle" fill="#dbe7e9" font-size="9" font-family="Arial" font-weight="800">FOG</text>
+      <rect x="145" y="-17" width="16" height="25" rx="8" fill="#86e4da"/>
     </g>
 
-    <path d="M865 194 L1027 164 C1067 157 1094 184 1086 219 L1070 288 C1064 317 1037 334 1005 325 L846 284Z" fill="url(#body)" stroke="#aab7bb" stroke-opacity=".18" stroke-width="4"/>
-    <path d="M910 207l105-21M900 236l114-23M892 265l108-22M883 292l103-22" stroke="#edf5f6" stroke-opacity=".11" stroke-width="6" stroke-linecap="round"/>
-    <path d="M1008 184c18 13 28 34 27 58l-6 54" stroke="#f2f7f8" stroke-opacity=".10" stroke-width="4" stroke-linecap="round"/>
-    <rect x="1006" y="184" width="59" height="115" rx="27" fill="url(#button)" stroke="#b8c4c8" stroke-opacity=".20" stroke-width="3"/>
-    <path d="M1020 203h31M1019 274h32" stroke="#eef4f5" stroke-opacity=".10" stroke-width="3" stroke-linecap="round"/>
-    <text x="1035" y="226" text-anchor="middle" fill="#eef5f6" font-size="10" font-family="Arial" font-weight="900">LOW</text>
-    <text x="1035" y="246" text-anchor="middle" fill="#eef5f6" font-size="10" font-family="Arial" font-weight="900">FOG</text>
+    <!-- stalk tip -->
+    <path d="M866 196 L1028 166 C1065 159 1091 185 1084 217 L1068 288 C1062 316 1034 332 1004 323 L846 283Z" fill="url(#plastic)" stroke="#9eacb0" stroke-opacity=".16" stroke-width="4"/>
+    <path d="M932 193l78-15M925 220l95-18M918 248l87-16M908 275l83-15" stroke="#dce7e8" stroke-opacity=".13" stroke-width="6" stroke-linecap="round"/>
+    <rect x="1007" y="186" width="58" height="112" rx="26" fill="url(#button)" stroke="#aebbc0" stroke-opacity=".18" stroke-width="3"/>
+    <text x="1036" y="226" text-anchor="middle" fill="#e8f0f1" font-size="10" font-family="Arial" font-weight="900">LOW</text>
+    <text x="1036" y="246" text-anchor="middle" fill="#e8f0f1" font-size="10" font-family="Arial" font-weight="900">FOG</text>
 
-    <path d="M452 291C603 261 754 235 905 210" stroke="#f9ffff" stroke-opacity=".08" stroke-width="5" stroke-linecap="round"/>
-    <path d="M434 329C600 294 755 267 913 244" stroke="#000" stroke-opacity=".20" stroke-width="5" stroke-linecap="round"/>
+    <!-- reference arrows -->
+    <path d="M1038 118v-50" stroke="#86e4da" stroke-width="4" stroke-dasharray="8 8"/>
+    <path d="m1038 60-9 17h18z" fill="#86e4da"/>
+    <path d="M1038 320v48" stroke="#f1c27f" stroke-width="4" stroke-dasharray="8 8"/>
+    <path d="m1038 373-9-17h18z" fill="#f1c27f"/>
+    <path d="M540 180h-100" stroke="#86e4da" stroke-width="4" stroke-dasharray="8 8"/>
+    <path d="m437 180 17-9v18z" fill="#86e4da"/>
+  </g>
+
+  <!-- simple, clean legend -->
+  <g font-family="Arial, sans-serif">
+    <rect x="62" y="566" width="1068" height="72" rx="24" fill="#061117" stroke="#d9e6e7" stroke-opacity=".08"/>
+    <circle cx="103" cy="602" r="11" fill="#86e4da"/>
+    <text x="126" y="607" fill="#dceeee" font-size="15" font-weight="900">الحلقة: اختر وظيفة الإنارة</text>
+    <circle cx="476" cy="602" r="11" fill="#aebcc0"/>
+    <text x="499" y="607" fill="#dceeee" font-size="15" font-weight="900">الذراع: غماز ↑↓ · عالي → · وميض ←</text>
+    <circle cx="933" cy="602" r="11" fill="#f1c27f"/>
+    <text x="956" y="607" fill="#dceeee" font-size="15" font-weight="900">الزر: تحذير رباعي</text>
   </g>
 </svg>
