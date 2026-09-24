@@ -882,6 +882,18 @@ export default function PracticalInfo() {
               </div>
 
               <div className="scenario-selector-label"><span>اختر موقفاً</span><small>المشهد الكبير يتبدل هنا فقط</small></div>
+              <select
+                className="scenario-select-mobile"
+                value={selectedScenario}
+                onChange={event => setSelectedScenario(event.target.value)}
+                aria-label="اختيار موقف تدريبي"
+              >
+                {SCENARIOS.map((scenario, index) => (
+                  <option key={scenario.id} value={scenario.id}>
+                    {String(index + 1).padStart(2, '0')} · {scenario.title}
+                  </option>
+                ))}
+              </select>
               <div className="scenario-selector" role="tablist" aria-label="اختيار موقف">
                 {SCENARIOS.map((scenario, index) => (
                   <button
