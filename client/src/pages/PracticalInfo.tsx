@@ -16,7 +16,7 @@ type ControlGroup = 'ring' | 'lever';
 type VehicleView = 'front' | 'rear';
 
 type LightItem = {
-  key: MainLightKey | 'flash';
+  key: MainLightKey;
   title: string;
   subtitle: string;
   symbol: 'off' | 'position' | 'auto' | 'low' | 'high' | 'frontFog' | 'rearFog' | 'flash';
