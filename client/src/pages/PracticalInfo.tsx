@@ -524,7 +524,7 @@ function ScenarioDiagram({ kind }: { kind: string }) {
       <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="مركبة مقابلة ليلاً">
         {defs}{frame}
         {ownCar(315, 224, 170, 124)}
-        {car(447, 105, '/spirit/car-front-sport.svg', 155, 112, .82, 180)}
+        {car(447, 105, '/spirit/car-front-training.svg', 155, 112, .82)}
         <path d="M345 275 148 316 345 288Z" fill={'url(#' + idPrefix + '-glow)'} opacity=".48" filter={'url(#' + idPrefix + '-blur)'} />
         <path d="M455 275 652 316 455 288Z" fill={'url(#' + idPrefix + '-glow)'} opacity=".48" filter={'url(#' + idPrefix + '-blur)'} />
         <path d="M530 151h112" stroke="#f2bd74" strokeWidth="7" strokeLinecap="round" />
