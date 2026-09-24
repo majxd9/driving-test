@@ -201,16 +201,17 @@ function HandleIllustration({
             <span>② الذراع</span>
           </button>
 
-          <button
-            type="button"
-            className={'handle-zone hazard ' + (movement === 'hazard' ? 'active' : '')}
-            onClick={onHazard}
-            aria-label="زر التحذير الرباعي"
-            aria-pressed={movement === 'hazard'}
-          >
-            <span>③ تحذير</span>
-          </button>
         </div>
+        <button
+          type="button"
+          className={'handle-standalone-control ' + (movement === 'hazard' ? 'active' : '')}
+          onClick={onHazard}
+          aria-label="زر التحذير الرباعي المستقل"
+          aria-pressed={movement === 'hazard'}
+        >
+          <b>△</b>
+          <span><strong>تحذير رباعي</strong><small>زر مستقل عن المقبض</small></span>
+        </button>
         <div className="handle-stage-caption">
           <span>الجزء الذي يلمع هو الجزء الذي تدرّبه الآن</span>
         </div>
