@@ -647,3 +647,459 @@ html.practical-info-active .lighting-lab-page{
 html.practical-info-active body{
   overscroll-behavior-y:contain;
 }
+
+
+/* === Practical lighting interaction repair === */
+html.practical-info-active,
+html.practical-info-active body{
+  overflow-y:auto !important;
+}
+html.practical-info-active body{
+  overscroll-behavior-y:auto !important;
+}
+.lighting-lab-page{
+  overflow-x:clip;
+  overflow-y:visible;
+}
+
+/* The realistic SVG already contains its own bottom legend.
+   Keep overlays out of that area so the handle never visually stacks on itself. */
+.handle-photo-stage{
+  min-height:0 !important;
+  padding:8px !important;
+  overflow:visible;
+}
+.handle-photo-wrap{
+  position:relative;
+  width:100%;
+  line-height:0;
+  isolation:isolate;
+}
+.handle-photo{
+  display:block;
+  width:100%;
+  max-width:100%;
+  height:auto;
+  margin:0 auto;
+  border-radius:17px;
+  object-fit:contain;
+}
+.handle-zone{
+  position:absolute;
+  z-index:6;
+  appearance:none;
+  padding:0;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.handle-zone::after{
+  content:'';
+  position:absolute;
+  inset:2px;
+  border:2px solid rgba(255,255,255,.16);
+  border-radius:20px;
+  background:rgba(255,255,255,.015);
+  transition:transform .15s ease,background .15s ease,border-color .15s ease,box-shadow .15s ease;
+}
+.handle-zone span{
+  position:absolute;
+  z-index:2;
+  top:-10px;
+  right:8px;
+  padding:4px 7px;
+  border-radius:999px;
+  background:rgba(3,12,17,.88);
+  color:#dffaf6;
+  border:1px solid rgba(255,255,255,.07);
+  font-size:7px;
+  font-weight:950;
+  white-space:nowrap;
+}
+.handle-zone.ring{
+  left:46.5%;
+  top:30.5%;
+  width:24%;
+  height:23%;
+}
+.handle-zone.lever{
+  left:72%;
+  top:23%;
+  width:19%;
+  height:27%;
+}
+.handle-zone.ring::after{
+  border-color:rgba(134,228,218,.48);
+}
+.handle-zone.lever::after{
+  border-radius:999px;
+  border-color:rgba(220,232,233,.28);
+}
+.handle-zone:hover::after,
+.handle-zone:focus-visible::after,
+.handle-zone.active::after{
+  transform:scale(1.02);
+  background:rgba(134,228,218,.08);
+  border-color:var(--accent-strong);
+  box-shadow:0 0 0 5px rgba(134,228,218,.06),0 0 25px rgba(134,228,218,.16);
+}
+.handle-zone.lever:hover::after,
+.handle-zone.lever:focus-visible::after,
+.handle-zone.lever.active::after{
+  border-color:#eff8f7;
+}
+.handle-zone:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+  border-radius:20px;
+}
+.handle-action-rail{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:5px;
+  padding:8px;
+  border-top:1px solid rgba(255,255,255,.05);
+  background:rgba(0,0,0,.08);
+}
+.handle-action-rail button{
+  min-height:58px;
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr);
+  grid-template-rows:auto auto;
+  column-gap:6px;
+  align-content:center;
+  align-items:center;
+  padding:7px 8px;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:11px;
+  background:rgba(255,255,255,.018);
+  color:#edf8f7;
+  text-align:right;
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:border-color .15s ease,background .15s ease,transform .15s ease;
+}
+.handle-action-rail button:hover{
+  transform:translateY(-1px);
+}
+.handle-action-rail button b{
+  grid-row:1 / span 2;
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:rgba(255,255,255,.05);
+  color:var(--accent);
+  font-size:15px;
+}
+.handle-action-rail button span{
+  font-size:8px;
+  font-weight:950;
+}
+.handle-action-rail button small{
+  margin-top:2px;
+  color:var(--soft);
+  font-size:6px;
+  line-height:1.4;
+}
+.handle-action-rail button.active{
+  border-color:rgba(134,228,218,.28);
+  background:rgba(134,228,218,.08);
+  box-shadow:inset 0 0 0 1px rgba(134,228,218,.035);
+}
+.handle-action-rail button.hazard b{
+  color:var(--warning);
+  background:rgba(241,194,127,.08);
+}
+.handle-action-rail button.active.hazard{
+  border-color:rgba(241,194,127,.30);
+  background:rgba(241,194,127,.07);
+}
+.handle-action-rail + .handle-legend{
+  border-top:0;
+}
+.movement-left .handle-photo{animation:handleNudgeLeft .22s ease}
+.movement-right .handle-photo{animation:handleNudgeRight .22s ease}
+.movement-push .handle-photo{animation:handlePush .22s ease}
+.movement-pull .handle-photo{animation:handlePull .22s ease}
+.movement-hazard .handle-photo{animation:handleHazard .36s ease}
+@keyframes handleNudgeLeft{
+  0%,100%{transform:none}
+  50%{transform:translateX(-4px)}
+}
+@keyframes handleNudgeRight{
+  0%,100%{transform:none}
+  50%{transform:translateX(4px)}
+}
+@keyframes handlePush{
+  0%,100%{transform:none}
+  50%{transform:translateX(5px) scale(.996)}
+}
+@keyframes handlePull{
+  0%,100%{transform:none}
+  50%{transform:translateX(-5px) scale(1.004)}
+}
+@keyframes handleHazard{
+  0%,100%{filter:none}
+  35%,65%{filter:brightness(1.16)}
+}
+
+/* Sound control is visible again and uses a real browser audio cue. */
+.practice-status .sound-toggle{
+  margin-top:7px;
+  min-height:30px;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:4px 7px;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:9px;
+  background:rgba(255,255,255,.025);
+  color:var(--soft);
+  cursor:pointer;
+  font-size:7px;
+  font-weight:900;
+  touch-action:manipulation;
+}
+.practice-status .sound-toggle b{
+  width:19px;
+  height:19px;
+  display:grid;
+  place-items:center;
+  border-radius:6px;
+  background:rgba(255,255,255,.05);
+  color:var(--soft);
+  font-size:11px;
+}
+.practice-status .sound-toggle.is-on{
+  border-color:rgba(134,228,218,.18);
+  background:rgba(134,228,218,.06);
+  color:var(--accent-strong);
+}
+.practice-status .sound-toggle.is-on b{
+  color:var(--accent);
+  background:rgba(134,228,218,.10);
+}
+
+/* All ten road scenes are visible again instead of being hidden behind a single selector. */
+.scenario-gallery-head{
+  margin-top:12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.scenario-gallery-head span{
+  font-size:10px;
+  font-weight:950;
+}
+.scenario-gallery-head small{
+  color:var(--soft);
+  font-size:7px;
+}
+.scenario-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin-top:8px;
+}
+.scenario-card{
+  overflow:hidden;
+  border:1px solid rgba(194,229,231,.08);
+  border-radius:18px;
+  background:rgba(255,255,255,.018);
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+.scenario-card:hover{
+  transform:translateY(-1px);
+  border-color:rgba(134,228,218,.18);
+}
+.scenario-card.active{
+  border-color:rgba(134,228,218,.28);
+  box-shadow:inset 0 0 0 1px rgba(134,228,218,.035);
+}
+.scenario-media{
+  position:relative;
+  overflow:hidden;
+  background:#061118;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.scenario-media .scenario-svg{
+  display:block;
+  width:100%;
+  height:auto;
+}
+.scenario-tag{
+  position:absolute;
+  top:9px;
+  right:9px;
+  z-index:2;
+  padding:6px 8px;
+  border-radius:999px;
+  background:rgba(3,12,17,.86);
+  border:1px solid rgba(255,255,255,.08);
+  color:var(--accent-strong);
+  font-size:7px;
+  font-weight:950;
+}
+.scenario-body{
+  padding:11px;
+}
+.scenario-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.scenario-control-chip{
+  padding:5px 7px;
+  border-radius:999px;
+  background:rgba(134,228,218,.05);
+  border:1px solid rgba(134,228,218,.10);
+  color:var(--accent);
+  font-size:7px;
+  font-weight:950;
+}
+.scenario-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:rgba(255,255,255,.16);
+}
+.scenario-card.active .scenario-dot{
+  background:var(--accent);
+  box-shadow:0 0 12px rgba(134,228,218,.32);
+}
+.scenario-body h3{
+  margin:8px 0;
+  font-size:14px;
+  line-height:1.5;
+}
+.scenario-steps{
+  display:grid;
+  gap:5px;
+}
+.scenario-steps div{
+  display:grid;
+  grid-template-columns:24px minmax(0,1fr);
+  gap:6px;
+  align-items:start;
+}
+.scenario-steps b{
+  width:24px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  border-radius:6px;
+  background:rgba(255,255,255,.04);
+  color:var(--accent);
+  font-size:6px;
+}
+.scenario-steps span{
+  color:var(--muted);
+  font-size:8px;
+  line-height:1.55;
+}
+.scenario-card-goal,
+.scenario-card-note{
+  margin-top:8px;
+}
+.scenario-card-goal span{
+  display:block;
+  color:var(--accent);
+  font-size:7px;
+  font-weight:950;
+}
+.scenario-card-goal p{
+  margin:3px 0 0;
+  color:var(--muted);
+  font-size:8px;
+  line-height:1.6;
+}
+.scenario-card-note{
+  color:var(--soft);
+  font-size:7px;
+  line-height:1.65;
+}
+.scenario-action{
+  width:100%;
+  min-height:39px;
+  margin-top:9px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:0 10px;
+  border:1px solid rgba(134,228,218,.12);
+  border-radius:10px;
+  background:rgba(134,228,218,.05);
+  color:var(--accent-strong);
+  font-size:8px;
+  font-weight:950;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.scenario-action span{
+  font-size:14px;
+}
+
+/* Keep the gallery readable on smaller screens. */
+@media(max-width:900px){
+  .scenario-grid{grid-template-columns:1fr}
+  .handle-action-rail{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .handle-photo-stage{padding:4px !important}
+  .handle-zone.ring{
+    left:46%;
+    top:30%;
+    width:25%;
+    height:24%;
+  }
+  .handle-zone.lever{
+    left:71.5%;
+    top:22%;
+    width:20%;
+    height:29%;
+  }
+  .handle-zone span{
+    top:-8px;
+    right:4px;
+    padding:3px 6px;
+    font-size:6px;
+  }
+  .handle-action-rail{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    padding:6px;
+  }
+  .handle-action-rail button{
+    min-height:54px;
+    grid-template-columns:25px minmax(0,1fr);
+    padding:6px;
+  }
+  .handle-action-rail button b{
+    width:25px;
+    height:25px;
+    font-size:13px;
+  }
+  .handle-action-rail button span{font-size:7px}
+  .handle-action-rail button small{font-size:5.5px}
+  .scenario-grid{gap:8px}
+  .scenario-body{padding:10px}
+  .scenario-body h3{font-size:13px}
+  .scenario-steps span{font-size:8px}
+  .scenario-card-goal p{font-size:8px}
+  .scenario-card-note{font-size:7px}
+}
+@media(max-width:430px){
+  .handle-zone.ring{left:46%;top:29.5%;width:25%;height:24.5%}
+  .handle-zone.lever{left:71%;top:21.5%;width:20.5%;height:30%}
+  .handle-action-rail{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .scenario-grid{grid-template-columns:1fr}
+}
