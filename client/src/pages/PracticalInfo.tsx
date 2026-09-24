@@ -120,7 +120,7 @@ function HandleIllustration({ mainLight, movement }: { mainLight: MainLightKey; 
 
       <div className="handle-photo-stage">
         <img
-          src="/spirit/stalk-lighting.svg"
+          src="/spirit/stalk-lighting-realistic.svg"
           className="handle-photo"
           alt="مقبض الإضاءة والغمازات مع اتجاهات الحركة"
         />
