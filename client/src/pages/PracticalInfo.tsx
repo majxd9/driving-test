@@ -112,7 +112,7 @@ function HandleIllustration({
 }) {
   const focus =
     movement === 'hazard'
-      ? 'زر التحذير الرباعي'
+      ? 'زر التحذير'
       : movement === 'left'
         ? 'غماز يسار'
         : movement === 'right'
@@ -123,93 +123,48 @@ function HandleIllustration({
               ? 'وميض العالي'
               : MAIN_LIGHTS.find(item => item.key === mainLight)?.title || 'الإنارة';
 
-  const movementTitle =
-    movement === 'ring'
-      ? 'لف الحلقة'
-      : movement === 'right'
-        ? 'ارفع الذراع للأعلى'
-        : movement === 'left'
-          ? 'اخفض الذراع للأسفل'
-          : movement === 'push'
-            ? 'ادفع الذراع للأمام'
-            : movement === 'pull'
-              ? 'اسحب الذراع لحظياً'
-              : 'اضغط زر التحذير';
-
-  const movementHint =
-    movement === 'ring'
-      ? 'تتحرك الحلقة فقط؛ الذراع يبقى ثابتاً.'
-      : movement === 'hazard'
-        ? 'زر منفصل عن حركة غماز اليمين واليسار.'
-        : 'راقب اتجاه الحركة ثم شاهد النتيجة على السيارة.';
-
-  const leverCycle = () => {
-    const order: Array<'right' | 'left' | 'push' | 'pull'> = ['right', 'left', 'push', 'pull'];
-    const index = order.indexOf(movement as 'right' | 'left' | 'push' | 'pull');
-    onLever(order[(index + 1 + order.length) % order.length]);
-  };
-
   return (
-    <section className="handle-simulator" aria-label="محاكي مقبض الإضاءة والغمازات">
+    <section className="handle-simulator">
       <div className="handle-simulator-head">
         <div>
-          <span className="mini-eyebrow">02 · المقبض</span>
-          <h3>تعامل معه كقطعة تحكم حقيقية</h3>
-          <p>اضغط على الحلقة أو الذراع أو زر التحذير، وشاهد اتجاه الحركة بوضوح قبل الانتقال إلى النتيجة.</p>
+          <span className="mini-eyebrow">الخطوة 2 · المقبض الحقيقي</span>
+          <h3>المقبض الآن واضح وقابل للتجربة</h3>
+          <p><b>الحلقة</b> تختار الإنارة، <b>طرف الذراع</b> للحركات، وزر مستقل للتحذير. اضغط على الجزء نفسه أو على أزرار الحركة تحته.</p>
         </div>
-        <div className="handle-current">
-          <small>الحركة المحددة</small>
-          <strong>{focus}</strong>
-        </div>
+        <div className="handle-current"><small>المحدد الآن</small><strong>{focus}</strong></div>
       </div>
 
-      <div className="handle-motion-guide" aria-live="polite">
-        <span className="handle-motion-arrow" aria-hidden="true">
-          {movement === 'ring' ? '↻' : movement === 'hazard' ? '△' : movement === 'right' ? '↑' : movement === 'left' ? '↓' : movement === 'push' ? '→' : '←'}
-        </span>
-        <div>
-          <b>{movementTitle}</b>
-          <small>{movementHint}</small>
-        </div>
-      </div>
-
-      <div className={'handle-photo-stage movement-' + movement}>
-        <div className="handle-photo-wrap">
+      <div className="handle-photo-stage">
+        <div className={'handle-photo-wrap movement-' + movement}>
           <img
             src="/spirit/stalk-lighting-realistic.svg"
             className="handle-photo"
-            alt="مقبض حقيقي للإضاءة والغمازات مع الحلقة والذراع"
+            alt="مقبض الإضاءة والغمازات مع اتجاهات الحركة"
           />
-
           <button
             type="button"
             className={'handle-zone ring ' + (movement === 'ring' ? 'active' : '')}
             onClick={onRingCycle}
             aria-label="لف حلقة الإنارة"
-            aria-pressed={movement === 'ring'}
+            title="لف حلقة الإنارة"
           >
-            <span>① الحلقة</span>
+            <span>الحلقة</span>
           </button>
-
           <button
             type="button"
             className={'handle-zone lever ' + (movement !== 'ring' && movement !== 'hazard' ? 'active' : '')}
-            onClick={leverCycle}
-            aria-label="تجربة حركة ذراع المقبض"
-            aria-pressed={movement !== 'ring' && movement !== 'hazard'}
+            onClick={() => onLever(movement === 'right' ? 'left' : 'right')}
+            aria-label="تجربة حركة الذراع"
+            title="اضغط لتجربة حركة الذراع"
           >
-            <span>② الذراع</span>
+            <span>الذراع</span>
           </button>
         </div>
-      </div>
-      <div className="handle-stage-note">
-        <span>الحلقة والذراع هما عناصر المقبض التفاعلية.</span>
-        <b>التحذير الرباعي زر مستقل عن المقبض.</b>
       </div>
 
       <div className="handle-action-rail" aria-label="حركات المقبض">
         <button type="button" className={movement === 'ring' ? 'active' : ''} onClick={onRingCycle}>
-          <b>↻</b><span>لف الحلقة</span><small>OFF · PARK · AUTO · LOW · FOG</small>
+          <b>⟳</b><span>لف الحلقة</span><small>تبديل أوضاع الإنارة</small>
         </button>
         <button type="button" className={movement === 'right' ? 'active' : ''} onClick={() => onLever('right')}>
           <b>↑</b><span>يمين</span><small>ارفع الذراع</small>
@@ -223,15 +178,15 @@ function HandleIllustration({
         <button type="button" className={movement === 'pull' ? 'active' : ''} onClick={() => onLever('pull')}>
           <b>←</b><span>الوميض</span><small>اسحب لحظياً</small>
         </button>
-        <button type="button" className={'hazard ' + (movement === 'hazard' ? 'active' : '')} onClick={onHazard}>
-          <b>△</b><span>التحذير</span><small>زر مستقل</small>
+        <button type="button" className={movement === 'hazard' ? 'active hazard' : 'hazard'} onClick={onHazard}>
+          <b>△</b><span>تحذير</span><small>زر مستقل</small>
         </button>
       </div>
 
-      <div className="handle-part-legend">
-        <div><b>①</b><strong>الحلقة</strong><span>اختيار وظيفة الإنارة</span></div>
-        <div><b>②</b><strong>الذراع</strong><span>يمين · يسار · عالي · وميض</span></div>
-        <div><b>③</b><strong>زر مستقل</strong><span>التحذير الرباعي</span></div>
+      <div className="handle-legend">
+        <div><b>①</b><span>الحلقة</span><small>تدور لاختيار الإنارة</small></div>
+        <div><b>②</b><span>الذراع</span><small>↑ ↓ للغماز · دفع/سحب للعالي والوميض</small></div>
+        <div><b>③</b><span>التحذير</span><small>زر مستقل عن الغماز</small></div>
       </div>
     </section>
   );
@@ -284,28 +239,23 @@ function VehicleScene({
 
       <div className="vehicle-stage">
         <div className="vehicle-road-shape" />
-        <div className="vehicle-light-label">{view === 'front' ? 'الأمام · شاهد مسار الضوء' : 'الخلف · شاهد ظهور الإشارة'}</div>
+        <div className="vehicle-light-label">{view === 'front' ? 'شاهد أين يصل الضوء' : 'شاهد أين تظهر الإشارة'}</div>
+        <img src="/spirit/car-front-sport.svg" className="vehicle-car vehicle-car-front" alt="" aria-hidden="true" />
+        <img src="/spirit/car-rear.svg" className="vehicle-car vehicle-car-rear" alt="" aria-hidden="true" />
 
-        <div className="vehicle-art vehicle-art-front">
-          <span className="vehicle-beam vehicle-beam-left" />
-          <span className="vehicle-beam vehicle-beam-right" />
-          <span className="vehicle-fog vehicle-fog-left" />
-          <span className="vehicle-fog vehicle-fog-right" />
-          <span className="vehicle-signal-l signal-l-front" />
-          <span className="vehicle-signal-r signal-r-front" />
-          <img src="/spirit/car-front-training.svg" className="vehicle-car" alt="" aria-hidden="true" />
-        </div>
-
-        <div className="vehicle-art vehicle-art-rear">
-          <span className="vehicle-signal-l signal-l-rear" />
-          <span className="vehicle-signal-r signal-r-rear" />
-          <span className="vehicle-rear-fog-light rear-fog-light-l" />
-          <span className="vehicle-rear-fog-light rear-fog-light-r" />
-          <img src="/spirit/car-rear.svg" className="vehicle-car" alt="" aria-hidden="true" />
-        </div>
+        <span className="vehicle-beam vehicle-beam-left" />
+        <span className="vehicle-beam vehicle-beam-right" />
+        <span className="vehicle-fog vehicle-fog-left" />
+        <span className="vehicle-fog vehicle-fog-right" />
+        <span className="vehicle-signal-l signal-l-front" />
+        <span className="vehicle-signal-r signal-r-front" />
+        <span className="vehicle-signal-l signal-l-rear" />
+        <span className="vehicle-signal-r signal-r-rear" />
+        <span className="vehicle-rear-fog-light rear-fog-light-l" />
+        <span className="vehicle-rear-fog-light rear-fog-light-r" />
 
         <div className="vehicle-stage-legend">
-          <span><i className="legend-light" />إنارة الطريق</span>
+          <span><i className="legend-light" />إنارة</span>
           <span><i className="legend-amber" />إشارة</span>
         </div>
       </div>
@@ -337,31 +287,19 @@ function ControlSelector({
   onSignal: (key: SignalKey) => void;
   onFlash: () => void;
 }) {
-  const activeSignal = SIGNALS.find(item => item.key === signal) || null;
-  const activeLight = MAIN_LIGHTS.find(item => item.key === mainLight) || MAIN_LIGHTS[3];
-  const currentTitle = activeSignal?.title || (flashActive ? FLASH_ITEM.title : activeLight.title);
-  const currentAction = activeSignal?.action || (flashActive ? FLASH_ITEM.action : activeLight.action);
-  const currentUse = activeSignal?.use || (flashActive ? FLASH_ITEM.use : activeLight.use);
-  const currentCaution = activeSignal?.caution || (flashActive ? FLASH_ITEM.caution : activeLight.caution);
-  const currentSymbol = activeSignal?.symbol || (flashActive ? 'flash' : activeLight.symbol);
-
   return (
-    <section className="controls-card" aria-label="اختيار حركة المقبض">
+    <section className="controls-card">
       <div className="controls-head">
         <div>
-          <span className="mini-eyebrow">01 · اختر الحركة</span>
-          <h3>ابدأ من الجزء الذي تريد تعلّمه</h3>
-          <p>الشرح الآن داخل نفس مساحة التحكم، لذلك لا تحتاج إلى النزول والرجوع بين الأقسام.</p>
+          <span className="mini-eyebrow">الخطوة 1 · اختَر الحركة</span>
+          <h3>اختَر الشيء الذي تريد تعلّمه فقط</h3>
+          <p>قسمنا الوظائف حتى ما تشوف كل الأزرار دفعة واحدة.</p>
         </div>
       </div>
 
-      <div className="control-mode-switch" role="tablist" aria-label="نوع التحكم">
-        <button type="button" role="tab" aria-selected={group === 'ring'} className={group === 'ring' ? 'active' : ''} onClick={() => setGroup('ring')}>
-          <span>01</span> حلقة الإنارة
-        </button>
-        <button type="button" role="tab" aria-selected={group === 'lever'} className={group === 'lever' ? 'active' : ''} onClick={() => setGroup('lever')}>
-          <span>02</span> الذراع والحركات
-        </button>
+      <div className="control-mode-switch">
+        <button type="button" className={group === 'ring' ? 'active' : ''} onClick={() => setGroup('ring')}>① حلقة الإنارة</button>
+        <button type="button" className={group === 'lever' ? 'active' : ''} onClick={() => setGroup('lever')}>② الذراع</button>
       </div>
 
       {group === 'ring' ? (
@@ -372,276 +310,101 @@ function ControlSelector({
               type="button"
               className={mainLight === item.key && !signal && !flashActive ? 'selected' : ''}
               onClick={() => onMain(item.key)}
-              aria-pressed={mainLight === item.key && !signal && !flashActive}
             >
               <span className="choice-icon"><LightSymbol type={item.symbol} /></span>
-              <span className="choice-copy"><b>{item.title}</b><small>{item.subtitle}</small><em>{item.action.replace('.', '')}</em></span>
+              <span className="choice-copy"><b>{item.title}</b><small>{item.subtitle}</small></span>
               <span className="choice-check">✓</span>
             </button>
           ))}
         </div>
       ) : (
         <div className="choice-list lever-choice-list">
-          <button type="button" className={signal === 'right' ? 'selected' : ''} onClick={() => onSignal('right')} aria-pressed={signal === 'right'}>
-            <span className="lever-big">↑</span><span className="choice-copy"><b>غماز يمين</b><small>ارفع الذراع</small><em>إشارة قبل المناورة نحو اليمين</em></span><span className="choice-check">✓</span>
-          </button>
-          <button type="button" className={signal === 'left' ? 'selected' : ''} onClick={() => onSignal('left')} aria-pressed={signal === 'left'}>
-            <span className="lever-big">↓</span><span className="choice-copy"><b>غماز يسار</b><small>اخفض الذراع</small><em>إشارة قبل المناورة نحو اليسار</em></span><span className="choice-check">✓</span>
-          </button>
-          <button type="button" className={mainLight === 'high' && !flashActive ? 'selected' : ''} onClick={() => onMain('high')} aria-pressed={mainLight === 'high' && !flashActive}>
-            <span className="lever-big">→</span><span className="choice-copy"><b>الضوء العالي</b><small>ادفع الذراع</small><em>مدى أبعد عندما يكون الطريق مناسباً</em></span><span className="choice-check">✓</span>
-          </button>
-          <button type="button" className={flashActive ? 'selected' : ''} onClick={onFlash} aria-pressed={flashActive}>
-            <span className="lever-big">←</span><span className="choice-copy"><b>وميض العالي</b><small>اسحب لحظياً</small><em>ومضة سريعة بدل إبقائه مفعلاً</em></span><span className="choice-check">✓</span>
-          </button>
+          <button type="button" className={signal === 'right' ? 'selected' : ''} onClick={() => onSignal('right')}><span className="lever-big">↑</span><span className="choice-copy"><b>غماز يمين</b><small>ارفع الذراع</small></span><span className="choice-check">✓</span></button>
+          <button type="button" className={signal === 'left' ? 'selected' : ''} onClick={() => onSignal('left')}><span className="lever-big">↓</span><span className="choice-copy"><b>غماز يسار</b><small>اخفض الذراع</small></span><span className="choice-check">✓</span></button>
+          <button type="button" className={mainLight === 'high' && !flashActive ? 'selected' : ''} onClick={() => onMain('high')}><span className="lever-big">→</span><span className="choice-copy"><b>الضوء العالي</b><small>ادفع الذراع</small></span><span className="choice-check">✓</span></button>
+          <button type="button" className={flashActive ? 'selected' : ''} onClick={onFlash}><span className="lever-big">←</span><span className="choice-copy"><b>وميض العالي</b><small>اسحب لحظياً</small></span><span className="choice-check">✓</span></button>
         </div>
       )}
 
-      <button type="button" className={'hazard-action ' + (signal === 'hazard' ? 'selected' : '')} onClick={() => onSignal('hazard')} aria-pressed={signal === 'hazard'}>
+      <button type="button" className={signal === 'hazard' ? 'hazard-action selected' : 'hazard-action'} onClick={() => onSignal('hazard')}>
         <span className="hazard-symbol">△</span>
-        <span><b>التحذير الرباعي</b><small>زر منفصل · يومض الاتجاهان معاً</small></span>
+        <span><b>التحذير الرباعي</b><small>زر مستقل</small></span>
       </button>
-
-      <aside className="inline-teaching-panel" aria-live="polite">
-        <div className="inline-teaching-icon"><LightSymbol type={currentSymbol} /></div>
-        <div className="inline-teaching-content">
-          <span>شرح الاختيار الحالي</span>
-          <h4>{currentTitle}</h4>
-          <p className="teaching-action">{currentAction}</p>
-          <div className="teaching-columns">
-            <div><small>متى تستخدمه؟</small><p>{currentUse}</p></div>
-            <div className="teaching-caution"><small>انتبه</small><p>{currentCaution}</p></div>
-          </div>
-        </div>
-      </aside>
     </section>
   );
 }
 
 function ScenarioDiagram({ kind }: { kind: string }) {
   const idPrefix = 'scenario-' + kind;
-  const defs = (
-    <defs>
-      <linearGradient id={idPrefix + '-sky'} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#102b35" />
-        <stop offset="1" stopColor="#061117" />
-      </linearGradient>
-      <linearGradient id={idPrefix + '-road'} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#253d44" />
-        <stop offset="1" stopColor="#0b181f" />
-      </linearGradient>
-      <linearGradient id={idPrefix + '-glow'} x1="0" y1="0" x2="1" y2="0">
-        <stop stopColor="#ffffff" stopOpacity="0" />
-        <stop offset=".5" stopColor="#effffc" stopOpacity=".26" />
-        <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
-      </linearGradient>
-      <filter id={idPrefix + '-blur'}><feGaussianBlur stdDeviation="12" /></filter>
-      <filter id={idPrefix + '-shadow'}><feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#000" floodOpacity=".42" /></filter>
-    </defs>
-  );
-
-  const frame = (
+  const road = (
     <>
-      <rect width="800" height="360" rx="18" fill={'url(#' + idPrefix + '-sky)'} />
-      <path d="M0 360 174 112h452L800 360Z" fill={'url(#' + idPrefix + '-road)'} />
-      <path d="M0 360h800" stroke="#040a0e" strokeWidth="12" />
-      <path d="M400 112v248" stroke="#d8e8e7" strokeOpacity=".35" strokeWidth="4" strokeDasharray="22 18" />
-      <path d="M245 360 310 112M555 360 490 112" stroke="#e5f3f2" strokeOpacity=".11" strokeWidth="3" />
-      <circle cx="688" cy="62" r="28" fill="#dceceb" fillOpacity=".16" />
-      <circle cx="688" cy="62" r="52" fill="#dceceb" fillOpacity=".05" filter={'url(#' + idPrefix + '-blur)'} />
+      <rect width="800" height="360" fill={'url(#' + idPrefix + '-sceneBg)'} />
+      <path d="M0 360 175 108h450L800 360Z" fill="#18313a" />
+      <path d="M0 360h800" stroke="#071116" strokeWidth="13" />
+      <path d="M400 112v248" stroke="#d7e3e4" strokeOpacity=".33" strokeWidth="4" strokeDasharray="20 18" />
+      <path d="M238 360 300 112M562 360 500 112" stroke="#dce9ea" strokeOpacity=".10" strokeWidth="3" />
+      <circle cx="92" cy="72" r="34" fill="#193740" opacity=".7" />
+      <circle cx="92" cy="72" r="20" fill="#284e56" opacity=".4" />
     </>
   );
 
-  const car = (x: number, y: number, src: string, w: number, h: number, opacity = 1, rotate = 0) => (
-    <image
-      href={src}
-      x={x}
-      y={y}
-      width={w}
-      height={h}
-      opacity={opacity}
-      preserveAspectRatio="xMidYMid meet"
-      filter={'url(#' + idPrefix + '-shadow)'}
-      transform={rotate ? 'rotate(' + rotate + ' ' + (x + w / 2) + ' ' + (y + h / 2) + ')' : undefined}
-    />
+  const car = (x: number, y: number, src = '/spirit/car-front-sport.svg', w = 170, h = 135, opacity = 1, rotate = 0) => (
+    <image href={src} x={x} y={y} width={w} height={h} opacity={opacity} preserveAspectRatio="xMidYMid meet" transform={rotate ? 'rotate(' + rotate + ' ' + (x + w / 2) + ' ' + (y + h / 2) + ')' : undefined} />
   );
 
-  const badge = (title: string, detail: string, tone: 'teal' | 'amber' = 'teal') => (
+  const commonDefs = (
+    <defs>
+      <linearGradient id={idPrefix + '-sceneBg'} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#102b34" />
+        <stop offset="1" stopColor="#061117" />
+      </linearGradient>
+      <linearGradient id={idPrefix + '-fogBand'} x1="0" y1="0" x2="1" y2="0">
+        <stop stopColor="#d9e6e2" stopOpacity="0" />
+        <stop offset=".5" stopColor="#eef5f1" stopOpacity=".15" />
+        <stop offset="1" stopColor="#d9e6e2" stopOpacity="0" />
+      </linearGradient>
+      <filter id={idPrefix + '-blur18'}><feGaussianBlur stdDeviation="18" /></filter>
+      <filter id={idPrefix + '-blur8'}><feGaussianBlur stdDeviation="8" /></filter>
+    </defs>
+  );
+
+  const badge = (title: string, detail: string, warning = false) => (
     <g>
-      <rect x="24" y="22" width="314" height="61" rx="19" fill="#051016" fillOpacity=".88" stroke={tone === 'amber' ? '#f2bd74' : '#83e1d7'} strokeOpacity=".26" />
-      <circle cx="49" cy="52" r="8" fill={tone === 'amber' ? '#f2bd74' : '#83e1d7'} />
-      <text x="67" y="49" fill="#ecfbf8" fontSize="15" fontWeight="900">{title}</text>
-      <text x="67" y="69" fill="#9cb1b2" fontSize="11">{detail}</text>
+      <rect x="28" y="24" width={warning ? 300 : 282} height="58" rx="20" fill={warning ? "#2b2118" : "#07151c"} stroke={warning ? "#f0bb72" : "#83e1d7"} strokeOpacity=".22" />
+      <text x="48" y="49" fill={warning ? "#f2cb92" : "#a9ede5"} fontSize="15" fontWeight="900">{title}</text>
+      <text x="48" y="68" fill="#8ba0a3" fontSize="11">{detail}</text>
     </g>
   );
 
-  const bottomNote = (left: string, right: string) => (
+  const legend = (left: string, right: string) => (
     <g>
-      <rect x="24" y="310" width="752" height="29" rx="14" fill="#031015" fillOpacity=".92" stroke="#fff" strokeOpacity=".06" />
-      <circle cx="44" cy="324" r="4.5" fill="#83e1d7" />
-      <text x="56" y="328" fill="#d8e8e7" fontSize="10" fontWeight="800">{left}</text>
-      <circle cx="412" cy="324" r="4.5" fill="#f2bd74" />
-      <text x="424" y="328" fill="#d8e8e7" fontSize="10" fontWeight="800">{right}</text>
+      <rect x="28" y="304" width="744" height="34" rx="17" fill="#041016" fillOpacity=".9" stroke="#fff" strokeOpacity=".06" />
+      <circle cx="53" cy="321" r="5" fill="#83e1d7" />
+      <text x="66" y="325" fill="#cfe2e2" fontSize="11" fontWeight="800">{left}</text>
+      <circle cx="390" cy="321" r="5" fill="#f4ae57" />
+      <text x="403" y="325" fill="#cfe2e2" fontSize="11" fontWeight="800">{right}</text>
     </g>
   );
 
-  const ownCar = (x = 315, y = 220, w = 170, h = 126, opacity = 1) => car(x, y, '/spirit/car-front-sport.svg', w, h, opacity);
-  const rearCar = (x = 310, y = 218, w = 180, h = 126, opacity = 1) => car(x, y, '/spirit/car-rear.svg', w, h, opacity);
-  const arrow = (d: string) => <path d={d} fill="none" stroke="#83e1d7" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />;
-  const arrowHead = (points: string) => <path d={points} fill="#83e1d7" />;
+  if (kind === 'roundabout') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="الخروج من دوار إلى اليمين">{commonDefs}<rect width="800" height="360" fill="#071219" /><circle cx="400" cy="183" r="112" fill="#18323a" stroke="#6b8e93" strokeOpacity=".28" strokeWidth="18" /><circle cx="400" cy="183" r="51" fill="#08161c" stroke="#6b8e93" strokeOpacity=".18" strokeWidth="6" /><path d="M400 45v77M400 244v71M262 183h84M454 183h84" stroke="#d9e7e8" strokeOpacity=".24" strokeWidth="10" strokeLinecap="round" />{car(334,260,'/spirit/car-front-sport.svg',132,100)}<path d="M470 190c48-4 74-31 79-76" fill="none" stroke="#83e1d7" strokeWidth="10" strokeLinecap="round" /><path d="m546 111 20 15-23 8z" fill="#83e1d7" />{badge('الخروج إلى اليمين','المسار أولاً · الإشارة جزء من المناورة')}{legend('السهم = اتجاه المناورة','النقطة الكهرمانية = الغماز')}</svg>;
 
-  if (kind === 'roundabout') {
-    return (
-      <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="الخروج من الدوار إلى اليمين">
-        {defs}<rect width="800" height="360" fill="#071219" />
-        <circle cx="400" cy="190" r="108" fill="#1a333b" stroke="#6c8c90" strokeOpacity=".32" strokeWidth="20" />
-        <circle cx="400" cy="190" r="52" fill="#0a171c" stroke="#7f9a9d" strokeOpacity=".22" strokeWidth="5" />
-        <path d="M400 39v73M400 257v72M247 190h78M475 190h78" stroke="#d8e8e7" strokeOpacity=".26" strokeWidth="11" strokeLinecap="round" />
-        {ownCar(335, 262, 128, 96)}
-        {arrow('M471 196C518 191 549 161 554 112')} {arrowHead('M553 108l21 17-25 7z')}
-        {badge('الخروج إلى اليمين', 'مخرج محدد → إشارة → خروج ضمن المسار')}
-        {bottomNote('السهم = اتجاه المناورة', 'الغماز لا يلغي مراقبة الطريق')}
-      </svg>
-    );
-  }
+  if (kind === 'lane-left') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="تغيير المسار إلى اليسار">{commonDefs}{road}<image href="/spirit/car-front-sport.svg" x="316" y="230" width="170" height="125" /><path d="M405 300c-58-17-101-50-136-101" fill="none" stroke="#83e1d7" strokeWidth="11" strokeLinecap="round" /><path d="m267 197 25-2-11 22z" fill="#83e1d7" />{badge('انتقال إلى اليسار','مرآة → نقطة عمياء → غماز → انتقال')}{legend('السهم = المسار المطلوب','لا تنتقل قبل التأكد من خلو المسار')}</svg>;
 
-  if (kind === 'lane-left') {
-    return (
-      <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="تغيير المسار إلى اليسار">
-        {defs}{frame}
-        {ownCar(315, 222, 170, 126)}
-        <rect x="118" y="158" width="214" height="54" rx="18" fill="#f1bd77" fillOpacity=".05" stroke="#f1bd77" strokeOpacity=".35" strokeDasharray="7 7" />
-        <text x="136" y="190" fill="#f1d4a8" fontSize="12" fontWeight="900">افحص المسار + النقطة العمياء</text>
-        {arrow('M398 298C341 282 300 244 270 192')} {arrowHead('M263 188l25-3-11 23z')}
-        {badge('انتقال إلى اليسار', 'مرآة → نقطة عمياء → غماز → انتقال تدريجي')}
-        {bottomNote('المسار الخالي شرط أساسي', 'الإشارة تخبر الآخرين بنيتك فقط')}
-      </svg>
-    );
-  }
+  if (kind === 'oncoming') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="مركبة مقابلة ليلاً">{commonDefs}{road}<image href="/spirit/car-front-sport.svg" x="292" y="218" width="190" height="135" /><image href="/spirit/car-front-sport.svg" x="448" y="122" width="154" height="112" opacity=".74" transform="rotate(180 525 178)" /><ellipse cx="371" cy="258" rx="64" ry="28" fill="#fff0b0" opacity=".30" filter={'url(#' + idPrefix + '-blur8)'} /><ellipse cx="524" cy="164" rx="53" ry="22" fill="#fff0b0" opacity=".12" filter={'url(#' + idPrefix + '-blur8)'} /><path d="M414 269 480 243" stroke="#fff1b1" strokeOpacity=".12" strokeWidth="20" strokeLinecap="round" />{badge('مركبة مقابلة','اخفض العالي قبل الإبهار')}{legend('سيارتك = ضوء منخفض','المقابل = لا تبهِره بالعالي')}</svg>;
 
-  if (kind === 'oncoming') {
-    return (
-      <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="مركبة مقابلة ليلاً">
-        {defs}{frame}
-        {ownCar(315, 224, 170, 124)}
-        {car(447, 105, '/spirit/car-front-training.svg', 155, 112, .82)}
-        <path d="M345 275 148 316 345 288Z" fill={'url(#' + idPrefix + '-glow)'} opacity=".48" filter={'url(#' + idPrefix + '-blur)'} />
-        <path d="M455 275 652 316 455 288Z" fill={'url(#' + idPrefix + '-glow)'} opacity=".48" filter={'url(#' + idPrefix + '-blur)'} />
-        <path d="M530 151h112" stroke="#f2bd74" strokeWidth="7" strokeLinecap="round" />
-        <text x="531" y="137" fill="#f2bd74" fontSize="11" fontWeight="900">مقابل</text>
-        {badge('مركبة مقابلة', 'بدّل من العالي إلى المنخفض قبل الإبهار', 'amber')}
-        {bottomNote('أنت = منخفض', 'المركبة المقابلة = لا تبهِرها')}
-      </svg>
-    );
-  }
+  if (kind === 'open-road') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="طريق مظلم خالٍ">{commonDefs}{road}<image href="/spirit/car-front-sport.svg" x="315" y="225" width="170" height="125" /><path d="M398 270 102 140M402 270 698 140" stroke="#fff2ac" strokeOpacity=".10" strokeWidth="46" strokeLinecap="round" filter={'url(#' + idPrefix + '-blur18)'} /><path d="M398 270 84 126M402 270 716 126" stroke="#fff2ac" strokeOpacity=".15" strokeWidth="8" strokeLinecap="round" />{badge('طريق خالٍ → العالي','مدى أطول، ثم اخفضه عند ظهور مستخدم طريق')}{legend('الشعاع الأبيض = مجال الرؤية','العالي ليس للاستخدام مع إبهار الآخرين')}</svg>;
 
-  if (kind === 'open-road') {
-    return (
-      <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="طريق مظلم خالٍ">
-        {defs}{frame}
-        {ownCar(315, 224, 170, 124)}
-        <path d="M398 274 90 128M402 274 710 128" stroke="#f8eab0" strokeOpacity=".18" strokeWidth="44" strokeLinecap="round" filter={'url(#' + idPrefix + '-blur)'} />
-        <path d="M398 270 84 125M402 270 716 125" stroke="#fff4bd" strokeOpacity=".24" strokeWidth="7" strokeLinecap="round" />
-        {badge('طريق خالٍ → العالي', 'مدى أطول مع مراقبة مستمرة للمجال أمامك')}
-        {bottomNote('العالي = مدى رؤية أكبر', 'اخفضه عند ظهور مستخدم طريق')}
-      </svg>
-    );
-  }
+  if (kind === 'fog') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="ضباب كثيف">{commonDefs}{road}<rect width="800" height="360" fill="#9fb1b1" fillOpacity=".13" /><rect x="0" y="125" width="800" height="45" fill={'url(#' + idPrefix + '-fogBand)'} /><rect x="0" y="184" width="800" height="35" fill={'url(#' + idPrefix + '-fogBand)'} /><rect x="0" y="244" width="800" height="28" fill={'url(#' + idPrefix + '-fogBand)'} /><image href="/spirit/car-front-sport.svg" x="315" y="225" width="170" height="125" /><ellipse cx="350" cy="271" rx="58" ry="24" fill="#fff0b2" opacity=".25" filter={'url(#' + idPrefix + '-blur8)'} /><ellipse cx="450" cy="271" rx="58" ry="24" fill="#fff0b2" opacity=".25" filter={'url(#' + idPrefix + '-blur8)'} />{badge('ضباب كثيف','الرؤية أولاً: سرعة أقل + إنارة مناسبة')}{legend('الضباب يقلل مدى الرؤية','المصباح لا يعوض عن خفض السرعة')}</svg>;
 
-  if (kind === 'fog') {
-    return (
-      <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="ضباب كثيف ومدى رؤية منخفض">
-        {defs}{frame}
-        <rect x="0" y="112" width="800" height="57" fill="#dfe9e7" fillOpacity=".08" />
-        <rect x="0" y="182" width="800" height="42" fill="#dfe9e7" fillOpacity=".12" />
-        <rect x="0" y="234" width="800" height="35" fill="#dfe9e7" fillOpacity=".10" />
-        {ownCar(315, 224, 170, 124)}
-        <ellipse cx="349" cy="276" rx="63" ry="21" fill="#fff3bd" opacity=".34" filter={'url(#' + idPrefix + '-blur)'} />
-        <ellipse cx="451" cy="276" rx="63" ry="21" fill="#fff3bd" opacity=".34" filter={'url(#' + idPrefix + '-blur)'} />
-        {badge('ضباب كثيف', 'الرؤية أولاً: سرعة أقل + إنارة مناسبة')}
-        {bottomNote('الضباب يختصر مدى الرؤية', 'الضوء لا يعوض عن خفض السرعة')}
-      </svg>
-    );
-  }
+  if (kind === 'rear-fog') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="ضباب خلفي">{commonDefs}{road}<rect width="800" height="360" fill="#a3b2b2" fillOpacity=".10" /><rect x="0" y="135" width="800" height="34" fill={'url(#' + idPrefix + '-fogBand)'} /><rect x="0" y="204" width="800" height="28" fill={'url(#' + idPrefix + '-fogBand)'} /><image href="/spirit/car-rear.svg" x="310" y="220" width="180" height="125" /><ellipse cx="352" cy="278" rx="25" ry="18" fill="#ffb84e" opacity=".75" filter={'url(#' + idPrefix + '-blur8)'} /><ellipse cx="448" cy="278" rx="25" ry="18" fill="#ffb84e" opacity=".75" filter={'url(#' + idPrefix + '-blur8)'} /><image href="/spirit/car-front-sport.svg" x="120" y="205" width="120" height="90" opacity=".45" />{badge('ضباب خلفي','اجعل المركبة واضحة لمن خلفك',true)}{legend('الخلفي = وضوح المركبة','أوقفه عندما تتحسن الرؤية')}</svg>;
 
-  if (kind === 'hazard') {
-    return (
-      <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="توقف اضطراري وتشغيل التحذير الرباعي">
-        {defs}{frame}
-        {rearCar(310, 214, 180, 126)}
-        {car(120, 220, '/spirit/car-front-sport.svg', 120, 88, .42)}
-        <circle cx="349" cy="278" r="11" fill="#f3ad55" /><circle cx="451" cy="278" r="11" fill="#f3ad55" />
-        <circle cx="349" cy="278" r="24" fill="none" stroke="#f3ad55" strokeOpacity=".30" strokeWidth="3" />
-        <circle cx="451" cy="278" r="24" fill="none" stroke="#f3ad55" strokeOpacity=".30" strokeWidth="3" />
-        <path d="M212 289 244 237 276 289Z" fill="#f2bd74" fillOpacity=".12" stroke="#f2bd74" strokeWidth="3" />
-        <text x="244" y="279" textAnchor="middle" fill="#f2bd74" fontSize="17" fontWeight="900">!</text>
-        {badge('توقف اضطراري → تحذير', 'اجعل المركبة واضحة للاتجاهين', 'amber')}
-        {bottomNote('التحذير = الاتجاهان', 'توقف آمن ثم اتخذ الإجراء التالي')}
-      </svg>
-    );
-  }
+  if (kind === 'hazard') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="توقف اضطراري وتحذير رباعي">{commonDefs}<rect width="800" height="360" fill={'url(#' + idPrefix + '-sceneBg)'} /><rect y="125" width="800" height="235" fill="#172d35" /><path d="M0 215h800" stroke="#8da2a5" strokeOpacity=".13" strokeWidth="3" /><image href="/spirit/car-rear.svg" x="308" y="205" width="190" height="135" /><circle cx="352" cy="268" r="13" fill="#f4ae57" /><circle cx="448" cy="268" r="13" fill="#f4ae57" /><circle cx="352" cy="268" r="28" fill="none" stroke="#f4ae57" strokeOpacity=".20" /><circle cx="448" cy="268" r="28" fill="none" stroke="#f4ae57" strokeOpacity=".20" /><path d="M120 275l34-58 34 58z" fill="#f2bd74" fillOpacity=".10" stroke="#f2bd74" strokeWidth="3" /><text x="154" y="267" textAnchor="middle" fill="#f2bd74" fontSize="16" fontWeight="900">!</text>{badge('توقف اضطراري → تحذير','مركبة متوقفة في وضع قد يشكل خطراً',true)}{legend('التحذير = الاتجاهان معاً','ليس بديلاً عن غماز الانعطاف')}</svg>;
 
-  if (kind === 'turn-right') {
-    return (
-      <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="انعطاف يمين عند تقاطع">
-        {defs}<rect width="800" height="360" fill="#071219" />
-        <rect y="124" width="800" height="94" fill="#1a333b" />
-        <rect x="488" y="124" width="94" height="236" fill="#1a333b" />
-        <path d="M0 172h800M535 124v236" stroke="#d8e8e7" strokeOpacity=".22" strokeWidth="4" strokeDasharray="18 14" />
-        {ownCar(332, 231, 176, 126)}
-        {arrow('M420 299C481 289 518 248 518 190')} {arrowHead('M514 187l22 16-24 8z')}
-        {badge('انعطاف يمين', 'مرآة → غماز → تموضع → انعطاف')}
-        {bottomNote('المسار الصحيح أولاً', 'الإشارة تنبه الآخرين قبل المناورة')}
-      </svg>
-    );
-  }
+  if (kind === 'turn-right') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="انعطاف يمين عند تقاطع">{commonDefs}<rect width="800" height="360" fill={'url(#' + idPrefix + '-sceneBg)'} /><rect y="118" width="800" height="90" fill="#18323a" /><rect x="484" y="118" width="92" height="242" fill="#18323a" /><path d="M0 163h800M530 118v242" stroke="#d9e5e6" strokeOpacity=".18" strokeWidth="4" strokeDasharray="18 14" /><image href="/spirit/car-front-sport.svg" x="338" y="228" width="180" height="128" /><path d="M430 295c48-10 79-43 79-102" fill="none" stroke="#83e1d7" strokeWidth="11" strokeLinecap="round" /><path d="m501 191 22 16-24 8z" fill="#83e1d7" />{badge('انعطاف يمين','مرآة → غماز → تموضع → انعطاف')}{legend('السهم = مسار السيارة','الإشارة تنبه الآخرين قبل المناورة')}</svg>;
 
-  if (kind === 'rear-fog') {
-    return (
-      <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="استخدام الضباب الخلفي">
-        {defs}{frame}
-        {rearCar(310, 215, 180, 126)}
-        {car(118, 205, '/spirit/car-front-sport.svg', 126, 92, .36)}
-        <rect x="0" y="124" width="800" height="55" fill="#e5efed" fillOpacity=".08" />
-        <rect x="0" y="198" width="800" height="36" fill="#e5efed" fillOpacity=".11" />
-        <ellipse cx="352" cy="277" rx="28" ry="19" fill="#ffb84e" opacity=".85" filter={'url(#' + idPrefix + '-blur)'} />
-        <ellipse cx="448" cy="277" rx="28" ry="19" fill="#ffb84e" opacity=".85" filter={'url(#' + idPrefix + '-blur)'} />
-        <path d="M184 255h74" stroke="#f2bd74" strokeWidth="5" strokeLinecap="round" /><text x="96" y="251" fill="#f2bd74" fontSize="11" fontWeight="900">اجعل مركبتك واضحة</text>
-        {badge('ضباب خلفي', 'استخدمه عند سوء الرؤية ثم أوقفه عند تحسنها', 'amber')}
-        {bottomNote('الخلفي = وضوح المركبة', 'السطوع القوي ليس للاستخدام الدائم')}
-      </svg>
-    );
-  }
+  if (kind === 'park') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="وقوف ليلاً">{commonDefs}<rect width="800" height="360" fill="#061019" /><circle cx="630" cy="70" r="38" fill="#dce9e7" fillOpacity=".20" /><circle cx="630" cy="70" r="68" fill="#c4d8d5" fillOpacity=".05" filter={'url(#' + idPrefix + '-blur18)'} /><rect y="208" width="800" height="152" fill="#142930" /><path d="M0 266h800" stroke="#a2b0b2" strokeOpacity=".16" strokeWidth="3" /><path d="M0 210 800 210" stroke="#657b80" strokeOpacity=".16" strokeWidth="5" strokeDasharray="24 18" /><image href="/spirit/car-rear.svg" x="308" y="190" width="190" height="135" /><circle cx="352" cy="256" r="8" fill="#cddc8c" /><circle cx="448" cy="256" r="8" fill="#cddc8c" />{badge('وقوف ليلاً','اجعل المركبة واضحة · إنارة الموضع ليست لإنارة الطريق')}{legend('الموضع = وضوح المركبة','الطريق أمامك يحتاج إنارة مناسبة')}</svg>;
 
-  if (kind === 'park') {
-    return (
-      <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="وقوف ليلاً مع إنارة الموضع">
-        {defs}<rect width="800" height="360" fill="#061019" />
-        <circle cx="638" cy="62" r="35" fill="#e4eeee" fillOpacity=".18" />
-        <circle cx="638" cy="62" r="60" fill="#dceceb" fillOpacity=".05" filter={'url(#' + idPrefix + '-blur)'} />
-        <rect y="203" width="800" height="157" fill="#142830" />
-        <path d="M0 260h800" stroke="#aec1c0" strokeOpacity=".14" strokeWidth="3" />
-        <path d="M0 205h800" stroke="#6f898b" strokeOpacity=".20" strokeWidth="5" strokeDasharray="24 18" />
-        {rearCar(308, 190, 190, 136)}
-        <circle cx="353" cy="260" r="7" fill="#d3df9a" /><circle cx="447" cy="260" r="7" fill="#d3df9a" />
-        {badge('وقوف ليلاً', 'وضوح المركبة أولاً · الموضع ليس لإنارة الطريق')}
-        {bottomNote('الموضع = وضوح المركبة', 'الطريق يحتاج الإنارة المناسبة')}
-      </svg>
-    );
-  }
-
-  return (
-    <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="بدء مناورة تجاوز">
-      {defs}{frame}
-      {ownCar(318, 224, 174, 126)}
-      {car(160, 224, '/spirit/car-front-sport.svg', 150, 110, .60)}
-      {arrow('M362 301C298 280 256 244 223 194')} {arrowHead('M216 190l26-3-11 23z')}
-      <rect x="175" y="151" width="165" height="45" rx="16" fill="#f2bd74" fillOpacity=".05" stroke="#f2bd74" strokeOpacity=".30" strokeDasharray="7 7" />
-      <text x="197" y="179" fill="#f2d4a5" fontSize="11" fontWeight="900">افحص السماح والفراغ</text>
-      {badge('بدء تجاوز', 'تأكد من الطريق ثم غماز مناسب ثم مناورة آمنة', 'amber')}
-      {bottomNote('السهم = مسار التجاوز', 'الغماز جزء من المناورة وليس ضماناً لها')}
-    </svg>
-  );
+  return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="مناورة تجاوز">{commonDefs}{road}<image href="/spirit/car-front-sport.svg" x="320" y="226" width="175" height="128" /><image href="/spirit/car-front-sport.svg" x="168" y="224" width="158" height="116" opacity=".70" /><path d="M360 303c-75-22-118-60-151-116" fill="none" stroke="#83e1d7" strokeWidth="11" strokeLinecap="round" /><path d="m204 187 25-2-11 22z" fill="#83e1d7" />{badge('بدء تجاوز','تأكد من السماح والفراغ قبل تغيير المسار')}{legend('السهم = مسار التجاوز','الغماز جزء من المناورة وليس ضماناً لها')}</svg>;
 }
 
 function ScenarioCard({
@@ -720,17 +483,28 @@ export default function PracticalInfo() {
   const [selectedScenario, setSelectedScenario] = useState(SCENARIOS[0].id);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const audioRef = useRef<AudioContext | null>(null);
+
   useEffect(() => {
-    return () => {
-      const ctx = audioRef.current;
-      if (ctx && ctx.state !== 'closed') void ctx.close();
+    const html = document.documentElement;
+    const body = document.body;
+    const previous = {
+      htmlScrollBehavior: html.style.scrollBehavior,
+      htmlOverflowY: html.style.overflowY,
+      bodyOverflowY: body.style.overflowY,
+      bodyOverflowX: body.style.overflowX,
     };
-  }, []);
-
-
-  useEffect(() => {
-    document.documentElement.classList.add('practical-info-active');
-    return () => document.documentElement.classList.remove('practical-info-active');
+    html.style.scrollBehavior = 'auto';
+    html.style.overflowY = 'auto';
+    body.style.overflowY = 'auto';
+    body.style.overflowX = 'hidden';
+    html.classList.add('practical-info-active');
+    return () => {
+      html.style.scrollBehavior = previous.htmlScrollBehavior;
+      html.style.overflowY = previous.htmlOverflowY;
+      body.style.overflowY = previous.bodyOverflowY;
+      body.style.overflowX = previous.bodyOverflowX;
+      html.classList.remove('practical-info-active');
+    };
   }, []);
 
   useEffect(() => {
@@ -748,29 +522,27 @@ export default function PracticalInfo() {
   const playClickSound = () => {
     if (!soundEnabled || typeof window === 'undefined') return;
     try {
-      const AudioCtx =
+      const Ctx =
         window.AudioContext ||
         (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = audioRef.current ?? new AudioCtx();
+      if (!Ctx) return;
+      const ctx = audioRef.current ?? new Ctx();
       audioRef.current = ctx;
       if (ctx.state === 'suspended') void ctx.resume();
-
       const now = ctx.currentTime;
       const oscillator = ctx.createOscillator();
       const gain = ctx.createGain();
-      oscillator.type = 'triangle';
-      oscillator.frequency.setValueAtTime(680, now);
-      oscillator.frequency.exponentialRampToValueAtTime(920, now + 0.045);
+      oscillator.type = 'square';
+      oscillator.frequency.setValueAtTime(760, now);
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.085, now + 0.008);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.105);
+      gain.gain.exponentialRampToValueAtTime(0.055, now + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.085);
       oscillator.connect(gain);
       gain.connect(ctx.destination);
       oscillator.start(now);
-      oscillator.stop(now + 0.115);
+      oscillator.stop(now + 0.09);
     } catch {
-      // Audio is optional; interactions must remain usable when sound is blocked.
+      // Audio is an enhancement; interaction must still work when the browser blocks sound.
     }
   };
 
@@ -785,13 +557,6 @@ export default function PracticalInfo() {
 
   const chooseSignal = (key: SignalKey) => {
     playClickSound();
-    if (key === 'hazard' && signal === 'hazard') {
-      setSignal(null);
-      setMovement('ring');
-      setFlashActive(false);
-      setVehicleView('front');
-      return;
-    }
     setSignal(key);
     setMovement(key);
     setFlashActive(false);
@@ -860,8 +625,8 @@ export default function PracticalInfo() {
         <section className="lighting-intro">
           <div className="intro-copy">
             <span className="lesson-eyebrow">درس قصير · حركة ← نتيجة ← تطبيق</span>
-            <h1>تعلّم الإنارة من الحركة إلى النتيجة.</h1>
-            <p>اختر وظيفة واحدة، حدد مكانها على المقبض، نفّذ الحركة، ثم شاهد ما يتغير على السيارة. كل خطوة تبقى أمامك بدون تنقّل تلقائي مزعج.</p>
+            <h1>تعلّم المقبض والسيارة مع بعض.</h1>
+            <p>اختَر حركة واحدة، شاهد مكانها على المقبض، ثم شاهد أثرها مباشرة على السيارة. بدون قفزات أو تنقّل تلقائي.</p>
           </div>
           <div className="intro-flow">
             <span><b>1</b> اختَر</span><i>→</i><span><b>2</b> راقب</span><i>→</i><span><b>3</b> طبّق</span>
@@ -878,8 +643,8 @@ export default function PracticalInfo() {
           {tab === 'practice' && (
             <section className="practice-section">
               <div className="practice-topline">
-                <div><span className="lesson-eyebrow">المحاكي العملي</span><h2>حركة واضحة، شرح قريب، نتيجة مرئية</h2><p>التحكم والشرح والمقبض مرتبطة في مساحة واحدة حتى يعرف الطالب ماذا ضغط ولماذا.</p></div>
-                <div className="practice-status"><small>الحالة الحالية</small><strong>{currentTitle}</strong>{flashCount > 0 && <span>عدد ومضات التجربة {flashCount}</span>}<button type="button" className={'sound-toggle ' + (soundEnabled ? 'is-on' : '')} onClick={() => setSoundEnabled(value => !value)}><b>{soundEnabled ? '♪' : '×'}</b><span>{soundEnabled ? 'الصوت مفعّل' : 'الصوت متوقف'}</span></button></div>
+                <div><span className="lesson-eyebrow">المحاكي العملي</span><h2>اتبعها بهذا الترتيب</h2><p>الزر الذي تضغطه يبقى شرحه أمامك مباشرة، ثم تنتقل بصرياً للمقبض والنتيجة.</p></div>
+                <div className="practice-status"><small>الحالة الحالية</small><strong>{currentTitle}</strong>{flashCount > 0 && <span>وميض مجرّب {flashCount}×</span>}<button type="button" className={'sound-toggle ' + (soundEnabled ? 'is-on' : '')} onClick={() => setSoundEnabled(value => !value)}><b>{soundEnabled ? '♪' : '×'}</b><span>{soundEnabled ? 'الصوت مفعّل' : 'الصوت متوقف'}</span></button></div>
               </div>
 
               <div className="practice-grid">
@@ -895,18 +660,15 @@ export default function PracticalInfo() {
                     onFlash={triggerFlash}
                   />
 
+                  <div className="selected-explanation">
+                    <div className="selected-icon"><LightSymbol type={activeSignal?.symbol || (flashActive ? 'flash' : activeLight.symbol)} /></div>
+                    <div className="selected-main"><span>شرح الزر الذي ضغطته</span><h3>{currentTitle}</h3><p>{currentAction}</p></div>
+                    <div className="selected-block"><small>متى؟</small><p>{currentUse}</p></div>
+                    <div className="selected-block note"><small>{activeSignal ? 'مثال عملي' : 'انتبه'}</small><p>{currentCaution}</p></div>
+                  </div>
                 </div>
 
-                <HandleIllustration mainLight={mainLight} movement={movement} onRingCycle={cycleRing} onLever={applyLeverMovement} onHazard={() => {
-                  if (signal === 'hazard') {
-                    playClickSound();
-                    setSignal(null);
-                    setMovement('ring');
-                    setVehicleView('front');
-                  } else {
-                    chooseSignal('hazard');
-                  }
-                }} />
+                <HandleIllustration mainLight={mainLight} movement={movement} onRingCycle={cycleRing} onLever={applyLeverMovement} onHazard={() => chooseSignal('hazard')} />
               </div>
 
               <div className="result-title"><span>3</span><div><b>شاهد النتيجة</b><small>التغيير يحصل هنا فقط، بدون تحريك الصفحة</small></div></div>
