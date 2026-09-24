@@ -200,21 +200,11 @@ function HandleIllustration({
           >
             <span>② الذراع</span>
           </button>
-
         </div>
-        <button
-          type="button"
-          className={'handle-standalone-control ' + (movement === 'hazard' ? 'active' : '')}
-          onClick={onHazard}
-          aria-label="زر التحذير الرباعي المستقل"
-          aria-pressed={movement === 'hazard'}
-        >
-          <b>△</b>
-          <span><strong>تحذير رباعي</strong><small>زر مستقل عن المقبض</small></span>
-        </button>
-        <div className="handle-stage-caption">
-          <span>الجزء الذي يلمع هو الجزء الذي تدرّبه الآن</span>
-        </div>
+      </div>
+      <div className="handle-stage-note">
+        <span>الحلقة والذراع هما عناصر المقبض التفاعلية.</span>
+        <b>التحذير الرباعي زر مستقل عن المقبض.</b>
       </div>
 
       <div className="handle-action-rail" aria-label="حركات المقبض">
@@ -294,23 +284,28 @@ function VehicleScene({
 
       <div className="vehicle-stage">
         <div className="vehicle-road-shape" />
-        <div className="vehicle-light-label">{view === 'front' ? 'شاهد أين يصل الضوء' : 'شاهد أين تظهر الإشارة'}</div>
-        <img src="/spirit/car-front-sport.svg" className="vehicle-car vehicle-car-front" alt="" aria-hidden="true" />
-        <img src="/spirit/car-rear.svg" className="vehicle-car vehicle-car-rear" alt="" aria-hidden="true" />
+        <div className="vehicle-light-label">{view === 'front' ? 'الأمام · شاهد مسار الضوء' : 'الخلف · شاهد ظهور الإشارة'}</div>
 
-        <span className="vehicle-beam vehicle-beam-left" />
-        <span className="vehicle-beam vehicle-beam-right" />
-        <span className="vehicle-fog vehicle-fog-left" />
-        <span className="vehicle-fog vehicle-fog-right" />
-        <span className="vehicle-signal-l signal-l-front" />
-        <span className="vehicle-signal-r signal-r-front" />
-        <span className="vehicle-signal-l signal-l-rear" />
-        <span className="vehicle-signal-r signal-r-rear" />
-        <span className="vehicle-rear-fog-light rear-fog-light-l" />
-        <span className="vehicle-rear-fog-light rear-fog-light-r" />
+        <div className="vehicle-art vehicle-art-front">
+          <span className="vehicle-beam vehicle-beam-left" />
+          <span className="vehicle-beam vehicle-beam-right" />
+          <span className="vehicle-fog vehicle-fog-left" />
+          <span className="vehicle-fog vehicle-fog-right" />
+          <span className="vehicle-signal-l signal-l-front" />
+          <span className="vehicle-signal-r signal-r-front" />
+          <img src="/spirit/car-front-training.svg" className="vehicle-car" alt="" aria-hidden="true" />
+        </div>
+
+        <div className="vehicle-art vehicle-art-rear">
+          <span className="vehicle-signal-l signal-l-rear" />
+          <span className="vehicle-signal-r signal-r-rear" />
+          <span className="vehicle-rear-fog-light rear-fog-light-l" />
+          <span className="vehicle-rear-fog-light rear-fog-light-r" />
+          <img src="/spirit/car-rear.svg" className="vehicle-car" alt="" aria-hidden="true" />
+        </div>
 
         <div className="vehicle-stage-legend">
-          <span><i className="legend-light" />إنارة</span>
+          <span><i className="legend-light" />إنارة الطريق</span>
           <span><i className="legend-amber" />إشارة</span>
         </div>
       </div>
@@ -790,6 +785,13 @@ export default function PracticalInfo() {
 
   const chooseSignal = (key: SignalKey) => {
     playClickSound();
+    if (key === 'hazard' && signal === 'hazard') {
+      setSignal(null);
+      setMovement('ring');
+      setFlashActive(false);
+      setVehicleView('front');
+      return;
+    }
     setSignal(key);
     setMovement(key);
     setFlashActive(false);
@@ -895,7 +897,16 @@ export default function PracticalInfo() {
 
                 </div>
 
-                <HandleIllustration mainLight={mainLight} movement={movement} onRingCycle={cycleRing} onLever={applyLeverMovement} onHazard={() => chooseSignal('hazard')} />
+                <HandleIllustration mainLight={mainLight} movement={movement} onRingCycle={cycleRing} onLever={applyLeverMovement} onHazard={() => {
+                  if (signal === 'hazard') {
+                    playClickSound();
+                    setSignal(null);
+                    setMovement('ring');
+                    setVehicleView('front');
+                  } else {
+                    chooseSignal('hazard');
+                  }
+                }} />
               </div>
 
               <div className="result-title"><span>3</span><div><b>شاهد النتيجة</b><small>التغيير يحصل هنا فقط، بدون تحريك الصفحة</small></div></div>
