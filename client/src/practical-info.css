@@ -698,27 +698,27 @@ html.practical-info-active{scroll-behavior:smooth}
 .vehicle-beam{
   z-index:1;
   top:55%;
-  width:37%;
-  height:17%;
+  width:48%;
+  height:18%;
   opacity:0;
   border-radius:50%;
-  background:linear-gradient(90deg,rgba(255,249,206,.02),rgba(255,239,169,.34),rgba(255,250,215,.62));
-  filter:blur(9px);
+  background:linear-gradient(90deg,rgba(255,250,218,0),rgba(255,239,169,.28),rgba(255,250,215,.72));
+  filter:blur(8px);
   transition:opacity .50s ease,width .50s ease,height .50s ease;
 }
 .vehicle-beam-left{
-  left:-1%;
-  clip-path:polygon(0 15%,100% 37%,100% 63%,0 95%);
+  left:-26%;
+  clip-path:polygon(0 10%,100% 34%,100% 66%,0 90%);
 }
 .vehicle-beam-right{
-  right:-1%;
+  right:-26%;
   transform:scaleX(-1);
-  clip-path:polygon(0 15%,100% 37%,100% 63%,0 95%);
+  clip-path:polygon(0 10%,100% 34%,100% 66%,0 90%);
 }
 .vehicle-front .vehicle-light-low .vehicle-beam,
 .vehicle-light-low .vehicle-art-front .vehicle-beam{opacity:.70}
-.vehicle-light-high .vehicle-art-front .vehicle-beam{opacity:.91;width:46%;height:21%}
-.vehicle-flash .vehicle-art-front .vehicle-beam{opacity:1;width:52%;height:24%;animation:beamPulse 1.15s ease}
+.vehicle-light-high .vehicle-art-front .vehicle-beam{opacity:.91;width:56%;height:22%}
+.vehicle-flash .vehicle-art-front .vehicle-beam{opacity:1;width:62%;height:25%;animation:beamPulse 1.15s ease}
 
 .vehicle-fog{
   z-index:2;
@@ -915,9 +915,10 @@ html.practical-info-active{scroll-behavior:smooth}
   .handle-action-rail button{min-height:64px}
   .vehicle-stage{min-height:280px}
   .vehicle-art{width:74%;height:82%}
-  .vehicle-beam{top:55%;width:39%;height:17%}
-  .vehicle-light-high .vehicle-art-front .vehicle-beam{width:49%;height:22%}
-  .vehicle-flash .vehicle-art-front .vehicle-beam{width:56%;height:25%}
+  .vehicle-beam{top:55%;width:50%;height:18%;left:-27%}
+  .vehicle-beam-right{left:auto;right:-27%}
+  .vehicle-light-high .vehicle-art-front .vehicle-beam{width:58%;height:22%}
+  .vehicle-flash .vehicle-art-front .vehicle-beam{width:64%;height:25%}
   .vehicle-fog{top:69%;width:24%}
 }
 @media(prefers-reduced-motion:reduce){
