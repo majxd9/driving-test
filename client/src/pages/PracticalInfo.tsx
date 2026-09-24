@@ -423,35 +423,36 @@ function ControlSelector({
 }
 
 function ScenarioDiagram({ kind }: { kind: string }) {
+  const idPrefix = 'scenario-' + kind;
   const defs = (
     <defs>
-      <linearGradient id="sceneSky" x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id={idPrefix + '-sky'} x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#102b35" />
         <stop offset="1" stopColor="#061117" />
       </linearGradient>
-      <linearGradient id="sceneRoad" x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id={idPrefix + '-road'} x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#253d44" />
         <stop offset="1" stopColor="#0b181f" />
       </linearGradient>
-      <linearGradient id="sceneGlow" x1="0" y1="0" x2="1" y2="0">
+      <linearGradient id={idPrefix + '-glow'} x1="0" y1="0" x2="1" y2="0">
         <stop stopColor="#ffffff" stopOpacity="0" />
         <stop offset=".5" stopColor="#effffc" stopOpacity=".26" />
         <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
       </linearGradient>
-      <filter id="sceneBlur"><feGaussianBlur stdDeviation="12" /></filter>
-      <filter id="sceneShadow"><feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#000" floodOpacity=".42" /></filter>
+      <filter id={idPrefix + '-blur'}><feGaussianBlur stdDeviation="12" /></filter>
+      <filter id={idPrefix + '-shadow'}><feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#000" floodOpacity=".42" /></filter>
     </defs>
   );
 
   const frame = (
     <>
-      <rect width="800" height="360" rx="18" fill="url(#sceneSky)" />
-      <path d="M0 360 174 112h452L800 360Z" fill="url(#sceneRoad)" />
+      <rect width="800" height="360" rx="18" fill={'url(#' + idPrefix + '-sky)'} />
+      <path d="M0 360 174 112h452L800 360Z" fill={'url(#' + idPrefix + '-road)'} />
       <path d="M0 360h800" stroke="#040a0e" strokeWidth="12" />
       <path d="M400 112v248" stroke="#d8e8e7" strokeOpacity=".35" strokeWidth="4" strokeDasharray="22 18" />
       <path d="M245 360 310 112M555 360 490 112" stroke="#e5f3f2" strokeOpacity=".11" strokeWidth="3" />
       <circle cx="688" cy="62" r="28" fill="#dceceb" fillOpacity=".16" />
-      <circle cx="688" cy="62" r="52" fill="#dceceb" fillOpacity=".05" filter="url(#sceneBlur)" />
+      <circle cx="688" cy="62" r="52" fill="#dceceb" fillOpacity=".05" filter={'url(#' + idPrefix + '-blur)'} />
     </>
   );
 
@@ -464,7 +465,7 @@ function ScenarioDiagram({ kind }: { kind: string }) {
       height={h}
       opacity={opacity}
       preserveAspectRatio="xMidYMid meet"
-      filter="url(#sceneShadow)"
+      filter={'url(#' + idPrefix + '-shadow)'}
       transform={rotate ? 'rotate(' + rotate + ' ' + (x + w / 2) + ' ' + (y + h / 2) + ')' : undefined}
     />
   );
@@ -528,8 +529,8 @@ function ScenarioDiagram({ kind }: { kind: string }) {
         {defs}{frame}
         {ownCar(315, 224, 170, 124)}
         {car(447, 105, '/spirit/car-front-sport.svg', 155, 112, .82, 180)}
-        <path d="M345 275 148 316 345 288Z" fill="url(#sceneGlow)" opacity=".48" filter="url(#sceneBlur)" />
-        <path d="M455 275 652 316 455 288Z" fill="url(#sceneGlow)" opacity=".48" filter="url(#sceneBlur)" />
+        <path d="M345 275 148 316 345 288Z" fill={'url(#' + idPrefix + '-glow)'} opacity=".48" filter={'url(#' + idPrefix + '-blur)'} />
+        <path d="M455 275 652 316 455 288Z" fill={'url(#' + idPrefix + '-glow)'} opacity=".48" filter={'url(#' + idPrefix + '-blur)'} />
         <path d="M530 151h112" stroke="#f2bd74" strokeWidth="7" strokeLinecap="round" />
         <text x="531" y="137" fill="#f2bd74" fontSize="11" fontWeight="900">مقابل</text>
         {badge('مركبة مقابلة', 'بدّل من العالي إلى المنخفض قبل الإبهار', 'amber')}
@@ -543,7 +544,7 @@ function ScenarioDiagram({ kind }: { kind: string }) {
       <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="طريق مظلم خالٍ">
         {defs}{frame}
         {ownCar(315, 224, 170, 124)}
-        <path d="M398 274 90 128M402 274 710 128" stroke="#f8eab0" strokeOpacity=".18" strokeWidth="44" strokeLinecap="round" filter="url(#sceneBlur)" />
+        <path d="M398 274 90 128M402 274 710 128" stroke="#f8eab0" strokeOpacity=".18" strokeWidth="44" strokeLinecap="round" filter={'url(#' + idPrefix + '-blur)'} />
         <path d="M398 270 84 125M402 270 716 125" stroke="#fff4bd" strokeOpacity=".24" strokeWidth="7" strokeLinecap="round" />
         {badge('طريق خالٍ → العالي', 'مدى أطول مع مراقبة مستمرة للمجال أمامك')}
         {bottomNote('العالي = مدى رؤية أكبر', 'اخفضه عند ظهور مستخدم طريق')}
@@ -559,8 +560,8 @@ function ScenarioDiagram({ kind }: { kind: string }) {
         <rect x="0" y="182" width="800" height="42" fill="#dfe9e7" fillOpacity=".12" />
         <rect x="0" y="234" width="800" height="35" fill="#dfe9e7" fillOpacity=".10" />
         {ownCar(315, 224, 170, 124)}
-        <ellipse cx="349" cy="276" rx="63" ry="21" fill="#fff3bd" opacity=".34" filter="url(#sceneBlur)" />
-        <ellipse cx="451" cy="276" rx="63" ry="21" fill="#fff3bd" opacity=".34" filter="url(#sceneBlur)" />
+        <ellipse cx="349" cy="276" rx="63" ry="21" fill="#fff3bd" opacity=".34" filter={'url(#' + idPrefix + '-blur)'} />
+        <ellipse cx="451" cy="276" rx="63" ry="21" fill="#fff3bd" opacity=".34" filter={'url(#' + idPrefix + '-blur)'} />
         {badge('ضباب كثيف', 'الرؤية أولاً: سرعة أقل + إنارة مناسبة')}
         {bottomNote('الضباب يختصر مدى الرؤية', 'الضوء لا يعوض عن خفض السرعة')}
       </svg>
@@ -607,8 +608,8 @@ function ScenarioDiagram({ kind }: { kind: string }) {
         {car(118, 205, '/spirit/car-front-sport.svg', 126, 92, .36)}
         <rect x="0" y="124" width="800" height="55" fill="#e5efed" fillOpacity=".08" />
         <rect x="0" y="198" width="800" height="36" fill="#e5efed" fillOpacity=".11" />
-        <ellipse cx="352" cy="277" rx="28" ry="19" fill="#ffb84e" opacity=".85" filter="url(#sceneBlur)" />
-        <ellipse cx="448" cy="277" rx="28" ry="19" fill="#ffb84e" opacity=".85" filter="url(#sceneBlur)" />
+        <ellipse cx="352" cy="277" rx="28" ry="19" fill="#ffb84e" opacity=".85" filter={'url(#' + idPrefix + '-blur)'} />
+        <ellipse cx="448" cy="277" rx="28" ry="19" fill="#ffb84e" opacity=".85" filter={'url(#' + idPrefix + '-blur)'} />
         <path d="M184 255h74" stroke="#f2bd74" strokeWidth="5" strokeLinecap="round" /><text x="96" y="251" fill="#f2bd74" fontSize="11" fontWeight="900">اجعل مركبتك واضحة</text>
         {badge('ضباب خلفي', 'استخدمه عند سوء الرؤية ثم أوقفه عند تحسنها', 'amber')}
         {bottomNote('الخلفي = وضوح المركبة', 'السطوع القوي ليس للاستخدام الدائم')}
@@ -621,7 +622,7 @@ function ScenarioDiagram({ kind }: { kind: string }) {
       <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="وقوف ليلاً مع إنارة الموضع">
         {defs}<rect width="800" height="360" fill="#061019" />
         <circle cx="638" cy="62" r="35" fill="#e4eeee" fillOpacity=".18" />
-        <circle cx="638" cy="62" r="60" fill="#dceceb" fillOpacity=".05" filter="url(#sceneBlur)" />
+        <circle cx="638" cy="62" r="60" fill="#dceceb" fillOpacity=".05" filter={'url(#' + idPrefix + '-blur)'} />
         <rect y="203" width="800" height="157" fill="#142830" />
         <path d="M0 260h800" stroke="#aec1c0" strokeOpacity=".14" strokeWidth="3" />
         <path d="M0 205h800" stroke="#6f898b" strokeOpacity=".20" strokeWidth="5" strokeDasharray="24 18" />
@@ -856,8 +857,8 @@ export default function PracticalInfo() {
         <section className="lighting-intro">
           <div className="intro-copy">
             <span className="lesson-eyebrow">درس قصير · حركة ← نتيجة ← تطبيق</span>
-            <h1>تعلّم المقبض والسيارة مع بعض.</h1>
-            <p>اختَر حركة واحدة، شاهد مكانها على المقبض، ثم شاهد أثرها مباشرة على السيارة. بدون قفزات أو تنقّل تلقائي.</p>
+            <h1>تعلّم الإنارة من الحركة إلى النتيجة.</h1>
+            <p>اختر وظيفة واحدة، حدد مكانها على المقبض، نفّذ الحركة، ثم شاهد ما يتغير على السيارة. كل خطوة تبقى أمامك بدون تنقّل تلقائي مزعج.</p>
           </div>
           <div className="intro-flow">
             <span><b>1</b> اختَر</span><i>→</i><span><b>2</b> راقب</span><i>→</i><span><b>3</b> طبّق</span>
