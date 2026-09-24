@@ -25,6 +25,10 @@ type LightItem = {
   caution: string;
 };
 
+type FlashLightItem = Omit<LightItem, 'key'> & {
+  key: 'flash';
+};
+
 const MAIN_LIGHTS: LightItem[] = [
   { key: 'off', title: 'إيقاف', subtitle: 'OFF', symbol: 'off', action: 'لف حلقة الإنارة إلى OFF.', use: 'وضع الحلقة الأساسي. قد تبقى بعض الإنارة النهارية أو الوظائف التلقائية حسب تجهيز السيارة.', caution: 'لا تفترض أن OFF يطفئ كل أضواء السيارة في كل طراز.' },
   { key: 'position', title: 'أضواء الموضع', subtitle: 'POSITION', symbol: 'position', action: 'لف الحلقة إلى رمز أضواء الموضع.', use: 'تجعل المركبة وحدودها أوضح في الإضاءة المحيطة الضعيفة، لكنها ليست بديلاً عن إنارة الطريق.', caution: 'عندما تحتاج رؤية الطريق بوضوح لا تعتمد عليها وحدها.' },
@@ -36,7 +40,7 @@ const MAIN_LIGHTS: LightItem[] = [
 ];
 
 const RING_LIGHTS = MAIN_LIGHTS.filter(item => item.key !== 'high');
-const FLASH_ITEM: LightItem = {
+const FLASH_ITEM: FlashLightItem = {
   key: 'flash',
   title: 'وميض العالي',
   subtitle: 'FLASH',
