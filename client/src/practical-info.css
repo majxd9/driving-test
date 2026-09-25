@@ -2051,3 +2051,325 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
   .scenario-pro-beam-core.left{left:23% !important}
   .scenario-pro-beam-core.right{right:23% !important}
 }
+
+
+/* =========================================================
+   VEHICLE EFFECT — LIGHTING + ROAD VISIBILITY PASS
+   Stronger physical-looking spill from the lamps onto the asphalt.
+   ========================================================= */
+
+/* Let the road read as a surface before any light is added. */
+.vehicle-lab .vehicle-showcase{
+  background:
+    radial-gradient(ellipse at 50% 76%,rgba(55,79,84,.18),transparent 48%),
+    linear-gradient(180deg,#07151c 0%,#071820 45%,#030c11 78%,#02070a 100%) !important;
+}
+
+.vehicle-lab .showcase-road{
+  z-index:3 !important;
+  background:
+    linear-gradient(90deg,
+      rgba(214,229,225,.07) 0 1px,
+      transparent 1px 24.5%,
+      rgba(214,229,225,.035) 24.5% 25%,
+      transparent 25% 49.5%,
+      rgba(214,229,225,.035) 49.5% 50%,
+      transparent 50% 74.5%,
+      rgba(214,229,225,.07) 74.5% 75%,
+      transparent 75%),
+    linear-gradient(180deg,#243c43 0%,#132a32 34%,#0a1c23 64%,#030a0f 100%) !important;
+  border-top-color:rgba(207,229,225,.17) !important;
+  box-shadow:
+    0 -24px 60px rgba(0,0,0,.30),
+    inset 0 24px 55px rgba(0,0,0,.10) !important;
+}
+
+/* Real-looking light landing area: the asphalt becomes brighter where the lamps hit. */
+.vehicle-lab .showcase-road::before{
+  content:'' !important;
+  position:absolute !important;
+  z-index:1 !important;
+  inset:-4% 0 0 !important;
+  pointer-events:none !important;
+  background:
+    radial-gradient(ellipse 22% 44% at 34% 43%,
+      rgba(255,246,205,.36) 0%,
+      rgba(255,232,164,.22) 20%,
+      rgba(255,216,132,.10) 42%,
+      transparent 72%),
+    radial-gradient(ellipse 22% 44% at 66% 43%,
+      rgba(255,246,205,.36) 0%,
+      rgba(255,232,164,.22) 20%,
+      rgba(255,216,132,.10) 42%,
+      transparent 72%),
+    radial-gradient(ellipse 38% 55% at 50% 66%,
+      rgba(255,236,176,.15) 0%,
+      rgba(255,221,144,.075) 38%,
+      transparent 76%),
+    linear-gradient(180deg,transparent 0 22%,rgba(255,231,160,.055) 48%,transparent 82%);
+  filter:blur(2px);
+  opacity:0;
+  transition:opacity .22s ease;
+}
+
+/* Preserve the road centre markings on top of the light spill. */
+.vehicle-lab .showcase-road::after{
+  z-index:4 !important;
+}
+
+/* Low beam: short, wide and visibly landed on the road. */
+.vehicle-lab .mode-low .showcase-road::before{
+  opacity:1;
+}
+.vehicle-lab .mode-low .showcase-road{
+  filter:brightness(1.08) saturate(1.02);
+}
+
+/* High beam: longer, brighter, broader pool. */
+.vehicle-lab .mode-high .showcase-road::before,
+.vehicle-lab .mode-flash .showcase-road::before{
+  opacity:1;
+  background:
+    radial-gradient(ellipse 24% 52% at 31% 33%,
+      rgba(255,250,224,.52) 0%,
+      rgba(255,239,184,.30) 18%,
+      rgba(255,221,142,.14) 42%,
+      transparent 74%),
+    radial-gradient(ellipse 24% 52% at 69% 33%,
+      rgba(255,250,224,.52) 0%,
+      rgba(255,239,184,.30) 18%,
+      rgba(255,221,142,.14) 42%,
+      transparent 74%),
+    radial-gradient(ellipse 43% 67% at 50% 58%,
+      rgba(255,239,182,.19) 0%,
+      rgba(255,220,139,.10) 38%,
+      transparent 78%);
+}
+.vehicle-lab .mode-high .showcase-road{
+  filter:brightness(1.14) saturate(1.03);
+}
+
+/* Fog: broad, low glow instead of a tall cone. */
+.vehicle-lab .mode-frontFog .showcase-road::before{
+  opacity:1;
+  background:
+    radial-gradient(ellipse 31% 26% at 33% 55%,
+      rgba(255,247,215,.26),
+      rgba(255,229,173,.12) 38%,
+      transparent 76%),
+    radial-gradient(ellipse 31% 26% at 67% 55%,
+      rgba(255,247,215,.26),
+      rgba(255,229,173,.12) 38%,
+      transparent 76%),
+    linear-gradient(180deg,transparent 0 46%,rgba(255,231,177,.08) 64%,transparent 86%);
+  filter:blur(3px);
+}
+.vehicle-lab .mode-frontFog .showcase-road{
+  filter:brightness(1.06);
+}
+
+/* Make the actual headlamps unmistakable. */
+.vehicle-lab .mode-low .lamp.front,
+.vehicle-lab .mode-high .lamp.front,
+.vehicle-lab .mode-flash .lamp.front{
+  z-index:24 !important;
+  mix-blend-mode:screen;
+}
+.vehicle-lab .mode-low .lamp.front{
+  width:15% !important;
+  height:15% !important;
+  box-shadow:
+    0 0 8px rgba(255,255,245,.98),
+    0 0 20px rgba(255,236,170,.90),
+    0 0 42px rgba(255,216,126,.62),
+    0 0 78px rgba(255,207,115,.28) !important;
+}
+.vehicle-lab .mode-high .lamp.front{
+  width:16% !important;
+  height:16% !important;
+  box-shadow:
+    0 0 10px rgba(255,255,248,1),
+    0 0 24px rgba(255,240,187,.96),
+    0 0 52px rgba(255,225,146,.78),
+    0 0 92px rgba(255,211,125,.42) !important;
+}
+.vehicle-lab .mode-flash .lamp.front{
+  width:16% !important;
+  height:16% !important;
+  box-shadow:
+    0 0 11px rgba(255,255,248,1),
+    0 0 26px rgba(255,239,183,1),
+    0 0 55px rgba(255,225,143,.84),
+    0 0 96px rgba(255,209,116,.45) !important;
+}
+
+/* Sharper beam core directly leaving each lamp. */
+.vehicle-lab .showcase-beam{
+  overflow:visible;
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,239,.72) 0%,
+      rgba(255,248,214,.48) 10%,
+      rgba(255,231,160,.21) 42%,
+      rgba(255,215,132,.065) 73%,
+      transparent 100%) !important;
+  filter:blur(1.2px) !important;
+}
+.vehicle-lab .showcase-beam::before{
+  content:'' !important;
+  position:absolute;
+  left:26%;
+  right:26%;
+  top:0;
+  bottom:0;
+  background:linear-gradient(180deg,
+    rgba(255,255,248,.60),
+    rgba(255,244,199,.26) 34%,
+    rgba(255,225,150,.06) 72%,
+    transparent);
+  filter:blur(3px);
+}
+.vehicle-lab .showcase-beam::after{
+  content:'' !important;
+  position:absolute;
+  left:50%;
+  top:0;
+  width:14%;
+  height:100%;
+  transform:translateX(-50%);
+  background:linear-gradient(180deg,
+    rgba(255,255,250,.66),
+    rgba(255,237,177,.20) 44%,
+    transparent 86%);
+  filter:blur(1.2px);
+}
+
+.vehicle-lab .beam-low .showcase-beam{
+  top:17% !important;
+  height:83% !important;
+  opacity:.82 !important;
+}
+.vehicle-lab .beam-low .beam-hotspot{
+  top:0 !important;
+}
+.vehicle-lab .beam-high .showcase-beam,
+.vehicle-lab .beam-flash .showcase-beam{
+  top:0 !important;
+  height:100% !important;
+  opacity:.98 !important;
+}
+.vehicle-lab .beam-frontFog .showcase-beam{
+  top:31% !important;
+  height:69% !important;
+  opacity:.60 !important;
+  filter:blur(3px) !important;
+}
+
+/* Make the illumination read beyond the road centre without looking like a solid triangle. */
+.vehicle-lab .mode-low .showcase-beams{
+  top:43% !important;
+  height:44% !important;
+}
+.vehicle-lab .mode-high .showcase-beams,
+.vehicle-lab .mode-flash .showcase-beams{
+  top:35% !important;
+  height:56% !important;
+}
+.vehicle-lab .mode-frontFog .showcase-beams{
+  top:50% !important;
+  height:34% !important;
+}
+
+/* Slight ambient bounce around the front of the car. */
+.vehicle-lab .mode-low .showcase-car::after,
+.vehicle-lab .mode-high .showcase-car::after,
+.vehicle-lab .mode-flash .showcase-car::after,
+.vehicle-lab .mode-frontFog .showcase-car::after{
+  content:'' !important;
+  position:absolute;
+  z-index:3;
+  left:15%;
+  right:15%;
+  bottom:14%;
+  height:32%;
+  border-radius:50%;
+  background:radial-gradient(ellipse,
+    rgba(255,237,180,.14) 0%,
+    rgba(255,225,150,.07) 36%,
+    transparent 74%);
+  filter:blur(10px);
+  pointer-events:none;
+}
+
+/* Keep the car clean and let the road receive most of the light. */
+.vehicle-lab .showcase-car{
+  z-index:18 !important;
+  filter:
+    drop-shadow(0 28px 28px rgba(0,0,0,.62))
+    drop-shadow(0 0 16px rgba(255,234,166,.08)) !important;
+}
+
+/* High beam becomes visibly longer than low beam. */
+.vehicle-lab .mode-low .showcase-beams{
+  transform:translateX(-50%) scaleY(.88);
+  transform-origin:50% 0;
+}
+.vehicle-lab .mode-high .showcase-beams,
+.vehicle-lab .mode-flash .showcase-beams{
+  transform:translateX(-50%) scaleY(1.12);
+  transform-origin:50% 0;
+}
+
+/* Oncoming vehicle should also carry visible headlamp points. */
+.vehicle-lab .showcase-oncoming{
+  z-index:28 !important;
+}
+.vehicle-lab .oncoming-light{
+  background:
+    radial-gradient(circle,
+      #ffffff 0 11%,
+      rgba(255,249,219,.95) 24%,
+      rgba(255,230,163,.55) 46%,
+      transparent 77%) !important;
+  box-shadow:0 0 18px rgba(255,236,176,.70),0 0 36px rgba(255,222,140,.32);
+}
+
+/* Mobile: retain road visibility, not just the car. */
+@media(max-width:760px){
+  .vehicle-lab .showcase-road::before{
+    filter:blur(2.5px);
+  }
+  .vehicle-lab .mode-low .showcase-beams{
+    top:53% !important;
+    height:39% !important;
+  }
+  .vehicle-lab .mode-high .showcase-beams,
+  .vehicle-lab .mode-flash .showcase-beams{
+    top:44% !important;
+    height:50% !important;
+  }
+  .vehicle-lab .mode-frontFog .showcase-beams{
+    top:55% !important;
+    height:31% !important;
+  }
+  .vehicle-lab .mode-low .showcase-road,
+  .vehicle-lab .mode-high .showcase-road,
+  .vehicle-lab .mode-flash .showcase-road{
+    filter:brightness(1.08);
+  }
+}
+@media(max-width:430px){
+  .vehicle-lab .mode-low .showcase-beams{
+    top:56% !important;
+    height:37% !important;
+  }
+  .vehicle-lab .mode-high .showcase-beams,
+  .vehicle-lab .mode-flash .showcase-beams{
+    top:48% !important;
+    height:46% !important;
+  }
+  .vehicle-lab .mode-frontFog .showcase-beams{
+    top:57% !important;
+    height:29% !important;
+  }
+}
