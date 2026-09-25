@@ -477,7 +477,7 @@ function ScenarioSvg({ scenario, perspective, oncoming, setOncoming }: { scenari
                   <image href="/spirit/car-front.svg" x="626" y="86" width="126" height="82" />
                   <ellipse cx="689" cy="140" rx="72" ry="44" fill="#fff4c7" opacity=".18" filter={'url(#' + id + '_blur)'} />
                   <path d="M450 330L675 154" stroke="#fff1c4" strokeOpacity=".36" strokeWidth="30" strokeLinecap="round" />
-                  <Caption titleText="مركبة مقابلة = اخفض العالي" bodyText="ضوء مرتفع باتجاه عين السائق المقابل يرفع الإبهار؛ هنا يجب الرجوع للمنخفض." tone="red" width="455" />
+                  <Caption titleText="مركبة مقابلة = اخفض العالي" bodyText="ضوء مرتفع باتجاه عين السائق المقابل يرفع الإبهار؛ هنا يجب الرجوع للمنخفض." tone="red" width={455} />
                 </>
               )}
               <g onClick={() => setOncoming(!oncoming)} cursor="pointer">
@@ -501,7 +501,7 @@ function ScenarioSvg({ scenario, perspective, oncoming, setOncoming }: { scenari
                 <path d="M450 330L230 283M450 330L670 283" stroke="#fff2b5" strokeOpacity=".58" strokeWidth="13" strokeLinecap="round" />
               </g>
               <image href="/spirit/car-front.svg" x="370" y="252" width="160" height="104" />
-              <Caption titleText="الضباب يشتت الضوء" bodyText="الضوء الأعلى ينتشر داخل الضباب ويصنع وهجاً؛ الحزمة المنخفضة تبقى أقرب للأرض." tone="white" width="470" />
+              <Caption titleText="الضباب يشتت الضوء" bodyText="الضوء الأعلى ينتشر داخل الضباب ويصنع وهجاً؛ الحزمة المنخفضة تبقى أقرب للأرض." tone="white" width={470} />
               <g>
                 <rect x="52" y="372" width="360" height="54" rx="18" fill="#243638" fillOpacity=".85" stroke="#eaf2ef" strokeOpacity=".18" />
                 <circle cx="77" cy="399" r="8" fill="#f1d488" />
@@ -524,7 +524,7 @@ function ScenarioSvg({ scenario, perspective, oncoming, setOncoming }: { scenari
               <ellipse cx="450" cy="304" rx="170" ry="72" fill="#e7eab9" opacity=".08" />
               <circle cx="405" cy="302" r="11" fill="#dfeab6" /><circle cx="495" cy="302" r="11" fill="#dfeab6" />
               <path d="M330 270Q450 216 570 270" stroke="#dfebbc" strokeOpacity=".18" strokeWidth="2" fill="none" />
-              <Caption titleText="أضواء الموضع" bodyText="في الغسق الهدف أن تُرى المركبة وحدودها بوضوح؛ ليست بديلاً عن إنارة الطريق." width="470" />
+              <Caption titleText="أضواء الموضع" bodyText="في الغسق الهدف أن تُرى المركبة وحدودها بوضوح؛ ليست بديلاً عن إنارة الطريق." width={470} />
               <g>
                 <rect x="52" y="373" width="300" height="54" rx="18" fill="#162724" stroke="#e0e8bb" strokeOpacity=".26" />
                 <text x="78" y="397" fill="#edf4d9" fontSize="12" fontWeight="900">احفظها هكذا</text>
@@ -547,7 +547,7 @@ function ScenarioSvg({ scenario, perspective, oncoming, setOncoming }: { scenari
               <path d="M599 226L624 241L596 248Z" fill="#86e4da" />
               <circle cx="510" cy="326" r="20" fill="#f4ae57" opacity=".20" />
               <circle cx="510" cy="326" r="11" fill="#f4ae57" />
-              <Caption titleText="الغماز قبل المناورة" bodyText="راقب المرآة والنقطة العمياء، أعطِ الإشارة، ثم نفّذ عندما يصبح الانتقال آمناً." width="455" />
+              <Caption titleText="الغماز قبل المناورة" bodyText="راقب المرآة والنقطة العمياء، أعطِ الإشارة، ثم نفّذ عندما يصبح الانتقال آمناً." width={455} />
               <g>
                 <rect x="52" y="373" width="420" height="54" rx="18" fill="#061218" stroke="#86e4da" strokeOpacity=".20" />
                 <text x="78" y="397" fill="#c8f2ec" fontSize="11.5" fontWeight="900">التسلسل الصحيح</text>
