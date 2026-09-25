@@ -1839,3 +1839,215 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
 .vehicle-lab .vehicle-showcase{
   display:block !important;
 }
+
+/* =========================================================
+   REALISM PASS 3 — clearer road + readable headlight spill
+   Exterior-only scenes: front/rear vehicle views.
+   ========================================================= */
+
+.scenario-pro-road{
+  inset:39% -14% -15% -14% !important;
+  transform:perspective(900px) rotateX(58deg) !important;
+  background:
+    linear-gradient(90deg,
+      transparent 0 16.5%,
+      rgba(224,235,231,.18) 16.8% 17.2%,
+      transparent 17.5% 49.45%,
+      rgba(245,243,226,.72) 49.65% 50.35%,
+      transparent 50.55% 82.5%,
+      rgba(224,235,231,.18) 82.8% 83.2%,
+      transparent 83.5% 100%),
+    linear-gradient(180deg,#263d45 0%,#142a32 35%,#0a1b22 66%,#02080d 100%) !important;
+  border-top:1px solid rgba(224,236,232,.18) !important;
+  box-shadow:inset 0 18px 35px rgba(0,0,0,.18);
+}
+
+.scenario-pro-road .road-edge{
+  z-index:3;
+  top:-3%;
+  bottom:-6%;
+  width:4px;
+  background:linear-gradient(180deg,
+    rgba(232,240,236,.32),
+    rgba(232,240,236,.68) 38%,
+    rgba(232,240,236,.36) 78%,
+    rgba(232,240,236,.08));
+  box-shadow:0 0 8px rgba(226,238,233,.14);
+  opacity:.92;
+}
+.scenario-pro-road .edge-left{left:16.8% !important;transform:rotate(8deg)}
+.scenario-pro-road .edge-right{right:16.8% !important;transform:rotate(-8deg)}
+
+.scenario-pro-road .road-center{
+  z-index:4;
+  width:5px;
+  top:-1%;
+  bottom:-7%;
+  background:repeating-linear-gradient(
+    to bottom,
+    rgba(248,245,220,.82) 0 24px,
+    rgba(248,245,220,.78) 24px 31px,
+    transparent 31px 56px
+  );
+  filter:drop-shadow(0 0 5px rgba(248,245,220,.20));
+  opacity:.92;
+}
+
+.scenario-pro-road::before{
+  content:'';
+  position:absolute;
+  z-index:1;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,
+      transparent 0 31.5%,
+      rgba(214,229,225,.055) 31.8% 32.15%,
+      transparent 32.45% 67.55%,
+      rgba(214,229,225,.055) 67.85% 68.2%,
+      transparent 68.5% 100%);
+  opacity:.85;
+}
+
+.scenario-pro-road::after{
+  z-index:2;
+  left:8%;
+  right:8%;
+  top:6%;
+  bottom:3%;
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse at 34% 58%,rgba(255,238,190,.18),transparent 30%),
+    radial-gradient(ellipse at 66% 58%,rgba(255,238,190,.18),transparent 30%),
+    radial-gradient(ellipse at 50% 34%,rgba(255,245,207,.07),transparent 28%);
+  filter:blur(8px);
+  opacity:1;
+}
+
+.scenario-pro-beams{
+  z-index:6 !important;
+}
+.scenario-pro-beam{
+  top:60% !important;
+  width:23% !important;
+  height:35% !important;
+  background:linear-gradient(180deg,
+    rgba(255,250,224,.40) 0%,
+    rgba(255,237,185,.22) 30%,
+    rgba(255,222,143,.09) 70%,
+    transparent 100%) !important;
+  clip-path:polygon(45% 0,55% 0,100% 100%,0 100%) !important;
+  filter:blur(6px) !important;
+  opacity:.48 !important;
+}
+.scenario-pro-beam.left{left:29% !important}
+.scenario-pro-beam.right{right:29% !important}
+
+.scenario-pro-beam-core{
+  top:62% !important;
+  width:13% !important;
+  height:31% !important;
+  background:linear-gradient(180deg,
+    rgba(255,255,236,.42),
+    rgba(255,235,175,.16) 55%,
+    transparent 100%) !important;
+  filter:blur(3px) !important;
+  opacity:.48 !important;
+}
+.scenario-pro-beam-core.left{left:34% !important}
+.scenario-pro-beam-core.right{right:34% !important}
+
+.scenario-low .scenario-pro-beam{
+  top:67% !important;
+  height:27% !important;
+  opacity:.43 !important;
+}
+.scenario-low .scenario-pro-beam-core{
+  top:68% !important;
+  height:24% !important;
+  opacity:.40 !important;
+}
+.scenario-high .scenario-pro-beam{
+  top:54% !important;
+  height:43% !important;
+  opacity:.58 !important;
+}
+.scenario-high .scenario-pro-beam-core{
+  top:56% !important;
+  height:40% !important;
+  opacity:.52 !important;
+}
+.scenario-fog .scenario-pro-beam{
+  top:69% !important;
+  height:23% !important;
+  opacity:.30 !important;
+  filter:blur(9px) !important;
+}
+.scenario-fog .scenario-pro-beam-core{
+  top:71% !important;
+  height:20% !important;
+  opacity:.24 !important;
+  filter:blur(7px) !important;
+}
+.scenario-high.has-oncoming .scenario-pro-beam.right{
+  opacity:.12 !important;
+}
+
+.scenario-pro-vehicle-wrap{
+  z-index:18 !important;
+}
+.scenario-pro-car{
+  filter:saturate(.78) contrast(1.08) brightness(.95)
+    drop-shadow(0 18px 28px rgba(0,0,0,.68)) !important;
+}
+
+@media(max-width:760px){
+  .scenario-pro-road{
+    inset:40% -18% -17% !important;
+    transform:perspective(720px) rotateX(58deg) !important;
+  }
+  .scenario-pro-road .road-edge{
+    width:3px;
+  }
+  .scenario-pro-road .edge-left{left:14.5% !important}
+  .scenario-pro-road .edge-right{right:14.5% !important}
+  .scenario-pro-road .road-center{
+    width:4px;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(248,245,220,.84) 0 20px,
+      rgba(248,245,220,.78) 20px 27px,
+      transparent 27px 48px
+    );
+  }
+  .scenario-pro-beam{
+    width:31% !important;
+    height:34% !important;
+  }
+  .scenario-pro-beam.left{left:20% !important}
+  .scenario-pro-beam.right{right:20% !important}
+  .scenario-pro-beam-core{
+    width:17% !important;
+  }
+  .scenario-pro-beam-core.left{left:27% !important}
+  .scenario-pro-beam-core.right{right:27% !important}
+  .scenario-low .scenario-pro-beam{top:66% !important;height:28% !important}
+  .scenario-high .scenario-pro-beam{top:53% !important;height:44% !important}
+  .scenario-fog .scenario-pro-beam{top:69% !important;height:22% !important}
+}
+
+@media(max-width:430px){
+  .scenario-pro-road{
+    inset:42% -24% -18% !important;
+  }
+  .scenario-pro-road .edge-left{left:11% !important}
+  .scenario-pro-road .edge-right{right:11% !important}
+  .scenario-pro-beam{
+    width:37% !important;
+  }
+  .scenario-pro-beam.left{left:13% !important}
+  .scenario-pro-beam.right{right:13% !important}
+  .scenario-pro-beam-core{width:20% !important}
+  .scenario-pro-beam-core.left{left:23% !important}
+  .scenario-pro-beam-core.right{right:23% !important}
+}
