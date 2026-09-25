@@ -1,509 +1,425 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-type MainLightKey =
-  | 'off'
-  | 'position'
-  | 'auto'
-  | 'low'
-  | 'high'
-  | 'frontFog'
-  | 'rearFog';
-
+type MainLightKey = 'off' | 'position' | 'auto' | 'low' | 'high' | 'frontFog' | 'rearFog';
 type SignalKey = 'left' | 'right' | 'hazard';
-type TabKey = 'practice' | 'scenarios' | 'automatic';
 type ControlGroup = 'ring' | 'lever';
-type VehicleView = 'front' | 'rear';
+type Perspective = 'driver' | 'external';
 
 type LightItem = {
   key: MainLightKey;
   title: string;
   subtitle: string;
-  symbol: 'off' | 'position' | 'auto' | 'low' | 'high' | 'frontFog' | 'rearFog' | 'flash';
+  short: string;
   action: string;
   use: string;
   caution: string;
 };
 
-type FlashLightItem = Omit<LightItem, 'key'> & {
-  key: 'flash';
+type Scenario = {
+  id: string;
+  tag: string;
+  title: string;
+  control: MainLightKey | SignalKey;
+  driverTitle: string;
+  externalTitle: string;
+  goal: string;
+  steps: string[];
+  note: string;
 };
 
 const MAIN_LIGHTS: LightItem[] = [
-  { key: 'off', title: 'إيقاف', subtitle: 'OFF', symbol: 'off', action: 'لف حلقة الإنارة إلى OFF.', use: 'وضع الحلقة الأساسي. قد تبقى بعض الإنارة النهارية أو الوظائف التلقائية حسب تجهيز السيارة.', caution: 'لا تفترض أن OFF يطفئ كل أضواء السيارة في كل طراز.' },
-  { key: 'position', title: 'أضواء الموضع', subtitle: 'POSITION', symbol: 'position', action: 'لف الحلقة إلى رمز أضواء الموضع.', use: 'تجعل المركبة وحدودها أوضح في الإضاءة المحيطة الضعيفة، لكنها ليست بديلاً عن إنارة الطريق.', caution: 'عندما تحتاج رؤية الطريق بوضوح لا تعتمد عليها وحدها.' },
-  { key: 'auto', title: 'أوتوماتيك', subtitle: 'AUTO', symbol: 'auto', action: 'لف الحلقة إلى AUTO إذا كانت السيارة مجهزة به.', use: 'تترك للنظام قرار تشغيل المصابيح وفق الحساسات والتجهيز الموجود.', caution: 'AUTO يختلف من سيارة لأخرى وقد لا يتحكم بكل وظائف الإنارة.' },
-  { key: 'low', title: 'الضوء المنخفض', subtitle: 'LOW BEAM', symbol: 'low', action: 'لف الحلقة إلى رمز الضوء المنخفض.', use: 'إنارة أساسية للطريق أمامك مع حزمة موجهة للأسفل لتقليل إبهار الآخرين.', caution: 'اختيار الضوء وحده لا يكفي؛ السرعة والرؤية وحالة الطريق مهمة أيضاً.' },
-  { key: 'high', title: 'الضوء العالي', subtitle: 'HIGH BEAM', symbol: 'high', action: 'ادفع الذراع للأمام في الأنظمة التي تستخدم هذه الحركة للعالي.', use: 'لرؤية أبعد عندما يكون الطريق مناسباً ولا يوجد مستخدم طريق قد يتأذى من الضوء.', caution: 'عند ظهور مركبة أو احتمال إبهار مستخدم طريق، اخفض العالي.' },
-  { key: 'frontFog', title: 'ضباب أمامي', subtitle: 'FRONT FOG', symbol: 'frontFog', action: 'فعّل الضباب الأمامي إذا كانت السيارة مجهزة به.', use: 'للظروف التي تصبح فيها الرؤية صعبة عندما تكون وظيفة الضباب مناسبة للتجهيز والطريق.', caution: 'المصباح لا يعوض عن خفض السرعة وزيادة مسافة الأمان.' },
-  { key: 'rearFog', title: 'ضباب خلفي', subtitle: 'REAR FOG', symbol: 'rearFog', action: 'فعّل الضباب الخلفي عند الحاجة وفي السيارة المجهزة به.', use: 'يجعل المركبة أوضح لمن خلفك عندما تكون الرؤية سيئة جداً.', caution: 'ضوءه قوي؛ أوقفه عندما تتحسن الرؤية.' },
+  { key: 'off', title: 'إيقاف', subtitle: 'OFF', short: 'لا توجد إنارة مختارة من الحلقة.', action: 'لف الحلقة إلى وضع OFF.', use: 'وضع الحلقة الأساسي. قد تبقى وظائف أخرى حسب تجهيز السيارة.', caution: 'ترتيب الأوضاع يختلف حسب الشركة والموديل.' },
+  { key: 'position', title: 'أضواء الموضع', subtitle: 'POSITION', short: 'تجعل المركبة أوضح عند ضعف الإضاءة المحيطة.', action: 'لف الحلقة إلى رمز أضواء الموضع.', use: 'هدفها الأساسي أن تُرى المركبة، لا أن تنير الطريق أمامك.', caution: 'لا تعتمد عليها وحدها لرؤية الطريق ليلاً.' },
+  { key: 'auto', title: 'أوتوماتيك', subtitle: 'AUTO', short: 'السيارة تقرر تشغيل المصابيح وفق تجهيزها وحساساتها.', action: 'لف الحلقة إلى AUTO إذا كانت السيارة مجهزة به.', use: 'تترك قرار تشغيل بعض المصابيح للنظام.', caution: 'سلوك AUTO يختلف بين السيارات.' },
+  { key: 'low', title: 'الضوء المنخفض', subtitle: 'LOW BEAM', short: 'حزمة قريبة من سطح الطريق لتقليل إبهار الآخرين.', action: 'لف الحلقة إلى رمز الضوء المنخفض.', use: 'إنارة الطريق أمامك مع توجيه الحزمة إلى الأسفل. المشهد يستخدم 30 متراً كمسافة تعليمية تقريبية.', caution: 'الرقم في المشهد توضيحي؛ الرؤية والسرعة وحالة الطريق هي الأساس.' },
+  { key: 'high', title: 'الضوء العالي', subtitle: 'HIGH BEAM', short: 'حزمة بعيدة للرؤية على طريق مظلم وخالٍ من مستخدمي الطريق.', action: 'ادفع الذراع للأمام في الأنظمة التي تستخدم هذه الحركة.', use: 'يساعد على رؤية أبعد عندما لا يوجد مستخدم طريق قد يتأذى من الضوء.', caution: 'عند ظهور مركبة مقابلة أو احتمال إبهارها، اخفض العالي.' },
+  { key: 'frontFog', title: 'ضباب أمامي', subtitle: 'FRONT FOG', short: 'إنارة منخفضة تساعد على إبقاء تفاصيل الطريق أوضح في الرؤية السيئة.', action: 'فعّل الضباب الأمامي إذا كانت السيارة مجهزة به.', use: 'المشهد يوضح الفرق بين الضوء المنتشر داخل الضباب والحزمة المنخفضة قرب سطح الطريق.', caution: 'المصباح لا يعوض عن خفض السرعة وزيادة مسافة الأمان.' },
+  { key: 'rearFog', title: 'ضباب خلفي', subtitle: 'REAR FOG', short: 'يجعل المركبة أوضح لمن خلفك عندما تكون الرؤية سيئة جداً.', action: 'فعّل الضباب الخلفي عند الحاجة وفي السيارة المجهزة به.', use: 'وظيفته الأساسية أن تُرى المركبة من الخلف.', caution: 'شدته عالية؛ أوقفه عند تحسن الرؤية.' },
 ];
 
 const RING_LIGHTS = MAIN_LIGHTS.filter(item => item.key !== 'high');
-const FLASH_ITEM: FlashLightItem = {
-  key: 'flash',
-  title: 'وميض العالي',
-  subtitle: 'FLASH',
-  symbol: 'flash',
-  action: 'اسحب الذراع باتجاهك لحظياً في الأنظمة التي تستخدم هذه الحركة.',
-  use: 'ومضة سريعة من الضوء العالي بدلاً من إبقائه مفعلاً.',
-  caution: 'حركة المقبض تختلف بين السيارات؛ هذه محاكاة تعليمية للفكرة الشائعة.',
-};
 
-const SIGNALS = [
-  { key: 'right' as const, title: 'غماز يمين', subtitle: 'UP ↑', symbol: 'right' as const, action: 'ارفع الذراع للأعلى.', use: 'للإشارة إلى نيتك بالانعطاف أو الانتقال نحو اليمين قبل المناورة.', caution: 'مثال: افحص الطريق والمسار ثم استخدم الغماز قبل الخروج أو الانعطاف.' },
-  { key: 'left' as const, title: 'غماز يسار', subtitle: 'DOWN ↓', symbol: 'left' as const, action: 'اخفض الذراع للأسفل.', use: 'للإشارة إلى نيتك بالانعطاف أو الانتقال نحو اليسار قبل المناورة.', caution: 'مثال: مرآة → نقطة عمياء → غماز → انتقال تدريجي عندما يكون آمناً.' },
-  { key: 'hazard' as const, title: 'التحذير الرباعي', subtitle: 'HAZARD', symbol: 'hazard' as const, action: 'اضغط زر التحذير الرباعي المنفصل.', use: 'لإظهار تحذير متزامن للاتجاهين عند الحاجة بسبب حالة المركبة أو الطريق.', caution: 'مثال: توقف اضطراري أو مركبة متوقفة في موضع قد يشكل خطراً.' },
+const SIGNAL_ITEMS = [
+  { key: 'right' as const, title: 'غماز يمين', subtitle: 'UP ↑', short: 'إشارة إلى نيتك بالانعطاف أو تغيير المسار نحو اليمين.', action: 'ارفع الذراع للأعلى.', use: 'جزء من مناورة كاملة تبدأ بمراقبة الطريق والمسار.', caution: 'الغماز ينبه الآخرين ولا يمنحك أولوية وحده.' },
+  { key: 'left' as const, title: 'غماز يسار', subtitle: 'DOWN ↓', short: 'إشارة إلى نيتك بالانعطاف أو تغيير المسار نحو اليسار.', action: 'اخفض الذراع للأسفل.', use: 'استخدمه بعد التأكد من أن المناورة آمنة.', caution: 'مرآة → نقطة عمياء → غماز → انتقال تدريجي.' },
+  { key: 'hazard' as const, title: 'التحذير الرباعي', subtitle: 'HAZARD', short: 'يشغل إشارات التحذير للجهتين معاً.', action: 'اضغط زر التحذير الرباعي المنفصل.', use: 'للتنبيه إلى توقف أو حالة تجعل المركبة تحتاج تحذيراً واضحاً.', caution: 'هو مختلف عن غماز الانعطاف.' },
 ];
 
-const AUTOMATIC_LIGHTS = [
-  { key: 'drl', title: 'أضواء النهار', subtitle: 'DRL', description: 'قد تعمل تلقائياً أثناء النهار في السيارات المجهزة بها، وليست بالضرورة وظيفة مستقلة على المقبض.', icon: 'sun' as const },
-  { key: 'brake', title: 'أضواء الفرامل', subtitle: 'STOP', description: 'تعمل عند ضغط دواسة الفرامل، لذلك تتعرف عليها من حالة السيارة وليس من وضع المقبض.', icon: 'brake' as const },
-  { key: 'reverse', title: 'ضوء الرجوع', subtitle: 'REVERSE', description: 'يعمل عند اختيار الرجوع للخلف في المركبة المجهزة به، ويختلف تصميمه من سيارة لأخرى.', icon: 'reverse' as const },
+const SCENARIOS: Scenario[] = [
+  { id: 'low', tag: 'الضوء المنخفض', title: 'ليل مزدحم · حزمة قريبة وموجهة للأسفل', control: 'low', driverTitle: 'من منظور السائق: الطريق مضاء قريباً أمامك.', externalTitle: 'من الخارج: الحزمة منخفضة ولا تصعد إلى مستوى عيني السائق المقابل.', goal: 'فهم أن الضوء المنخفض يبحث عن رؤية مناسبة مع تقليل الإبهار، لا عن أقصى مدى ممكن.', steps: ['طريق ليلي مع حركة مرور', 'حزمة مائلة نحو سطح الطريق', 'مدى تعليمي يقارب 30 م', 'تجنب إضاءة وجه السائق المقابل'], note: 'الرسم تعليمي لتوضيح اتجاه الحزمة، وليس قياساً ضوئياً لطراز سيارة محدد.' },
+  { id: 'high', tag: 'الضوء العالي', title: 'طريق خارجي مظلم · مدى أبعد ثم خفض فوري', control: 'high', driverTitle: 'من منظور السائق: مدى رؤية أطول على طريق مظلم.', externalTitle: 'من الخارج: عند ظهور مركبة مقابلة يجب ألا تبقى الحزمة باتجاهها.', goal: 'تعلم التحول بين العالي والمنخفض حسب وجود مستخدم طريق مقابل.', steps: ['طريق خارجي مظلم', 'تفعيل العالي', 'ظهور مركبة مقابلة', 'خفض العالي والعودة للمنخفض'], note: 'اضغط زر «أظهر سيارة مقابلة» داخل المشهد لترى التغيير التعليمي.' },
+  { id: 'fog', tag: 'أضواء الضباب', title: 'ضباب كثيف · جدار أبيض مقابل طريق أوضح', control: 'frontFog', driverTitle: 'من منظور السائق: الضوء المرتفع يتشتت داخل الضباب، والحزمة المنخفضة تبقى أقرب للطريق.', externalTitle: 'من الخارج: الحزمة المنخفضة تتحرك قرب سطح الطريق بدلاً من الارتفاع داخل الضباب.', goal: 'تمييز تشتت الضوء داخل الضباب عن توزيع منخفض وموجّه قرب الطريق.', steps: ['ضباب كثيف', 'انتشار الضوء يضعف التباين', 'حزمة منخفضة قرب الطريق', 'سرعة أقل ومسافة توقف أكبر'], note: 'الضباب يحد الرؤية مهما كان نوع المصباح؛ القيادة الآمنة تعتمد أيضاً على السرعة.' },
+  { id: 'position', tag: 'أضواء الموضع', title: 'غسق · الهدف أن تُرى المركبة', control: 'position', driverTitle: 'من منظور السائق: هذه ليست إنارة طريق بعيدة.', externalTitle: 'من الخارج: حدود المركبة تصبح أوضح في الإضاءة المحيطة الضعيفة.', goal: 'حفظ الفرق: Position = أن تُرى، وليس أن ترى الطريق لمسافة طويلة.', steps: ['غسق أو إضاءة محيطة ضعيفة', 'مركبة متوقفة بأمان', 'إظهار حدود المركبة', 'لا تعتمد عليها لإنارة الطريق'], note: 'التشغيل الفعلي يعتمد على السيارة والأنظمة والظروف.' },
+  { id: 'signals', tag: 'الغمازات', title: 'تقاطع · الإشارة تسبق المناورة', control: 'right', driverTitle: 'من منظور السائق: فحص ثم إشارة ثم مناورة.', externalTitle: 'من الخارج: السائقون الآخرون يرون إشارة الاتجاه قبل الحركة.', goal: 'ربط الغماز بتسلسل القيادة بدلاً من اعتباره أمراً منفصلاً عن فحص الطريق.', steps: ['راقب التقاطع', 'حدد اتجاه المناورة', 'استخدم الغماز المناسب', 'نفّذ عندما يكون آمناً'], note: 'الغماز وسيلة تواصل مع مستخدمي الطريق.' },
+  { id: 'hazard', tag: 'التحذير الرباعي', title: 'كتف الطريق · توقف طارئ', control: 'hazard', driverTitle: 'من منظور السائق: حالة توقف غير اعتيادية تحتاج تحذيراً.', externalTitle: 'من الخارج: الإشارات الأربع تجعل المركبة واضحة للاتجاهين.', goal: 'تمييز التحذير الرباعي عن الغماز الذي يحدد اتجاهاً واحداً.', steps: ['توقف بأمان قدر الإمكان', 'اجعل المركبة واضحة', 'فعّل التحذير عند الحاجة', 'اتخذ الإجراء الآمن التالي'], note: 'هذا المثال يشرح فكرة التحذير العام حول مركبة متوقفة.' },
+  { id: 'rear', tag: 'الفرامل والرجوع', title: 'الخلفية · الأحمر للفرامل والأبيض للرجوع', control: 'rearFog', driverTitle: 'من منظور السائق: تغيّر حالة السيارة هو الذي يشغّل هذه الوظائف.', externalTitle: 'من الخلف: الأحمر يوضح الكبح، والأبيض يكشف منطقة الرجوع للخلف.', goal: 'تمييز الأضواء التي تتفاعل مع حالة السيارة بدلاً من مقبض الإنارة.', steps: ['ضغط الفرامل → أحمر قوي', 'اختيار الرجوع → أبيض', 'راقب ما يراه من خلفك', 'استخدم وضع السيارة الصحيح'], note: 'المشهد يشرح الوظيفة البصرية ولا يفترض وجود زر مستقل لهذه الأضواء.' },
 ];
 
-const SCENARIOS = [
-  { id: 'roundabout-right', tag: 'دوّار', title: 'الخروج من الدوّار إلى اليمين', control: 'right' as const, goal: 'الإشارة تأتي ضمن مناورة كاملة وليست بديلاً عن فحص الطريق.', sequence: ['راقب المرآة والمسار', 'حدد المخرج', 'غماز اليمين عند الحاجة', 'اخرج ضمن المسار'], note: 'الرسم يشرح الفكرة بصرياً؛ تخطيط الطريق والشواخص وحالة المرور هي المرجع الفعلي.', diagram: 'roundabout' },
-  { id: 'lane-change', tag: 'تغيير مسار', title: 'الانتقال إلى المسار الأيسر', control: 'left' as const, goal: 'اربط غماز اليسار بتسلسل الفحص وليس كإذن للانتقال.', sequence: ['مرآة', 'نقطة عمياء', 'غماز يسار', 'انتقال تدريجي'], note: 'الغماز يخبر الآخرين بنيتك ولا يمنحك أولوية وحده.', diagram: 'lane-left' },
-  { id: 'night-oncoming', tag: 'قيادة ليلاً', title: 'مركبة مقابلة على طريق مظلم', control: 'low' as const, goal: 'عندما يظهر مستخدم طريق مقابل، تتحول من العالي إلى المنخفض.', sequence: ['لاحظ المركبة المقابلة', 'أوقف العالي', 'انتقل للمنخفض', 'حافظ على سرعة مناسبة'], note: 'الهدف رؤية الطريق بدون إبهار الطرف المقابل.', diagram: 'oncoming' },
-  { id: 'empty-road', tag: 'طريق مظلم', title: 'طريق خالٍ ورؤية تحتاج مدى أبعد', control: 'high' as const, goal: 'العالي يفيد عندما يكون المجال أمامك مناسباً وخالياً من مستخدمي الطريق.', sequence: ['تحقق من خلو الطريق', 'فعّل العالي', 'راقب المدى', 'اخفضه عند ظهور مستخدم طريق'], note: 'هذا مثال تدريبي يفترض أن الطريق يسمح باستخدام العالي.', diagram: 'open-road' },
-  { id: 'fog', tag: 'ضباب', title: 'ضباب كثيف ومدى رؤية منخفض', control: 'frontFog' as const, goal: 'الرؤية الضعيفة تعني إنارة مناسبة وسرعة أقل ومسافة توقف أكبر.', sequence: ['خفف السرعة', 'اختر الإنارة المناسبة', 'فعّل الضباب إن كانت السيارة مجهزة', 'راقب مسافة التوقف'], note: 'المصباح لا يعوض عن خفض السرعة عندما تقل الرؤية.', diagram: 'fog' },
-  { id: 'hazard-stop', tag: 'توقف اضطراري', title: 'مركبة متوقفة في موضع خطر', control: 'hazard' as const, goal: 'تمييز التحذير الرباعي عن غماز الانعطاف.', sequence: ['توقف بأمان قدر الإمكان', 'اجعل المركبة واضحة', 'فعّل التحذير عند الحاجة', 'اتخذ الإجراء الآمن التالي'], note: 'التحذير الرباعي حالة مختلفة عن الإشارة عند الانعطاف.', diagram: 'hazard' },
-  { id: 'turn-right', tag: 'تقاطع', title: 'انعطاف يمين', control: 'right' as const, goal: 'ثبّت التسلسل: مرآة → غماز → تموضع → مناورة.', sequence: ['افحص المرآة', 'استخدم غماز اليمين', 'تموضع صحيح', 'انعطف بأمان'], note: 'الإشارة وسيلة تنبيه ولا تغني عن مراقبة الطريق.', diagram: 'turn-right' },
-  { id: 'rear-fog', tag: 'رؤية شديدة السوء', title: 'استخدام الضباب الخلفي', control: 'rearFog' as const, goal: 'فهم وظيفة الضباب الخلفي من منظور السائق خلفك.', sequence: ['تحقق من سوء الرؤية', 'فعّل الضباب الخلفي عند الحاجة', 'راقب السائقين خلفك', 'أوقفه عند تحسن الرؤية'], note: 'الضباب الخلفي شديد السطوع ويستخدم عندما تكون الحاجة واضحة.', diagram: 'rear-fog' },
-  { id: 'park-night', tag: 'وقوف ليلاً', title: 'مركبة متوقفة وتحتاج أن تكون واضحة', control: 'position' as const, goal: 'تمييز إنارة الموضع عن إنارة الطريق.', sequence: ['اختر مكان الوقوف الآمن', 'استخدم إنارة الموضع إذا لزم', 'اجعل المركبة واضحة', 'لا تعتمد عليها لإنارة الطريق'], note: 'التشغيل الفعلي يعتمد أيضاً على قواعد المكان وتجهيز السيارة.', diagram: 'park' },
-  { id: 'overtake', tag: 'تجاوز', title: 'بدء مناورة تجاوز', control: 'left' as const, goal: 'الإشارة جزء من المناورة وليست المناورة نفسها.', sequence: ['تأكد من السماح بالتجاوز', 'مرآة ونقطة عمياء', 'غماز مناسب', 'نفّذ المناورة عندما تكون آمنة'], note: 'قرار التجاوز يعتمد على الطريق والرؤية والأنظمة المرورية.', diagram: 'overtake' },
-];
-
-function LightSymbol({
-  type,
-  className = '',
-}: {
-  type: LightItem['symbol'] | 'left' | 'right' | 'hazard' | 'sun' | 'brake' | 'reverse';
-  className?: string;
-}) {
+function LightIcon({ type, className = '' }: { type: MainLightKey | SignalKey | 'brake' | 'reverse' | 'sun'; className?: string }) {
+  const props = { className, viewBox: '0 0 96 64', fill: 'none', 'aria-hidden': true } as const;
   const stroke = 'currentColor';
-  if (type === 'off') return <svg viewBox="0 0 100 64" className={className} aria-hidden="true"><circle cx="42" cy="32" r="10" fill="none" stroke={stroke} strokeWidth="3" /><path d="M22 32H12M72 32H88M42 12V4M42 52V60" stroke={stroke} strokeWidth="3" strokeLinecap="round" /></svg>;
-  if (type === 'position') return <svg viewBox="0 0 100 64" className={className} aria-hidden="true"><path d="M10 18h23c8 0 13 6 15 14H10V18Z" fill="none" stroke={stroke} strokeWidth="3" /><path d="M62 16v32M74 19v26M86 23v18" stroke={stroke} strokeWidth="3" strokeLinecap="round" /></svg>;
-  if (type === 'auto') return <svg viewBox="0 0 100 64" className={className} aria-hidden="true"><circle cx="43" cy="32" r="11" fill="none" stroke={stroke} strokeWidth="3" /><path d="M43 10v-5M43 59v-5M20 32h-7M73 32h-7M27 16l-4-4M63 48l-4-4M27 48l-4 4M63 16l4-4" stroke={stroke} strokeWidth="3" strokeLinecap="round" /><text x="79" y="38" fill={stroke} fontSize="13" fontWeight="900">A</text></svg>;
-  if (type === 'low') return <svg viewBox="0 0 100 64" className={className} aria-hidden="true"><path d="M10 13h23c8 0 14 7 16 19H10V13Z" fill="none" stroke={stroke} strokeWidth="3" /><path d="m62 18 24 8M62 29l24 8M62 40l18 6" stroke={stroke} strokeWidth="3" strokeLinecap="round" /></svg>;
-  if (type === 'high') return <svg viewBox="0 0 100 64" className={className} aria-hidden="true"><path d="M10 13h23c8 0 14 7 16 19H10V13Z" fill="none" stroke={stroke} strokeWidth="3" /><path d="M62 12h28M62 23h28M62 34h28M62 45h28" stroke={stroke} strokeWidth="3" strokeLinecap="round" /></svg>;
-  if (type === 'frontFog' || type === 'rearFog') return <svg viewBox="0 0 100 64" className={className} aria-hidden="true"><path d="M10 12h23c8 0 14 7 16 19H10V12Z" fill="none" stroke={stroke} strokeWidth="3" /><path d={type === 'frontFog' ? 'm62 15 23 8M62 27h27M62 39 85 31' : 'm62 15-23 8M62 27H35M62 39 39 31'} stroke={stroke} strokeWidth="3" strokeLinecap="round" /><path d="M87 8c-8 7 8 10 0 17s8 11 0 20" fill="none" stroke={stroke} strokeWidth="2.5" /></svg>;
-  if (type === 'flash') return <svg viewBox="0 0 100 64" className={className} aria-hidden="true"><path d="M10 13h23c8 0 14 7 16 19H10V13Z" fill="none" stroke={stroke} strokeWidth="3" /><path d="M65 10h21M65 23h28M65 36h21M65 49h28" stroke={stroke} strokeWidth="3" strokeLinecap="round" /></svg>;
-  if (type === 'left' || type === 'right') return <svg viewBox="0 0 100 64" className={className} aria-hidden="true"><path d={type === 'right' ? 'M15 32h57M58 14l21 18-21 18' : 'M85 32H28M42 14 21 32l21 18'} fill="none" stroke={stroke} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-  if (type === 'hazard') return <svg viewBox="0 0 100 64" className={className} aria-hidden="true"><path d="M50 8 90 54H10Z" fill="none" stroke={stroke} strokeWidth="4" strokeLinejoin="round" /><path d="M50 24v14M50 44v2" stroke={stroke} strokeWidth="4" strokeLinecap="round" /></svg>;
-  if (type === 'sun') return <svg viewBox="0 0 100 64" className={className} aria-hidden="true"><circle cx="50" cy="32" r="10" fill="none" stroke={stroke} strokeWidth="3" /><path d="M50 8v8M50 48v8M26 32h-8M82 32h-8M33 15l-6-6M73 49l-6-6M33 49l-6 6M73 15l6-6" stroke={stroke} strokeWidth="3" strokeLinecap="round" /></svg>;
-  if (type === 'brake') return <svg viewBox="0 0 100 64" className={className} aria-hidden="true"><rect x="18" y="17" width="64" height="30" rx="10" fill="none" stroke={stroke} strokeWidth="3" /><rect x="26" y="23" width="18" height="18" rx="5" fill={stroke} opacity=".8" /><rect x="56" y="23" width="18" height="18" rx="5" fill={stroke} opacity=".8" /></svg>;
-  return <svg viewBox="0 0 100 64" className={className} aria-hidden="true"><rect x="18" y="18" width="64" height="28" rx="10" fill="none" stroke={stroke} strokeWidth="3" /><path d="m30 32 8-7 9 14 8-10 9 7" fill="none" stroke={stroke} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  if (type === 'left' || type === 'right') return <svg {...props}><path d={type === 'right' ? 'M13 32h52M53 16l20 16-20 16' : 'M83 32H31M43 16 23 32l20 16'} stroke={stroke} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  if (type === 'hazard') return <svg {...props}><path d="m48 8 36 48H12Z" stroke={stroke} strokeWidth="4" strokeLinejoin="round" /><path d="M48 24v15M48 45v2" stroke={stroke} strokeWidth="4" strokeLinecap="round" /></svg>;
+  if (type === 'brake') return <svg {...props}><rect x="17" y="15" width="62" height="34" rx="11" stroke={stroke} strokeWidth="3" /><rect x="24" y="22" width="18" height="20" rx="5" fill={stroke} opacity=".9" /><rect x="54" y="22" width="18" height="20" rx="5" fill={stroke} opacity=".9" /></svg>;
+  if (type === 'reverse') return <svg {...props}><rect x="16" y="16" width="64" height="32" rx="10" stroke={stroke} strokeWidth="3" /><path d="m28 35 9-8 8 13 8-11 13 7" stroke={stroke} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  if (type === 'sun') return <svg {...props}><circle cx="48" cy="32" r="10" stroke={stroke} strokeWidth="3" /><path d="M48 9v7M48 48v7M25 32h-7M78 32h-7M32 16l-5-5M64 48l5 5M32 48l-5 5M64 16l5-5" stroke={stroke} strokeWidth="3" strokeLinecap="round" /></svg>;
+  if (type === 'off') return <svg {...props}><circle cx="37" cy="32" r="9" stroke={stroke} strokeWidth="3"/><path d="M20 32h-8M54 32h26M37 13V6M37 58v-7" stroke={stroke} strokeWidth="3" strokeLinecap="round"/></svg>;
+  if (type === 'position') return <svg {...props}><path d="M10 19h24c8 0 12 5 15 13H10z" stroke={stroke} strokeWidth="3"/><path d="M60 16v32M72 20v24M84 24v16" stroke={stroke} strokeWidth="3" strokeLinecap="round"/></svg>;
+  if (type === 'auto') return <svg {...props}><circle cx="38" cy="32" r="10" stroke={stroke} strokeWidth="3"/><path d="M38 10v-5M38 59v-5M16 32H9M67 32h-7M22 16l-5-5M54 48l5 5M22 48l-5 5M54 16l5-5" stroke={stroke} strokeWidth="3" strokeLinecap="round"/><text x="70" y="38" fill={stroke} fontSize="14" fontWeight="900">A</text></svg>;
+  if (type === 'low') return <svg {...props}><path d="M10 15h25c8 0 13 7 16 17H10z" stroke={stroke} strokeWidth="3"/><path d="m61 20 22 7M61 31l22 7M61 42l16 5" stroke={stroke} strokeWidth="3" strokeLinecap="round"/></svg>;
+  if (type === 'high') return <svg {...props}><path d="M10 15h25c8 0 13 7 16 17H10z" stroke={stroke} strokeWidth="3"/><path d="M61 13h27M61 25h27M61 37h27M61 49h27" stroke={stroke} strokeWidth="3" strokeLinecap="round"/></svg>;
+  if (type === 'frontFog' || type === 'rearFog') return <svg {...props}><path d="M10 15h25c8 0 13 7 16 17H10z" stroke={stroke} strokeWidth="3"/><path d={type === 'frontFog' ? 'm61 18 22 7M61 30h27M61 42 82 35' : 'm61 18-22 7M61 30H34M61 42 40 35'} stroke={stroke} strokeWidth="3" strokeLinecap="round"/><path d="M84 9c-8 7 8 11 0 19s8 11 0 20" stroke={stroke} strokeWidth="2.5" strokeLinecap="round"/></svg>;
+  return <svg {...props}><path d="M10 15h25c8 0 13 7 16 17H10z" stroke={stroke} strokeWidth="3"/><path d="M61 12h28M61 25h28M61 38h20" stroke={stroke} strokeWidth="3" strokeLinecap="round"/></svg>;
 }
 
-function HandleIllustration({
-  mainLight,
-  movement,
-  onRingCycle,
-  onLever,
-  onHazard,
+function ExplanationCard({ title, item, signal }: { title: string; item?: LightItem; signal?: (typeof SIGNAL_ITEMS)[number] }) {
+  const action = signal?.action || item?.action || '';
+  const use = signal?.use || item?.use || '';
+  const caution = signal?.caution || item?.caution || '';
+  const icon = signal?.key || item?.key || 'low';
+  return (
+    <aside className="explanation-card" aria-live="polite">
+      <div className="explanation-icon"><LightIcon type={icon} /></div>
+      <div className="explanation-copy"><span>شرح مباشر</span><h3>{title}</h3><p className="explanation-action">{action}</p></div>
+      <div className="explanation-detail"><small>متى ولماذا؟</small><p>{use}</p></div>
+      <div className="explanation-detail caution"><small>انتبه</small><p>{caution}</p></div>
+    </aside>
+  );
+}
+
+function Dashboard({ mainLight, signal }: { mainLight: MainLightKey; signal: SignalKey | null }) {
+  const items = [
+    { key: 'left', label: 'يسار', icon: 'left' as const, active: signal === 'left' || signal === 'hazard', tone: 'amber' },
+    { key: 'right', label: 'يمين', icon: 'right' as const, active: signal === 'right' || signal === 'hazard', tone: 'amber' },
+    { key: 'low', label: 'منخفض', icon: 'low' as const, active: mainLight === 'low', tone: 'green' },
+    { key: 'high', label: 'عالي', icon: 'high' as const, active: mainLight === 'high', tone: 'blue' },
+    { key: 'fog', label: 'ضباب', icon: 'frontFog' as const, active: mainLight === 'frontFog', tone: 'green' },
+    { key: 'rearFog', label: 'ضباب خلفي', icon: 'rearFog' as const, active: mainLight === 'rearFog', tone: 'amber' },
+  ];
+  return (
+    <section className="dashboard-card" aria-live="polite">
+      <div className="dashboard-copy"><span>لوحة العدادات</span><strong>الحركة أصبحت رمزاً واضحاً.</strong><small>الأخضر للمنخفض، الأزرق للعالي، والكهرماني للإشارات.</small></div>
+      <div className="dashboard-grid">{items.map(item => <div key={item.key} className={'dashboard-item ' + item.tone + (item.active ? ' is-active' : '')}><LightIcon type={item.icon}/><span>{item.label}</span></div>)}</div>
+    </section>
+  );
+}
+
+function CockpitHandle({
+  mainLight, signal, movement, onRingCycle, onLever, onHazard,
 }: {
   mainLight: MainLightKey;
+  signal: SignalKey | null;
   movement: 'ring' | 'left' | 'right' | 'push' | 'pull' | 'hazard';
   onRingCycle: () => void;
   onLever: (movement: 'left' | 'right' | 'push' | 'pull') => void;
   onHazard: () => void;
 }) {
-  const focus =
-    movement === 'hazard'
-      ? 'زر التحذير'
-      : movement === 'left'
-        ? 'غماز يسار'
-        : movement === 'right'
-          ? 'غماز يمين'
-          : movement === 'push'
-            ? 'الضوء العالي'
-            : movement === 'pull'
-              ? 'وميض العالي'
-              : MAIN_LIGHTS.find(item => item.key === mainLight)?.title || 'الإنارة';
+  const dragRef = useRef<{ zone: 'ring' | 'lever'; x: number; y: number; fired: boolean } | null>(null);
+  const suppressClick = useRef(false);
+  const ringIndex = Math.max(0, RING_LIGHTS.findIndex(item => item.key === mainLight));
+  const ringAngle = -22 + ringIndex * 37;
+
+  const beginDrag = (zone: 'ring' | 'lever', e: ReactPointerEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current = { zone, x: e.clientX, y: e.clientY, fired: false };
+    suppressClick.current = false;
+  };
+  const moveDrag = (zone: 'ring' | 'lever', e: ReactPointerEvent<HTMLButtonElement>) => {
+    const d = dragRef.current;
+    if (!d || d.zone !== zone || d.fired) return;
+    const dx = e.clientX - d.x;
+    const dy = e.clientY - d.y;
+    if (zone === 'ring' && Math.abs(dx) > 24) {
+      d.fired = true; suppressClick.current = true; onRingCycle(); return;
+    }
+    if (zone === 'lever') {
+      if (Math.abs(dy) > 24) {
+        d.fired = true; suppressClick.current = true; onLever(dy < 0 ? 'right' : 'left');
+      } else if (Math.abs(dx) > 24) {
+        d.fired = true; suppressClick.current = true; onLever(dx > 0 ? 'push' : 'pull');
+      }
+    }
+  };
+  const endDrag = () => { dragRef.current = null; };
+  const clickRing = () => { if (suppressClick.current) { suppressClick.current = false; return; } onRingCycle(); };
+  const clickLever = () => { if (suppressClick.current) { suppressClick.current = false; return; } onLever(signal === 'right' ? 'left' : 'right'); };
+
+  const leverTransform =
+    movement === 'left' ? 'translate(0 14) rotate(4 710 204)' :
+    movement === 'right' ? 'translate(0 -14) rotate(-4 710 204)' :
+    movement === 'push' ? 'translate(24 0)' :
+    movement === 'pull' ? 'translate(-24 0)' : 'translate(0 0)';
+
+  const currentLabel = signal === 'left' ? 'غماز يسار' : signal === 'right' ? 'غماز يمين' : signal === 'hazard' ? 'تحذير رباعي' : MAIN_LIGHTS.find(item => item.key === mainLight)?.title || 'الإنارة';
 
   return (
-    <section className="handle-simulator">
-      <div className="handle-simulator-head">
-        <div>
-          <span className="mini-eyebrow">الخطوة 2 · المقبض الحقيقي</span>
-          <h3>المقبض الآن واضح وقابل للتجربة</h3>
-          <p><b>الحلقة</b> تختار الإنارة، <b>طرف الذراع</b> للحركات، وزر مستقل للتحذير. اضغط على الجزء نفسه أو على أزرار الحركة تحته.</p>
-        </div>
-        <div className="handle-current"><small>المحدد الآن</small><strong>{focus}</strong></div>
+    <section className="handle-card">
+      <div className="handle-header">
+        <div><span className="eyebrow">02 · المقبض التفاعلي</span><h3>اسحب الجزء نفسه. لا تحتاج لحفظ الأسهم.</h3><p>اسحب الحلقة أفقياً لتغيير وضع الإنارة، والذراع ↑↓ للغماز أو ↔ للعالي والوميض. على الكمبيوتر استخدم الفأرة.</p></div>
+        <div className="handle-state"><span>الوضع الحالي</span><strong>{currentLabel}</strong></div>
       </div>
 
-      <div className="handle-photo-stage">
-        <div className={'handle-photo-wrap movement-' + movement}>
-          <img
-            src="/spirit/stalk-lighting-realistic.svg"
-            className="handle-photo"
-            alt="مقبض الإضاءة والغمازات مع اتجاهات الحركة"
-          />
-          <button
-            type="button"
-            className={'handle-zone ring ' + (movement === 'ring' ? 'active' : '')}
-            onClick={onRingCycle}
-            aria-label="لف حلقة الإنارة"
-            title="لف حلقة الإنارة"
-          >
-            <span>الحلقة</span>
-          </button>
-          <button
-            type="button"
-            className={'handle-zone lever ' + (movement !== 'ring' && movement !== 'hazard' ? 'active' : '')}
-            onClick={() => onLever(movement === 'right' ? 'left' : 'right')}
-            aria-label="تجربة حركة الذراع"
-            title="اضغط لتجربة حركة الذراع"
-          >
-            <span>الذراع</span>
-          </button>
-        </div>
+      <div className="handle-stage">
+        <svg viewBox="0 0 900 560" className="handle-svg" role="img" aria-label="رسم متجهي واقعي لمقبض الإنارة والغمازات مع يد تمسك به">
+          <defs>
+            <linearGradient id="cockpitBg" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#12252d"/><stop offset=".55" stopColor="#050b10"/><stop offset="1" stopColor="#020508"/></linearGradient>
+            <linearGradient id="stalkMetal" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#b5c1c5"/><stop offset=".16" stopColor="#68757b"/><stop offset=".55" stopColor="#2b373c"/><stop offset="1" stopColor="#0a1014"/></linearGradient>
+            <linearGradient id="ringMetal" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#e1e7e9"/><stop offset=".24" stopColor="#8b979b"/><stop offset=".58" stopColor="#374249"/><stop offset="1" stopColor="#0b1216"/></linearGradient>
+            <linearGradient id="rubberGrip" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#526066"/><stop offset=".5" stopColor="#202a2f"/><stop offset="1" stopColor="#070c10"/></linearGradient>
+            <radialGradient id="skin" cx=".32" cy=".22" r=".95"><stop stopColor="#e1aa83"/><stop offset=".50" stopColor="#b97a5b"/><stop offset="1" stopColor="#684133"/></radialGradient>
+            <filter id="handleShadow"><feDropShadow dx="0" dy="26" stdDeviation="23" floodColor="#000" floodOpacity=".65"/></filter>
+            <pattern id="microTexture" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M0 10 10 0M3 12 12 3" stroke="#fff" strokeOpacity=".025" strokeWidth="1"/></pattern>
+          </defs>
+          <rect width="900" height="560" rx="30" fill="url(#cockpitBg)"/>
+          <path d="M0 418Q220 336 450 365t450 42v153H0Z" fill="#0b151a"/>
+          <ellipse cx="446" cy="425" rx="360" ry="50" fill="#000" opacity=".35"/>
+          <g filter="url(#handleShadow)">
+            <path d="M105 407C232 322 351 278 500 250c86-16 160-35 252-60" stroke="#05090d" strokeWidth="118" strokeLinecap="round"/>
+            <path d="M105 390C232 306 351 262 500 234c86-16 160-35 252-60" stroke="url(#stalkMetal)" strokeWidth="91" strokeLinecap="round"/>
+            <path d="M105 369C232 291 352 245 500 217c90-16 164-34 252-58" stroke="#f3f8f8" strokeOpacity=".15" strokeWidth="12" strokeLinecap="round"/>
+            <path d="M104 391C230 309 352 268 500 238c86-16 161-34 253-61" stroke="url(#microTexture)" strokeWidth="84" strokeLinecap="round"/>
+            <g transform={'rotate(' + ringAngle + ' 527 218)'}>
+              <rect x="421" y="143" width="225" height="150" rx="51" fill="#070c0f" stroke="#d6e0e2" strokeOpacity=".22" strokeWidth="5"/>
+              <rect x="436" y="157" width="195" height="119" rx="42" fill="url(#ringMetal)" stroke="#f7fbfc" strokeOpacity=".15" strokeWidth="3"/>
+              <rect x="448" y="169" width="171" height="95" rx="34" fill="#121b20"/>
+              <path d="M454 217h159" stroke="#eef6f6" strokeOpacity=".10" strokeWidth="2"/>
+              {RING_LIGHTS.map((item, index) => <g key={item.key} transform={'translate(' + (462 + index * 28) + ' 217)'}><circle r="16" fill={item.key === mainLight ? '#236f67' : '#0c1418'} stroke={item.key === mainLight ? '#a6f3e8' : '#8b989c'} strokeOpacity={item.key === mainLight ? '.9' : '.35'} strokeWidth="2"/></g>)}
+              <rect x="519" y="140" width="16" height="25" rx="8" fill="#8ae6dc"/>
+            </g>
+            <g transform={leverTransform}>
+              <path d="M675 156 792 132c25-5 44 10 41 34l-13 58c-4 21-24 34-46 29l-119-30Z" fill="url(#rubberGrip)" stroke="#b1bdc0" strokeOpacity=".22" strokeWidth="4"/>
+              <path d="M736 151l54-11M733 174l59-12M729 197l57-11M724 220l52-10" stroke="#e4ecee" strokeOpacity=".13" strokeWidth="6" strokeLinecap="round"/>
+              <rect x="774" y="145" width="33" height="100" rx="16" fill="#11191d" stroke="#c7d0d3" strokeOpacity=".16" strokeWidth="2"/>
+              <text x="790" y="176" textAnchor="middle" fill="#eef7f5" fontSize="9" fontWeight="900">LOW</text>
+              <text x="790" y="195" textAnchor="middle" fill="#eef7f5" fontSize="9" fontWeight="900">FOG</text>
+            </g>
+            <g opacity=".98">
+              <path d="M625 121c27-9 63 0 82 19 13 12 20 32 13 47-7 16-31 18-50 9l-50-25c-16-8-12-40 5-50Z" fill="url(#skin)" stroke="#f6c7a2" strokeOpacity=".20" strokeWidth="3"/>
+              <path d="M647 136c20-9 43-2 57 12M639 151c19-7 37-2 53 10M635 168c16-5 32 0 46 8" stroke="#4e3025" strokeOpacity=".46" strokeWidth="4" strokeLinecap="round"/>
+              <path d="M661 183c18 6 31 2 43-7l16 27c-11 14-31 18-49 10l-27-13Z" fill="url(#skin)" opacity=".96"/>
+              <path d="M691 124c12 1 24 7 30 15" stroke="#f7d1b3" strokeOpacity=".28" strokeWidth="5" strokeLinecap="round"/>
+            </g>
+          </g>
+          <g fontFamily="Arial,sans-serif" fontWeight="900">
+            <rect x="36" y="34" width="274" height="58" rx="19" fill="#061218" stroke="#fff" strokeOpacity=".08"/><circle cx="62" cy="63" r="10" fill="#86e4da"/><text x="83" y="68" fill="#dff6f2" fontSize="14">الحلقة = تدوير لاختيار الإنارة</text>
+            <rect x="36" y="468" width="354" height="58" rx="19" fill="#061218" stroke="#fff" strokeOpacity=".08"/><circle cx="62" cy="497" r="10" fill="#b8c1c4"/><text x="83" y="502" fill="#dff6f2" fontSize="14">الذراع = ↑ ↓ غماز · ↔ العالي والوميض</text>
+            <rect x="616" y="34" width="246" height="58" rx="19" fill="#061218" stroke="#fff" strokeOpacity=".08"/><circle cx="642" cy="63" r="10" fill="#f1bd74"/><text x="663" y="68" fill="#dff6f2" fontSize="14">زر مستقل = تحذير رباعي</text>
+          </g>
+          <g transform="translate(620 350)"><circle cx="56" cy="56" r="54" fill="#070e12" stroke="#f1bd74" strokeOpacity=".35" strokeWidth="3"/><path d="m56 27 26 43H30Z" stroke="#f1bd74" strokeWidth="4" strokeLinejoin="round"/><path d="M56 40v14M56 61v2" stroke="#f1bd74" strokeWidth="4" strokeLinecap="round"/></g>
+        </svg>
+
+        <button type="button" className="handle-hotspot ring-zone" onPointerDown={e => beginDrag('ring', e)} onPointerMove={e => moveDrag('ring', e)} onPointerUp={endDrag} onPointerCancel={endDrag} onClick={clickRing} aria-label="لف حلقة الإنارة"><span>اسحب لتدوير الحلقة</span></button>
+        <button type="button" className="handle-hotspot lever-zone" onPointerDown={e => beginDrag('lever', e)} onPointerMove={e => moveDrag('lever', e)} onPointerUp={endDrag} onPointerCancel={endDrag} onClick={clickLever} aria-label="تحريك ذراع الغمازات والعالي"><span>اسحب الذراع</span></button>
+        <button type="button" className="handle-hotspot hazard-zone" onClick={onHazard} aria-label="تشغيل التحذير الرباعي"><span>△</span></button>
       </div>
 
-      <div className="handle-action-rail" aria-label="حركات المقبض">
-        <button type="button" className={movement === 'ring' ? 'active' : ''} onClick={onRingCycle}>
-          <b>⟳</b><span>لف الحلقة</span><small>تبديل أوضاع الإنارة</small>
-        </button>
-        <button type="button" className={movement === 'right' ? 'active' : ''} onClick={() => onLever('right')}>
-          <b>↑</b><span>يمين</span><small>ارفع الذراع</small>
-        </button>
-        <button type="button" className={movement === 'left' ? 'active' : ''} onClick={() => onLever('left')}>
-          <b>↓</b><span>يسار</span><small>اخفض الذراع</small>
-        </button>
-        <button type="button" className={movement === 'push' ? 'active' : ''} onClick={() => onLever('push')}>
-          <b>→</b><span>العالي</span><small>ادفع الذراع</small>
-        </button>
-        <button type="button" className={movement === 'pull' ? 'active' : ''} onClick={() => onLever('pull')}>
-          <b>←</b><span>الوميض</span><small>اسحب لحظياً</small>
-        </button>
-        <button type="button" className={movement === 'hazard' ? 'active hazard' : 'hazard'} onClick={onHazard}>
-          <b>△</b><span>تحذير</span><small>زر مستقل</small>
-        </button>
+      <div className="handle-actions">
+        <button type="button" className={movement === 'ring' ? 'active' : ''} onClick={onRingCycle}><b>↻</b><span>لف الحلقة</span><small>اختيار الإنارة</small></button>
+        <button type="button" className={movement === 'right' ? 'active' : ''} onClick={() => onLever('right')}><b>↑</b><span>يمين</span><small>ارفع الذراع</small></button>
+        <button type="button" className={movement === 'left' ? 'active' : ''} onClick={() => onLever('left')}><b>↓</b><span>يسار</span><small>اخفض الذراع</small></button>
+        <button type="button" className={movement === 'push' ? 'active' : ''} onClick={() => onLever('push')}><b>→</b><span>العالي</span><small>ادفع للأمام</small></button>
+        <button type="button" className={movement === 'pull' ? 'active' : ''} onClick={() => onLever('pull')}><b>←</b><span>الوميض</span><small>اسحب للحظة</small></button>
+        <button type="button" className={movement === 'hazard' ? 'active hazard' : 'hazard'} onClick={onHazard}><b>△</b><span>الرباعي</span><small>زر مستقل</small></button>
       </div>
-
-      <div className="handle-legend">
-        <div><b>①</b><span>الحلقة</span><small>تدور لاختيار الإنارة</small></div>
-        <div><b>②</b><span>الذراع</span><small>↑ ↓ للغماز · دفع/سحب للعالي والوميض</small></div>
-        <div><b>③</b><span>التحذير</span><small>زر مستقل عن الغماز</small></div>
-      </div>
+      <Dashboard mainLight={mainLight} signal={signal}/>
     </section>
   );
 }
 
-function VehicleScene({
-  mainLight,
-  signal,
-  flashActive,
-  view,
-  setView,
-}: {
-  mainLight: MainLightKey;
-  signal: SignalKey | null;
-  flashActive: boolean;
-  view: VehicleView;
-  setView: (view: VehicleView) => void;
-}) {
-  const title = signal === 'right'
-    ? 'غماز يمين'
-    : signal === 'left'
-      ? 'غماز يسار'
-      : signal === 'hazard'
-        ? 'تحذير رباعي'
-        : flashActive
-          ? 'وميض العالي'
-          : MAIN_LIGHTS.find(item => item.key === mainLight)?.title || 'إضاءة';
-
-  const stageClass = [
-    'vehicle-scene',
-    'vehicle-' + view,
-    'vehicle-light-' + mainLight,
-    signal ? 'vehicle-signal-' + signal : '',
-    flashActive ? 'vehicle-flash' : '',
-  ].filter(Boolean).join(' ');
-
-  return (
-    <section className={stageClass}>
-      <div className="vehicle-head">
-        <div>
-          <span className="mini-eyebrow">الخطوة 3 · النتيجة</span>
-          <h3>{title}</h3>
-          <p>{view === 'front' ? 'هذا ما تراه أمامك بعد اختيار الحركة.' : 'هذا ما يجب أن يراه السائق خلفك.'}</p>
-        </div>
-        <div className="vehicle-view-toggle" role="tablist" aria-label="منظر السيارة">
-          <button type="button" className={view === 'front' ? 'active' : ''} onClick={() => setView('front')}>الأمام</button>
-          <button type="button" className={view === 'rear' ? 'active' : ''} onClick={() => setView('rear')}>الخلف</button>
-        </div>
-      </div>
-
-      <div className="vehicle-stage">
-        <div className="vehicle-road-shape" />
-        <div className="vehicle-light-label">{view === 'front' ? 'شاهد أين يصل الضوء' : 'شاهد أين تظهر الإشارة'}</div>
-        <img src="/spirit/car-front-sport.svg" className="vehicle-car vehicle-car-front" alt="" aria-hidden="true" />
-        <img src="/spirit/car-rear.svg" className="vehicle-car vehicle-car-rear" alt="" aria-hidden="true" />
-
-        <span className="vehicle-beam vehicle-beam-left" />
-        <span className="vehicle-beam vehicle-beam-right" />
-        <span className="vehicle-fog vehicle-fog-left" />
-        <span className="vehicle-fog vehicle-fog-right" />
-        <span className="vehicle-signal-l signal-l-front" />
-        <span className="vehicle-signal-r signal-r-front" />
-        <span className="vehicle-signal-l signal-l-rear" />
-        <span className="vehicle-signal-r signal-r-rear" />
-        <span className="vehicle-rear-fog-light rear-fog-light-l" />
-        <span className="vehicle-rear-fog-light rear-fog-light-r" />
-
-        <div className="vehicle-stage-legend">
-          <span><i className="legend-light" />إنارة</span>
-          <span><i className="legend-amber" />إشارة</span>
-        </div>
-      </div>
-
-      <div className="vehicle-rule">
-        <span>قاعدة حفظ</span>
-        <strong>{view === 'front' ? 'أمام السيارة = أرى الطريق + أرى الإشارة الأمامية.' : 'خلف السيارة = أجعل مركبتي واضحة للآخرين + تظهر الإشارة الخلفية.'}</strong>
-      </div>
-    </section>
-  );
-}
-
-function ControlSelector({
-  group,
-  setGroup,
-  mainLight,
-  signal,
-  flashActive,
-  onMain,
-  onSignal,
-  onFlash,
+function ControlPanel({
+  group, setGroup, mainLight, signal, flashActive, onMain, onSignal, onFlash,
 }: {
   group: ControlGroup;
-  setGroup: (group: ControlGroup) => void;
+  setGroup: (value: ControlGroup) => void;
   mainLight: MainLightKey;
   signal: SignalKey | null;
   flashActive: boolean;
-  onMain: (key: MainLightKey) => void;
-  onSignal: (key: SignalKey) => void;
+  onMain: (value: MainLightKey) => void;
+  onSignal: (value: SignalKey) => void;
   onFlash: () => void;
 }) {
+  const activeSignal = SIGNAL_ITEMS.find(item => item.key === signal);
+  const activeLight = MAIN_LIGHTS.find(item => item.key === mainLight) || MAIN_LIGHTS[3];
+
   return (
-    <section className="controls-card">
-      <div className="controls-head">
-        <div>
-          <span className="mini-eyebrow">الخطوة 1 · اختَر الحركة</span>
-          <h3>اختَر الشيء الذي تريد تعلّمه فقط</h3>
-          <p>قسمنا الوظائف حتى ما تشوف كل الأزرار دفعة واحدة.</p>
-        </div>
+    <section className="control-panel">
+      <div className="control-panel-head">
+        <div><span className="eyebrow">01 · اختَر</span><h3>وظيفة واحدة في كل مرة</h3><p>اختر وظيفة أو تعامل معها مباشرة من المقبض. الشرح يظهر هنا بدون نقل الصفحة.</p></div>
+        <div className="selection-pill"><i />{activeSignal?.title || (flashActive ? 'وميض العالي' : activeLight.title)}</div>
       </div>
 
-      <div className="control-mode-switch">
+      <div className="control-tabs">
         <button type="button" className={group === 'ring' ? 'active' : ''} onClick={() => setGroup('ring')}>① حلقة الإنارة</button>
         <button type="button" className={group === 'lever' ? 'active' : ''} onClick={() => setGroup('lever')}>② الذراع</button>
       </div>
 
-      {group === 'ring' ? (
-        <div className="choice-list">
-          {RING_LIGHTS.map(item => (
-            <button
-              key={item.key}
-              type="button"
-              className={mainLight === item.key && !signal && !flashActive ? 'selected' : ''}
-              onClick={() => onMain(item.key)}
-            >
-              <span className="choice-icon"><LightSymbol type={item.symbol} /></span>
-              <span className="choice-copy"><b>{item.title}</b><small>{item.subtitle}</small></span>
-              <span className="choice-check">✓</span>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="choice-list lever-choice-list">
-          <button type="button" className={signal === 'right' ? 'selected' : ''} onClick={() => onSignal('right')}><span className="lever-big">↑</span><span className="choice-copy"><b>غماز يمين</b><small>ارفع الذراع</small></span><span className="choice-check">✓</span></button>
-          <button type="button" className={signal === 'left' ? 'selected' : ''} onClick={() => onSignal('left')}><span className="lever-big">↓</span><span className="choice-copy"><b>غماز يسار</b><small>اخفض الذراع</small></span><span className="choice-check">✓</span></button>
-          <button type="button" className={mainLight === 'high' && !flashActive ? 'selected' : ''} onClick={() => onMain('high')}><span className="lever-big">→</span><span className="choice-copy"><b>الضوء العالي</b><small>ادفع الذراع</small></span><span className="choice-check">✓</span></button>
-          <button type="button" className={flashActive ? 'selected' : ''} onClick={onFlash}><span className="lever-big">←</span><span className="choice-copy"><b>وميض العالي</b><small>اسحب لحظياً</small></span><span className="choice-check">✓</span></button>
-        </div>
-      )}
+      <div className="control-grid">
+        {group === 'ring' ? RING_LIGHTS.map(item => (
+          <button key={item.key} type="button" className={mainLight === item.key && !signal && !flashActive ? 'selected' : ''} onClick={() => onMain(item.key)}>
+            <span className="control-icon"><LightIcon type={item.key}/></span>
+            <span className="control-copy"><b>{item.title}</b><small>{item.subtitle}</small><em>{item.short}</em></span>
+            <span className="control-arrow">›</span>
+          </button>
+        )) : (
+          <>
+            <button type="button" className={signal === 'right' ? 'selected' : ''} onClick={() => onSignal('right')}><span className="control-icon big-arrow">↑</span><span className="control-copy"><b>غماز يمين</b><small>ارفع الذراع</small><em>إشارة الاتجاه</em></span><span className="control-arrow">›</span></button>
+            <button type="button" className={signal === 'left' ? 'selected' : ''} onClick={() => onSignal('left')}><span className="control-icon big-arrow">↓</span><span className="control-copy"><b>غماز يسار</b><small>اخفض الذراع</small><em>إشارة الاتجاه</em></span><span className="control-arrow">›</span></button>
+            <button type="button" className={mainLight === 'high' && !flashActive ? 'selected' : ''} onClick={() => onMain('high')}><span className="control-icon big-arrow">→</span><span className="control-copy"><b>الضوء العالي</b><small>ادفع للأمام</small><em>مدى رؤية بعيد</em></span><span className="control-arrow">›</span></button>
+            <button type="button" className={flashActive ? 'selected' : ''} onClick={onFlash}><span className="control-icon big-arrow">←</span><span className="control-copy"><b>وميض العالي</b><small>اسحب للحظة</small><em>ومضة سريعة</em></span><span className="control-arrow">›</span></button>
+          </>
+        )}
+      </div>
 
-      <button type="button" className={signal === 'hazard' ? 'hazard-action selected' : 'hazard-action'} onClick={() => onSignal('hazard')}>
-        <span className="hazard-symbol">△</span>
-        <span><b>التحذير الرباعي</b><small>زر مستقل</small></span>
+      <button type="button" className={signal === 'hazard' ? 'hazard-control selected' : 'hazard-control'} onClick={() => onSignal('hazard')}>
+        <span className="control-icon"><LightIcon type="hazard"/></span><span className="control-copy"><b>التحذير الرباعي</b><small>زر مستقل · الاتجاهان معاً</small><em>تحذير عام للمركبة</em></span><span className="control-arrow">›</span>
       </button>
+
+      <div className="desktop-explanation">
+        <ExplanationCard title={activeSignal?.title || (flashActive ? 'وميض العالي' : activeLight.title)} item={!activeSignal && !flashActive ? activeLight : undefined} signal={activeSignal}/>
+      </div>
     </section>
   );
 }
 
-function ScenarioDiagram({ kind }: { kind: string }) {
-  const idPrefix = 'scenario-' + kind;
-  const road = (
-    <>
-      <rect width="800" height="360" fill={'url(#' + idPrefix + '-sceneBg)'} />
-      <path d="M0 360 175 108h450L800 360Z" fill="#18313a" />
-      <path d="M0 360h800" stroke="#071116" strokeWidth="13" />
-      <path d="M400 112v248" stroke="#d7e3e4" strokeOpacity=".33" strokeWidth="4" strokeDasharray="20 18" />
-      <path d="M238 360 300 112M562 360 500 112" stroke="#dce9ea" strokeOpacity=".10" strokeWidth="3" />
-      <circle cx="92" cy="72" r="34" fill="#193740" opacity=".7" />
-      <circle cx="92" cy="72" r="20" fill="#284e56" opacity=".4" />
-    </>
+function CurrentScene({ mainLight, signal, flashActive, perspective, oncoming, setOncoming }: { mainLight: MainLightKey; signal: SignalKey | null; flashActive: boolean; perspective: Perspective; oncoming: boolean; setOncoming: (v: boolean) => void }) {
+  const mode = signal === 'hazard' ? 'hazard' : signal ? 'signal' : flashActive ? 'flash' : mainLight;
+  const night = mode !== 'position';
+  return (
+    <div className="result-scene-wrap">
+      {perspective === 'driver' ? (
+        <svg className="current-scene-svg" viewBox="0 0 900 470" role="img" aria-label="منظور السائق من المشهد التدريبي">
+          <defs>
+            <linearGradient id="currentSky" x1="0" y1="0" x2="0" y2="1"><stop stopColor={night ? '#07151d' : '#38554f'}/><stop offset="1" stopColor={night ? '#10232b' : '#273e39'}/></linearGradient>
+            <linearGradient id="currentRoad" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#2a3c42"/><stop offset="1" stopColor="#0a1115"/></linearGradient>
+            <filter id="currentBlur"><feGaussianBlur stdDeviation="17"/></filter>
+          </defs>
+          <rect width="900" height="470" fill="url(#currentSky)"/>
+          {mode === 'position' ? <><rect y="278" width="900" height="192" fill="#1d3535"/><circle cx="735" cy="84" r="54" fill="#e1e6cf" opacity=".24"/><path d="M0 336h900" stroke="#c2ceca" strokeOpacity=".15" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="336" y="232" width="228" height="126"/><circle cx="405" cy="302" r="9" fill="#d8e5ac"/><circle cx="495" cy="302" r="9" fill="#d8e5ac"/></> : <><path d="M0 470 210 126h480L900 470Z" fill="url(#currentRoad)"/><path d="M450 130v340" stroke="#dcebea" strokeOpacity=".25" strokeWidth="4" strokeDasharray="24 18"/></>}
+          {mode === 'low' || mode === 'flash' ? <><path d="M450 310 245 220M450 310 655 220" stroke="#fff1b3" strokeOpacity=".40" strokeWidth="55" strokeLinecap="round" filter="url(#currentBlur)"/><path d="M450 311 266 228M450 311 634 228" stroke="#fff2b4" strokeOpacity=".38" strokeWidth="12" strokeLinecap="round"/><text x="54" y="405" fill="#d7eee9" fontSize="16" fontWeight="900">حزمة قريبة · مثال ≈ 30 م</text></> : null}
+          {mode === 'high' && <><path d="M450 310 62 86M450 310 838 86" stroke="#fff1b1" strokeOpacity=".18" strokeWidth="90" strokeLinecap="round" filter="url(#currentBlur)"/><path d="M450 310 72 76M450 310 828 76" stroke="#fff3b7" strokeOpacity=".34" strokeWidth="11" strokeLinecap="round"/>{oncoming && <g><circle cx="666" cy="150" r="29" fill="#f8fbf9" opacity=".9"/><circle cx="666" cy="150" r="55" fill="#fff7db" opacity=".16" filter="url(#currentBlur)"/><rect x="54" y="54" width="340" height="70" rx="20" fill="#251718" stroke="#ff9da2" strokeOpacity=".38"/><text x="79" y="83" fill="#ffd9d8" fontSize="19" fontWeight="900">مركبة مقابلة · خفّض العالي</text><text x="79" y="105" fill="#d9bcbc" fontSize="12">لتجنب إبهار السائق المقابل</text></g>}</>}
+          {mode === 'frontFog' && <><rect x="0" y="82" width="900" height="58" fill="#eef6f1" fillOpacity=".16"/><rect x="0" y="180" width="900" height="48" fill="#eef6f1" fillOpacity=".14"/><rect x="0" y="260" width="900" height="36" fill="#eef6f1" fillOpacity=".11"/><path d="M450 312 255 270M450 312 645 270" stroke="#fff2b4" strokeOpacity=".24" strokeWidth="54" strokeLinecap="round" filter="url(#currentBlur)"/><path d="M450 313 274 277M450 313 626 277" stroke="#fff3ba" strokeOpacity=".36" strokeWidth="10" strokeLinecap="round"/><rect x="54" y="54" width="385" height="70" rx="20" fill="#dfe9e5" fillOpacity=".09" stroke="#edf6f1" strokeOpacity=".18"/><text x="79" y="84" fill="#eff7f3" fontSize="19" fontWeight="900">ضباب · التشتت يقلل التباين</text><text x="79" y="106" fill="#c8d3d1" fontSize="12">حزمة منخفضة وقرب أكبر من سطح الطريق</text></>}
+          {mode === 'signal' && <g><path d="M0 270h900M450 0v470" stroke="#dce9e7" strokeOpacity=".14" strokeWidth="6" strokeDasharray="24 18"/><image href="/spirit/car-front.svg" x="338" y="285" width="224" height="142"/><circle cx={signal === 'left' ? 395 : 505} cy="326" r="12" fill="#f4ae57"/><path d="M450 350c0-66 60-97 143-106" stroke="#87e5da" strokeWidth="15" strokeLinecap="round" fill="none"/><path d="m585 243 23 15-26 8Z" fill="#87e5da"/><rect x="54" y="54" width="335" height="70" rx="20" fill="#061117" stroke="#86e4da" strokeOpacity=".25"/><text x="79" y="84" fill="#c1f3eb" fontSize="19" fontWeight="900">تقاطع · الإشارة تسبق المناورة</text><text x="79" y="106" fill="#9db1b0" fontSize="12">مرآة → غماز → تموضع → انعطاف</text></g>}
+          {mode === 'hazard' && <g><path d="M0 302h900" stroke="#9baaaa" strokeOpacity=".16" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="338" y="226" width="224" height="132"/><circle cx="405" cy="293" r="14" fill="#f4ae57"/><circle cx="495" cy="293" r="14" fill="#f4ae57"/><circle cx="450" cy="220" r="44" fill="#f1bd74" fillOpacity=".07" stroke="#f1bd74" strokeOpacity=".34" strokeWidth="3"/><path d="m450 195 21 37h-42Z" stroke="#f1bd74" strokeWidth="4" strokeLinejoin="round"/><rect x="54" y="54" width="350" height="70" rx="20" fill="#211b13" stroke="#f1bd74" strokeOpacity=".28"/><text x="79" y="84" fill="#f4d2a7" fontSize="19" fontWeight="900">كتف الطريق · تحذير رباعي</text><text x="79" y="106" fill="#d6bda0" fontSize="12">الاتجاهان معاً لتوضيح الخطر</text></g>}
+          {mode === 'rearFog' && <g><path d="M0 302h900" stroke="#95a7a8" strokeOpacity=".15" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="338" y="226" width="224" height="132"/><ellipse cx="450" cy="298" rx="125" ry="46" fill="#ffcc6a" fillOpacity=".14" filter="url(#currentBlur)"/><circle cx="405" cy="293" r="14" fill="#ffca6b"/><circle cx="495" cy="293" r="14" fill="#ffca6b"/></g>}
+          <rect x="24" y="422" width="852" height="26" rx="13" fill="#02070a" opacity=".82"/><text x="45" y="440" fill="#b5c5c3" fontSize="11">{mode === 'high' && oncoming ? 'ظهرت مركبة مقابلة: اخفض العالي.' : mode === 'low' ? 'حزمة منخفضة ومركزة على الطريق.' : mode === 'frontFog' ? 'ضباب: الإضاءة لا تلغي الحاجة لتخفيف السرعة.' : mode === 'position' ? 'أضواء الموضع: الهدف إبراز المركبة في الإضاءة الضعيفة.' : 'المشهد يتغير مباشرة حسب الحركة المختارة.'}</text>
+        </svg>
+      ) : (
+        <div className="external-vehicle-stage">
+          <div className="scene-backdrop-label">{mainLight === 'position' ? 'غسق' : mainLight === 'high' ? 'طريق ليلي' : mainLight === 'frontFog' ? 'ضباب' : signal ? 'تقاطع / توقف' : 'نتيجة الحركة'}</div>
+          <img src={signal === 'hazard' || mainLight === 'rearFog' ? '/spirit/car-rear.svg' : '/spirit/car-front.svg'} className="external-car" alt="" aria-hidden="true"/>
+          {(mainLight === 'low' || mainLight === 'high' || mainLight === 'frontFog' || flashActive) && <><span className="beam-pool left"/><span className="beam-pool right"/></>}
+          {mainLight === 'low' && <div className="distance-tag low">حزمة منخفضة · ≈ 30 م</div>}
+          {mainLight === 'high' && <><div className="distance-tag high">مدى بعيد</div>{oncoming && <div className="oncoming-chip">مركبة مقابلة · خفض العالي</div>}</>}
+          {mainLight === 'frontFog' && <div className="distance-tag fog">حزمة قريبة من سطح الطريق</div>}
+          {mainLight === 'position' && <div className="distance-tag position">الهدف: أن تُرى المركبة</div>}
+          {signal && <><span className={'signal-dot left ' + (signal === 'right' ? 'dim' : '')}/><span className={'signal-dot right ' + (signal === 'left' ? 'dim' : '')}/></>}
+          {mainLight === 'rearFog' && <span className="rear-fog-pool"/>}
+          {mainLight === 'position' && <div className="position-halo"/>}
+        </div>
+      )}
+      {perspective === 'driver' && mode === 'high' && <button type="button" className="scene-bottom-toggle" onClick={() => setOncoming(!oncoming)}>{oncoming ? 'إخفاء المركبة المقابلة' : 'أظهر مركبة مقابلة'}</button>}
+    </div>
   );
-
-  const car = (x: number, y: number, src = '/spirit/car-front-sport.svg', w = 170, h = 135, opacity = 1, rotate = 0) => (
-    <image href={src} x={x} y={y} width={w} height={h} opacity={opacity} preserveAspectRatio="xMidYMid meet" transform={rotate ? 'rotate(' + rotate + ' ' + (x + w / 2) + ' ' + (y + h / 2) + ')' : undefined} />
-  );
-
-  const commonDefs = (
-    <defs>
-      <linearGradient id={idPrefix + '-sceneBg'} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#102b34" />
-        <stop offset="1" stopColor="#061117" />
-      </linearGradient>
-      <linearGradient id={idPrefix + '-fogBand'} x1="0" y1="0" x2="1" y2="0">
-        <stop stopColor="#d9e6e2" stopOpacity="0" />
-        <stop offset=".5" stopColor="#eef5f1" stopOpacity=".15" />
-        <stop offset="1" stopColor="#d9e6e2" stopOpacity="0" />
-      </linearGradient>
-      <filter id={idPrefix + '-blur18'}><feGaussianBlur stdDeviation="18" /></filter>
-      <filter id={idPrefix + '-blur8'}><feGaussianBlur stdDeviation="8" /></filter>
-    </defs>
-  );
-
-  const badge = (title: string, detail: string, warning = false) => (
-    <g>
-      <rect x="28" y="24" width={warning ? 300 : 282} height="58" rx="20" fill={warning ? "#2b2118" : "#07151c"} stroke={warning ? "#f0bb72" : "#83e1d7"} strokeOpacity=".22" />
-      <text x="48" y="49" fill={warning ? "#f2cb92" : "#a9ede5"} fontSize="15" fontWeight="900">{title}</text>
-      <text x="48" y="68" fill="#8ba0a3" fontSize="11">{detail}</text>
-    </g>
-  );
-
-  const legend = (left: string, right: string) => (
-    <g>
-      <rect x="28" y="304" width="744" height="34" rx="17" fill="#041016" fillOpacity=".9" stroke="#fff" strokeOpacity=".06" />
-      <circle cx="53" cy="321" r="5" fill="#83e1d7" />
-      <text x="66" y="325" fill="#cfe2e2" fontSize="11" fontWeight="800">{left}</text>
-      <circle cx="390" cy="321" r="5" fill="#f4ae57" />
-      <text x="403" y="325" fill="#cfe2e2" fontSize="11" fontWeight="800">{right}</text>
-    </g>
-  );
-
-  if (kind === 'roundabout') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="الخروج من دوار إلى اليمين">{commonDefs}<rect width="800" height="360" fill="#071219" /><circle cx="400" cy="183" r="112" fill="#18323a" stroke="#6b8e93" strokeOpacity=".28" strokeWidth="18" /><circle cx="400" cy="183" r="51" fill="#08161c" stroke="#6b8e93" strokeOpacity=".18" strokeWidth="6" /><path d="M400 45v77M400 244v71M262 183h84M454 183h84" stroke="#d9e7e8" strokeOpacity=".24" strokeWidth="10" strokeLinecap="round" />{car(334,260,'/spirit/car-front-sport.svg',132,100)}<path d="M470 190c48-4 74-31 79-76" fill="none" stroke="#83e1d7" strokeWidth="10" strokeLinecap="round" /><path d="m546 111 20 15-23 8z" fill="#83e1d7" />{badge('الخروج إلى اليمين','المسار أولاً · الإشارة جزء من المناورة')}{legend('السهم = اتجاه المناورة','النقطة الكهرمانية = الغماز')}</svg>;
-
-  if (kind === 'lane-left') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="تغيير المسار إلى اليسار">{commonDefs}{road}<image href="/spirit/car-front-sport.svg" x="316" y="230" width="170" height="125" /><path d="M405 300c-58-17-101-50-136-101" fill="none" stroke="#83e1d7" strokeWidth="11" strokeLinecap="round" /><path d="m267 197 25-2-11 22z" fill="#83e1d7" />{badge('انتقال إلى اليسار','مرآة → نقطة عمياء → غماز → انتقال')}{legend('السهم = المسار المطلوب','لا تنتقل قبل التأكد من خلو المسار')}</svg>;
-
-  if (kind === 'oncoming') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="مركبة مقابلة ليلاً">{commonDefs}{road}<image href="/spirit/car-front-sport.svg" x="292" y="218" width="190" height="135" /><image href="/spirit/car-front-sport.svg" x="448" y="122" width="154" height="112" opacity=".74" transform="rotate(180 525 178)" /><ellipse cx="371" cy="258" rx="64" ry="28" fill="#fff0b0" opacity=".30" filter={'url(#' + idPrefix + '-blur8)'} /><ellipse cx="524" cy="164" rx="53" ry="22" fill="#fff0b0" opacity=".12" filter={'url(#' + idPrefix + '-blur8)'} /><path d="M414 269 480 243" stroke="#fff1b1" strokeOpacity=".12" strokeWidth="20" strokeLinecap="round" />{badge('مركبة مقابلة','اخفض العالي قبل الإبهار')}{legend('سيارتك = ضوء منخفض','المقابل = لا تبهِره بالعالي')}</svg>;
-
-  if (kind === 'open-road') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="طريق مظلم خالٍ">{commonDefs}{road}<image href="/spirit/car-front-sport.svg" x="315" y="225" width="170" height="125" /><path d="M398 270 102 140M402 270 698 140" stroke="#fff2ac" strokeOpacity=".10" strokeWidth="46" strokeLinecap="round" filter={'url(#' + idPrefix + '-blur18)'} /><path d="M398 270 84 126M402 270 716 126" stroke="#fff2ac" strokeOpacity=".15" strokeWidth="8" strokeLinecap="round" />{badge('طريق خالٍ → العالي','مدى أطول، ثم اخفضه عند ظهور مستخدم طريق')}{legend('الشعاع الأبيض = مجال الرؤية','العالي ليس للاستخدام مع إبهار الآخرين')}</svg>;
-
-  if (kind === 'fog') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="ضباب كثيف">{commonDefs}{road}<rect width="800" height="360" fill="#9fb1b1" fillOpacity=".13" /><rect x="0" y="125" width="800" height="45" fill={'url(#' + idPrefix + '-fogBand)'} /><rect x="0" y="184" width="800" height="35" fill={'url(#' + idPrefix + '-fogBand)'} /><rect x="0" y="244" width="800" height="28" fill={'url(#' + idPrefix + '-fogBand)'} /><image href="/spirit/car-front-sport.svg" x="315" y="225" width="170" height="125" /><ellipse cx="350" cy="271" rx="58" ry="24" fill="#fff0b2" opacity=".25" filter={'url(#' + idPrefix + '-blur8)'} /><ellipse cx="450" cy="271" rx="58" ry="24" fill="#fff0b2" opacity=".25" filter={'url(#' + idPrefix + '-blur8)'} />{badge('ضباب كثيف','الرؤية أولاً: سرعة أقل + إنارة مناسبة')}{legend('الضباب يقلل مدى الرؤية','المصباح لا يعوض عن خفض السرعة')}</svg>;
-
-  if (kind === 'rear-fog') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="ضباب خلفي">{commonDefs}{road}<rect width="800" height="360" fill="#a3b2b2" fillOpacity=".10" /><rect x="0" y="135" width="800" height="34" fill={'url(#' + idPrefix + '-fogBand)'} /><rect x="0" y="204" width="800" height="28" fill={'url(#' + idPrefix + '-fogBand)'} /><image href="/spirit/car-rear.svg" x="310" y="220" width="180" height="125" /><ellipse cx="352" cy="278" rx="25" ry="18" fill="#ffb84e" opacity=".75" filter={'url(#' + idPrefix + '-blur8)'} /><ellipse cx="448" cy="278" rx="25" ry="18" fill="#ffb84e" opacity=".75" filter={'url(#' + idPrefix + '-blur8)'} /><image href="/spirit/car-front-sport.svg" x="120" y="205" width="120" height="90" opacity=".45" />{badge('ضباب خلفي','اجعل المركبة واضحة لمن خلفك',true)}{legend('الخلفي = وضوح المركبة','أوقفه عندما تتحسن الرؤية')}</svg>;
-
-  if (kind === 'hazard') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="توقف اضطراري وتحذير رباعي">{commonDefs}<rect width="800" height="360" fill={'url(#' + idPrefix + '-sceneBg)'} /><rect y="125" width="800" height="235" fill="#172d35" /><path d="M0 215h800" stroke="#8da2a5" strokeOpacity=".13" strokeWidth="3" /><image href="/spirit/car-rear.svg" x="308" y="205" width="190" height="135" /><circle cx="352" cy="268" r="13" fill="#f4ae57" /><circle cx="448" cy="268" r="13" fill="#f4ae57" /><circle cx="352" cy="268" r="28" fill="none" stroke="#f4ae57" strokeOpacity=".20" /><circle cx="448" cy="268" r="28" fill="none" stroke="#f4ae57" strokeOpacity=".20" /><path d="M120 275l34-58 34 58z" fill="#f2bd74" fillOpacity=".10" stroke="#f2bd74" strokeWidth="3" /><text x="154" y="267" textAnchor="middle" fill="#f2bd74" fontSize="16" fontWeight="900">!</text>{badge('توقف اضطراري → تحذير','مركبة متوقفة في وضع قد يشكل خطراً',true)}{legend('التحذير = الاتجاهان معاً','ليس بديلاً عن غماز الانعطاف')}</svg>;
-
-  if (kind === 'turn-right') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="انعطاف يمين عند تقاطع">{commonDefs}<rect width="800" height="360" fill={'url(#' + idPrefix + '-sceneBg)'} /><rect y="118" width="800" height="90" fill="#18323a" /><rect x="484" y="118" width="92" height="242" fill="#18323a" /><path d="M0 163h800M530 118v242" stroke="#d9e5e6" strokeOpacity=".18" strokeWidth="4" strokeDasharray="18 14" /><image href="/spirit/car-front-sport.svg" x="338" y="228" width="180" height="128" /><path d="M430 295c48-10 79-43 79-102" fill="none" stroke="#83e1d7" strokeWidth="11" strokeLinecap="round" /><path d="m501 191 22 16-24 8z" fill="#83e1d7" />{badge('انعطاف يمين','مرآة → غماز → تموضع → انعطاف')}{legend('السهم = مسار السيارة','الإشارة تنبه الآخرين قبل المناورة')}</svg>;
-
-  if (kind === 'park') return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="وقوف ليلاً">{commonDefs}<rect width="800" height="360" fill="#061019" /><circle cx="630" cy="70" r="38" fill="#dce9e7" fillOpacity=".20" /><circle cx="630" cy="70" r="68" fill="#c4d8d5" fillOpacity=".05" filter={'url(#' + idPrefix + '-blur18)'} /><rect y="208" width="800" height="152" fill="#142930" /><path d="M0 266h800" stroke="#a2b0b2" strokeOpacity=".16" strokeWidth="3" /><path d="M0 210 800 210" stroke="#657b80" strokeOpacity=".16" strokeWidth="5" strokeDasharray="24 18" /><image href="/spirit/car-rear.svg" x="308" y="190" width="190" height="135" /><circle cx="352" cy="256" r="8" fill="#cddc8c" /><circle cx="448" cy="256" r="8" fill="#cddc8c" />{badge('وقوف ليلاً','اجعل المركبة واضحة · إنارة الموضع ليست لإنارة الطريق')}{legend('الموضع = وضوح المركبة','الطريق أمامك يحتاج إنارة مناسبة')}</svg>;
-
-  return <svg viewBox="0 0 800 360" className="scenario-svg" role="img" aria-label="مناورة تجاوز">{commonDefs}{road}<image href="/spirit/car-front-sport.svg" x="320" y="226" width="175" height="128" /><image href="/spirit/car-front-sport.svg" x="168" y="224" width="158" height="116" opacity=".70" /><path d="M360 303c-75-22-118-60-151-116" fill="none" stroke="#83e1d7" strokeWidth="11" strokeLinecap="round" /><path d="m204 187 25-2-11 22z" fill="#83e1d7" />{badge('بدء تجاوز','تأكد من السماح والفراغ قبل تغيير المسار')}{legend('السهم = مسار التجاوز','الغماز جزء من المناورة وليس ضماناً لها')}</svg>;
 }
 
-function ScenarioCard({
-  scenario,
-  active,
-  onApply,
-}: {
-  scenario: (typeof SCENARIOS)[number];
-  active: boolean;
-  onApply: (scenario: (typeof SCENARIOS)[number]) => void;
-}) {
-  const controlLabel =
-    scenario.control === 'right'
-      ? 'غماز يمين'
-      : scenario.control === 'left'
-        ? 'غماز يسار'
-        : scenario.control === 'hazard'
-          ? 'تحذير رباعي'
-          : MAIN_LIGHTS.find(item => item.key === scenario.control)?.title || '';
-
+function ScenarioVisual({ scenario, perspective }: { scenario: Scenario; perspective: Perspective }) {
+  const [oncoming, setOncoming] = useState(scenario.id === 'high');
+  const icon = scenario.control;
+  const controlLabel = scenario.control === 'hazard' ? 'رباعي' : scenario.control === 'right' ? 'يمين' : scenario.control === 'left' ? 'يسار' : MAIN_LIGHTS.find(item => item.key === scenario.control)?.title || '';
   return (
-    <article className={'scenario-card ' + (active ? 'active' : '')}>
-      <div className="scenario-media">
-        <ScenarioDiagram kind={scenario.diagram} />
-        <span className="scenario-tag">{scenario.tag}</span>
-      </div>
-      <div className="scenario-body">
-        <div className="scenario-top">
-          <span className="scenario-control-chip">{controlLabel}</span>
-          <span className="scenario-dot" />
-        </div>
-        <h3>{scenario.title}</h3>
-        <div className="scenario-steps">
-          {scenario.sequence.map((step, index) => (
-            <div key={step}><b>{String(index + 1).padStart(2, '0')}</b><span>{step}</span></div>
-          ))}
-        </div>
-        <div className="scenario-card-goal"><span>الفكرة</span><p>{scenario.goal}</p></div>
-        <p className="scenario-card-note">{scenario.note}</p>
-        <button type="button" className="scenario-action" onClick={() => onApply(scenario)}>
-          طبّق هذه الحالة في المحاكي <span>←</span>
-        </button>
+    <article className="scenario-visual">
+      <div className="scenario-media"><ScenarioSvg scenario={scenario} perspective={perspective} oncoming={oncoming} setOncoming={setOncoming}/><span className="scenario-tag">{scenario.tag}</span></div>
+      <div className="scenario-content">
+        <div className="scenario-meta"><span><LightIcon type={icon}/>{controlLabel}</span><b>تجربة تعليمية</b></div>
+        <h3>{scenario.title}</h3><p>{scenario.goal}</p>
+        <div className="scenario-steps">{scenario.steps.map((step, i) => <div key={step}><b>{i + 1}</b><span>{step}</span></div>)}</div>
+        <div className="scenario-note">{scenario.note}</div>
       </div>
     </article>
   );
 }
 
-function DashboardIndicator({ mainLight, signal }: { mainLight: MainLightKey; signal: SignalKey | null }) {
-  const items = [
-    { key: 'left', title: 'يسار', icon: 'left' as const, active: signal === 'left' || signal === 'hazard' },
-    { key: 'right', title: 'يمين', icon: 'right' as const, active: signal === 'right' || signal === 'hazard' },
-    { key: 'high', title: 'عالي', icon: 'high' as const, active: mainLight === 'high' },
-    { key: 'frontFog', title: 'ضباب', icon: 'frontFog' as const, active: mainLight === 'frontFog' },
-    { key: 'rearFog', title: 'خلفي', icon: 'rearFog' as const, active: mainLight === 'rearFog' },
-  ];
+function ScenarioSvg({ scenario, perspective, oncoming, setOncoming }: { scenario: Scenario; perspective: Perspective; oncoming: boolean; setOncoming: (value: boolean) => void }) {
+  const id = 's_' + scenario.id + '_' + perspective;
+  const night = scenario.id !== 'position' && scenario.id !== 'signals';
+  const title = perspective === 'driver' ? scenario.driverTitle : scenario.externalTitle;
   return (
-    <section className="dashboard-indicator">
-      <div><span>رمز الطبلون</span><small>اربط الحركة بالرمز حتى تتعرف عليه بسرعة.</small></div>
-      <div className="dashboard-lamps">
-        {items.map(item => <span key={item.key} className={item.active ? 'on' : ''}><LightSymbol type={item.icon} />{item.title}</span>)}
+    <div className="scenario-svg-frame">
+      {perspective === 'driver' ? (
+        <svg className="scenario-svg" viewBox="0 0 900 470" role="img" aria-label={title}>
+          <defs>
+            <linearGradient id={id + '_sky'} x1="0" y1="0" x2="0" y2="1"><stop stopColor={night ? '#06131b' : '#35524f'}/><stop offset="1" stopColor={night ? '#10232b' : '#263d39'}/></linearGradient>
+            <linearGradient id={id + '_road'} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#2a3a40"/><stop offset="1" stopColor="#091115"/></linearGradient>
+            <filter id={id + '_blur'}><feGaussianBlur stdDeviation="18"/></filter>
+          </defs>
+          <rect width="900" height="470" fill={'url(#' + id + '_sky)'}/>
+          <path d="M0 470 212 132h476L900 470Z" fill={'url(#' + id + '_road)'}/>
+          <path d="M450 136v334" stroke="#e3efee" strokeOpacity=".26" strokeWidth="4" strokeDasharray="25 18"/>
+          {scenario.id === 'low' && <><path d="M450 315 250 227M450 315 650 227" stroke="#fff1b1" strokeOpacity=".42" strokeWidth="58" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/><path d="M450 315 266 238M450 315 634 238" stroke="#fff2b7" strokeOpacity=".39" strokeWidth="12" strokeLinecap="round"/><circle cx="710" cy="180" r="30" fill="#7fe6d9" opacity=".14"/><circle cx="138" cy="212" r="24" fill="#7fe6d9" opacity=".10"/></>}
+          {scenario.id === 'high' && <><path d="M450 315 58 88M450 315 842 88" stroke="#fff2b3" strokeOpacity=".18" strokeWidth="94" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/><path d="M450 315 66 78M450 315 834 78" stroke="#fff3b7" strokeOpacity=".33" strokeWidth="11" strokeLinecap="round"/>{oncoming && <g><circle cx="674" cy="154" r="32" fill="#f8fbf9" opacity=".9"/><circle cx="674" cy="154" r="58" fill="#fff3c6" opacity=".15" filter={'url(#' + id + '_blur)'}/><path d="M450 315 647 173" stroke="#fff0bd" strokeOpacity=".22" strokeWidth="24" strokeLinecap="round"/><rect x="52" y="48" width="365" height="72" rx="20" fill="#281819" stroke="#f19da3" strokeOpacity=".34"/><text x="78" y="78" fill="#ffd9d8" fontSize="19" fontWeight="900">مركبة مقابلة · إبهار</text><text x="78" y="101" fill="#d8bcbd" fontSize="12">اخفض العالي وأعد المنخفض</text></g> : <rect x="52" y="48" width="320" height="72" rx="20" fill="#071219" stroke="#86e4da" strokeOpacity=".25"/>}<g onClick={() => setOncoming(!oncoming)} cursor="pointer"><rect x="710" y="50" width="145" height="48" rx="15" fill="#071219" stroke="#fff" strokeOpacity=".10"/><text x="730" y="80" fill="#d3e2df" fontSize="12" fontWeight="900">{oncoming ? 'إخفاء السيارة' : 'أظهر سيارة مقابلة'}</text></g></>}
+          {scenario.id === 'fog' && <><rect x="0" y="80" width="900" height="64" fill="#edf5f1" fillOpacity=".16"/><rect x="0" y="172" width="900" height="50" fill="#edf5f1" fillOpacity=".13"/><rect x="0" y="252" width="900" height="34" fill="#edf5f1" fillOpacity=".10"/><path d="M450 316 248 270M450 316 652 270" stroke="#fff2b2" strokeOpacity=".13" strokeWidth="78" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/><path d="M450 317 267 279M450 317 633 279" stroke="#fff3b8" strokeOpacity=".38" strokeWidth="10" strokeLinecap="round"/><rect x="52" y="48" width="394" height="72" rx="20" fill="#e8f0ed" fillOpacity=".08" stroke="#eef5f1" strokeOpacity=".17"/><text x="78" y="78" fill="#eff7f3" fontSize="19" fontWeight="900">الضباب يشتت الضوء</text><text x="78" y="101" fill="#c6d2d0" fontSize="12">الحزمة المنخفضة تبقى أقرب لسطح الطريق</text></>}
+          {scenario.id === 'position' && <><rect width="900" height="470" fill="#284440"/><circle cx="728" cy="92" r="56" fill="#e7ead7" opacity=".32"/><rect y="278" width="900" height="192" fill="#1d3634"/><path d="M0 340h900" stroke="#b0bfba" strokeOpacity=".14" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="337" y="236" width="226" height="126"/><circle cx="406" cy="302" r="9" fill="#dce7b2"/><circle cx="494" cy="302" r="9" fill="#dce7b2"/><rect x="52" y="48" width="330" height="72" rx="20" fill="#182321" stroke="#dbe8b2" strokeOpacity=".27"/><text x="78" y="78" fill="#ecf2db" fontSize="19" fontWeight="900">Position = أن تُرى</text><text x="78" y="101" fill="#bdc7b4" fontSize="12">غسق · وضوح حدود المركبة</text></>}
+          {scenario.id === 'signals' && <><rect width="900" height="470" fill="#1c3a3b"/><path d="M0 288h900M450 0v470" stroke="#e2eeeb" strokeOpacity=".14" strokeWidth="6" strokeDasharray="26 18"/><image href="/spirit/car-front.svg" x="337" y="290" width="226" height="144"/><circle cx="510" cy="327" r="13" fill="#f4ae57"/><path d="M450 352c0-68 65-96 146-104" fill="none" stroke="#87e5da" strokeWidth="15" strokeLinecap="round"/><path d="m591 247 22 15-26 8Z" fill="#87e5da"/><rect x="52" y="48" width="368" height="72" rx="20" fill="#071318" stroke="#87e5da" strokeOpacity=".26"/><text x="78" y="78" fill="#c0f3ec" fontSize="19" fontWeight="900">تقاطع · الإشارة قبل المناورة</text><text x="78" y="101" fill="#9bb0af" fontSize="12">فحص → غماز → تموضع → انعطاف</text></>}
+          {scenario.id === 'hazard' && <><rect width="900" height="470" fill="#0c1921"/><path d="M0 306h900" stroke="#9eaead" strokeOpacity=".14" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="337" y="226" width="226" height="132"/><circle cx="406" cy="294" r="15" fill="#f4ae57"/><circle cx="494" cy="294" r="15" fill="#f4ae57"/><circle cx="450" cy="220" r="48" fill="#f1bd74" fillOpacity=".07" stroke="#f1bd74" strokeOpacity=".34" strokeWidth="3"/><path d="m450 192 23 40h-46Z" stroke="#f1bd74" strokeWidth="4"/><rect x="52" y="48" width="360" height="72" rx="20" fill="#211b13" stroke="#f1bd74" strokeOpacity=".28"/><text x="78" y="78" fill="#f3d0a4" fontSize="19" fontWeight="900">كتف الطريق · رباعي</text><text x="78" y="101" fill="#d7be9f" fontSize="12">الجهتان معاً لتحذير أوضح</text></>}
+          {scenario.id === 'rear' && <><rect width="900" height="470" fill="#0b1820"/><path d="M0 306h900" stroke="#95a7a8" strokeOpacity=".14" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="337" y="224" width="226" height="136"/><circle cx="406" cy="294" r="21" fill="#ff4354"/><circle cx="494" cy="294" r="21" fill="#ff4354"/><path d="M450 358 360 424M450 358 540 424" stroke="#f7fbf4" strokeOpacity=".44" strokeWidth="38" strokeLinecap="round"/><rect x="52" y="48" width="430" height="72" rx="20" fill="#071116" stroke="#fff" strokeOpacity=".10"/><text x="78" y="78" fill="#ffe7e7" fontSize="19" fontWeight="900">أحمر = فرامل · أبيض = رجوع</text><text x="78" y="101" fill="#b9c7c5" fontSize="12">ما يراه السائق القادم من الخلف</text></>}
+          <rect x="24" y="422" width="852" height="26" rx="13" fill="#02070a" opacity=".84"/><text x="45" y="440" fill="#b3c5c3" fontSize="11">{title}</text>
+        </svg>
+      ) : (
+        <svg className="scenario-svg" viewBox="0 0 900 470" role="img" aria-label={title}>
+          <defs><linearGradient id={id + '_bg'} x1="0" y1="0" x2="0" y2="1"><stop stopColor={night ? '#051019' : '#294946'}/><stop offset="1" stopColor={night ? '#0b1b22' : '#1e3532'}/></linearGradient><filter id={id + '_blur'}><feGaussianBlur stdDeviation="16"/></filter></defs>
+          <rect width="900" height="470" fill={'url(#' + id + '_bg)'}/>
+          <path d="M0 365Q225 248 450 286T900 365v105H0Z" fill="#0d2329"/>
+          {scenario.id === 'low' && <><image href="/spirit/car-front.svg" x="337" y="266" width="226" height="144"/><path d="M450 326 132 188M450 326 768 188" stroke="#fff2b2" strokeOpacity=".13" strokeWidth="98" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/><path d="M450 326 122 178M450 326 778 178" stroke="#fff3b4" strokeOpacity=".29" strokeWidth="10" strokeLinecap="round"/><rect x="52" y="48" width="396" height="72" rx="20" fill="#071117" stroke="#86e4da" strokeOpacity=".25"/><text x="78" y="78" fill="#c1f2eb" fontSize="19" fontWeight="900">حزمة منخفضة ≈ 30 م</text><text x="78" y="101" fill="#9db1b0" fontSize="12">مركبة قادمة؟ لا ترفع الحزمة إلى مستوى وجهها</text></>}
+          {scenario.id === 'high' && <><image href="/spirit/car-front.svg" x="337" y="274" width="226" height="144"/><path d="M450 326 64 112M450 326 836 112" stroke="#fff0b2" strokeOpacity=".15" strokeWidth="104" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/><path d="M450 326 54 100M450 326 846 100" stroke="#fff3b5" strokeOpacity=".31" strokeWidth="11" strokeLinecap="round"/>{oncoming && <g><image href="/spirit/car-front.svg" x="635" y="100" width="120" height="80" transform="rotate(180 695 140)"/><ellipse cx="695" cy="146" rx="55" ry="34" fill="#fff5cd" opacity=".13" filter={'url(#' + id + '_blur)'}/><rect x="52" y="48" width="395" height="72" rx="20" fill="#281819" stroke="#f09ea4" strokeOpacity=".34"/><text x="78" y="78" fill="#ffd9d8" fontSize="19" fontWeight="900">السائق المقابل منزعج</text><text x="78" y="101" fill="#d6babb" fontSize="12">اخفض العالي وشاهد الفرق</text></g>}<g onClick={() => setOncoming(!oncoming)} cursor="pointer"><rect x="690" y="48" width="165" height="50" rx="15" fill="#071117" stroke="#fff" strokeOpacity=".10"/><text x="712" y="79" fill="#d5e2df" fontSize="12" fontWeight="900">{oncoming ? 'إخفاء المركبة' : 'أظهر مركبة مقابلة'}</text></g></>}
+          {scenario.id === 'fog' && <><rect x="0" y="82" width="900" height="68" fill="#edf5f1" fillOpacity=".12"/><rect x="0" y="183" width="900" height="52" fill="#edf5f1" fillOpacity=".10"/><image href="/spirit/car-front.svg" x="337" y="280" width="226" height="144"/><path d="M450 326 184 380M450 326 716 380" stroke="#fff0ae" strokeOpacity=".18" strokeWidth="70" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/><path d="M450 326 205 381M450 326 695 381" stroke="#fff2b5" strokeOpacity=".34" strokeWidth="11" strokeLinecap="round"/><rect x="52" y="48" width="430" height="72" rx="20" fill="#e8f0ed" fillOpacity=".08" stroke="#eef5f1" strokeOpacity=".18"/><text x="78" y="78" fill="#eef6f2" fontSize="19" fontWeight="900">ضوء منخفض قرب سطح الطريق</text><text x="78" y="101" fill="#c5d1cf" fontSize="12">قارن ذلك بتشتت الضوء المرتفع داخل الضباب</text></>}
+          {scenario.id === 'position' && <><circle cx="730" cy="92" r="57" fill="#e6ead8" opacity=".23"/><path d="M0 304h900" stroke="#aebbb6" strokeOpacity=".15" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="337" y="236" width="226" height="136"/><circle cx="405" cy="305" r="9" fill="#dbe8af"/><circle cx="495" cy="305" r="9" fill="#dbe8af"/><rect x="52" y="48" width="360" height="72" rx="20" fill="#162321" stroke="#d9e5b0" strokeOpacity=".30"/><text x="78" y="78" fill="#edf4dc" fontSize="19" fontWeight="900">أن تُرى في الغسق</text><text x="78" y="101" fill="#bec8b5" fontSize="12">الضوء للتعريف بالمركبة لا لإنارة بعيدة</text></>}
+          {scenario.id === 'signals' && <><path d="M0 304h900" stroke="#dbe8e5" strokeOpacity=".14" strokeWidth="7" strokeDasharray="24 18"/><image href="/spirit/car-front.svg" x="337" y="280" width="226" height="144"/><path d="M450 326c64-8 114-42 145-104" fill="none" stroke="#87e5da" strokeWidth="15" strokeLinecap="round"/><path d="m595 213 23 15-27 8Z" fill="#87e5da"/><circle cx="505" cy="322" r="14" fill="#f4ae57"/><rect x="52" y="48" width="410" height="72" rx="20" fill="#071117" stroke="#87e5da" strokeOpacity=".25"/><text x="78" y="78" fill="#c0f3eb" fontSize="19" fontWeight="900">الإشارة تسبق المناورة</text><text x="78" y="101" fill="#9db1b0" fontSize="12">تقاطع + غماز يمين + فحص المسار</text></>}
+          {scenario.id === 'hazard' && <><path d="M0 306h900" stroke="#9caead" strokeOpacity=".15" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="337" y="230" width="226" height="132"/><circle cx="406" cy="299" r="16" fill="#f4ae57"/><circle cx="494" cy="299" r="16" fill="#f4ae57"/><path d="M450 207 476 250H424Z" stroke="#f1bd74" strokeWidth="4" strokeLinejoin="round"/><rect x="52" y="48" width="385" height="72" rx="20" fill="#211b13" stroke="#f1bd74" strokeOpacity=".28"/><text x="78" y="78" fill="#f3d0a4" fontSize="19" fontWeight="900">تحذير للاتجاهين</text><text x="78" y="101" fill="#d5bd9f" fontSize="12">مركبة متوقفة على الكتف</text></>}
+          {scenario.id === 'rear' && <><path d="M0 306h900" stroke="#95a7a8" strokeOpacity=".14" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="337" y="228" width="226" height="134"/><circle cx="406" cy="297" r="21" fill="#ff4254"/><circle cx="494" cy="297" r="21" fill="#ff4254"/><path d="M450 356 360 430M450 356 540 430" stroke="#f8fbf5" strokeOpacity=".42" strokeWidth="38" strokeLinecap="round"/><rect x="52" y="48" width="430" height="72" rx="20" fill="#071117" stroke="#fff" strokeOpacity=".10"/><text x="78" y="78" fill="#ffe7e7" fontSize="19" fontWeight="900">أحمر للفرامل · أبيض للرجوع</text><text x="78" y="101" fill="#b8c6c4" fontSize="12">منظر خارجي يوضح الفرق بين الوظيفتين</text></>}
+          <rect x="24" y="422" width="852" height="26" rx="13" fill="#02070a" opacity=".84"/><text x="45" y="440" fill="#b2c4c2" fontSize="11">{title}</text>
+        </svg>
+      )}
+    </div>
+  );
+}
+
+function AutomaticLights() {
+  return (
+    <section id="automatic" className="automatic-section">
+      <div className="section-title"><div><span className="eyebrow">03 · أضواء مرتبطة بحالة السيارة</span><h2>ليست كل الإشارات من المقبض.</h2><p>بعض الأضواء تتغير عندما تتغير حالة السيارة نفسها.</p></div></div>
+      <div className="automatic-grid">
+        <article><div className="auto-icon red"><LightIcon type="brake"/></div><div><span>STOP</span><h3>أضواء الفرامل</h3><p>تضيء عند ضغط دواسة الفرامل، ولا تحتاج اختيارها من حلقة الإنارة.</p></div></article>
+        <article><div className="auto-icon white"><LightIcon type="reverse"/></div><div><span>REVERSE</span><h3>ضوء الرجوع للخلف</h3><p>يعمل عند اختيار الرجوع في المركبة المجهزة به، ويكشف المنطقة خلف السيارة.</p></div></article>
+        <article><div className="auto-icon green"><LightIcon type="sun"/></div><div><span>DRL</span><h3>أضواء النهار</h3><p>قد تعمل تلقائياً أثناء النهار في السيارات المجهزة بها.</p></div></article>
       </div>
+      <div className="memory-rule"><b>قاعدة الحفظ</b><span>أحياناً أنت تغيّر حالة السيارة، والسيارة هي التي تشغّل الضوء المناسب.</span></div>
     </section>
   );
 }
 
 export default function PracticalInfo() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<TabKey>('practice');
-  const [controlGroup, setControlGroup] = useState<ControlGroup>('ring');
   const [mainLight, setMainLight] = useState<MainLightKey>('low');
   const [signal, setSignal] = useState<SignalKey | null>(null);
   const [movement, setMovement] = useState<'ring' | 'left' | 'right' | 'push' | 'pull' | 'hazard'>('ring');
+  const [controlGroup, setControlGroup] = useState<ControlGroup>('ring');
+  const [perspective, setPerspective] = useState<Perspective>('external');
   const [flashActive, setFlashActive] = useState(false);
   const [flashCount, setFlashCount] = useState(0);
-  const [vehicleView, setVehicleView] = useState<VehicleView>('front');
-  const [selectedScenario, setSelectedScenario] = useState(SCENARIOS[0].id);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(true);
+  const [oncoming, setOncoming] = useState(true);
   const audioRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const previous = {
-      htmlScrollBehavior: html.style.scrollBehavior,
-      htmlOverflowY: html.style.overflowY,
-      bodyOverflowY: body.style.overflowY,
-      bodyOverflowX: body.style.overflowX,
-    };
-    html.style.scrollBehavior = 'auto';
-    html.style.overflowY = 'auto';
-    body.style.overflowY = 'auto';
-    body.style.overflowX = 'hidden';
-    html.classList.add('practical-info-active');
+    const oldX = document.body.style.overflowX;
+    document.body.style.overflowX = 'hidden';
+    document.documentElement.classList.add('practical-info-v2-active');
     return () => {
-      html.style.scrollBehavior = previous.htmlScrollBehavior;
-      html.style.overflowY = previous.htmlOverflowY;
-      body.style.overflowY = previous.bodyOverflowY;
-      body.style.overflowX = previous.bodyOverflowX;
-      html.classList.remove('practical-info-active');
+      document.body.style.overflowX = oldX;
+      document.documentElement.classList.remove('practical-info-v2-active');
     };
   }, []);
 
@@ -512,220 +428,123 @@ export default function PracticalInfo() {
     const timer = window.setTimeout(() => {
       setFlashActive(false);
       setMovement('pull');
-    }, 1050);
+    }, 720);
     return () => window.clearTimeout(timer);
   }, [flashActive]);
 
-  const activeLight = useMemo(() => MAIN_LIGHTS.find(item => item.key === mainLight) || MAIN_LIGHTS[3], [mainLight]);
-  const activeSignal = useMemo(() => SIGNALS.find(item => item.key === signal) || null, [signal]);
-
-  const playClickSound = () => {
+  const playClick = () => {
     if (!soundEnabled || typeof window === 'undefined') return;
     try {
-      const Ctx =
-        window.AudioContext ||
-        (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      const Ctx = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!Ctx) return;
-      const ctx = audioRef.current ?? new Ctx();
+      const ctx = audioRef.current || new Ctx();
       audioRef.current = ctx;
       if (ctx.state === 'suspended') void ctx.resume();
       const now = ctx.currentTime;
-      const oscillator = ctx.createOscillator();
+      const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      oscillator.type = 'square';
-      oscillator.frequency.setValueAtTime(760, now);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(620, now);
+      osc.frequency.exponentialRampToValueAtTime(420, now + 0.07);
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.055, now + 0.006);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.085);
-      oscillator.connect(gain);
-      gain.connect(ctx.destination);
-      oscillator.start(now);
-      oscillator.stop(now + 0.09);
+      gain.gain.exponentialRampToValueAtTime(0.035, now + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(now); osc.stop(now + 0.12);
     } catch {
-      // Audio is an enhancement; interaction must still work when the browser blocks sound.
+      // Optional enhancement only.
     }
   };
 
   const chooseMain = (key: MainLightKey) => {
-    playClickSound();
-    setMainLight(key);
-    setSignal(null);
+    playClick();
+    setMainLight(key); setSignal(null); setFlashActive(false);
     setMovement(key === 'high' ? 'push' : 'ring');
-    setFlashActive(false);
-    setVehicleView(key === 'rearFog' ? 'rear' : 'front');
+    setMobileSheetOpen(true);
+    setOncoming(key === 'high');
   };
-
   const chooseSignal = (key: SignalKey) => {
-    playClickSound();
-    setSignal(key);
-    setMovement(key);
-    setFlashActive(false);
-    setVehicleView(key === 'hazard' ? 'rear' : 'front');
+    playClick();
+    setSignal(key); setFlashActive(false); setMovement(key);
+    setMobileSheetOpen(true);
   };
-
   const triggerFlash = () => {
-    playClickSound();
-    setSignal(null);
-    setMovement('pull');
-    setFlashCount(value => value + 1);
-    setFlashActive(true);
-    setVehicleView('front');
+    playClick();
+    setSignal(null); setMovement('pull'); setFlashCount(value => value + 1); setFlashActive(true); setMobileSheetOpen(true);
   };
-
   const cycleRing = () => {
-    const index = RING_LIGHTS.findIndex(item => item.key === mainLight);
-    const next = RING_LIGHTS[(index + 1 + RING_LIGHTS.length) % RING_LIGHTS.length];
-    chooseMain(next.key);
-    setControlGroup('ring');
+    const currentIndex = RING_LIGHTS.findIndex(item => item.key === mainLight);
+    const safeIndex = currentIndex < 0 ? 0 : currentIndex;
+    chooseMain(RING_LIGHTS[(safeIndex + 1) % RING_LIGHTS.length].key);
   };
-
-  const applyLeverMovement = (nextMovement: 'left' | 'right' | 'push' | 'pull') => {
-    if (nextMovement === 'left' || nextMovement === 'right') {
-      chooseSignal(nextMovement);
-      setControlGroup('lever');
-      return;
-    }
-    if (nextMovement === 'push') {
-      chooseMain('high');
-      setControlGroup('lever');
-      return;
-    }
-    triggerFlash();
+  const applyLever = (action: 'left' | 'right' | 'push' | 'pull') => {
     setControlGroup('lever');
+    if (action === 'left' || action === 'right') chooseSignal(action);
+    else if (action === 'push') chooseMain('high');
+    else triggerFlash();
   };
 
-  const currentTitle = activeSignal?.title || (flashActive ? FLASH_ITEM.title : activeLight.title);
-  const currentAction = activeSignal?.action || (flashActive ? FLASH_ITEM.action : activeLight.action);
-  const currentUse = activeSignal?.use || (flashActive ? FLASH_ITEM.use : activeLight.use);
-  const currentCaution = activeSignal?.caution || (flashActive ? FLASH_ITEM.caution : activeLight.caution);
-
-  const applyScenario = (scenario: (typeof SCENARIOS)[number]) => {
-    setSelectedScenario(scenario.id);
-    setTab('practice');
-    if (scenario.control === 'left' || scenario.control === 'right' || scenario.control === 'hazard') {
-      chooseSignal(scenario.control);
-      setControlGroup('lever');
-    } else {
-      chooseMain(scenario.control);
-      setControlGroup(scenario.control === 'high' ? 'lever' : 'ring');
-    }
-  };
+  const activeLight = MAIN_LIGHTS.find(item => item.key === mainLight) || MAIN_LIGHTS[3];
+  const activeSignal = SIGNAL_ITEMS.find(item => item.key === signal);
+  const currentTitle = activeSignal?.title || (flashActive ? 'وميض العالي' : activeLight.title);
+  const currentItem = activeSignal ? undefined : (flashActive ? undefined : activeLight);
+  const cssVars = { '--lesson-offset': '0px' } as CSSProperties;
 
   return (
-    <div className="lighting-lab-page" dir="rtl">
-      <header className="lighting-lab-header">
-        <div className="lighting-lab-header-inner">
-          <button type="button" className="lighting-back" onClick={() => navigate('/')} aria-label="العودة إلى الرئيسية"><span>→</span></button>
-          <div className="lighting-brand"><span>مركز التدريب العملي</span><strong>أضواء السيارة والغمازات</strong></div>
-          <div className="lighting-header-status"><i /><span>تدريب عملي</span></div>
+    <div className="practical-v2" dir="rtl" style={cssVars}>
+      <header className="practical-header">
+        <div className="practical-header-inner">
+          <button type="button" className="back-button" onClick={() => navigate('/')} aria-label="العودة للرئيسية">→</button>
+          <div className="brand-lockup"><span>مركز التدريب العملي</span><strong>أضواء السيارة والغمازات</strong></div>
+          <div className="progress-status"><i />درس تفاعلي</div>
         </div>
       </header>
 
-      <main className="lighting-lab-main">
-        <section className="lighting-intro">
-          <div className="intro-copy">
-            <span className="lesson-eyebrow">درس قصير · حركة ← نتيجة ← تطبيق</span>
-            <h1>تعلّم المقبض والسيارة مع بعض.</h1>
-            <p>اختَر حركة واحدة، شاهد مكانها على المقبض، ثم شاهد أثرها مباشرة على السيارة. بدون قفزات أو تنقّل تلقائي.</p>
-          </div>
-          <div className="intro-flow">
-            <span><b>1</b> اختَر</span><i>→</i><span><b>2</b> راقب</span><i>→</i><span><b>3</b> طبّق</span>
-          </div>
+      <main className="practical-main">
+        <section className="hero-lesson">
+          <div className="hero-copy"><span className="eyebrow">تعلمها بصرياً · حركة ← رمز ← موقف</span><h1>افهم الضوء قبل أن تحفظ الرمز.</h1><p>اختر وظيفة، جرّب الحركة من المقبض، شاهد رمز لوحة العدادات، ثم ثبت المعلومة داخل مشهد طريق واضح. الصفحة مصممة للتعلّم الهادئ وليس للاستعراض.</p></div>
+          <div className="hero-map"><span><b>01</b> حركة</span><i>→</i><span><b>02</b> رمز</span><i>→</i><span><b>03</b> موقف</span></div>
         </section>
 
-        <section className="lighting-lab-shell">
-          <nav className="lighting-tabs" aria-label="أقسام الدرس">
-            <button type="button" className={tab === 'practice' ? 'active' : ''} onClick={() => setTab('practice')}><span>01</span>المحاكي</button>
-            <button type="button" className={tab === 'scenarios' ? 'active' : ''} onClick={() => setTab('scenarios')}><span>10</span>مواقف الطريق</button>
-            <button type="button" className={tab === 'automatic' ? 'active' : ''} onClick={() => setTab('automatic')}><span>03</span>أنوار تلقائية</button>
-          </nav>
+        <section className="lesson-shell">
+          <nav className="lesson-section-nav" aria-label="أقسام الدرس"><a href="#simulator">01 · المحاكي</a><a href="#scenes">02 · المشاهد</a><a href="#automatic">03 · أضواء السيارة</a></nav>
 
-          {tab === 'practice' && (
-            <section className="practice-section">
-              <div className="practice-topline">
-                <div><span className="lesson-eyebrow">المحاكي العملي</span><h2>اتبعها بهذا الترتيب</h2><p>الزر الذي تضغطه يبقى شرحه أمامك مباشرة، ثم تنتقل بصرياً للمقبض والنتيجة.</p></div>
-                <div className="practice-status"><small>الحالة الحالية</small><strong>{currentTitle}</strong>{flashCount > 0 && <span>وميض مجرّب {flashCount}×</span>}<button type="button" className={'sound-toggle ' + (soundEnabled ? 'is-on' : '')} onClick={() => setSoundEnabled(value => !value)}><b>{soundEnabled ? '♪' : '×'}</b><span>{soundEnabled ? 'الصوت مفعّل' : 'الصوت متوقف'}</span></button></div>
+          <section id="simulator" className="simulator-section">
+            <div className="section-title">
+              <div><span className="eyebrow">المحاكي الأساسي</span><h2>اختر، حرّك، ثم شاهد النتيجة فوراً.</h2><p>الشرح يبقى في نفس السياق. لا يوجد نقل تلقائي بعيد عن الزر الذي ضغطته.</p></div>
+              <div className="sound-control"><button type="button" onClick={() => setSoundEnabled(value => !value)}>{soundEnabled ? '♪' : '×'}</button><span>{soundEnabled ? 'صوت التفاعل' : 'الصوت مغلق'}</span>{flashCount > 0 && <b>{flashCount}× وميض</b>}</div>
+            </div>
+
+            <div className="simulator-layout">
+              <ControlPanel group={controlGroup} setGroup={setControlGroup} mainLight={mainLight} signal={signal} flashActive={flashActive} onMain={chooseMain} onSignal={chooseSignal} onFlash={triggerFlash}/>
+              <CockpitHandle mainLight={mainLight} signal={signal} movement={movement} onRingCycle={cycleRing} onLever={applyLever} onHazard={() => chooseSignal('hazard')}/>
+            </div>
+
+            <div className="result-heading"><span>03</span><div><b>شاهد الأثر على السيارة</b><small>بدّل بين منظور السائق والمنظور الخارجي داخل نفس القسم.</small></div></div>
+
+            <section className="vehicle-lab">
+              <div className="vehicle-lab-head">
+                <div><span className="eyebrow">النتيجة التعليمية</span><h3>{currentTitle}</h3><p>{perspective === 'driver' ? 'ماذا ترى من مكان السائق؟' : 'ماذا ترى السيارات الأخرى؟'}</p></div>
+                <div className="view-switch"><button type="button" className={perspective === 'driver' ? 'active' : ''} onClick={() => setPerspective('driver')}>منظور السائق</button><button type="button" className={perspective === 'external' ? 'active' : ''} onClick={() => setPerspective('external')}>منظور خارجي</button></div>
               </div>
-
-              <div className="practice-grid">
-                <div className="practice-left">
-                  <ControlSelector
-                    group={controlGroup}
-                    setGroup={setControlGroup}
-                    mainLight={mainLight}
-                    signal={signal}
-                    flashActive={flashActive}
-                    onMain={chooseMain}
-                    onSignal={chooseSignal}
-                    onFlash={triggerFlash}
-                  />
-
-                  <div className="selected-explanation">
-                    <div className="selected-icon"><LightSymbol type={activeSignal?.symbol || (flashActive ? 'flash' : activeLight.symbol)} /></div>
-                    <div className="selected-main"><span>شرح الزر الذي ضغطته</span><h3>{currentTitle}</h3><p>{currentAction}</p></div>
-                    <div className="selected-block"><small>متى؟</small><p>{currentUse}</p></div>
-                    <div className="selected-block note"><small>{activeSignal ? 'مثال عملي' : 'انتبه'}</small><p>{currentCaution}</p></div>
-                  </div>
-                </div>
-
-                <HandleIllustration mainLight={mainLight} movement={movement} onRingCycle={cycleRing} onLever={applyLeverMovement} onHazard={() => chooseSignal('hazard')} />
-              </div>
-
-              <div className="result-title"><span>3</span><div><b>شاهد النتيجة</b><small>التغيير يحصل هنا فقط، بدون تحريك الصفحة</small></div></div>
-
-              <VehicleScene
-                mainLight={mainLight}
-                signal={signal}
-                flashActive={flashActive}
-                view={vehicleView}
-                setView={setVehicleView}
-              />
-
-              <DashboardIndicator mainLight={mainLight} signal={signal} />
+              {perspective === 'external' && mainLight === 'high' && <button type="button" className="inline-scene-control" onClick={() => setOncoming(!oncoming)}>{oncoming ? 'السيارة المقابلة ظاهرة' : 'أظهر سيارة مقابلة'}</button>}
+              <CurrentScene mainLight={mainLight} signal={signal} flashActive={flashActive} perspective={perspective} oncoming={oncoming} setOncoming={setOncoming}/>
             </section>
-          )}
 
-          {tab === 'scenarios' && (
-            <section className="scenario-section">
-              <div className="section-kicker">
-                <span className="lesson-eyebrow">مواقف الطريق</span>
-                <h2>كل المشاهد رجعت أمامك.</h2>
-                <p>بدلاً من إخفاء المواقف داخل اختيار واحد، تشوف المواقف العشرة كلها وتطبّق أي واحد مباشرة.</p>
-              </div>
+            <div className="safety-note"><b>مهم</b><span>المقبض الفعلي وترتيب الوظائف يختلفان بحسب الشركة والموديل. هذه الصفحة تشرح الفكرة الشائعة للتدريب ولا تستبدل دليل سيارة محددة.</span></div>
+          </section>
 
-              <div className="scenario-gallery-head">
-                <span>10 مواقف تدريبية</span>
-                <small>مشهد + خطوات + تطبيق</small>
-              </div>
+          {mobileSheetOpen && <div className="mobile-explanation" role="dialog" aria-label="شرح الوظيفة المختارة"><button type="button" aria-label="إغلاق الشرح" onClick={() => setMobileSheetOpen(false)}>×</button><ExplanationCard title={currentTitle} item={currentItem} signal={activeSignal}/></div>}
 
-              <div className="scenario-grid">
-                {SCENARIOS.map(scenario => (
-                  <ScenarioCard
-                    key={scenario.id}
-                    scenario={scenario}
-                    active={selectedScenario === scenario.id}
-                    onApply={applyScenario}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+          <section id="scenes" className="scenes-section">
+            <div className="section-title scenes-title"><div><span className="eyebrow">المشاهد التدريبية</span><h2>موقف واحد يثبت المعلومة.</h2><p>كل مشهد متاح من منظور السائق ومن الخارج. على مشهد العالي يمكنك إظهار مركبة مقابلة لرؤية فكرة الإبهار.</p></div><div className="perspective-switch"><button type="button" className={perspective === 'driver' ? 'active' : ''} onClick={() => setPerspective('driver')}>السائق</button><button type="button" className={perspective === 'external' ? 'active' : ''} onClick={() => setPerspective('external')}>خارجي</button></div></div>
+            <div className="scenario-grid">{SCENARIOS.map(scenario => <ScenarioVisual key={scenario.id} scenario={scenario} perspective={perspective}/>)}</div>
+          </section>
 
-          {tab === 'automatic' && (
-            <section className="automatic-section">
-              <div className="section-kicker"><span className="lesson-eyebrow">أنوار تلقائية</span><h2>مو كل ضوء موجود على المقبض.</h2><p>بعض الأضواء تبدأ بسبب حالة السيارة نفسها.</p></div>
-              <div className="automatic-grid">{AUTOMATIC_LIGHTS.map(item => <article className="automatic-card" key={item.key}><div className="automatic-icon"><LightSymbol type={item.icon} /></div><div><span>{item.subtitle}</span><h3>{item.title}</h3><p>{item.description}</p></div></article>)}</div>
-              <div className="automatic-rule"><span>قاعدة الحفظ</span><p>أحياناً أنت تغيّر حالة السيارة، والسيارة هي التي تشغّل المصباح المناسب.</p></div>
-            </section>
-          )}
+          <AutomaticLights/>
         </section>
 
-        <section className="lighting-memory">
-          <div><span className="lesson-eyebrow">الخلاصة</span><h2>احفظها كحركات.</h2><p>لف الحلقة · ارفع/اخفض الذراع · ادفع/اسحب · اعرف زر التحذير.</p></div>
-          <div className="memory-grid"><div><b>01</b><strong>لف</strong><span>OFF · P · AUTO · LOW</span></div><div><b>02</b><strong>ضباب</strong><span>أمامي · خلفي</span></div><div><b>03</b><strong>ارفع/اخفض</strong><span>يمين · يسار</span></div><div><b>04</b><strong>ادفع/اسحب</strong><span>عالي · وميض</span></div></div>
-        </section>
-
-        <div className="lighting-disclaimer"><span>ملاحظة مهمة</span><p>شكل المقبض وترتيب الحلقات واتجاه بعض الحركات قد يختلف بحسب الشركة والموديل. المحاكي يشرح الفكرة الشائعة للتدريب، بينما دليل السيارة هو المرجع لسيارة محددة.</p></div>
+        <footer className="page-footer-note"><b>تذكّر</b><span>الأيقونة تساعدك على الحفظ، لكن دليل السيارة وقواعد الطريق هما المرجع عند قيادة مركبة محددة.</span></footer>
       </main>
     </div>
   );
