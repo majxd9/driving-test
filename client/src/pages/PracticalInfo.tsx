@@ -523,12 +523,54 @@ function ScenarioSvg({ scenario, perspective, oncoming, setOncoming }: { scenari
         <rect width="900" height="470" fill={'url(#' + id + '_bg)'}/>
         <path d="M0 360Q225 248 450 286T900 360v110H0Z" fill="#0d2329"/>
         {scenario.id === 'low' && <>
-          <image href="/spirit/car-front.svg" x="337" y="270" width="226" height="144"/>
-          <path d="M450 326 128 184M450 326 772 184" stroke="#fff2b2" strokeOpacity=".13" strokeWidth="102" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/>
-          <path d="M450 326 120 174M450 326 780 174" stroke="#fff3b4" strokeOpacity=".30" strokeWidth="11" strokeLinecap="round"/>
-          <path d="M184 178V330M716 178V330" stroke="#607175" strokeOpacity=".32" strokeWidth="4"/>
-          <rect x="52" y="48" width="410" height="76" rx="21" fill="#071117" stroke="#86e4da" strokeOpacity=".28"/>
-          <text x="78" y="78" fill="#c1f2eb" fontSize="20" fontWeight="900">المنخفض · الحزمة تهبط للطريق</text><text x="78" y="102" fill="#9db1b0" fontSize="12">من الخارج ترى الفرق بين ضوء مناسب للطريق وضوء يزعج المقابل</text>
+          {/* LOW BEAM — external educational view */}
+          <g aria-label="منظور خارجي للضوء المنخفض">
+            {/* Two clearly separated lanes and a shallow external road perspective. */}
+            <path d="M0 370Q225 286 450 292T900 370V470H0Z" fill="#0a1a20"/>
+            <path d="M0 370Q225 286 450 292T900 370" fill="none" stroke="#758588" strokeOpacity=".22" strokeWidth="4"/>
+            <path d="M72 392Q245 324 424 328" fill="none" stroke="#c9d5d2" strokeOpacity=".18" strokeWidth="3" strokeDasharray="18 18"/>
+            <path d="M828 392Q655 324 476 328" fill="none" stroke="#c9d5d2" strokeOpacity=".18" strokeWidth="3" strokeDasharray="18 18"/>
+
+            {/* Our car: front view, placed in the right-hand lane. */}
+            <image href="/spirit/car-front.svg" x="560" y="276" width="205" height="132"/>
+            <circle cx="615" cy="340" r="12" fill="#fff8d7"/>
+            <circle cx="710" cy="340" r="12" fill="#fff8d7"/>
+
+            {/* Opposing car: front view, placed in the opposite lane. */}
+            <image href="/spirit/car-front.svg" x="132" y="276" width="205" height="132" opacity=".90"/>
+            <circle cx="187" cy="340" r="10" fill="#fff4c9" opacity=".85"/>
+            <circle cx="282" cy="340" r="10" fill="#fff4c9" opacity=".85"/>
+
+            {/* Low beam leaves the lamp and lands on the road before the opposing driver's eye level. */}
+            <path d="M602 352 Q505 331 392 346 Q298 360 215 390 Q385 408 580 390Z" fill="#fff2b0" opacity=".16" filter={'url(#' + id + '_blur)'}/>
+            <path d="M612 351 Q510 339 405 351 Q315 362 245 389 Q404 397 595 385Z" fill="#fff3b8" opacity=".32"/>
+            <path d="M610 353 476 370 364 383" fill="none" stroke="#fff8d8" strokeOpacity=".48" strokeWidth="5" strokeLinecap="round"/>
+
+            {/* Eye level of the opposing driver. The beam stays below it. */}
+            <path d="M155 319H340" stroke="#ff9da4" strokeOpacity=".55" strokeWidth="2.5" strokeDasharray="8 7"/>
+            <text x="160" y="307" fill="#ffd2d5" fontSize="11" fontWeight="900">مستوى عين السائق المقابل</text>
+            <path d="M394 348 Q343 330 298 327" fill="none" stroke="#86e4da" strokeOpacity=".72" strokeWidth="2.5"/>
+            <text x="394" y="338" textAnchor="middle" fill="#c4f2ec" fontSize="11" fontWeight="900">الحزمة منخفضة</text>
+
+            {/* Direction markers clarify that the cars face each other. */}
+            <path d="M706 430H616" stroke="#86e4da" strokeWidth="4" strokeLinecap="round"/>
+            <path d="m616 430 14-9v18Z" fill="#86e4da"/>
+            <text x="664" y="451" textAnchor="middle" fill="#9eb6b3" fontSize="10">اتجاه سيارتنا</text>
+            <path d="M194 430H284" stroke="#e8a4aa" strokeWidth="4" strokeLinecap="round"/>
+            <path d="m284 430-14-9v18Z" fill="#e8a4aa"/>
+            <text x="238" y="451" textAnchor="middle" fill="#bda7aa" fontSize="10">الاتجاه المقابل</text>
+
+            <g>
+              <rect x="34" y="38" width="410" height="78" rx="20" fill="#061117" stroke="#86e4da" strokeOpacity=".28"/>
+              <text x="60" y="70" fill="#c7f2ec" fontSize="19" fontWeight="900">منظور خارجي · LOW BEAM</text>
+              <text x="60" y="95" fill="#9eb6b3" fontSize="11.5">الضوء يضيء الطريق، ولا يتجه إلى عين السائق المقابل</text>
+            </g>
+            <g>
+              <rect x="505" y="38" width="360" height="78" rx="20" fill="#201619" stroke="#ff9fa5" strokeOpacity=".27"/>
+              <text x="531" y="70" fill="#ffd8db" fontSize="16" fontWeight="900">لماذا لا نستخدم العالي هنا؟</text>
+              <text x="531" y="94" fill="#d3b8ba" fontSize="11">لأن الحزمة العالية قد تصل مباشرة إلى نظر المقابل</text>
+            </g>
+          </g>
         </>}
         {scenario.id === 'high' && <>
           <image href="/spirit/car-front.svg" x="337" y="270" width="226" height="144"/>
