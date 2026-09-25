@@ -112,3 +112,86 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
   .handle-actions{grid-template-columns:repeat(2,minmax(0,1fr));}
   .handle-actions button{min-height:62px;}
 }
+
+/* Focused handle pass: keep the hardware complete, responsive, and interaction-first. */
+.handle-stage{
+  overflow:hidden;
+  isolation:isolate;
+  padding:10px;
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 45% 44%, rgba(90,208,198,.09), transparent 33%),
+    linear-gradient(180deg,#0a171d,#03090d);
+}
+.handle-svg{
+  display:block;
+  width:100%;
+  height:auto;
+  max-width:none;
+  border-radius:16px;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.handle-hotspot{
+  position:absolute;
+  z-index:10;
+  appearance:none;
+  border:0;
+  padding:0;
+  background:transparent;
+  touch-action:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.handle-hotspot::after{
+  content:'';
+  position:absolute;
+  inset:1px;
+  border:1px solid transparent;
+  border-radius:inherit;
+  transition:background .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+.handle-hotspot:hover::after,
+.handle-hotspot:focus-visible::after{
+  background:rgba(72,214,189,.045);
+  border-color:rgba(72,214,189,.30);
+  box-shadow:0 0 0 5px rgba(72,214,189,.04);
+}
+.ring-zone{
+  left:19%;
+  top:36%;
+  width:20%;
+  height:29%;
+  cursor:ew-resize;
+  border-radius:30%;
+}
+.lever-zone{
+  left:42%;
+  top:43%;
+  width:42%;
+  height:22%;
+  cursor:grab;
+  border-radius:999px;
+}
+.lever-zone:active{cursor:grabbing}
+.hazard-zone{
+  right:4%;
+  top:4%;
+  width:12%;
+  height:18%;
+  cursor:pointer;
+}
+.handle-card .handle-stage + .handle-actions{
+  border-top:1px solid rgba(255,255,255,.045);
+}
+@media(max-width:760px){
+  .handle-stage{padding:5px;border-radius:18px}
+  .ring-zone{left:18.5%;top:36%;width:21%;height:30%}
+  .lever-zone{left:41%;top:43%;width:44%;height:23%}
+  .hazard-zone{right:3%;top:3%;width:15%;height:20%}
+}
+@media(max-width:430px){
+  .handle-stage{padding:4px}
+  .ring-zone{left:18%;top:35%;width:22%;height:31%}
+  .lever-zone{left:40%;top:42%;width:46%;height:25%}
+  .hazard-zone{right:2.5%;top:2.5%;width:16%;height:22%}
+}

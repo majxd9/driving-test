@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 type MainLightKey = 'off' | 'position' | 'auto' | 'low' | 'high' | 'frontFog' | 'rearFog';
@@ -118,6 +118,7 @@ function RingSymbol({ type, active }: { type: MainLightKey; active: boolean }) {
   return <g><path d="M-16 -7h9c5 0 8 4 9 8h-18z" {...common}/><path d="m-6 -5 -10 3M-6 2h-12M-6 9l-10-3" {...common}/><path d="M-16 -10c4 4-4 7 0 11s-4 7 0 11" {...common}/></g>;
 }
 
+
 function CockpitHandle({
   mainLight, signal, movement, onRingCycle, onLever, onHazard,
 }: {
@@ -128,109 +129,295 @@ function CockpitHandle({
   onLever: (movement: 'left' | 'right' | 'push' | 'pull') => void;
   onHazard: () => void;
 }) {
-  const dragRef = useRef<{ zone: 'ring' | 'lever'; x: number; y: number; fired: boolean } | null>(null);
-  const suppressClick = useRef(false);
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const dragRef = useRef<{ zone: 'ring' | 'lever'; x: number; y: number } | null>(null);
+  const suppressClick = useRef<'ring' | 'lever' | null>(null);
+
   const ringIndex = Math.max(0, RING_LIGHTS.findIndex(item => item.key === mainLight));
+  const ringAngle = movement === 'ring' ? -2 : 0;
+  const currentLabel =
+    signal === 'left' ? 'غماز يسار' :
+    signal === 'right' ? 'غماز يمين' :
+    signal === 'hazard' ? 'تحذير رباعي' :
+    MAIN_LIGHTS.find(item => item.key === mainLight)?.title || 'الإنارة';
+
+  const ringSymbols = RING_LIGHTS.map((item, index) => {
+    const angle = (index * 34) - (ringIndex * 34);
+    const rad = angle * Math.PI / 180;
+    const scaleY = Math.max(0.28, Math.cos(rad));
+    const y = 216 + 48 * Math.sin(rad);
+    const opacity = Math.max(0.22, 0.28 + 0.72 * Math.pow(scaleY, 1.4));
+    const isActive = index === ringIndex;
+    return (
+      <g key={item.key} transform={'translate(220 ' + y + ') scale(1 ' + scaleY + ')'} opacity={opacity}>
+        <circle r="21" fill={isActive ? '#0b2627' : '#0a1115'} stroke={isActive ? '#77e5d3' : '#65767b'} strokeOpacity={isActive ? '.95' : '.34'} strokeWidth={isActive ? '2.4' : '1.5'} />
+        <g transform="translate(-15 -15) scale(.62)" color={isActive ? '#effffb' : '#c5d1d3'} opacity={isActive ? 1 : .78}>
+          <RingSymbol type={item.key} active={isActive} />
+        </g>
+      </g>
+    );
+  });
+
+  const ringGrooves = Array.from({ length: 15 }, (_, i) => {
+    const y = 164 + i * 7.1;
+    return <line key={i} x1="168" x2="272" y1={y} y2={y} stroke="#000" strokeOpacity={i % 3 === 0 ? '.28' : '.14'} strokeWidth={i % 3 === 0 ? '1.5' : '1'} />;
+  });
+
+  const fogSymbols = [
+    { key: 'frontFog' as const, y: 203, active: mainLight === 'frontFog' },
+    { key: 'rearFog' as const, y: 229, active: mainLight === 'rearFog' },
+  ];
 
   const beginDrag = (zone: 'ring' | 'lever', e: ReactPointerEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
-    dragRef.current = { zone, x: e.clientX, y: e.clientY, fired: false };
-    suppressClick.current = false;
+    dragRef.current = { zone, x: e.clientX, y: e.clientY };
+    suppressClick.current = null;
   };
+
   const moveDrag = (zone: 'ring' | 'lever', e: ReactPointerEvent<HTMLButtonElement>) => {
     const d = dragRef.current;
-    if (!d || d.zone !== zone || d.fired) return;
+    if (!d || d.zone !== zone) return;
     const dx = e.clientX - d.x;
     const dy = e.clientY - d.y;
-    if (zone === 'ring' && Math.abs(dx) > 24) {
-      d.fired = true; suppressClick.current = true; onRingCycle(); return;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
+
+    suppressClick.current = zone;
+    dragRef.current = null;
+
+    if (zone === 'ring') {
+      onRingCycle();
+      return;
     }
-    if (zone === 'lever') {
-      if (Math.abs(dy) > 24) {
-        d.fired = true; suppressClick.current = true; onLever(dy < 0 ? 'right' : 'left');
-      } else if (Math.abs(dx) > 24) {
-        d.fired = true; suppressClick.current = true; onLever(dx > 0 ? 'push' : 'pull');
-      }
+
+    if (Math.abs(dy) >= Math.abs(dx)) {
+      onLever(dy < 0 ? 'right' : 'left');
+    } else {
+      onLever(dx > 0 ? 'push' : 'pull');
     }
   };
+
   const endDrag = () => { dragRef.current = null; };
-  const clickRing = () => { if (suppressClick.current) { suppressClick.current = false; return; } onRingCycle(); };
-  const clickLever = () => { if (suppressClick.current) { suppressClick.current = false; return; } onLever(signal === 'right' ? 'left' : 'right'); };
+
+  const clickRing = () => {
+    if (suppressClick.current === 'ring') {
+      suppressClick.current = null;
+      return;
+    }
+    onRingCycle();
+  };
+
+  const clickLever = () => {
+    if (suppressClick.current === 'lever') {
+      suppressClick.current = null;
+      return;
+    }
+    onLever(signal === 'right' ? 'left' : 'right');
+  };
 
   const leverTransform =
-    movement === 'left' ? 'translate(0 14) rotate(4 710 204)' :
-    movement === 'right' ? 'translate(0 -14) rotate(-4 710 204)' :
-    movement === 'push' ? 'translate(24 0)' :
-    movement === 'pull' ? 'translate(-24 0)' : 'translate(0 0)';
+    movement === 'right' ? 'translate(0 -10) rotate(-3 636 216)' :
+    movement === 'left' ? 'translate(0 10) rotate(3 636 216)' :
+    movement === 'push' ? 'translate(17 -5) rotate(-1 636 216)' :
+    movement === 'pull' ? 'translate(-17 5) rotate(1 636 216)' :
+    'translate(0 0)';
 
-  const currentLabel = signal === 'left' ? 'غماز يسار' : signal === 'right' ? 'غماز يمين' : signal === 'hazard' ? 'تحذير رباعي' : MAIN_LIGHTS.find(item => item.key === mainLight)?.title || 'الإنارة';
+  const u = (name: string) => 'url(#' + uid + name + ')';
 
   return (
     <section className="handle-card">
       <div className="handle-header">
-        <div><span className="eyebrow">02 · المقبض التفاعلي</span><h3>اسحب الجزء نفسه. لا تحتاج لحفظ الأسهم.</h3><p>اسحب الحلقة أفقياً لتغيير وضع الإنارة، والذراع ↑↓ للغماز أو ↔ للعالي والوميض. على الكمبيوتر استخدم الفأرة.</p></div>
+        <div>
+          <span className="eyebrow">02 · المقبض التفاعلي</span>
+          <h3>تعلّم المقبض بيدك</h3>
+          <p>المس الحلقة لتغيير الإنارة، واسحب الذراع ↑↓ للغماز أو ↔ للعالي والوميض. لا توجد مناطق تحكم منفصلة فوق الرسم.</p>
+        </div>
         <div className="handle-state"><span>الوضع الحالي</span><strong>{currentLabel}</strong></div>
       </div>
 
       <div className="handle-stage">
-        <svg viewBox="0 0 900 560" className="handle-svg" role="img" aria-label="رسم متجهي واقعي لمقبض الإنارة والغمازات مع يد تمسك به">
+        <svg viewBox="0 0 720 420" className="handle-svg" role="img" aria-label="مقبض أضواء وغمازات واقعي مبسط مع مناطق لمس مباشرة">
           <defs>
-            <linearGradient id="cockpitBg" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#12252d"/><stop offset=".55" stopColor="#050b10"/><stop offset="1" stopColor="#020508"/></linearGradient>
-            <linearGradient id="stalkMetal" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#b5c1c5"/><stop offset=".16" stopColor="#68757b"/><stop offset=".55" stopColor="#2b373c"/><stop offset="1" stopColor="#0a1014"/></linearGradient>
-            <linearGradient id="ringMetal" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#e1e7e9"/><stop offset=".24" stopColor="#8b979b"/><stop offset=".58" stopColor="#374249"/><stop offset="1" stopColor="#0b1216"/></linearGradient>
-            <linearGradient id="rubberGrip" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#526066"/><stop offset=".5" stopColor="#202a2f"/><stop offset="1" stopColor="#070c10"/></linearGradient>
-            <radialGradient id="skin" cx=".32" cy=".22" r=".95"><stop stopColor="#e1aa83"/><stop offset=".50" stopColor="#b97a5b"/><stop offset="1" stopColor="#684133"/></radialGradient>
-            <filter id="handleShadow"><feDropShadow dx="0" dy="26" stdDeviation="23" floodColor="#000" floodOpacity=".65"/></filter>
-            <pattern id="microTexture" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M0 10 10 0M3 12 12 3" stroke="#fff" strokeOpacity=".025" strokeWidth="1"/></pattern>
+            <radialGradient id={uid + 'bg'} cx=".46" cy=".42" r=".78">
+              <stop offset="0" stopColor="#193b45" />
+              <stop offset=".42" stopColor="#0b222b" />
+              <stop offset="1" stopColor="#03080b" />
+            </radialGradient>
+            <linearGradient id={uid + 'housing'} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#4a5961" />
+              <stop offset=".16" stopColor="#28363e" />
+              <stop offset=".55" stopColor="#111c22" />
+              <stop offset="1" stopColor="#05090c" />
+            </linearGradient>
+            <linearGradient id={uid + 'shaft'} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#aebdc2" />
+              <stop offset=".12" stopColor="#6d7e87" />
+              <stop offset=".32" stopColor="#35454e" />
+              <stop offset=".68" stopColor="#172228" />
+              <stop offset="1" stopColor="#090f13" />
+            </linearGradient>
+            <linearGradient id={uid + 'ring'} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#98a7ac" />
+              <stop offset=".10" stopColor="#66777f" />
+              <stop offset=".28" stopColor="#3c4c55" />
+              <stop offset=".58" stopColor="#202c32" />
+              <stop offset=".82" stopColor="#0f171b" />
+              <stop offset="1" stopColor="#060a0d" />
+            </linearGradient>
+            <linearGradient id={uid + 'fog'} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#8b9ba1" />
+              <stop offset=".2" stopColor="#55666e" />
+              <stop offset=".52" stopColor="#27353c" />
+              <stop offset="1" stopColor="#0a1014" />
+            </linearGradient>
+            <linearGradient id={uid + 'rubber'} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#5b6a72" />
+              <stop offset=".18" stopColor="#35434a" />
+              <stop offset=".50" stopColor="#1b272d" />
+              <stop offset="1" stopColor="#080d11" />
+            </linearGradient>
+            <linearGradient id={uid + 'chrome'} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor="#6f8189" />
+              <stop offset=".45" stopColor="#f4f8f9" />
+              <stop offset="1" stopColor="#7d8f96" />
+            </linearGradient>
+            <radialGradient id={uid + 'glow'}>
+              <stop offset="0" stopColor="#74e7d4" stopOpacity=".28" />
+              <stop offset="1" stopColor="#74e7d4" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id={uid + 'hazardGlow'}>
+              <stop offset="0" stopColor="#ff5d63" stopOpacity=".96" />
+              <stop offset="1" stopColor="#ff5d63" stopOpacity="0" />
+            </radialGradient>
+            <filter id={uid + 'shadow'} x="-25%" y="-45%" width="160%" height="190%">
+              <feDropShadow dx="0" dy="18" stdDeviation="15" floodColor="#000" floodOpacity=".68" />
+            </filter>
+            <filter id={uid + 'soft'} x="-30%" y="-50%" width="160%" height="200%">
+              <feGaussianBlur stdDeviation="6" />
+            </filter>
+            <clipPath id={uid + 'ringClip'}>
+              <rect x="151" y="154" width="133" height="124" rx="30" />
+            </clipPath>
+            <clipPath id={uid + 'fogClip'}>
+              <rect x="283" y="176" width="46" height="80" rx="14" />
+            </clipPath>
           </defs>
-          <rect width="900" height="560" rx="30" fill="url(#cockpitBg)"/>
-          <path d="M0 418Q220 336 450 365t450 42v153H0Z" fill="#0b151a"/>
-          <ellipse cx="446" cy="425" rx="360" ry="50" fill="#000" opacity=".35"/>
-          <g filter="url(#handleShadow)">
-            <path d="M105 407C232 322 351 278 500 250c86-16 160-35 252-60" stroke="#05090d" strokeWidth="118" strokeLinecap="round"/>
-            <path d="M105 390C232 306 351 262 500 234c86-16 160-35 252-60" stroke="url(#stalkMetal)" strokeWidth="91" strokeLinecap="round"/>
-            <path d="M105 369C232 291 352 245 500 217c90-16 164-34 252-58" stroke="#f3f8f8" strokeOpacity=".15" strokeWidth="12" strokeLinecap="round"/>
-            <path d="M104 391C230 309 352 268 500 238c86-16 161-34 253-61" stroke="url(#microTexture)" strokeWidth="84" strokeLinecap="round"/>
-            <g transform="rotate(-8 537 218)">
-              <rect x="412" y="145" width="250" height="146" rx="48" fill="#070c0f" stroke="#d6e0e2" strokeOpacity=".24" strokeWidth="5"/>
-              <rect x="425" y="157" width="224" height="122" rx="42" fill="url(#ringMetal)" stroke="#f7fbfc" strokeOpacity=".17" strokeWidth="3"/>
-              <rect x="438" y="170" width="198" height="96" rx="34" fill="#10191e"/>
-              <path d="M445 218h184" stroke="#eef6f6" strokeOpacity=".10" strokeWidth="2"/>
-              {RING_LIGHTS.map((item, index) => (
-                <g key={item.key} transform={'translate(' + (457 + index * 32) + ' 218) scale(.9)'}>
-                  <circle r="14.5" fill="#080f13" stroke={item.key === mainLight ? '#a5f3e8' : '#77858a'} strokeOpacity={item.key === mainLight ? '.96' : '.42'} strokeWidth="2"/>
-                  <RingSymbol type={item.key} active={item.key === mainLight}/>
-                </g>
-              ))}
-              <rect x={(457 + ringIndex * 32) - 7} y="140" width="14" height="20" rx="7" fill="#8ae6dc" opacity=".95"/>
-              <circle cx={(457 + ringIndex * 32)} cy="140" r="3.5" fill="#eafffb"/>
-            </g>
-            <g transform={leverTransform}>
-              <path d="M675 156 792 132c25-5 44 10 41 34l-13 58c-4 21-24 34-46 29l-119-30Z" fill="url(#rubberGrip)" stroke="#b1bdc0" strokeOpacity=".22" strokeWidth="4"/>
-              <path d="M736 151l54-11M733 174l59-12M729 197l57-11M724 220l52-10" stroke="#e4ecee" strokeOpacity=".13" strokeWidth="6" strokeLinecap="round"/>
-              <rect x="774" y="145" width="33" height="100" rx="16" fill="#11191d" stroke="#c7d0d3" strokeOpacity=".16" strokeWidth="2"/>
-              <text x="790" y="176" textAnchor="middle" fill="#eef7f5" fontSize="9" fontWeight="900">LOW</text>
-              <text x="790" y="195" textAnchor="middle" fill="#eef7f5" fontSize="9" fontWeight="900">FOG</text>
-            </g>
-            <g opacity=".98">
-              <path d="M625 121c27-9 63 0 82 19 13 12 20 32 13 47-7 16-31 18-50 9l-50-25c-16-8-12-40 5-50Z" fill="url(#skin)" stroke="#f6c7a2" strokeOpacity=".20" strokeWidth="3"/>
-              <path d="M647 136c20-9 43-2 57 12M639 151c19-7 37-2 53 10M635 168c16-5 32 0 46 8" stroke="#4e3025" strokeOpacity=".46" strokeWidth="4" strokeLinecap="round"/>
-              <path d="M661 183c18 6 31 2 43-7l16 27c-11 14-31 18-49 10l-27-13Z" fill="url(#skin)" opacity=".96"/>
-              <path d="M691 124c12 1 24 7 30 15" stroke="#f7d1b3" strokeOpacity=".28" strokeWidth="5" strokeLinecap="round"/>
-            </g>
+
+          <rect width="720" height="420" rx="26" fill={u('bg')} />
+
+          {/* cockpit / steering column context */}
+          <path d="M-40 373Q170 322 365 346t395 58v50H-40Z" fill="#04090c" opacity=".96" />
+          <path d="M520 60Q608 30 699 62" stroke="#e8f9f6" strokeOpacity=".045" strokeWidth="28" strokeLinecap="round" />
+          <ellipse cx="360" cy="335" rx="310" ry="30" fill="#000" opacity=".33" filter={u('soft')} />
+
+          {/* fixed steering column housing */}
+          <g>
+            <path d="M590 75Q592 56 610 52H686Q704 56 705 74V350Q701 369 684 372H610Q593 368 590 350Z" fill={u('housing')} stroke="#010507" strokeWidth="3" />
+            <path d="M605 75H690" stroke="#fff" strokeOpacity=".10" strokeWidth="3" strokeLinecap="round" />
+            <path d="M602 132H694M602 302H694" stroke="#000" strokeOpacity=".34" strokeWidth="4" />
+            <rect x="615" y="108" width="50" height="204" rx="24" fill="#060b0e" stroke="#fff" strokeOpacity=".04" />
+            <path d="M625 132V290" stroke="#9fb0b5" strokeOpacity=".08" strokeWidth="4" strokeLinecap="round" />
           </g>
-          <g fontFamily="Arial,sans-serif" fontWeight="900">
-            <rect x="36" y="34" width="274" height="58" rx="19" fill="#061218" stroke="#fff" strokeOpacity=".08"/><circle cx="62" cy="63" r="10" fill="#86e4da"/><text x="83" y="68" fill="#dff6f2" fontSize="14">الحلقة = تدوير لاختيار الإنارة</text>
-            <rect x="36" y="468" width="354" height="58" rx="19" fill="#061218" stroke="#fff" strokeOpacity=".08"/><circle cx="62" cy="497" r="10" fill="#b8c1c4"/><text x="83" y="502" fill="#dff6f2" fontSize="14">الذراع = ↑ ↓ غماز · ↔ العالي والوميض</text>
-            <rect x="616" y="34" width="246" height="58" rx="19" fill="#061218" stroke="#fff" strokeOpacity=".08"/><circle cx="642" cy="63" r="10" fill="#f1bd74"/><text x="663" y="68" fill="#dff6f2" fontSize="14">زر مستقل = تحذير رباعي</text>
+
+          {/* rigid stalk: only this group moves, not the ring independently */}
+          <g transform={leverTransform} filter={u('shadow')}>
+            <path d="M609 190L329 195Q318 196 309 207L309 225Q318 236 330 237L609 242Z" fill="#05090d" opacity=".78" />
+            <path d="M611 194L334 199Q324 200 316 209L316 222Q324 232 335 233L611 238Z" fill={u('shaft')} stroke="#04080b" strokeWidth="2" />
+            <path d="M600 198L340 203" stroke="#fff" strokeOpacity=".24" strokeWidth="3" strokeLinecap="round" />
+            <path d="M552 207V228M514 208V228M476 209V228M438 210V227" stroke="#000" strokeOpacity=".24" strokeWidth="2" strokeLinecap="round" />
+
+            {/* fog ring / secondary collar */}
+            <g opacity={signal === null ? .98 : .72}>
+              <rect x="283" y="176" width="46" height="80" rx="14" fill={u('fog')} stroke="#03070a" strokeWidth="2.5" />
+              <g clipPath={u('fogClip')}>
+                <path d="M286 185H326M286 247H326" stroke="#fff" strokeOpacity=".07" strokeWidth="3" />
+                <path d="M286 195H326M286 204H326M286 213H326M286 222H326M286 231H326" stroke="#000" strokeOpacity=".18" strokeWidth="1.3" />
+                {fogSymbols.map((item) => (
+                  <g key={item.key} transform={'translate(306 ' + item.y + ') scale(.45)'} color={item.active ? '#f0fffb' : '#bcc8ca'} opacity={item.active ? 1 : .52}>
+                    <RingSymbol type={item.key} active={item.active} />
+                  </g>
+                ))}
+              </g>
+            </g>
+
+            {/* main lighting ring */}
+            <g opacity={signal === null ? 1 : .62}>
+              <rect x="151" y="154" width="133" height="124" rx="30" fill={u('ring')} stroke="#020609" strokeWidth="4" />
+              <g clipPath={u('ringClip')}>
+                {ringGrooves}
+                <rect x="153" y="156" width="129" height="20" fill="#fff" opacity=".055" />
+                <rect x="153" y="252" width="129" height="25" fill="#000" opacity=".22" />
+                {ringSymbols}
+              </g>
+              <ellipse cx="152" cy="216" rx="13" ry="60" fill="#26343b" stroke="#000" strokeOpacity=".6" strokeWidth="2" />
+              <ellipse cx="148" cy="205" rx="4" ry="22" fill="#fff" opacity=".11" />
+              <rect x="273" y="160" width="7" height="112" rx="3.5" fill={u('chrome')} opacity=".9" />
+            </g>
+
+            {/* tactile end cap */}
+            <path d="M124 192Q115 201 115 216T124 240L151 247V185Z" fill={u('rubber')} stroke="#000" strokeOpacity=".72" strokeWidth="2.5" />
+            <path d="M121 201Q118 216 121 232" stroke="#f4fbfb" strokeOpacity=".10" strokeWidth="4" strokeLinecap="round" />
+            <path d="M133 194V238M142 192V241" stroke="#000" strokeOpacity=".16" strokeWidth="2" />
           </g>
-          <g transform="translate(620 350)"><circle cx="56" cy="56" r="54" fill="#070e12" stroke="#f1bd74" strokeOpacity=".35" strokeWidth="3"/><path d="m56 27 26 43H30Z" stroke="#f1bd74" strokeWidth="4" strokeLinejoin="round"/><path d="M56 40v14M56 61v2" stroke="#f1bd74" strokeWidth="4" strokeLinecap="round"/></g>
+
+          {/* fixed selector pointer */}
+          <g>
+            <rect x="278" y="181" width="13" height="70" rx="6" fill="#05090d" stroke="#000" strokeOpacity=".72" />
+            <path d="M284.5 216L275 210V222Z" fill="#f4fffc" />
+            <path d="M286 201V231" stroke="#7fe6d5" strokeOpacity=".8" strokeWidth="2" />
+            <circle cx="286" cy="183" r="5" fill="#73e5d2" opacity=".20" />
+          </g>
+
+          {/* separate hazard switch */}
+          <g>
+            <circle cx="651" cy="54" r="40" fill={u('hazardGlow')} opacity={signal === 'hazard' ? 1 : 0} filter={u('soft')} />
+            <rect x="613" y="22" width="76" height="62" rx="16" fill="#2c3940" stroke="#05090c" strokeWidth="2.5" />
+            <rect x="621" y="30" width="60" height="46" rx="12" fill="#090f13" stroke="#fff" strokeOpacity=".08" />
+            <g transform="translate(635 37) scale(.67)" color={signal === 'hazard' ? '#ff777b' : '#cb555b'} className={signal === 'hazard' ? 'pl-blink' : undefined}>
+              <RingSymbol type="hazard" active={signal === 'hazard'} />
+            </g>
+            <circle cx="651" cy="91" r="4" fill={signal === 'hazard' ? '#ff696f' : '#4a3135'} />
+          </g>
+
+          {/* movement arrows: visible only for the active action */}
+          <g>
+            <Arrow x1={226} y1={126} x2={226} y2={90} on={movement === 'right'} />
+            <Arrow x1={226} y1={305} x2={226} y2={341} on={movement === 'left'} />
+            <Arrow x1={342} y1={140} x2={388} y2={112} on={movement === 'push'} />
+            <Arrow x1={342} y1={292} x2={296} y2={318} on={movement === 'pull'} />
+          </g>
+
+          {/* subtle focus, never covering the whole handle */}
+          <g fill="none" stroke="#57ddc6" strokeWidth="2.5" strokeDasharray="5 5" opacity=".88">
+            {movement === 'ring' && <rect x="145" y="148" width="145" height="136" rx="34" />}
+            {(movement === 'left' || movement === 'right' || movement === 'push' || movement === 'pull') && <path d="M304 187Q298 195 298 216Q298 237 305 245H615" />}
+            {movement === 'hazard' && <rect x="607" y="16" width="84" height="74" rx="19" />}
+          </g>
+
+          <text x="363" y="382" fill="#9cb2b3" fontSize="12" fontWeight="700">اسحب القطعة نفسها — الحلقة والدراع يتحركان بشكل مستقل</text>
         </svg>
 
-        <button type="button" className="handle-hotspot ring-zone" onPointerDown={e => beginDrag('ring', e)} onPointerMove={e => moveDrag('ring', e)} onPointerUp={endDrag} onPointerCancel={endDrag} onClick={clickRing} aria-label="لف حلقة الإنارة"><span>اسحب لتدوير الحلقة</span></button>
-        <button type="button" className="handle-hotspot lever-zone" onPointerDown={e => beginDrag('lever', e)} onPointerMove={e => moveDrag('lever', e)} onPointerUp={endDrag} onPointerCancel={endDrag} onClick={clickLever} aria-label="تحريك ذراع الغمازات والعالي"><span>اسحب الذراع</span></button>
-        <button type="button" className="handle-hotspot hazard-zone" onClick={onHazard} aria-label="تشغيل التحذير الرباعي"><span>△</span></button>
+        <button
+          type="button"
+          className="handle-hotspot ring-zone"
+          onPointerDown={e => beginDrag('ring', e)}
+          onPointerMove={e => moveDrag('ring', e)}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          onClick={clickRing}
+          aria-label="تدوير حلقة الإنارة"
+        />
+        <button
+          type="button"
+          className="handle-hotspot lever-zone"
+          onPointerDown={e => beginDrag('lever', e)}
+          onPointerMove={e => moveDrag('lever', e)}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          onClick={clickLever}
+          aria-label="تحريك ذراع الغمازات والضوء العالي"
+        />
+        <button type="button" className="handle-hotspot hazard-zone" onClick={onHazard} aria-label="تشغيل التحذير الرباعي" />
       </div>
 
       <div className="handle-actions">
