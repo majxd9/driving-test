@@ -429,70 +429,87 @@ function ScenarioSvg({ scenario, perspective, oncoming, setOncoming }: { scenari
               <path d="M0 470 212 132h476L900 470Z" fill={'url(#' + id + '_road)'}/>
               <path d="M450 136v334" stroke="#e3efee" strokeOpacity=".22" strokeWidth="4" strokeDasharray="25 18"/>
               {scenario.id === 'low' && <>
-                {/* LOW BEAM — driver view: right-hand traffic, opposing vehicle stays in its lane. */}
-                <g aria-label="مشهد الضوء المنخفض">
-                  {/* Road geometry: narrow horizon, widening toward the camera. */}
-                  <path d="M0 470 245 132H655L900 470Z" fill={'url(#' + id + '_road)'}/>
-                  <path d="M245 132H655" stroke="#718286" strokeOpacity=".22" strokeWidth="3"/>
-                  <path d="M245 132 0 470M655 132 900 470" stroke="#91a1a2" strokeOpacity=".18" strokeWidth="5"/>
-                  {/* Centre line sits left of the camera because this is the right-hand lane. */}
-                  <path d="M431 140 340 470" stroke="#dfe8e5" strokeOpacity=".30" strokeWidth="4" strokeDasharray="25 20"/>
-                  <path d="M286 151 36 470M614 151 864 470" stroke="#b8c5c4" strokeOpacity=".16" strokeWidth="3" strokeDasharray="18 24"/>
-                  {/* Reflective roadside markers establish depth without clutter. */}
-                  <g opacity=".72">
-                    <rect x="205" y="180" width="5" height="55" rx="2" fill="#829294"/>
-                    <circle cx="207" cy="176" r="8" fill="#d8e6df" opacity=".18"/>
-                    <rect x="693" y="180" width="5" height="55" rx="2" fill="#829294"/>
-                    <circle cx="695" cy="176" r="8" fill="#d8e6df" opacity=".18"/>
-                    <rect x="107" y="270" width="7" height="82" rx="3" fill="#718083"/>
-                    <rect x="786" y="270" width="7" height="82" rx="3" fill="#718083"/>
+                {/* LOW BEAM — rebuilt from the supplied prototype: driver-training scene, not decorative SVG. */}
+                <g aria-label="محاكاة تعليمية للضوء المنخفض">
+                  {/* Night environment and perspective road. */}
+                  <rect x="0" y="0" width="900" height="470" fill="#08141b"/>
+                  <path d="M0 235 Q105 188 205 210 T390 202 T585 205 T760 195 T900 214 V0 H0Z" fill="#0d202a"/>
+                  <path d="M0 258 Q120 224 240 238 T470 230 T700 235 T900 222 V470 H0Z" fill="#102a31" opacity=".72"/>
+                  {/* Distant town lights / roadside atmosphere. */}
+                  <g opacity=".42">
+                    <path d="M35 230V177h18v53h16v-30h18v30h15v-58h20v58h14v-21h20v21h20v-45h15v45" fill="#182e34"/>
+                    <path d="M700 225V180h16v45h18v-26h14v26h17v-53h20v53h16v-33h14v33h15v-45h15v45" fill="#172d33"/>
+                    <g fill="#e6dca4">
+                      <circle cx="74" cy="194" r="2"/><circle cx="112" cy="184" r="2"/><circle cx="735" cy="197" r="2"/><circle cx="770" cy="178" r="2"/><circle cx="823" cy="196" r="2"/>
+                    </g>
                   </g>
 
-                  {/* Car ahead: rear view, same direction, in our right-hand lane. */}
-                  <image href="/spirit/car-rear.svg" x="510" y="166" width="118" height="76" opacity=".92"/>
-                  <ellipse cx="540" cy="219" rx="8" ry="5" fill="#ff4352" opacity=".78"/>
-                  <ellipse cx="598" cy="219" rx="8" ry="5" fill="#ff4352" opacity=".78"/>
-
-                  {/* Oncoming vehicle: front view, correctly facing the driver, in the opposing lane. */}
-                  <image href="/spirit/car-front.svg" x="282" y="170" width="104" height="68" opacity=".94"/>
-                  <ellipse cx="305" cy="212" rx="7" ry="5" fill="#fff6cf" opacity=".72"/>
-                  <ellipse cx="363" cy="212" rx="7" ry="5" fill="#fff6cf" opacity=".72"/>
-
-                  {/* Low-beam illumination: starts at the two headlamps and falls onto the road. */}
-                  <path d="M500 374 L555 374 L614 238 L550 225 Z" fill={'url(#' + id + '_lowBeam)'} opacity=".88"/>
-                  <path d="M515 374 L575 374 L632 247 L570 229 Z" fill={'url(#' + id + '_lowBeam)'} opacity=".72"/>
-                  <path d="M500 374 L342 291 L430 265 L558 359 Z" fill="#fff2b1" opacity=".10" filter={'url(#' + id + '_blur)'}/>
-                  <path d="M530 374 L390 292 L462 268 L582 357 Z" fill="#fff3ba" opacity=".24"/>
-                  {/* The beam remains below the oncoming driver's eye line. */}
-                  <path d="M272 203H397" stroke="#ef9da2" strokeOpacity=".40" strokeWidth="2" strokeDasharray="7 7"/>
-                  <text x="274" y="193" fill="#ffd2d5" fontSize="11" fontWeight="800">مستوى عين السائق المقابل</text>
-                  <path d="M510 360 C486 331 459 311 425 291" fill="none" stroke="#8de4da" strokeOpacity=".65" strokeWidth="2.5"/>
-                  <text x="420" y="280" textAnchor="middle" fill="#bfeee8" fontSize="11" fontWeight="900">الحزمة تهبط إلى سطح الطريق</text>
-
-                  {/* Approximate teaching distance. */}
-                  <path d="M405 250V314M405 250H492M405 314H492" stroke="#86e4da" strokeOpacity=".52" strokeWidth="2"/>
-                  <rect x="414" y="263" width="76" height="35" rx="17" fill="#071318" stroke="#86e4da" strokeOpacity=".25"/>
-                  <text x="452" y="286" textAnchor="middle" fill="#c8f3ed" fontSize="14" fontWeight="900">≈ 30 م</text>
-
-                  {/* Dashboard / hood framing the driver perspective. */}
-                  <path d="M0 408 Q160 371 315 398 Q450 421 585 398 Q740 371 900 408V470H0Z" fill="#050b0f" opacity=".96"/>
-                  <path d="M0 408 Q160 371 315 398 Q450 421 585 398 Q740 371 900 408" fill="none" stroke="#34454a" strokeWidth="3" opacity=".75"/>
-                  <path d="M350 470 Q380 420 450 416 Q520 420 550 470" fill="#091117" stroke="#2b3e44" strokeWidth="3"/>
-                  <circle cx="450" cy="449" r="16" fill="#101d23" stroke="#53666a" strokeWidth="3"/>
-                  <circle cx="450" cy="449" r="5" fill="#86e4da" opacity=".75"/>
-
-                  {/* Minimal educational header inside the scene. */}
-                  <g>
-                    <rect x="36" y="34" width="392" height="76" rx="20" fill="#061117" stroke="#86e4da" strokeOpacity=".28"/>
-                    <circle cx="64" cy="62" r="8" fill="#86e4da"/>
-                    <text x="84" y="68" fill="#c9f3ed" fontSize="19" fontWeight="900">LOW BEAM · الضوء المنخفض</text>
-                    <text x="84" y="91" fill="#9fb6b3" fontSize="11.5">رؤية الطريق أمامك مع إبقاء الحزمة منخفضة</text>
+                  {/* Guardrails and roadside posts give the scene real depth. */}
+                  <path d="M0 286 Q130 238 278 250" fill="none" stroke="#6d8082" strokeOpacity=".55" strokeWidth="7"/>
+                  <path d="M0 296 Q130 248 278 260" fill="none" stroke="#c4cecb" strokeOpacity=".20" strokeWidth="2"/>
+                  <path d="M900 286 Q770 238 622 250" fill="none" stroke="#6d8082" strokeOpacity=".55" strokeWidth="7"/>
+                  <path d="M900 296 Q770 248 622 260" fill="none" stroke="#c4cecb" strokeOpacity=".20" strokeWidth="2"/>
+                  <g fill="#819294" opacity=".8">
+                    <rect x="105" y="255" width="5" height="48" rx="2"/><rect x="178" y="241" width="4" height="34" rx="2"/>
+                    <rect x="795" y="255" width="5" height="48" rx="2"/><rect x="722" y="241" width="4" height="34" rx="2"/>
                   </g>
-                  <g>
-                    <rect x="594" y="34" width="270" height="76" rx="20" fill="#201618" stroke="#ff9fa5" strokeOpacity=".28"/>
-                    <text x="620" y="67" fill="#ffd8db" fontSize="16" fontWeight="900">السيارة المقابلة</text>
-                    <text x="620" y="90" fill="#d2b6b9" fontSize="11">لا يصل الضوء إلى مستوى عينيها</text>
-                  </g>
+
+                  {/* Road: right-hand lane for our vehicle, opposing lane on the left. */}
+                  <path d="M0 470 L248 248 Q450 218 652 248 L900 470Z" fill={'url(#' + id + '_road)'}/>
+                  <path d="M248 248 Q450 218 652 248" fill="none" stroke="#718286" strokeOpacity=".35" strokeWidth="3"/>
+                  <path d="M450 221 L450 470" stroke="#f3e8a7" strokeOpacity=".62" strokeWidth="4" strokeDasharray="24 20"/>
+                  <path d="M245 252 L54 470" stroke="#e9eeee" strokeOpacity=".28" strokeWidth="4"/>
+                  <path d="M655 252 L846 470" stroke="#e9eeee" strokeOpacity=".28" strokeWidth="4"/>
+                  <path d="M220 270 L95 408M680 270 L805 408" stroke="#e8eeee" strokeOpacity=".12" strokeWidth="3" strokeDasharray="12 18"/>
+
+                  {/* Oncoming car: front view, approaching in the opposite lane. */}
+                  <image href="/spirit/car-front.svg" x="276" y="190" width="116" height="82" opacity=".96"/>
+                  <ellipse cx="300" cy="235" rx="8" ry="5" fill="#fff8d6" opacity=".86"/>
+                  <ellipse cx="367" cy="235" rx="8" ry="5" fill="#fff8d6" opacity=".86"/>
+
+                  {/* Car ahead: rear view, same direction, inside our right lane. */}
+                  <image href="/spirit/car-rear.svg" x="505" y="185" width="132" height="88" opacity=".98"/>
+                  <ellipse cx="532" cy="238" rx="9" ry="5" fill="#ff4a56" opacity=".75"/>
+                  <ellipse cx="604" cy="238" rx="9" ry="5" fill="#ff4a56" opacity=".75"/>
+
+                  {/* Low beam: two soft sources from the headlamps, widening close to the road and fading toward the horizon. */}
+                  <path d="M405 405 L450 405 L400 272 L350 260 Z" fill={'url(#' + id + '_lowBeam)'} opacity=".78"/>
+                  <path d="M450 405 L495 405 L550 260 L500 272 Z" fill={'url(#' + id + '_lowBeam)'} opacity=".78"/>
+                  <path d="M410 405 L490 405 L565 278 L335 278 Z" fill="#fff2ae" opacity=".10" filter={'url(#' + id + '_blur)'}/>
+                  <path d="M418 404 L482 404 L540 289 L360 289 Z" fill="#fff4bd" opacity=".20"/>
+
+                  {/* 30 m teaching marker: approximate, not a physical measurement. */}
+                  <path d="M358 282 H542" stroke="#dbeeea" strokeOpacity=".72" strokeWidth="2"/>
+                  <path d="M358 277 V287 M542 277 V287" stroke="#dbeeea" strokeOpacity=".72" strokeWidth="2"/>
+                  <rect x="394" y="258" width="112" height="25" rx="12" fill="#061116" fillOpacity=".90" stroke="#d8ece7" strokeOpacity=".28"/>
+                  <text x="450" y="275" textAnchor="middle" fill="#edf6f2" fontSize="12" fontWeight="800">مثال تعليمي: حوالي 30 م</text>
+
+                  {/* Driver eye-level reference: the low beam stays below it. */}
+                  <path d="M267 225 H397" stroke="#ff9ea4" strokeOpacity=".45" strokeWidth="2" strokeDasharray="7 7"/>
+                  <text x="270" y="216" fill="#ffd5d8" fontSize="10.5" fontWeight="800">مستوى عين السائق المقابل</text>
+                  <path d="M405 372 Q375 332 350 290" fill="none" stroke="#8ce5da" strokeOpacity=".65" strokeWidth="2.5"/>
+                  <text x="336" y="349" fill="#c5f1eb" fontSize="10.5" fontWeight="900">الحزمة تهبط للطريق</text>
+
+                  {/* Realistic driver framing: hood + steering wheel + dashboard. */}
+                  <path d="M0 397 Q145 356 305 387 Q450 416 595 387 Q755 356 900 397 V470 H0Z" fill="#070c10" opacity=".98"/>
+                  <path d="M0 397 Q145 356 305 387 Q450 416 595 387 Q755 356 900 397" fill="none" stroke="#435257" strokeWidth="3" opacity=".72"/>
+                  <path d="M72 425 Q125 390 178 425" fill="none" stroke="#26373d" strokeWidth="10" opacity=".9"/>
+                  <circle cx="128" cy="431" r="53" fill="none" stroke="#18262d" strokeWidth="16"/>
+                  <circle cx="128" cy="431" r="32" fill="#0b1419" stroke="#33474e" strokeWidth="3"/>
+                  <path d="M128 399V418M101 449l18-12M155 449l-18-12" stroke="#607379" strokeWidth="4" strokeLinecap="round"/>
+                  <path d="M320 432h260" stroke="#1f3036" strokeWidth="9" strokeLinecap="round"/>
+                  <rect x="360" y="425" width="72" height="27" rx="8" fill="#101c21" stroke="#31444a"/>
+                  <rect x="447" y="425" width="86" height="27" rx="8" fill="#101c21" stroke="#31444a"/>
+
+                  {/* Small, unobtrusive educational labels. */}
+                  <rect x="34" y="32" width="405" height="72" rx="19" fill="#061117" fillOpacity=".92" stroke="#86e4da" strokeOpacity=".30"/>
+                  <circle cx="62" cy="59" r="7" fill="#86e4da"/>
+                  <text x="80" y="66" fill="#c8f3ed" fontSize="19" fontWeight="900">الضوء المنخفض · LOW BEAM</text>
+                  <text x="80" y="88" fill="#a7bbb8" fontSize="11.5">رؤية الطريق بوضوح دون إبهار السائق المقابل</text>
+
+                  <rect x="625" y="32" width="241" height="72" rx="19" fill="#171316" fillOpacity=".92" stroke="#ff9fa5" strokeOpacity=".24"/>
+                  <text x="649" y="64" fill="#ffd9dc" fontSize="15.5" fontWeight="900">السيارة المقابلة</text>
+                  <text x="649" y="87" fill="#d1b8bb" fontSize="10.5">الضوء منخفض ولا يتجه للعين</text>
                 </g>
               </>}
               {scenario.id === 'high' && <>
