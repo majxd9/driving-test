@@ -2373,3 +2373,71 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
     height:29% !important;
   }
 }
+
+
+/* =========================================================
+   FRONT / REAR IDENTITY — keep the two faces unmistakably different
+   ========================================================= */
+
+/* The supplied front/rear artwork stays the hero; overlays only mark the active lamps. */
+.vehicle-lab .showcase-car.front{
+  width:min(60%,575px) !important;
+  bottom:8% !important;
+}
+.vehicle-lab .showcase-car.rear{
+  width:min(55%,530px) !important;
+  bottom:8% !important;
+}
+.vehicle-lab .showcase-car.front .showcase-car-image{
+  filter:saturate(.86) contrast(1.08) brightness(.94)
+    drop-shadow(0 24px 30px rgba(0,0,0,.64)) !important;
+}
+.vehicle-lab .showcase-car.rear .showcase-car-image{
+  filter:saturate(.72) contrast(1.12) brightness(.86)
+    drop-shadow(0 24px 30px rgba(0,0,0,.68)) !important;
+}
+
+/* Front lamps: white headlamps are separate from the amber turn indicators. */
+.vehicle-lab .showcase-car.front .lamp.front{
+  z-index:25 !important;
+}
+.vehicle-lab .showcase-car.front .lamp.front.left{left:28% !important;top:69% !important}
+.vehicle-lab .showcase-car.front .lamp.front.right{left:72% !important;top:69% !important}
+
+.vehicle-lab .mode-signal .showcase-car.front .lamp.front.amber,
+.vehicle-lab .mode-hazard .showcase-car.front .lamp.front.amber{
+  opacity:1 !important;
+  width:9% !important;
+  height:9% !important;
+  background:radial-gradient(circle,#fff6d0 0 12%,#ffc24f 30%,rgba(255,151,39,.82) 53%,transparent 80%) !important;
+  box-shadow:0 0 12px rgba(255,195,67,.95),0 0 30px rgba(255,150,31,.55) !important;
+  transform:translate(-50%,-50%) scale(1.08) !important;
+  animation:signalPulse .76s ease-in-out infinite !important;
+}
+
+/* Rear lamps are deliberately red; amber is only the turn-signal portion. */
+.vehicle-lab .showcase-car.rear .lamp.rear{
+  z-index:25 !important;
+}
+.vehicle-lab .showcase-car.rear .lamp.rear:not(.amber){
+  opacity:.78;
+  width:13% !important;
+  height:10% !important;
+  background:radial-gradient(ellipse,#ff4c57 0 15%,rgba(220,37,48,.72) 43%,transparent 78%) !important;
+  box-shadow:0 0 14px rgba(255,56,68,.38) !important;
+}
+.vehicle-lab .showcase-car.rear .lamp.rear.amber{
+  width:11% !important;
+  height:10% !important;
+}
+
+/* Front/rear signal positions are slightly inset so they read as actual corner lamps. */
+.vehicle-lab .showcase-car.front .lamp.front.left,
+.vehicle-lab .showcase-car.rear .lamp.rear.left{margin-left:0}
+.vehicle-lab .showcase-car.front .lamp.front.right,
+.vehicle-lab .showcase-car.rear .lamp.rear.right{margin-left:0}
+
+@media(max-width:760px){
+  .vehicle-lab .showcase-car.front{width:84% !important}
+  .vehicle-lab .showcase-car.rear{width:79% !important}
+}
