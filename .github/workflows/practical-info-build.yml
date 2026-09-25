@@ -5,6 +5,7 @@ on:
     branches:
       - practical-info-overhaul-v2
       - practical-info-overhaul-v3
+      - practical-scenes-rebuild-v4
   pull_request:
     branches:
       - main
