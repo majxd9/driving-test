@@ -131,7 +131,6 @@ function CockpitHandle({
   const dragRef = useRef<{ zone: 'ring' | 'lever'; x: number; y: number; fired: boolean } | null>(null);
   const suppressClick = useRef(false);
   const ringIndex = Math.max(0, RING_LIGHTS.findIndex(item => item.key === mainLight));
-  const ringAngle = -22 + ringIndex * 37;
 
   const beginDrag = (zone: 'ring' | 'lever', e: ReactPointerEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -193,18 +192,19 @@ function CockpitHandle({
             <path d="M105 390C232 306 351 262 500 234c86-16 160-35 252-60" stroke="url(#stalkMetal)" strokeWidth="91" strokeLinecap="round"/>
             <path d="M105 369C232 291 352 245 500 217c90-16 164-34 252-58" stroke="#f3f8f8" strokeOpacity=".15" strokeWidth="12" strokeLinecap="round"/>
             <path d="M104 391C230 309 352 268 500 238c86-16 161-34 253-61" stroke="url(#microTexture)" strokeWidth="84" strokeLinecap="round"/>
-            <g transform={'rotate(' + ringAngle + ' 537 218)'}>
-              <rect x="405" y="138" width="264" height="160" rx="55" fill="#070c0f" stroke="#d6e0e2" strokeOpacity=".22" strokeWidth="5"/>
-              <rect x="420" y="152" width="234" height="132" rx="46" fill="url(#ringMetal)" stroke="#f7fbfc" strokeOpacity=".15" strokeWidth="3"/>
-              <rect x="432" y="164" width="210" height="108" rx="38" fill="#121b20"/>
-              <path d="M439 218h196" stroke="#eef6f6" strokeOpacity=".10" strokeWidth="2"/>
+            <g transform="rotate(-8 537 218)">
+              <rect x="412" y="145" width="250" height="146" rx="48" fill="#070c0f" stroke="#d6e0e2" strokeOpacity=".24" strokeWidth="5"/>
+              <rect x="425" y="157" width="224" height="122" rx="42" fill="url(#ringMetal)" stroke="#f7fbfc" strokeOpacity=".17" strokeWidth="3"/>
+              <rect x="438" y="170" width="198" height="96" rx="34" fill="#10191e"/>
+              <path d="M445 218h184" stroke="#eef6f6" strokeOpacity=".10" strokeWidth="2"/>
               {RING_LIGHTS.map((item, index) => (
-                <g key={item.key} transform={'translate(' + (447 + index * 37) + ' 218)'}>
-                  <circle r="17" fill="#080f13" stroke={item.key === mainLight ? '#a5f3e8' : '#77858a'} strokeOpacity={item.key === mainLight ? '.95' : '.45'} strokeWidth="2"/>
+                <g key={item.key} transform={'translate(' + (457 + index * 32) + ' 218) scale(.9)'}>
+                  <circle r="14.5" fill="#080f13" stroke={item.key === mainLight ? '#a5f3e8' : '#77858a'} strokeOpacity={item.key === mainLight ? '.96' : '.42'} strokeWidth="2"/>
                   <RingSymbol type={item.key} active={item.key === mainLight}/>
                 </g>
               ))}
-              <rect x="529" y="135" width="16" height="25" rx="8" fill="#8ae6dc"/>
+              <rect x={(457 + ringIndex * 32) - 7} y="140" width="14" height="20" rx="7" fill="#8ae6dc" opacity=".95"/>
+              <circle cx={(457 + ringIndex * 32)} cy="140" r="3.5" fill="#eafffb"/>
             </g>
             <g transform={leverTransform}>
               <path d="M675 156 792 132c25-5 44 10 41 34l-13 58c-4 21-24 34-46 29l-119-30Z" fill="url(#rubberGrip)" stroke="#b1bdc0" strokeOpacity=".22" strokeWidth="4"/>
@@ -316,7 +316,7 @@ function CurrentScene({ mainLight, signal, flashActive, perspective, oncoming, s
           <rect width="900" height="470" fill="url(#currentSky)"/>
           {mode === 'position' ? <><rect y="278" width="900" height="192" fill="#1d3535"/><circle cx="735" cy="84" r="54" fill="#e1e6cf" opacity=".24"/><path d="M0 336h900" stroke="#c2ceca" strokeOpacity=".15" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="336" y="232" width="228" height="126"/><circle cx="405" cy="302" r="9" fill="#d8e5ac"/><circle cx="495" cy="302" r="9" fill="#d8e5ac"/></> : <><path d="M0 470 210 126h480L900 470Z" fill="url(#currentRoad)"/><path d="M450 130v340" stroke="#dcebea" strokeOpacity=".25" strokeWidth="4" strokeDasharray="24 18"/></>}
           {mode === 'low' || mode === 'flash' ? <><path d="M450 310 245 220M450 310 655 220" stroke="#fff1b3" strokeOpacity=".40" strokeWidth="55" strokeLinecap="round" filter="url(#currentBlur)"/><path d="M450 311 266 228M450 311 634 228" stroke="#fff2b4" strokeOpacity=".38" strokeWidth="12" strokeLinecap="round"/><text x="54" y="405" fill="#d7eee9" fontSize="16" fontWeight="900">حزمة قريبة · مثال ≈ 30 م</text></> : null}
-          {mode === 'high' && <><path d="M450 310 62 86M450 310 838 86" stroke="#fff1b1" strokeOpacity=".18" strokeWidth="90" strokeLinecap="round" filter="url(#currentBlur)"/><path d="M450 310 72 76M450 310 828 76" stroke="#fff3b7" strokeOpacity=".34" strokeWidth="11" strokeLinecap="round"/>{oncoming && <g><circle cx="666" cy="150" r="29" fill="#f8fbf9" opacity=".9"/><circle cx="666" cy="150" r="55" fill="#fff7db" opacity=".16" filter="url(#currentBlur)"/><rect x="54" y="54" width="340" height="70" rx="20" fill="#251718" stroke="#ff9da2" strokeOpacity=".38"/><text x="79" y="83" fill="#ffd9d8" fontSize="19" fontWeight="900">مركبة مقابلة · خفّض العالي</text><text x="79" y="105" fill="#d9bcbc" fontSize="12">لتجنب إبهار السائق المقابل</text></g>}</>}
+          {mode === 'high' && <><path d="M450 310 62 86M450 310 838 86" stroke="#fff1b1" strokeOpacity=".18" strokeWidth="90" strokeLinecap="round" filter="url(#currentBlur)"/><path d="M450 310 72 76M450 310 828 76" stroke="#fff3b7" strokeOpacity=".34" strokeWidth="11" strokeLinecap="round"/>{oncoming && <g><ellipse cx="666" cy="150" rx="58" ry="42" fill="#fff7db" opacity=".16" filter="url(#currentBlur)"/><image href="/spirit/car-front.svg" x="615" y="118" width="102" height="51" opacity=".95"/><circle cx="647" cy="149" r="7" fill="#fffdf0"/><circle cx="685" cy="149" r="7" fill="#fffdf0"/><rect x="54" y="54" width="340" height="70" rx="20" fill="#251718" stroke="#ff9da2" strokeOpacity=".38"/><text x="79" y="83" fill="#ffd9d8" fontSize="19" fontWeight="900">مركبة مقابلة · خفّض العالي</text><text x="79" y="105" fill="#d9bcbc" fontSize="12">لتجنب إبهار السائق المقابل</text></g>}</>}
           {mode === 'frontFog' && <><rect x="0" y="82" width="900" height="58" fill="#eef6f1" fillOpacity=".16"/><rect x="0" y="180" width="900" height="48" fill="#eef6f1" fillOpacity=".14"/><rect x="0" y="260" width="900" height="36" fill="#eef6f1" fillOpacity=".11"/><path d="M450 312 255 270M450 312 645 270" stroke="#fff2b4" strokeOpacity=".24" strokeWidth="54" strokeLinecap="round" filter="url(#currentBlur)"/><path d="M450 313 274 277M450 313 626 277" stroke="#fff3ba" strokeOpacity=".36" strokeWidth="10" strokeLinecap="round"/><rect x="54" y="54" width="385" height="70" rx="20" fill="#dfe9e5" fillOpacity=".09" stroke="#edf6f1" strokeOpacity=".18"/><text x="79" y="84" fill="#eff7f3" fontSize="19" fontWeight="900">ضباب · التشتت يقلل التباين</text><text x="79" y="106" fill="#c8d3d1" fontSize="12">حزمة منخفضة وقرب أكبر من سطح الطريق</text></>}
           {mode === 'signal' && <g><path d="M0 270h900M450 0v470" stroke="#dce9e7" strokeOpacity=".14" strokeWidth="6" strokeDasharray="24 18"/><image href="/spirit/car-front.svg" x="338" y="285" width="224" height="142"/><circle cx={signal === 'left' ? 395 : 505} cy="326" r="12" fill="#f4ae57"/><path d="M450 350c0-66 60-97 143-106" stroke="#87e5da" strokeWidth="15" strokeLinecap="round" fill="none"/><path d="m585 243 23 15-26 8Z" fill="#87e5da"/><rect x="54" y="54" width="335" height="70" rx="20" fill="#061117" stroke="#86e4da" strokeOpacity=".25"/><text x="79" y="84" fill="#c1f3eb" fontSize="19" fontWeight="900">تقاطع · الإشارة تسبق المناورة</text><text x="79" y="106" fill="#9db1b0" fontSize="12">مرآة → غماز → تموضع → انعطاف</text></g>}
           {mode === 'hazard' && <g><path d="M0 302h900" stroke="#9baaaa" strokeOpacity=".16" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="338" y="226" width="224" height="132"/><circle cx="405" cy="293" r="14" fill="#f4ae57"/><circle cx="495" cy="293" r="14" fill="#f4ae57"/><circle cx="450" cy="220" r="44" fill="#f1bd74" fillOpacity=".07" stroke="#f1bd74" strokeOpacity=".34" strokeWidth="3"/><path d="m450 195 21 37h-42Z" stroke="#f1bd74" strokeWidth="4" strokeLinejoin="round"/><rect x="54" y="54" width="350" height="70" rx="20" fill="#211b13" stroke="#f1bd74" strokeOpacity=".28"/><text x="79" y="84" fill="#f4d2a7" fontSize="19" fontWeight="900">كتف الطريق · تحذير رباعي</text><text x="79" y="106" fill="#d6bda0" fontSize="12">الاتجاهان معاً لتوضيح الخطر</text></g>}
@@ -327,7 +327,8 @@ function CurrentScene({ mainLight, signal, flashActive, perspective, oncoming, s
         <div className="external-vehicle-stage">
           <div className="scene-backdrop-label">{mainLight === 'position' ? 'غسق' : mainLight === 'high' ? 'طريق ليلي' : mainLight === 'frontFog' ? 'ضباب' : signal ? 'تقاطع / توقف' : 'نتيجة الحركة'}</div>
           <img src={signal === 'hazard' || mainLight === 'rearFog' ? '/spirit/car-rear.svg' : '/spirit/car-front.svg'} className="external-car" alt="" aria-hidden="true"/>
-          {(mainLight === 'low' || mainLight === 'high' || mainLight === 'frontFog' || flashActive) && <><span className="beam-pool left"/><span className="beam-pool right"/></>}
+          {mainLight === 'high' && oncoming && <img src="/spirit/car-front.svg" className="oncoming-car" alt="" aria-hidden="true"/>}
+          {(mainLight === 'low' || mainLight === 'high' || mainLight === 'frontFog' || flashActive) && <><span className={'beam-pool left ' + (flashActive ? 'flash' : mainLight)}/><span className={'beam-pool right ' + (flashActive ? 'flash' : mainLight)}/></>}
           {mainLight === 'low' && <div className="distance-tag low">حزمة منخفضة · ≈ 30 م</div>}
           {mainLight === 'high' && <><div className="distance-tag high">مدى بعيد</div>{oncoming && <div className="oncoming-chip">مركبة مقابلة · خفض العالي</div>}</>}
           {mainLight === 'frontFog' && <div className="distance-tag fog">حزمة قريبة من سطح الطريق</div>}
@@ -956,7 +957,16 @@ export default function PracticalInfo() {
   };
   const chooseSignal = (key: SignalKey) => {
     playClick();
-    setSignal(key); setFlashActive(false); setMovement(key);
+    if (key === 'hazard' && signal === 'hazard') {
+      setSignal(null);
+      setFlashActive(false);
+      setMovement('ring');
+      setMobileSheetOpen(true);
+      return;
+    }
+    setSignal(key);
+    setFlashActive(false);
+    setMovement(key);
     setMobileSheetOpen(true);
   };
   const triggerFlash = () => {
