@@ -195,3 +195,33 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
   .lever-zone{left:40%;top:42%;width:46%;height:25%}
   .hazard-zone{right:2.5%;top:2.5%;width:16%;height:22%}
 }
+
+
+/* Final focused-handle polish: clean symbols, smooth physical motion, no overlay frames. */
+.handle-hotspot::after{
+  display:none !important;
+}
+.handle-hotspot:focus,
+.handle-hotspot:focus-visible{
+  outline:none !important;
+}
+.handle-ring-mark{
+  transform-origin:center;
+  transition:transform .34s cubic-bezier(.22,.72,.18,1), opacity .24s ease;
+  will-change:transform,opacity;
+}
+.handle-ring-mark g{
+  pointer-events:none;
+}
+.handle-ring-face{
+  transform-box:fill-box;
+  transform-origin:center;
+  transition:transform .20s cubic-bezier(.22,.72,.18,1), opacity .18s ease;
+}
+.handle-ring-face.is-moving{
+  filter:drop-shadow(0 8px 10px rgba(0,0,0,.18));
+}
+.handle-lever-body{
+  transition:transform .28s cubic-bezier(.20,.86,.20,1);
+  will-change:transform;
+}
