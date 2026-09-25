@@ -1822,3 +1822,20 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
   .scenario-pro-beam-core.right{right:25% !important}
   .scenario-pro-caption{max-width:77% !important}
 }
+
+
+/* Exterior-only practical scenes: front/rear vehicle views. */
+.perspective-switch{display:none !important}
+.scenario-pro-windshield,
+.scenario-pro-driver-roadview,
+.driver-showcase,
+.driver-sky,
+.driver-road,
+.driver-dash,
+.driver-note,
+.driver-oncoming,
+.driver-oncoming-toggle{display:none !important}
+
+.vehicle-lab .vehicle-showcase{
+  display:block !important;
+}
