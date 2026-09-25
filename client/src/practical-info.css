@@ -850,3 +850,182 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
   .vehicle-lab .driver-beam,
   .vehicle-lab .driver-oncoming{animation:none !important}
 }
+
+
+/* =========================================================
+   MEDIA INTEGRITY PASS — PracticalInfo
+   Keep every vehicle/scene illustration proportional and
+   visually anchored to its actual asset geometry.
+   ========================================================= */
+.practical-v2 img{
+  image-rendering:auto;
+  backface-visibility:hidden;
+}
+
+.practical-v2 .scenario-media,
+.practical-v2 .scenario-svg-frame{
+  width:100%;
+  min-width:0;
+  overflow:hidden;
+}
+
+.practical-v2 .scenario-svg-frame{
+  aspect-ratio:auto;
+  height:auto;
+  line-height:0;
+}
+
+.practical-v2 .scenario-svg{
+  display:block;
+  width:100%;
+  height:auto !important;
+  max-width:none;
+  object-fit:initial !important;
+  object-position:center;
+  aspect-ratio:900 / 470;
+  background:#061118;
+}
+
+.practical-v2 .scenario-svg image{
+  overflow:visible;
+}
+
+.vehicle-lab .vehicle-effect-box{
+  min-height:450px;
+}
+
+.vehicle-lab .vehicle-showcase,
+.vehicle-lab .driver-showcase{
+  inset:0;
+}
+
+.vehicle-lab .showcase-car{
+  width:min(66%,650px);
+  bottom:10%;
+  aspect-ratio:560 / 280;
+}
+
+.vehicle-lab .showcase-car-image{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
+}
+
+.vehicle-lab .lamp.front.left{left:23.8%;top:67.2%}
+.vehicle-lab .lamp.front.right{left:76.2%;top:67.2%}
+.vehicle-lab .lamp.fog.left{left:40%;top:79%}
+.vehicle-lab .lamp.fog.right{left:60%;top:79%}
+
+.vehicle-lab .lamp.rear.left{left:21.8%;top:69%}
+.vehicle-lab .lamp.rear.right{left:78.2%;top:69%}
+.vehicle-lab .lamp.rear-core{left:50%;top:70%}
+
+.vehicle-lab .mode-position .position-light{
+  top:69%;
+  width:10%;
+}
+.vehicle-lab .mode-position .position-light.left{left:22.5%}
+.vehicle-lab .mode-position .position-light.right{left:77.5%}
+
+.vehicle-lab .showcase-beams{
+  top:29%;
+  height:57%;
+  width:80%;
+}
+
+.vehicle-lab .beam-low .showcase-beam{
+  top:17%;
+  height:68%;
+}
+
+.vehicle-lab .beam-high .showcase-beam,
+.vehicle-lab .beam-flash .showcase-beam{
+  top:0;
+  height:103%;
+}
+
+.vehicle-lab .beam-frontFog .showcase-beam{
+  top:23%;
+  height:57%;
+}
+
+.vehicle-lab .effect-callout{
+  top:39%;
+  max-width:31%;
+}
+
+.vehicle-lab .effect-callout div{
+  min-width:0;
+  max-width:150px;
+}
+
+.vehicle-lab .range-pill{
+  bottom:21%;
+}
+
+.vehicle-lab .showcase-oncoming{
+  top:13%;
+  width:19%;
+  right:12%;
+}
+
+.vehicle-lab .driver-oncoming{
+  top:11%;
+  width:20%;
+  right:16%;
+}
+
+.vehicle-lab .driver-beam{
+  top:3%;
+}
+
+@media(max-width:760px){
+  .vehicle-lab .vehicle-effect-box{
+    min-height:390px;
+  }
+  .vehicle-lab .showcase-car{
+    width:84%;
+    bottom:12%;
+  }
+  .vehicle-lab .effect-callout{
+    top:37%;
+    max-width:29%;
+  }
+  .vehicle-lab .effect-callout div{
+    max-width:100px;
+  }
+  .vehicle-lab .range-pill{
+    bottom:20%;
+  }
+  .vehicle-lab .showcase-oncoming{
+    width:24%;
+    right:9%;
+    top:12%;
+  }
+  .vehicle-lab .driver-oncoming{
+    width:24%;
+    right:13%;
+    top:10%;
+  }
+}
+
+@media(max-width:430px){
+  .vehicle-lab .vehicle-effect-box{
+    min-height:350px;
+  }
+  .vehicle-lab .showcase-car{
+    width:91%;
+    bottom:14%;
+  }
+  .vehicle-lab .effect-callout{
+    top:39%;
+    max-width:27%;
+  }
+  .vehicle-lab .effect-callout div{
+    max-width:82px;
+  }
+  .vehicle-lab .range-pill{
+    bottom:22%;
+  }
+}
