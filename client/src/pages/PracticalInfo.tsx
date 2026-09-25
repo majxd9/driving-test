@@ -736,7 +736,7 @@ function ScenarioSvg({ scenario, perspective, oncoming, setOncoming }: { scenari
   if (perspective === 'driver') {
     return (
       <div className="scenario-svg-frame">
-        <svg className="scenario-svg" viewBox="0 0 900 470" role="img" aria-label={title}>
+        <svg className="scenario-svg" viewBox="0 0 900 470" preserveAspectRatio="xMidYMid meet" role="img" aria-label={title}>
           <Defs night={scenario.id !== 'position' && scenario.id !== 'signals'} />
 
           {scenario.id === 'low' && (
@@ -936,7 +936,7 @@ function ScenarioSvg({ scenario, perspective, oncoming, setOncoming }: { scenari
 
   return (
     <div className="scenario-svg-frame">
-      <svg className="scenario-svg" viewBox="0 0 900 470" role="img" aria-label={title}>
+      <svg className="scenario-svg" viewBox="0 0 900 470" preserveAspectRatio="xMidYMid meet" role="img" aria-label={title}>
         <Defs night={scenario.id !== 'position' && scenario.id !== 'signals'} />
 
         {scenario.id === 'low' && (
