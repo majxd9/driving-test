@@ -478,42 +478,181 @@ function ControlPanel({
 
 function CurrentScene({ mainLight, signal, flashActive, perspective, oncoming, setOncoming }: { mainLight: MainLightKey; signal: SignalKey | null; flashActive: boolean; perspective: Perspective; oncoming: boolean; setOncoming: (v: boolean) => void }) {
   const mode = signal === 'hazard' ? 'hazard' : signal ? 'signal' : flashActive ? 'flash' : mainLight;
-  const night = mode !== 'position';
+  const isRear = signal !== null || mainLight === 'position' || mainLight === 'rearFog';
+  const beamMode = flashActive ? 'flash' : mainLight;
+  const title =
+    mode === 'low' ? 'الضوء المنخفض' :
+    mode === 'high' ? 'الضوء العالي' :
+    mode === 'frontFog' ? 'ضباب أمامي' :
+    mode === 'rearFog' ? 'ضباب خلفي' :
+    mode === 'position' ? 'أضواء الموضع' :
+    mode === 'hazard' ? 'التحذير الرباعي' :
+    mode === 'signal' ? (signal === 'left' ? 'غماز يسار' : 'غماز يمين') :
+    'وميض العالي';
+
+  const note =
+    mode === 'low' ? 'حزمة منخفضة ومركزة قرب سطح الطريق.' :
+    mode === 'high' ? (oncoming ? 'ظهرت مركبة مقابلة — اخفض العالي.' : 'حزمة أطول وأقوى على الطريق المظلم.') :
+    mode === 'frontFog' ? 'إضاءة منخفضة وقريبة من سطح الطريق في الضباب.' :
+    mode === 'rearFog' ? 'ضوء خلفي قوي لزيادة وضوح المركبة.' :
+    mode === 'position' ? 'الهدف أن تُرى المركبة في الإضاءة المحيطة الضعيفة.' :
+    mode === 'hazard' ? 'الجهتان تومضان معاً لإظهار المركبة بوضوح.' :
+    mode === 'signal' ? 'الإشارة تظهر على جهة المناورة فقط.' :
+    'وميض سريع من الضوء العالي.';
+
+  const leftSignal = signal === 'left' || signal === 'hazard';
+  const rightSignal = signal === 'right' || signal === 'hazard';
+  const frontLighting = !isRear && ['low', 'high', 'flash', 'frontFog'].includes(mode);
+
   return (
-    <div className="result-scene-wrap">
-      {perspective === 'driver' ? (
-        <svg className="current-scene-svg" viewBox="0 0 900 470" role="img" aria-label="منظور السائق من المشهد التدريبي">
-          <defs>
-            <linearGradient id="currentSky" x1="0" y1="0" x2="0" y2="1"><stop stopColor={night ? '#07151d' : '#38554f'}/><stop offset="1" stopColor={night ? '#10232b' : '#273e39'}/></linearGradient>
-            <linearGradient id="currentRoad" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#2a3c42"/><stop offset="1" stopColor="#0a1115"/></linearGradient>
-            <filter id="currentBlur"><feGaussianBlur stdDeviation="17"/></filter>
-          </defs>
-          <rect width="900" height="470" fill="url(#currentSky)"/>
-          {mode === 'position' ? <><rect y="278" width="900" height="192" fill="#1d3535"/><circle cx="735" cy="84" r="54" fill="#e1e6cf" opacity=".24"/><path d="M0 336h900" stroke="#c2ceca" strokeOpacity=".15" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="336" y="232" width="228" height="126"/><circle cx="405" cy="302" r="9" fill="#d8e5ac"/><circle cx="495" cy="302" r="9" fill="#d8e5ac"/></> : <><path d="M0 470 210 126h480L900 470Z" fill="url(#currentRoad)"/><path d="M450 130v340" stroke="#dcebea" strokeOpacity=".25" strokeWidth="4" strokeDasharray="24 18"/></>}
-          {mode === 'low' || mode === 'flash' ? <><path d="M450 310 245 220M450 310 655 220" stroke="#fff1b3" strokeOpacity=".40" strokeWidth="55" strokeLinecap="round" filter="url(#currentBlur)"/><path d="M450 311 266 228M450 311 634 228" stroke="#fff2b4" strokeOpacity=".38" strokeWidth="12" strokeLinecap="round"/><text x="54" y="405" fill="#d7eee9" fontSize="16" fontWeight="900">حزمة قريبة · مثال ≈ 30 م</text></> : null}
-          {mode === 'high' && <><path d="M450 310 62 86M450 310 838 86" stroke="#fff1b1" strokeOpacity=".18" strokeWidth="90" strokeLinecap="round" filter="url(#currentBlur)"/><path d="M450 310 72 76M450 310 828 76" stroke="#fff3b7" strokeOpacity=".34" strokeWidth="11" strokeLinecap="round"/>{oncoming && <g><ellipse cx="666" cy="150" rx="58" ry="42" fill="#fff7db" opacity=".16" filter="url(#currentBlur)"/><image href="/spirit/car-front.svg" x="615" y="118" width="102" height="51" opacity=".95"/><circle cx="647" cy="149" r="7" fill="#fffdf0"/><circle cx="685" cy="149" r="7" fill="#fffdf0"/><rect x="54" y="54" width="340" height="70" rx="20" fill="#251718" stroke="#ff9da2" strokeOpacity=".38"/><text x="79" y="83" fill="#ffd9d8" fontSize="19" fontWeight="900">مركبة مقابلة · خفّض العالي</text><text x="79" y="105" fill="#d9bcbc" fontSize="12">لتجنب إبهار السائق المقابل</text></g>}</>}
-          {mode === 'frontFog' && <><rect x="0" y="82" width="900" height="58" fill="#eef6f1" fillOpacity=".16"/><rect x="0" y="180" width="900" height="48" fill="#eef6f1" fillOpacity=".14"/><rect x="0" y="260" width="900" height="36" fill="#eef6f1" fillOpacity=".11"/><path d="M450 312 255 270M450 312 645 270" stroke="#fff2b4" strokeOpacity=".24" strokeWidth="54" strokeLinecap="round" filter="url(#currentBlur)"/><path d="M450 313 274 277M450 313 626 277" stroke="#fff3ba" strokeOpacity=".36" strokeWidth="10" strokeLinecap="round"/><rect x="54" y="54" width="385" height="70" rx="20" fill="#dfe9e5" fillOpacity=".09" stroke="#edf6f1" strokeOpacity=".18"/><text x="79" y="84" fill="#eff7f3" fontSize="19" fontWeight="900">ضباب · التشتت يقلل التباين</text><text x="79" y="106" fill="#c8d3d1" fontSize="12">حزمة منخفضة وقرب أكبر من سطح الطريق</text></>}
-          {mode === 'signal' && <g><path d="M0 270h900M450 0v470" stroke="#dce9e7" strokeOpacity=".14" strokeWidth="6" strokeDasharray="24 18"/><image href="/spirit/car-front.svg" x="338" y="285" width="224" height="142"/><circle cx={signal === 'left' ? 395 : 505} cy="326" r="12" fill="#f4ae57"/><path d="M450 350c0-66 60-97 143-106" stroke="#87e5da" strokeWidth="15" strokeLinecap="round" fill="none"/><path d="m585 243 23 15-26 8Z" fill="#87e5da"/><rect x="54" y="54" width="335" height="70" rx="20" fill="#061117" stroke="#86e4da" strokeOpacity=".25"/><text x="79" y="84" fill="#c1f3eb" fontSize="19" fontWeight="900">تقاطع · الإشارة تسبق المناورة</text><text x="79" y="106" fill="#9db1b0" fontSize="12">مرآة → غماز → تموضع → انعطاف</text></g>}
-          {mode === 'hazard' && <g><path d="M0 302h900" stroke="#9baaaa" strokeOpacity=".16" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="338" y="226" width="224" height="132"/><circle cx="405" cy="293" r="14" fill="#f4ae57"/><circle cx="495" cy="293" r="14" fill="#f4ae57"/><circle cx="450" cy="220" r="44" fill="#f1bd74" fillOpacity=".07" stroke="#f1bd74" strokeOpacity=".34" strokeWidth="3"/><path d="m450 195 21 37h-42Z" stroke="#f1bd74" strokeWidth="4" strokeLinejoin="round"/><rect x="54" y="54" width="350" height="70" rx="20" fill="#211b13" stroke="#f1bd74" strokeOpacity=".28"/><text x="79" y="84" fill="#f4d2a7" fontSize="19" fontWeight="900">كتف الطريق · تحذير رباعي</text><text x="79" y="106" fill="#d6bda0" fontSize="12">الاتجاهان معاً لتوضيح الخطر</text></g>}
-          {mode === 'rearFog' && <g><path d="M0 302h900" stroke="#95a7a8" strokeOpacity=".15" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="338" y="226" width="224" height="132"/><ellipse cx="450" cy="298" rx="125" ry="46" fill="#ffcc6a" fillOpacity=".14" filter="url(#currentBlur)"/><circle cx="405" cy="293" r="14" fill="#ffca6b"/><circle cx="495" cy="293" r="14" fill="#ffca6b"/></g>}
-          <rect x="24" y="422" width="852" height="26" rx="13" fill="#02070a" opacity=".82"/><text x="45" y="440" fill="#b5c5c3" fontSize="11">{mode === 'high' && oncoming ? 'ظهرت مركبة مقابلة: اخفض العالي.' : mode === 'low' ? 'حزمة منخفضة ومركزة على الطريق.' : mode === 'frontFog' ? 'ضباب: الإضاءة لا تلغي الحاجة لتخفيف السرعة.' : mode === 'position' ? 'أضواء الموضع: الهدف إبراز المركبة في الإضاءة الضعيفة.' : 'المشهد يتغير مباشرة حسب الحركة المختارة.'}</text>
-        </svg>
+    <div className={'result-scene-wrap vehicle-effect-box mode-' + mode + ' ' + (perspective === 'driver' ? 'view-driver' : 'view-external')}>
+      <div className="effect-box-topbar">
+        <div className="effect-title">
+          <span className="effect-kicker">شاهد الأثر</span>
+          <strong>{title}</strong>
+        </div>
+        <div className="effect-live"><i /> مباشر</div>
+      </div>
+
+      {perspective === 'external' ? (
+        <div className="vehicle-showcase" aria-label="مشهد خارجي يوضح أثر الإنارة على السيارة">
+          <div className="showcase-sky">
+            <span className="sky-light s1" />
+            <span className="sky-light s2" />
+            <span className="sky-light s3" />
+          </div>
+          <div className="showcase-road">
+            <span className="road-lane lane-left" />
+            <span className="road-lane lane-center" />
+            <span className="road-lane lane-right" />
+          </div>
+
+          {frontLighting && (
+            <div className={'showcase-beams beam-' + beamMode} aria-hidden="true">
+              <span className="showcase-beam left" />
+              <span className="showcase-beam right" />
+              <span className="beam-hotspot left" />
+              <span className="beam-hotspot right" />
+            </div>
+          )}
+
+          <div className={'showcase-car ' + (isRear ? 'rear' : 'front')}>
+            <span className="car-shadow" />
+            <img
+              src={isRear ? '/spirit/car-rear.svg' : '/spirit/car-front.svg'}
+              className="showcase-car-image"
+              alt=""
+              aria-hidden="true"
+            />
+
+            {!isRear && (
+              <>
+                <span className="lamp front left" />
+                <span className="lamp front right" />
+                <span className="lamp fog left" />
+                <span className="lamp fog right" />
+              </>
+            )}
+
+            {isRear && (
+              <>
+                <span className={'lamp rear left ' + (leftSignal ? 'amber' : '')} />
+                <span className={'lamp rear right ' + (rightSignal ? 'amber' : '')} />
+                <span className="lamp rear-core" />
+                {mainLight === 'position' && <>
+                  <span className="position-light left" />
+                  <span className="position-light right" />
+                </>}
+              </>
+            )}
+          </div>
+
+          {mainLight === 'high' && oncoming && (
+            <div className="showcase-oncoming">
+              <span className="oncoming-light left" />
+              <span className="oncoming-light right" />
+              <img src="/spirit/car-front.svg" alt="" aria-hidden="true" />
+            </div>
+          )}
+
+          <div className="effect-callout callout-left">
+            <span className="callout-line" />
+            <div>
+              <small>{isRear ? 'الأضواء الخلفية' : 'المصابيح الأمامية'}</small>
+              <strong>{mode === 'signal' || mode === 'hazard' ? 'وميض اتجاهي' : mode === 'rearFog' ? 'ضوء ضباب قوي' : mode === 'position' ? 'إضاءة موضع' : 'مصدر الأثر'}</strong>
+            </div>
+          </div>
+
+          {mode === 'high' && oncoming ? (
+            <div className="effect-callout callout-right warning">
+              <span className="callout-line" />
+              <div>
+                <small>تنبيه</small>
+                <strong>مركبة مقابلة</strong>
+              </div>
+            </div>
+          ) : (
+            <div className="effect-callout callout-right">
+              <span className="callout-line" />
+              <div>
+                <small>الأثر على الطريق</small>
+                <strong>{mode === 'low' ? 'مدى قريب' : mode === 'high' ? 'مدى بعيد' : mode === 'frontFog' ? 'قريب من السطح' : 'واضح ومباشر'}</strong>
+              </div>
+            </div>
+          )}
+
+          {mode === 'low' && <div className="range-pill">≈ 30 م · حزمة منخفضة</div>}
+          {mode === 'high' && !oncoming && <div className="range-pill high">مدى بعيد</div>}
+          {mode === 'position' && <div className="range-pill position">الهدف: أن تُرى السيارة</div>}
+          {mode === 'frontFog' && <div className="range-pill fog">حزمة قريبة من سطح الطريق</div>}
+          {mode === 'rearFog' && <div className="range-pill rear">ضباب خلفي</div>}
+        </div>
       ) : (
-        <div className="external-vehicle-stage">
-          <div className="scene-backdrop-label">{mainLight === 'position' ? 'غسق' : mainLight === 'high' ? 'طريق ليلي' : mainLight === 'frontFog' ? 'ضباب' : signal ? 'تقاطع / توقف' : 'نتيجة الحركة'}</div>
-          <img src={signal === 'hazard' || mainLight === 'rearFog' ? '/spirit/car-rear.svg' : '/spirit/car-front.svg'} className="external-car" alt="" aria-hidden="true"/>
-          {mainLight === 'high' && oncoming && <img src="/spirit/car-front.svg" className="oncoming-car" alt="" aria-hidden="true"/>}
-          {(mainLight === 'low' || mainLight === 'high' || mainLight === 'frontFog' || flashActive) && <><span className={'beam-pool left ' + (flashActive ? 'flash' : mainLight)}/><span className={'beam-pool right ' + (flashActive ? 'flash' : mainLight)}/></>}
-          {mainLight === 'low' && <div className="distance-tag low">حزمة منخفضة · ≈ 30 م</div>}
-          {mainLight === 'high' && <><div className="distance-tag high">مدى بعيد</div>{oncoming && <div className="oncoming-chip">مركبة مقابلة · خفض العالي</div>}</>}
-          {mainLight === 'frontFog' && <div className="distance-tag fog">حزمة قريبة من سطح الطريق</div>}
-          {mainLight === 'position' && <div className="distance-tag position">الهدف: أن تُرى المركبة</div>}
-          {signal && <><span className={'signal-dot left ' + (signal === 'right' ? 'dim' : '')}/><span className={'signal-dot right ' + (signal === 'left' ? 'dim' : '')}/></>}
-          {mainLight === 'rearFog' && <span className="rear-fog-pool"/>}
-          {mainLight === 'position' && <div className="position-halo"/>}
+        <div className="driver-showcase" aria-label="مشهد منظور السائق يوضح أثر الإنارة على الطريق">
+          <div className="driver-sky">
+            <span className="driver-moon" />
+            <span className="driver-horizon h1" />
+            <span className="driver-horizon h2" />
+            <span className="driver-horizon h3" />
+          </div>
+          <div className="driver-road">
+            <span className="driver-edge left" />
+            <span className="driver-edge right" />
+            <span className="driver-center" />
+            {frontLighting && (
+              <>
+                <span className={'driver-beam left ' + beamMode} />
+                <span className={'driver-beam right ' + beamMode} />
+              </>
+            )}
+            {mode === 'high' && oncoming && (
+              <div className="driver-oncoming">
+                <span />
+                <img src="/spirit/car-front.svg" alt="" aria-hidden="true" />
+              </div>
+            )}
+          </div>
+          <div className="driver-dash" />
+          <div className="driver-note">{note}</div>
+          {mode === 'high' && (
+            <button type="button" className="driver-oncoming-toggle" onClick={() => setOncoming(!oncoming)}>
+              {oncoming ? 'إخفاء المركبة المقابلة' : 'إظهار مركبة مقابلة'}
+            </button>
+          )}
         </div>
       )}
-      {perspective === 'driver' && mode === 'high' && <button type="button" className="scene-bottom-toggle" onClick={() => setOncoming(!oncoming)}>{oncoming ? 'إخفاء المركبة المقابلة' : 'أظهر مركبة مقابلة'}</button>}
+
+      {perspective === 'external' && (
+        <div className="effect-box-bottombar">
+          <span>{note}</span>
+          {mainLight === 'high' && (
+            <button type="button" className="showcase-toggle" onClick={() => setOncoming(!oncoming)}>
+              <i className={oncoming ? 'active' : ''} />
+              {oncoming ? 'المركبة المقابلة ظاهرة' : 'إظهار مركبة مقابلة'}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
