@@ -1029,3 +1029,470 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
     bottom:22%;
   }
 }
+
+
+/* =========================================================
+   SCENARIO PRO REBUILD
+   One coherent visual system for every practical-driving scene.
+   ========================================================= */
+
+.scenario-pro-scene{
+  position:relative;
+  width:100%;
+  aspect-ratio:16 / 8.8;
+  min-height:320px;
+  overflow:hidden;
+  isolation:isolate;
+  background:#061017;
+  color:#eef9f8;
+}
+.scenario-pro-sky,
+.scenario-pro-horizon,
+.scenario-pro-road,
+.scenario-pro-windshield,
+.scenario-pro-driver-roadview,
+.scenario-pro-beams,
+.scenario-pro-fog,
+.scenario-pro-vehicle-wrap,
+.scenario-pro-oncoming,
+.scenario-pro-other-car,
+.scenario-pro-turn-arrow,
+.scenario-pro-shoulder-stop,
+.scenario-pro-position-atmosphere{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+.scenario-pro-sky{
+  z-index:0;
+  background:
+    radial-gradient(circle at 50% 24%,rgba(105,189,183,.12),transparent 25%),
+    radial-gradient(circle at 15% 28%,rgba(100,154,166,.08),transparent 18%),
+    radial-gradient(circle at 86% 30%,rgba(100,154,166,.06),transparent 20%),
+    linear-gradient(180deg,#07131a 0%,#071a22 45%,#071318 68%,#02080d 100%);
+}
+.scenario-position .scenario-pro-sky{
+  background:
+    radial-gradient(circle at 82% 22%,rgba(247,237,190,.22),transparent 12%),
+    linear-gradient(180deg,#243d3c 0%,#415a55 50%,#182c30 70%,#071117 100%);
+}
+.scenario-signals .scenario-pro-sky{
+  background:
+    radial-gradient(circle at 50% 10%,rgba(126,214,205,.13),transparent 22%),
+    linear-gradient(180deg,#173334 0%,#294b49 54%,#112428 70%,#061016 100%);
+}
+.scenario-hazard .scenario-pro-sky,
+.scenario-rear .scenario-pro-sky{
+  background:
+    radial-gradient(circle at 50% 25%,rgba(91,155,164,.09),transparent 24%),
+    linear-gradient(180deg,#07131a 0%,#0a1a20 54%,#061015 72%,#02070b 100%);
+}
+.scenario-fog .scenario-pro-sky{
+  background:linear-gradient(180deg,#718784 0%,#8ca09c 48%,#6b7f7d 100%);
+}
+.scenario-pro-horizon{z-index:1;inset:auto 0 47% 0;height:32%}
+.scenario-pro-horizon .horizon-glow{
+  position:absolute;left:20%;right:20%;top:30%;height:40%;
+  background:radial-gradient(ellipse,rgba(166,219,211,.16),transparent 72%);
+  filter:blur(16px);
+}
+.scenario-pro-horizon .horizon-line{
+  position:absolute;left:8%;right:8%;bottom:16%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(210,236,231,.18),transparent);
+}
+.scenario-pro-road{
+  z-index:2;
+  inset:42% -15% -26%;
+  transform:perspective(760px) rotateX(55deg);
+  transform-origin:50% 100%;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 24.5%,rgba(255,255,255,.018) 24.5% 25%,transparent 25% 49.5%,rgba(255,255,255,.018) 49.5% 50%,transparent 50% 74.5%,rgba(255,255,255,.018) 74.5% 75%,transparent 75%),
+    linear-gradient(180deg,#20373d,#10242b 48%,#040c11 100%);
+  border-top:1px solid rgba(199,228,222,.10);
+}
+.scenario-pro-road .road-edge{
+  position:absolute;top:0;bottom:0;width:2px;background:rgba(220,239,234,.10);
+}
+.scenario-pro-road .edge-left{left:19%;transform:rotate(9deg)}
+.scenario-pro-road .edge-right{right:19%;transform:rotate(-9deg)}
+.road-center{
+  position:absolute;left:50%;top:0;bottom:0;width:3px;transform:translateX(-50%);
+  background:repeating-linear-gradient(to bottom,rgba(221,238,234,.25) 0 26px,transparent 26px 49px);
+}
+.road-lane-line{
+  position:absolute;top:12%;bottom:0;width:2px;background:rgba(220,239,235,.07);
+}
+.road-lane-line.lane-left{left:34%;transform:rotate(4deg)}
+.road-lane-line.lane-right{right:34%;transform:rotate(-4deg)}
+.shoulder-line{
+  position:absolute;top:0;bottom:0;right:29%;border-right:3px solid rgba(241,189,116,.22);
+}
+.intersection-lines{
+  position:absolute;left:0;right:0;top:24%;
+  height:35%;border-top:10px dashed rgba(231,243,239,.15);
+}
+.intersection-lines i{
+  position:absolute;top:48%;width:12px;height:12px;border:1px solid rgba(231,243,239,.10);border-radius:50%;
+}
+.intersection-lines i:nth-child(1){left:25%}
+.intersection-lines i:nth-child(2){left:50%;transform:translateX(-50%)}
+.intersection-lines i:nth-child(3){right:25%}
+
+.scenario-pro-vehicle-wrap{
+  z-index:12;
+  inset:auto 0 4% 0;
+  height:54%;
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+}
+.scenario-pro-car{
+  width:min(43%,410px);
+  height:auto;
+  aspect-ratio:560 / 280;
+  object-fit:contain;
+  filter:drop-shadow(0 22px 24px rgba(0,0,0,.62)) saturate(1.04) contrast(1.03);
+}
+.scenario-pro-car-shadow{
+  position:absolute;
+  left:50%;bottom:5%;transform:translateX(-50%);
+  width:min(36%,340px);height:8%;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(0,0,0,.70),transparent 72%);
+  filter:blur(8px);
+}
+.scenario-pro-lamp{
+  position:absolute;
+  z-index:18;
+  width:24px;height:18px;border-radius:50%;
+  opacity:0;pointer-events:none;
+}
+.scenario-pro-vehicle-wrap .front-lamp.left{left:calc(50% - 10.4%);bottom:22%}
+.scenario-pro-vehicle-wrap .front-lamp.right{left:calc(50% + 10.4%);bottom:22%}
+.scenario-pro-vehicle-wrap .fog-lamp.left{left:calc(50% - 7%);bottom:14%;width:15px;height:12px}
+.scenario-pro-vehicle-wrap .fog-lamp.right{left:calc(50% + 7%);bottom:14%;width:15px;height:12px}
+.scenario-low .front-lamp,
+.scenario-high .front-lamp{
+  opacity:1;
+  background:radial-gradient(circle,#fffef2 0 12%,#fff4b4 28%,rgba(255,226,138,.78) 51%,transparent 80%);
+  box-shadow:0 0 12px rgba(255,244,196,.95),0 0 34px rgba(255,218,128,.45);
+}
+.scenario-fog .fog-lamp{
+  opacity:1;
+  background:radial-gradient(circle,#fffef0 0 15%,#ffe58f 34%,rgba(255,210,120,.55) 52%,transparent 80%);
+  box-shadow:0 0 13px rgba(255,230,150,.72),0 0 34px rgba(255,205,115,.35);
+}
+.scenario-signals .scenario-pro-lamp.rear-lamp{
+  opacity:1;
+  bottom:22%;
+  background:radial-gradient(circle,#fff0ca 0 12%,#ffd067 30%,rgba(244,174,87,.72) 52%,transparent 82%);
+  box-shadow:0 0 13px rgba(255,211,113,.85),0 0 32px rgba(244,174,87,.48);
+  animation:scenario-pro-blink .85s infinite;
+}
+.scenario-pro-vehicle-wrap .rear-lamp.left{left:calc(50% - 11.4%)}
+.scenario-pro-vehicle-wrap .rear-lamp.right{left:calc(50% + 11.4%)}
+.scenario-hazard .scenario-pro-lamp.rear-lamp{
+  opacity:1;bottom:22%;
+  background:radial-gradient(circle,#fff0ca 0 12%,#ffd067 30%,rgba(244,174,87,.72) 52%,transparent 82%);
+  box-shadow:0 0 13px rgba(255,211,113,.85),0 0 32px rgba(244,174,87,.48);
+  animation:scenario-pro-blink .78s infinite;
+}
+.scenario-pro-reverse-lamp,.scenario-pro-position-lamp{
+  position:absolute;z-index:19;width:19px;height:12px;border-radius:50%;opacity:0;
+}
+.scenario-pro-reverse-lamp.left{left:calc(50% - 3.6%);bottom:19%}
+.scenario-pro-reverse-lamp.right{left:calc(50% + 3.6%);bottom:19%}
+.scenario-rear .scenario-pro-reverse-lamp{
+  opacity:1;
+  background:radial-gradient(circle,#fff 0 18%,rgba(242,250,247,.84) 40%,transparent 76%);
+  box-shadow:0 0 15px rgba(255,255,255,.58);
+}
+.scenario-rear .rear-lamp{
+  opacity:1;
+  bottom:22%;
+  background:radial-gradient(circle,#fff0ef 0 10%,#ff5964 28%,rgba(255,64,78,.72) 50%,transparent 82%);
+  box-shadow:0 0 15px rgba(255,82,93,.82),0 0 36px rgba(255,55,72,.32);
+}
+.scenario-pro-position-lamp.left{left:calc(50% - 11.4%);bottom:22%}
+.scenario-pro-position-lamp.right{left:calc(50% + 11.4%);bottom:22%}
+.scenario-position .scenario-pro-position-lamp{
+  opacity:1;background:radial-gradient(circle,#f7f5d0,#dce5b0 35%,transparent 76%);
+  box-shadow:0 0 18px rgba(228,236,186,.42);
+}
+
+.scenario-pro-beams{z-index:6;inset:31% 12% 24%}
+.scenario-pro-beam{
+  position:absolute;top:0;width:34%;height:100%;
+  clip-path:polygon(48% 0,52% 0,100% 100%,0 100%);
+  background:linear-gradient(180deg,rgba(255,251,220,.52),rgba(255,235,163,.19) 58%,rgba(255,220,124,0));
+  filter:blur(2px);opacity:.82;
+}
+.scenario-pro-beam.left{left:9%}.scenario-pro-beam.right{right:9%}
+.scenario-pro-beam-core{
+  position:absolute;top:0;width:24%;height:100%;
+  clip-path:polygon(49% 0,51% 0,100% 100%,0 100%);
+  background:linear-gradient(180deg,rgba(255,255,244,.72),rgba(255,239,176,.24) 55%,rgba(255,226,135,0));
+  filter:blur(1px);opacity:.62;
+}
+.scenario-pro-beam-core.left{left:14%}.scenario-pro-beam-core.right{right:14%}
+.scenario-low .scenario-pro-beams .scenario-pro-beam,
+.scenario-low .scenario-pro-beams .scenario-pro-beam-core{
+  height:68%;top:25%;
+}
+.scenario-high .scenario-pro-beams .scenario-pro-beam,
+.scenario-high .scenario-pro-beams .scenario-pro-beam-core{
+  height:108%;top:-4%;
+}
+.scenario-fog .scenario-pro-beams .scenario-pro-beam{
+  height:55%;top:31%;opacity:.35;filter:blur(7px);
+}
+.scenario-fog .scenario-pro-beams .scenario-pro-beam-core{
+  height:42%;top:38%;opacity:.30;filter:blur(5px);
+}
+
+.scenario-pro-oncoming{
+  z-index:10;
+  inset:auto 12% 51% auto;
+  width:16%;height:18%;
+  display:flex;align-items:center;justify-content:center;
+  animation:scenario-pro-float 3s ease-in-out infinite alternate;
+}
+.scenario-pro-oncoming img{width:100%;height:auto;filter:drop-shadow(0 10px 17px rgba(0,0,0,.58))}
+.oncoming-lamp{
+  position:absolute;z-index:2;top:58%;width:17%;height:15%;border-radius:50%;
+  background:radial-gradient(circle,#fffef3 0 14%,rgba(255,240,182,.85) 36%,transparent 80%);
+  filter:blur(2px);
+}
+.oncoming-lamp.left{left:31%}.oncoming-lamp.right{right:31%}
+.scenario-pro-scene.has-oncoming .scenario-pro-beams .scenario-pro-beam.right,
+.scenario-pro-scene.has-oncoming .scenario-pro-beams .scenario-pro-beam-core.right{
+  opacity:.20;
+}
+
+.scenario-pro-fog{
+  z-index:20;inset:12% 0 24%;
+  opacity:.45;mix-blend-mode:screen;
+}
+.scenario-pro-fog span{
+  position:absolute;left:-10%;right:-10%;height:17%;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(240,248,244,.32),transparent 70%);
+  filter:blur(14px);
+}
+.scenario-pro-fog span:nth-child(1){top:4%}.scenario-pro-fog span:nth-child(2){top:25%}
+.scenario-pro-fog span:nth-child(3){top:46%}.scenario-pro-fog span:nth-child(4){top:67%}
+
+.scenario-pro-turn-arrow{
+  z-index:8;position:absolute;left:50%;bottom:22%;width:33%;height:34%;
+  transform:translateX(-50%);border-left:5px solid rgba(134,228,218,.56);
+  border-top:5px solid transparent;border-right:5px solid transparent;
+  border-bottom:5px solid transparent;border-radius:50%;
+}
+.scenario-pro-turn-arrow span{
+  position:absolute;right:-10px;top:-9px;width:17px;height:17px;
+  border-top:4px solid #86e4da;border-right:4px solid #86e4da;transform:rotate(18deg);
+}
+.scenario-pro-other-car{
+  z-index:5;top:30%;width:11%;height:12%;opacity:.48;
+}
+.scenario-pro-other-car.other-left{left:10%}.scenario-pro-other-car.other-right{right:10%}
+.scenario-pro-other-car img{width:100%;height:auto}
+
+.scenario-pro-shoulder-stop{
+  z-index:5;left:2%;bottom:29%;width:22%;height:24%;
+  border-left:1px solid rgba(241,189,116,.16);
+  background:linear-gradient(90deg,rgba(241,189,116,.06),transparent);
+}
+.scenario-pro-shoulder-stop span{
+  position:absolute;left:10%;top:20%;
+  color:#e0bf93;font-size:8px;font-weight:900;
+}
+.scenario-pro-hazard-icon{
+  position:absolute;z-index:24;top:18%;left:50%;transform:translateX(-50%);
+  width:42px;height:42px;border:2px solid rgba(241,189,116,.48);border-radius:50%;
+  display:grid;place-items:center;color:#f1bd74;font-size:18px;
+  background:rgba(30,20,10,.60);box-shadow:0 0 24px rgba(241,189,116,.10);
+}
+.scenario-pro-position-atmosphere{
+  z-index:4;left:18%;right:18%;bottom:25%;height:24%;
+  border-radius:50%;background:radial-gradient(ellipse,rgba(232,236,193,.10),transparent 72%);
+  filter:blur(9px);
+}
+
+.scenario-pro-windshield{
+  z-index:30;
+  pointer-events:none;
+}
+.scenario-pro-windshield:before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(3,10,14,.06),transparent 46%,rgba(1,7,10,.22) 100%);
+}
+.windshield-post{
+  position:absolute;top:-5%;bottom:-5%;width:9px;
+  background:linear-gradient(180deg,#17252b,#0a1318 60%,#04090d);
+  box-shadow:0 0 16px rgba(0,0,0,.45);
+}
+.windshield-post.left{left:5%;transform:rotate(8deg)}
+.windshield-post.right{right:5%;transform:rotate(-8deg)}
+.windshield-glow{
+  position:absolute;left:50%;top:10%;width:42%;height:20%;transform:translateX(-50%);
+  background:radial-gradient(ellipse,rgba(111,178,178,.10),transparent 68%);filter:blur(10px);
+}
+.scenario-pro-driver-roadview{
+  z-index:25;
+}
+.driver-car-dash{
+  position:absolute;left:-8%;right:-8%;bottom:-12%;height:23%;
+  border-radius:50% 50% 0 0;
+  background:linear-gradient(180deg,#0a151b,#02070a);
+  border-top:1px solid rgba(170,204,198,.10);
+  box-shadow:0 -22px 50px rgba(0,0,0,.35);
+}
+.driver-road-center{
+  position:absolute;left:50%;top:47%;bottom:8%;width:3px;transform:translateX(-50%);
+  background:repeating-linear-gradient(to bottom,rgba(225,239,234,.25) 0 22px,transparent 22px 44px);
+}
+.perspective-driver .scenario-pro-beams{
+  inset:31% 15% 28%;
+}
+.perspective-driver .scenario-pro-beam{
+  clip-path:polygon(47% 0,53% 0,100% 100%,0 100%);
+}
+.perspective-driver .scenario-pro-vehicle-wrap{display:none}
+.perspective-driver .scenario-pro-oncoming{
+  width:14%;right:20%;bottom:auto;top:23%;
+}
+.perspective-driver .scenario-pro-scene .scenario-pro-caption{max-width:46%}
+.perspective-driver.scenario-signals .scenario-pro-other-car{
+  top:36%;
+}
+
+.scenario-pro-top-label{
+  position:absolute;z-index:50;top:11px;right:11px;
+  display:flex;align-items:center;gap:7px;padding:7px 9px;
+  border-radius:999px;background:rgba(2,9,13,.78);
+  border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);
+}
+.scenario-pro-top-label span{color:#86e4da;font-size:7px;font-weight:950}
+.scenario-pro-top-label b{color:#eef9f7;font-size:8px}
+.scenario-pro-caption{
+  position:absolute;z-index:52;left:12px;top:11px;max-width:44%;
+  display:flex;align-items:flex-start;gap:8px;padding:9px 10px;
+  border:1px solid rgba(255,255,255,.07);border-radius:13px;
+  background:rgba(2,8,12,.70);backdrop-filter:blur(10px);
+}
+.scenario-pro-caption-dot{width:8px;height:8px;flex:0 0 8px;margin-top:4px;border-radius:50%;background:#86e4da;box-shadow:0 0 11px rgba(134,228,218,.55)}
+.scenario-pro-caption b{display:block;font-size:9px;color:#ebfffb}
+.scenario-pro-caption span{display:block;margin-top:3px;color:rgba(232,246,243,.62);font-size:6.7px;line-height:1.5}
+.scenario-pro-distance{
+  position:absolute;z-index:40;left:50%;bottom:22%;transform:translateX(-50%);
+  padding:6px 9px;border-radius:999px;background:rgba(2,8,12,.75);
+  border:1px solid rgba(134,228,218,.18);backdrop-filter:blur(9px);text-align:center;
+}
+.scenario-pro-distance strong{display:block;color:#c8f4ed;font-size:8px}
+.scenario-pro-distance span{display:block;margin-top:2px;color:#88a4a1;font-size:5.8px}
+.scenario-pro-action{
+  position:absolute;z-index:60;left:11px;bottom:11px;min-height:31px;
+  padding:0 10px;border:1px solid rgba(241,189,116,.22);border-radius:9px;
+  background:rgba(2,8,12,.82);color:#efcf9b;font-size:7px;font-weight:950;cursor:pointer;
+}
+.scenario-pro-action.active{border-color:rgba(255,112,121,.28);color:#ffd6d9}
+.scenario-pro-rear-legend,
+.scenario-pro-position-pill{
+  position:absolute;z-index:40;right:11px;bottom:12px;
+  display:flex;gap:8px;padding:7px 9px;border:1px solid rgba(255,255,255,.07);
+  border-radius:10px;background:rgba(2,8,12,.78);backdrop-filter:blur(9px);
+  color:#d7e7e4;font-size:6.5px;font-weight:900;
+}
+.scenario-pro-rear-legend span{display:flex;align-items:center;gap:4px}
+.scenario-pro-rear-legend i{width:7px;height:7px;border-radius:50%}
+.scenario-pro-rear-legend i.red{background:#ff5965;box-shadow:0 0 8px rgba(255,89,101,.55)}
+.scenario-pro-rear-legend i.white{background:#fff;box-shadow:0 0 8px rgba(255,255,255,.42)}
+.scenario-pro-position-pill{color:#e5edc5;border-color:rgba(220,232,180,.16)}
+.scenario-pro-camera{
+  position:absolute;z-index:53;left:50%;bottom:10px;transform:translateX(-50%);
+  display:flex;align-items:center;gap:5px;padding:5px 8px;
+  border-radius:999px;background:rgba(2,8,12,.58);color:rgba(225,239,235,.48);
+  font-size:5.7px;font-weight:900;
+}
+.scenario-pro-camera span{width:5px;height:5px;border-radius:50%;background:#86e4da}
+
+@keyframes scenario-pro-blink{0%,100%{opacity:.22}48%,64%{opacity:1}}
+@keyframes scenario-pro-float{from{transform:translate3d(0,0,0)}to{transform:translate3d(-5px,1px,0)}}
+
+@media(max-width:760px){
+  .scenario-pro-scene{
+    aspect-ratio:1.18 / 1;
+    min-height:305px;
+  }
+  .scenario-pro-road{
+    inset:44% -35% -26%;
+    transform:perspective(520px) rotateX(56deg);
+  }
+  .scenario-pro-horizon{inset:auto 0 49% 0;height:28%}
+  .scenario-pro-vehicle-wrap{
+    inset:auto 0 8% 0;
+    height:48%;
+  }
+  .scenario-pro-car{
+    width:70%;
+  }
+  .scenario-pro-car-shadow{
+    width:60%;bottom:7%;height:8%;
+  }
+  .scenario-pro-beams{
+    inset:31% 3% 27%;
+  }
+  .scenario-low .scenario-pro-beams .scenario-pro-beam,
+  .scenario-low .scenario-pro-beams .scenario-pro-beam-core{
+    height:63%;top:28%;
+  }
+  .scenario-high .scenario-pro-beams .scenario-pro-beam,
+  .scenario-high .scenario-pro-beams .scenario-pro-beam-core{
+    height:103%;top:-2%;
+  }
+  .scenario-fog .scenario-pro-beams .scenario-pro-beam{
+    height:51%;top:34%;
+  }
+  .scenario-pro-caption{
+    left:7px;right:7px;top:7px;max-width:68%;padding:7px 8px;
+  }
+  .scenario-pro-caption b{font-size:8px}
+  .scenario-pro-caption span{font-size:6px}
+  .scenario-pro-top-label{top:7px;right:7px;padding:6px 7px}
+  .scenario-pro-top-label span{font-size:6px}.scenario-pro-top-label b{font-size:7px}
+  .scenario-pro-distance{bottom:24%}
+  .scenario-pro-action{left:7px;bottom:7px;min-height:29px;font-size:6.5px}
+  .scenario-pro-rear-legend,
+  .scenario-pro-position-pill{right:7px;bottom:7px;font-size:6px}
+  .scenario-pro-camera{bottom:7px}
+  .scenario-pro-other-car{width:16%}
+  .scenario-pro-hazard-icon{top:20%;width:36px;height:36px}
+  .perspective-driver .scenario-pro-caption{max-width:71%}
+  .perspective-driver .scenario-pro-oncoming{width:21%;right:19%;top:24%}
+  .perspective-driver .scenario-pro-beams{inset:32% 2% 28%}
+  .windshield-post{width:7px}
+}
+@media(max-width:430px){
+  .scenario-pro-scene{
+    aspect-ratio:1.02 / 1;
+    min-height:292px;
+  }
+  .scenario-pro-road{
+    inset:46% -50% -27%;
+  }
+  .scenario-pro-vehicle-wrap{bottom:9%;height:45%}
+  .scenario-pro-car{width:78%}
+  .scenario-pro-caption{max-width:74%;padding:6px 7px}
+  .scenario-pro-caption b{font-size:7.5px}
+  .scenario-pro-caption span{font-size:5.7px}
+  .scenario-pro-top-label{display:none}
+  .scenario-pro-distance{bottom:23%;padding:5px 7px}
+  .scenario-pro-distance strong{font-size:7px}
+  .scenario-pro-distance span{font-size:5px}
+  .scenario-pro-action{bottom:7px}
+  .scenario-pro-rear-legend,
+  .scenario-pro-position-pill{bottom:7px;padding:6px 7px}
+  .scenario-pro-camera{display:none}
+  .scenario-pro-other-car{width:18%}
+  .perspective-driver .scenario-pro-caption{max-width:78%}
+  .perspective-driver .scenario-pro-oncoming{width:25%;right:18%}
+}
