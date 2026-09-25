@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 280" fill="none" role="img" aria-label="واجهة أمامية لسيارة تعليمية">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#4b5b66"/><stop offset=".42" stop-color="#26343d"/><stop offset="1" stop-color="#101820"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#314654"/><stop offset="1" stop-color="#0b141c"/>
+    </linearGradient>
+    <linearGradient id="bumper" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#202c34"/><stop offset="1" stop-color="#080e13"/>
+    </linearGradient>
+    <radialGradient id="lamp">
+      <stop stop-color="#fffdf0"/><stop offset=".25" stop-color="#fff7d5" stop-opacity=".92"/>
+      <stop offset=".62" stop-color="#ffd98a" stop-opacity=".24"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="18" stdDeviation="15" flood-color="#000" flood-opacity=".58"/></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs>
+
+  <ellipse cx="280" cy="246" rx="185" ry="14" fill="#000" opacity=".55"/>
+  <g filter="url(#shadow)">
+    <path d="M68 206c9-55 39-86 100-100l39-55c10-14 24-21 42-21h62c18 0 32 7 42 21l39 55c61 14 91 45 100 100l-18 28H86z"
+      fill="url(#body)" stroke="#8d9aa2" stroke-width="2.2"/>
+    <path d="M193 108l28-39c6-9 14-13 26-14h66c12 1 20 5 26 14l28 39H193z" fill="url(#glass)" stroke="#64747e" stroke-width="2"/>
+    <path d="M280 57v49" stroke="#b4c0c6" stroke-opacity=".25" stroke-width="2"/>
+    <path d="M124 145c38-16 85-24 156-24s118 8 156 24" stroke="#e9f0f3" stroke-opacity=".10" stroke-width="3"/>
+    <path d="M102 177c28-17 56-24 89-25h178c33 1 61 8 89 25l-3 40H105z" fill="url(#bumper)" stroke="#3a4953" stroke-width="2"/>
+    <path d="M118 186c24-12 46-17 70-17l26 7c-20 17-50 27-93 24z" fill="url(#lamp)" opacity=".65" filter="url(#soft)"/>
+    <path d="M442 186c-24-12-46-17-70-17l-26 7c20 17 50 27 93 24z" fill="url(#lamp)" opacity=".65" filter="url(#soft)"/>
+    <path d="M123 184c18-10 38-14 58-14l22 10c-18 15-42 21-72 21z" fill="#d9e1e4" stroke="#eff5f6" stroke-opacity=".25" stroke-width="1.5"/>
+    <path d="M437 184c-18-10-38-14-58-14l-22 10c18 15 42 21 72 21z" fill="#d9e1e4" stroke="#eff5f6" stroke-opacity=".25" stroke-width="1.5"/>
+    <path d="M240 187h80l11 22h-102z" fill="#071016" stroke="#334650" stroke-width="2"/>
+    <path d="M174 226h212" stroke="#a7b3b9" stroke-opacity=".11" stroke-width="3"/>
+    <circle cx="156" cy="228" r="16" fill="#0b1218" stroke="#42515a" stroke-width="4"/>
+    <circle cx="404" cy="228" r="16" fill="#0b1218" stroke="#42515a" stroke-width="4"/>
+    <path d="M112 210h336" stroke="#f7fafb" stroke-opacity=".10" stroke-width="2"/>
+  </g>
+</svg>
