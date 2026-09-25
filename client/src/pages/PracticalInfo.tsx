@@ -539,20 +539,12 @@ function CurrentScene({ mainLight, signal, flashActive, perspective, oncoming, s
           <div className={'showcase-car ' + (isRear ? 'rear' : 'front')}>
             <span className="car-shadow" />
             <img
-              src={isRear ? '/spirit/car-rear.svg' : '/spirit/car-front.svg'}
+              src={isRear ? '/spirit/car-rear-realistic.svg' : '/spirit/car-front-realistic.svg'}
               className="showcase-car-image"
               alt=""
               aria-hidden="true"
             />
 
-            {!isRear && (
-              <>
-                <span className="lamp front left" />
-                <span className="lamp front right" />
-                <span className="lamp fog left" />
-                <span className="lamp fog right" />
-              </>
-            )}
 
             {isRear && (
               <>
@@ -571,7 +563,7 @@ function CurrentScene({ mainLight, signal, flashActive, perspective, oncoming, s
             <div className="showcase-oncoming">
               <span className="oncoming-light left" />
               <span className="oncoming-light right" />
-              <img src="/spirit/car-front.svg" alt="" aria-hidden="true" />
+              <img src="/spirit/car-front-realistic.svg" alt="" aria-hidden="true" />
             </div>
           )}
 
@@ -628,7 +620,7 @@ function CurrentScene({ mainLight, signal, flashActive, perspective, oncoming, s
             {mode === 'high' && oncoming && (
               <div className="driver-oncoming">
                 <span />
-                <img src="/spirit/car-front.svg" alt="" aria-hidden="true" />
+                <img src="/spirit/car-front-realistic.svg" alt="" aria-hidden="true" />
               </div>
             )}
           </div>
@@ -745,20 +737,12 @@ function ScenarioSvg({
         <div className="scenario-pro-vehicle-wrap">
           <span className="scenario-pro-car-shadow" />
           <img
-            src={isRear ? '/spirit/car-rear.svg' : '/spirit/car-front.svg'}
+            src={isRear ? '/spirit/car-rear-realistic.svg' : '/spirit/car-front-realistic.svg'}
             className="scenario-pro-car"
             alt=""
             aria-hidden="true"
           />
 
-          {!isRear && (
-            <>
-              <span className="scenario-pro-lamp front-lamp left" />
-              <span className="scenario-pro-lamp front-lamp right" />
-              <span className="scenario-pro-lamp fog-lamp left" />
-              <span className="scenario-pro-lamp fog-lamp right" />
-            </>
-          )}
 
           {isRear && (
             <>
@@ -809,10 +793,10 @@ function ScenarioSvg({
             <span />
           </div>
           <div className="scenario-pro-other-car other-left">
-            <img src="/spirit/car-front.svg" alt="" aria-hidden="true" />
+            <img src="/spirit/car-front-realistic.svg" alt="" aria-hidden="true" />
           </div>
           <div className="scenario-pro-other-car other-right">
-            <img src="/spirit/car-front.svg" alt="" aria-hidden="true" />
+            <img src="/spirit/car-front-realistic.svg" alt="" aria-hidden="true" />
           </div>
         </>
       )}
@@ -832,7 +816,7 @@ function ScenarioSvg({
 
       {showOncoming && (
         <div className="scenario-pro-oncoming">
-          <img src="/spirit/car-front.svg" alt="" aria-hidden="true" />
+          <img src="/spirit/car-front-realistic.svg" alt="" aria-hidden="true" />
           <span className="oncoming-lamp left" />
           <span className="oncoming-lamp right" />
         </div>
