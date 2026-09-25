@@ -149,9 +149,11 @@ function CockpitHandle({
     const opacity = Math.max(0.22, 0.28 + 0.72 * Math.pow(scaleY, 1.4));
     const isActive = index === ringIndex;
     return (
-      <g key={item.key} transform={'translate(220 ' + y + ') scale(1 ' + scaleY + ')'} opacity={opacity}>
-        <circle r="21" fill={isActive ? '#0b2627' : '#0a1115'} stroke={isActive ? '#77e5d3' : '#65767b'} strokeOpacity={isActive ? '.95' : '.34'} strokeWidth={isActive ? '2.4' : '1.5'} />
-        <g transform="translate(-15 -15) scale(.62)" color={isActive ? '#effffb' : '#c5d1d3'} opacity={isActive ? 1 : .78}>
+      <g key={item.key} className="handle-ring-mark" transform={'translate(220 ' + y + ') scale(1 ' + scaleY + ')'} opacity={opacity}>
+        <g transform="translate(2 2)" color="#000" opacity=".34">
+          <RingSymbol type={item.key} active={false} />
+        </g>
+        <g transform="translate(-15 -15) scale(.70)" color={isActive ? '#f2fffc' : '#c5d1d3'} opacity={isActive ? 1 : .86}>
           <RingSymbol type={item.key} active={isActive} />
         </g>
       </g>
@@ -320,7 +322,7 @@ function CockpitHandle({
           </g>
 
           {/* rigid stalk: only this group moves, not the ring independently */}
-          <g transform={leverTransform} filter={u('shadow')}>
+          <g className="handle-lever-body" transform={leverTransform} filter={u('shadow')}>
             <path d="M609 190L329 195Q318 196 309 207L309 225Q318 236 330 237L609 242Z" fill="#05090d" opacity=".78" />
             <path d="M611 194L334 199Q324 200 316 209L316 222Q324 232 335 233L611 238Z" fill={u('shaft')} stroke="#04080b" strokeWidth="2" />
             <path d="M600 198L340 203" stroke="#fff" strokeOpacity=".24" strokeWidth="3" strokeLinecap="round" />
@@ -341,7 +343,7 @@ function CockpitHandle({
             </g>
 
             {/* main lighting ring */}
-            <g opacity={signal === null ? 1 : .62}>
+            <g className={movement === 'ring' ? 'handle-ring-face is-moving' : 'handle-ring-face'} opacity={signal === null ? 1 : .62} transform={'rotate(' + ringAngle + ' 218 216)'}>
               <rect x="151" y="154" width="133" height="124" rx="30" fill={u('ring')} stroke="#020609" strokeWidth="4" />
               <g clipPath={u('ringClip')}>
                 {ringGrooves}
@@ -378,13 +380,6 @@ function CockpitHandle({
               <path d="M0 -7V1M0 6V7" stroke={signal === 'hazard' ? '#ff777b' : '#cb555b'} strokeWidth="3" strokeLinecap="round"/>
             </g>
             <circle cx="651" cy="91" r="4" fill={signal === 'hazard' ? '#ff696f' : '#4a3135'} />
-          </g>
-
-          {/* subtle focus, never covering the whole handle */}
-          <g fill="none" stroke="#57ddc6" strokeWidth="2.5" strokeDasharray="5 5" opacity=".88">
-            {movement === 'ring' && <rect x="145" y="148" width="145" height="136" rx="34" />}
-            {(movement === 'left' || movement === 'right' || movement === 'push' || movement === 'pull') && <path d="M304 187Q298 195 298 216Q298 237 305 245H615" />}
-            {movement === 'hazard' && <rect x="607" y="16" width="84" height="74" rx="19" />}
           </g>
 
           <text x="363" y="382" fill="#9cb2b3" fontSize="12" fontWeight="700">اسحب القطعة نفسها — الحلقة والدراع يتحركان بشكل مستقل</text>
