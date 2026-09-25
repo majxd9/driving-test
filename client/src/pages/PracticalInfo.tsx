@@ -109,7 +109,7 @@ function Dashboard({ mainLight, signal }: { mainLight: MainLightKey; signal: Sig
 function RingSymbol({ type, active }: { type: MainLightKey; active: boolean }) {
   const c = active ? '#eafffb' : '#88969b';
   const glow = active ? '#8ee9de' : '#172126';
-  const common = { stroke: c, strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round', fill: 'none' as const };
+  const common = { stroke: c, strokeWidth: 2.2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' as const };
   if (type === 'off') return <g><circle r="7" fill={glow} opacity=".35"/><circle r="7" {...common}/><path d="M0 -15V-9M0 9V15M-15 0H-9M9 0h6" {...common}/></g>;
   if (type === 'position') return <g><path d="M-15 -6h10c5 0 7 3 8 7h-18z" {...common}/><path d="M6 -8V8M12 -6v12M18 -4v8" {...common}/></g>;
   if (type === 'auto') return <g><circle cx="-5" cy="0" r="7" {...common}/><path d="M-5 -14v4M-5 10v4M-19 0h4M9 0h4M-15 -10l3 3M5 7l3 3M-15 10l3-3M5 -7l3-3" {...common}/><text x="8" y="4" fill={c} fontSize="8" fontWeight="900">A</text></g>;
