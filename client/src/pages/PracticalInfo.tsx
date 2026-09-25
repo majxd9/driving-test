@@ -600,31 +600,51 @@ function CurrentScene({ mainLight, signal, flashActive, perspective, oncoming, s
           {mode === 'rearFog' && <div className="range-pill rear">ضباب خلفي</div>}
         </div>
       ) : (
-        <div className="driver-showcase" aria-label="مشهد منظور السائق يوضح أثر الإنارة على الطريق">
-          <div className="driver-sky">
-            <span className="driver-moon" />
-            <span className="driver-horizon h1" />
-            <span className="driver-horizon h2" />
-            <span className="driver-horizon h3" />
+        <div className="vehicle-showcase" aria-label="مشهد خارجي يوضح أثر الإنارة على السيارة">
+          <div className="showcase-sky">
+            <span className="sky-light s1" />
+            <span className="sky-light s2" />
+            <span className="sky-light s3" />
           </div>
-          <div className="driver-road">
-            <span className="driver-edge left" />
-            <span className="driver-edge right" />
-            <span className="driver-center" />
-            {frontLighting && (
+          <div className="showcase-road">
+            <span className="road-lane lane-left" />
+            <span className="road-lane lane-center" />
+            <span className="road-lane lane-right" />
+          </div>
+          {frontLighting && (
+            <div className={'showcase-beams beam-' + beamMode} aria-hidden="true">
+              <span className="showcase-beam left" />
+              <span className="showcase-beam right" />
+              <span className="beam-hotspot left" />
+              <span className="beam-hotspot right" />
+            </div>
+          )}
+          <div className={'showcase-car ' + (isRear ? 'rear' : 'front')}>
+            <span className="car-shadow" />
+            <img
+              src={isRear ? '/spirit/car-rear-realistic.svg' : '/spirit/car-front-realistic.svg'}
+              className="showcase-car-image"
+              alt=""
+              aria-hidden="true"
+            />
+            {isRear && (
               <>
-                <span className={'driver-beam left ' + beamMode} />
-                <span className={'driver-beam right ' + beamMode} />
+                <span className={'lamp rear left ' + (leftSignal ? 'amber' : '')} />
+                <span className={'lamp rear right ' + (rightSignal ? 'amber' : '')} />
+                {mainLight === 'position' && <>
+                  <span className="position-light left" />
+                  <span className="position-light right" />
+                </>}
               </>
             )}
-            {mode === 'high' && oncoming && (
-              <div className="driver-oncoming">
-                <span />
-                <img src="/spirit/car-front-realistic.svg" alt="" aria-hidden="true" />
-              </div>
-            )}
           </div>
-          <div className="driver-dash" />
+          {mainLight === 'high' && oncoming && (
+            <div className="showcase-oncoming">
+              <span className="oncoming-light left" />
+              <span className="oncoming-light right" />
+              <img src="/spirit/car-front-realistic.svg" alt="" aria-hidden="true" />
+            </div>
+          )}
           <div className="driver-note">{note}</div>
           {mode === 'high' && (
             <button type="button" className="driver-oncoming-toggle" onClick={() => setOncoming(!oncoming)}>
@@ -690,7 +710,7 @@ function ScenarioSvg({
     showOncoming ? 'has-oncoming' : '',
   ].filter(Boolean).join(' ');
 
-  const driverLabel = perspective === 'driver' ? scenario.driverTitle : scenario.externalTitle;
+  const driverLabel = scenario.externalTitle;
 
   const lightState =
     scenario.id === 'low' ? 'LOW' :
@@ -762,13 +782,6 @@ function ScenarioSvg({
               )}
             </>
           )}
-        </div>
-      )}
-
-      {perspective === 'driver' && (
-        <div className="scenario-pro-driver-roadview">
-          <span className="driver-car-dash" />
-          <span className="driver-road-center" />
         </div>
       )}
 
