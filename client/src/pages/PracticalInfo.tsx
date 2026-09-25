@@ -373,18 +373,11 @@ function CockpitHandle({
             <circle cx="651" cy="54" r="40" fill={u('hazardGlow')} opacity={signal === 'hazard' ? 1 : 0} filter={u('soft')} />
             <rect x="613" y="22" width="76" height="62" rx="16" fill="#2c3940" stroke="#05090c" strokeWidth="2.5" />
             <rect x="621" y="30" width="60" height="46" rx="12" fill="#090f13" stroke="#fff" strokeOpacity=".08" />
-            <g transform="translate(635 37) scale(.67)" color={signal === 'hazard' ? '#ff777b' : '#cb555b'} className={signal === 'hazard' ? 'pl-blink' : undefined}>
-              <RingSymbol type="hazard" active={signal === 'hazard'} />
+            <g transform="translate(651 53)" className={signal === 'hazard' ? 'pl-blink' : undefined}>
+              <path d="M0 -15 13 11H-13Z" fill="none" stroke={signal === 'hazard' ? '#ff777b' : '#cb555b'} strokeWidth="3" strokeLinejoin="round"/>
+              <path d="M0 -7V1M0 6V7" stroke={signal === 'hazard' ? '#ff777b' : '#cb555b'} strokeWidth="3" strokeLinecap="round"/>
             </g>
             <circle cx="651" cy="91" r="4" fill={signal === 'hazard' ? '#ff696f' : '#4a3135'} />
-          </g>
-
-          {/* movement arrows: visible only for the active action */}
-          <g>
-            <Arrow x1={226} y1={126} x2={226} y2={90} on={movement === 'right'} />
-            <Arrow x1={226} y1={305} x2={226} y2={341} on={movement === 'left'} />
-            <Arrow x1={342} y1={140} x2={388} y2={112} on={movement === 'push'} />
-            <Arrow x1={342} y1={292} x2={296} y2={318} on={movement === 'pull'} />
           </g>
 
           {/* subtle focus, never covering the whole handle */}
