@@ -2569,12 +2569,6 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
   opacity:.9 !important;
   background:radial-gradient(circle,#ff9ca2 0 13%,#ff3c4b 34%,rgba(208,27,43,.58) 57%,transparent 82%) !important;
 }
-.vehicle-lab .mode-signal .showcase-car.front .lamp.front.amber,
-.vehicle-lab .mode-hazard .showcase-car.front .lamp.front.amber{
-  top:62.5% !important;
-  left:auto !important;
-}
-
 /* Front signal glows are amber and sit on the inner edge of the headlamp cluster. */
 .vehicle-lab .mode-signal .showcase-car.front .lamp.front.amber,
 .vehicle-lab .mode-hazard .showcase-car.front .lamp.front.amber{
