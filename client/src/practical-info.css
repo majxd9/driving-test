@@ -930,3 +930,24 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
   .effect-oncoming-vehicle,
   .driver-oncoming{animation:none !important}
 }
+
+/* Keep the warning chip away from the vehicle artwork. */
+.effect-warning-chip{
+  left:14px !important;
+  right:auto !important;
+  top:92px !important;
+}
+@media(max-width:760px){
+  .effect-warning-chip{
+    left:9px !important;
+    right:auto !important;
+    top:75px !important;
+  }
+}
+@media(max-width:430px){
+  .effect-warning-chip{
+    left:7px !important;
+    right:auto !important;
+    top:69px !important;
+  }
+}
