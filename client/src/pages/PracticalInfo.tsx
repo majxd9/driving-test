@@ -360,106 +360,159 @@ function ScenarioVisual({ scenario, perspective }: { scenario: Scenario; perspec
 }
 
 function ScenarioSvg({ scenario, perspective, oncoming, setOncoming }: { scenario: Scenario; perspective: Perspective; oncoming: boolean; setOncoming: (value: boolean) => void }) {
-  const id = 's_' + scenario.id + '_' + perspective;
+  const id = 'scene_' + scenario.id + '_' + perspective;
   const night = scenario.id !== 'position' && scenario.id !== 'signals';
   const title = perspective === 'driver' ? scenario.driverTitle : scenario.externalTitle;
-  return (
-    <div className="scenario-svg-frame">
-      {perspective === 'driver' ? (
+
+  if (perspective === 'driver') {
+    return (
+      <div className="scenario-svg-frame">
         <svg className="scenario-svg" viewBox="0 0 900 470" role="img" aria-label={title}>
           <defs>
-            <linearGradient id={id + '_sky'} x1="0" y1="0" x2="0" y2="1"><stop stopColor={night ? '#031018' : '#405a53'}/><stop offset="1" stopColor={night ? '#102831' : '#263f3a'}/></linearGradient>
+            <linearGradient id={id + '_sky'} x1="0" y1="0" x2="0" y2="1"><stop stopColor={night ? '#031018' : '#405a53'}/><stop offset="1" stopColor={night ? '#12272f' : '#263f3a'}/></linearGradient>
             <linearGradient id={id + '_road'} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#34484d"/><stop offset=".45" stopColor="#16262c"/><stop offset="1" stopColor="#060c10"/></linearGradient>
-            <radialGradient id={id + '_glow'}><stop stopColor="#fff2b2" stopOpacity=".30"/><stop offset="1" stopColor="#fff2b2" stopOpacity="0"/></radialGradient>
             <filter id={id + '_blur'}><feGaussianBlur stdDeviation="18"/></filter>
           </defs>
-
           <rect width="900" height="470" fill={'url(#' + id + '_sky)'}/>
-          <circle cx="110" cy="92" r="2.5" fill="#d6e7e4" opacity=".55"/><circle cx="170" cy="72" r="1.8" fill="#d6e7e4" opacity=".45"/><circle cx="735" cy="108" r="2" fill="#d6e7e4" opacity=".40"/>
-          <path d="M0 470 212 132h476L900 470Z" fill={'url(#' + id + '_road)'}/>
-          <path d="M450 136v334" stroke="#eef7f5" strokeOpacity=".22" strokeWidth="4" strokeDasharray="25 18"/>
-          <path d="M278 470 356 185M622 470 544 185" stroke="#cedbd9" strokeOpacity=".08" strokeWidth="4"/>
-
-          {scenario.id === 'low' && <>
-            <g opacity=".75">
-              <rect x="86" y="175" width="5" height="105" rx="2" fill="#516267"/><circle cx="89" cy="169" r="12" fill="#8fd7cd" opacity=".10"/>
-              <rect x="814" y="175" width="5" height="105" rx="2" fill="#516267"/><circle cx="817" cy="169" r="12" fill="#8fd7cd" opacity=".10"/>
-              <rect x="154" y="232" width="3" height="53" fill="#67767a"/><circle cx="155" cy="228" r="7" fill="#d9eee8" opacity=".12"/>
-              <rect x="746" y="232" width="3" height="53" fill="#67767a"/><circle cx="748" cy="228" r="7" fill="#d9eee8" opacity=".12"/>
-            </g>
-            <path d="M450 316 250 235M450 316 650 235" stroke="#fff0ab" strokeOpacity=".48" strokeWidth="64" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/>
-            <path d="M450 316 266 244M450 316 634 244" stroke="#fff3b8" strokeOpacity=".42" strokeWidth="12" strokeLinecap="round"/>
-            <image href="/spirit/car-front.svg" x="390" y="88" width="120" height="78" opacity=".78"/>
-            <image href="/spirit/car-front.svg" x="204" y="173" width="84" height="55" opacity=".50"/>
-            <image href="/spirit/car-front.svg" x="612" y="170" width="84" height="55" opacity=".50"/>
-            <g><path d="M450 315 450 196" stroke="#86e4da" strokeOpacity=".50" strokeWidth="2" strokeDasharray="5 6"/><path d="M435 206h30" stroke="#86e4da" strokeOpacity=".55" strokeWidth="2"/><rect x="395" y="180" width="110" height="34" rx="17" fill="#071318" stroke="#86e4da" strokeOpacity=".25"/><text x="450" y="202" textAnchor="middle" fill="#bff1eb" fontSize="14" fontWeight="900">≈ 30 م</text></g>
-            <rect x="52" y="48" width="375" height="76" rx="21" fill="#061218" stroke="#86e4da" strokeOpacity=".28"/><text x="78" y="78" fill="#c6f3ed" fontSize="20" fontWeight="900">ضوء منخفض · ليل مزدحم</text><text x="78" y="102" fill="#9eb3b3" fontSize="12">الحزمة تهبط إلى الطريق ولا تستهدف وجه السائق المقابل</text>
-          </>}
-
-          {scenario.id === 'high' && <>
-            <path d="M110 270 150 120M790 270 750 120" stroke="#6b7b80" strokeOpacity=".28" strokeWidth="4"/>
-            <path d="M148 120l-20 9M752 120l20 9" stroke="#6b7b80" strokeOpacity=".35" strokeWidth="4"/>
-            <path d="M450 315 60 72M450 315 840 72" stroke="#fff1b1" strokeOpacity=".20" strokeWidth="104" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/>
-            <path d="M450 315 68 64M450 315 832 64" stroke="#fff3b7" strokeOpacity=".35" strokeWidth="12" strokeLinecap="round"/>
-            <path d="M0 205Q120 164 230 188M670 188Q780 164 900 205" stroke="#17333a" strokeWidth="34" opacity=".75"/>
-            {oncoming && <g>
-              <image href="/spirit/car-front.svg" x="632" y="90" width="128" height="84" transform="rotate(180 696 132)"/>
-              <ellipse cx="696" cy="146" rx="64" ry="40" fill="#fff6d0" opacity=".16" filter={'url(#' + id + '_blur)'}/>
-              <path d="M450 315 660 169" stroke="#fff0c2" strokeOpacity=".30" strokeWidth="27" strokeLinecap="round"/>
-              <rect x="52" y="48" width="390" height="76" rx="21" fill="#2b191b" stroke="#ff9fa5" strokeOpacity=".40"/><text x="78" y="78" fill="#ffd9d8" fontSize="20" fontWeight="900">مركبة مقابلة · إبهار</text><text x="78" y="102" fill="#d9babc" fontSize="12">خفّض العالي فوراً إلى المنخفض</text>
-            </g>}
-            {!oncoming && <rect x="52" y="48" width="390" height="76" rx="21" fill="#061218" stroke="#86e4da" strokeOpacity=".26"/>}
-            <g onClick={() => setOncoming(!oncoming)} cursor="pointer"><rect x="690" y="50" width="165" height="50" rx="16" fill="#071217" stroke="#fff" strokeOpacity=".12"/><text x="712" y="81" fill="#d5e4e1" fontSize="12" fontWeight="900">{oncoming ? 'إخفاء السيارة' : 'أظهر سيارة مقابلة'}</text></g>
-          </>}
-
-          {scenario.id === 'fog' && <>
-            <g opacity=".95"><rect x="0" y="65" width="900" height="78" fill="#edf5f1" fillOpacity=".15"/><rect x="0" y="166" width="900" height="67" fill="#edf5f1" fillOpacity=".14"/><rect x="0" y="254" width="900" height="48" fill="#edf5f1" fillOpacity=".11"/></g>
-            <g opacity=".18" fill="#fff"><circle cx="90" cy="128" r="22"/><circle cx="205" cy="94" r="15"/><circle cx="330" cy="165" r="19"/><circle cx="575" cy="112" r="17"/><circle cx="735" cy="170" r="23"/><circle cx="824" cy="118" r="14"/></g>
-            <rect x="35" y="317" width="390" height="106" rx="20" fill="#eaf2ef" fillOpacity=".055" stroke="#eef7f2" strokeOpacity=".16"/>
-            <rect x="475" y="317" width="390" height="106" rx="20" fill="#061318" stroke="#86e4da" strokeOpacity=".20"/>
-            <path d="M220 317 85 260M220 317 355 260" stroke="#fff6df" strokeOpacity=".24" strokeWidth="64" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/>
-            <path d="M675 317 555 286M675 317 795 286" stroke="#fff3b8" strokeOpacity=".42" strokeWidth="13" strokeLinecap="round"/>
-            <image href="/spirit/car-front.svg" x="365" y="238" width="170" height="108"/>
-            <path d="M450 350v55" stroke="#dbe8e5" strokeOpacity=".28" strokeWidth="4" strokeDasharray="9 8"/>
-            <text x="230" y="346" textAnchor="middle" fill="#f0f5f2" fontSize="17" fontWeight="900">ضوء عادي أعلى</text><text x="230" y="373" textAnchor="middle" fill="#c6d0ce" fontSize="12">يتشتت داخل الضباب → جدار أبيض</text>
-            <text x="670" y="346" textAnchor="middle" fill="#c4f4ed" fontSize="17" fontWeight="900">إنارة منخفضة</text><text x="670" y="373" textAnchor="middle" fill="#a9bcba" fontSize="12">تقترب من سطح الطريق → خطوط أوضح</text>
-            <rect x="52" y="48" width="430" height="76" rx="21" fill="#dfe9e5" fillOpacity=".08" stroke="#edf5f0" strokeOpacity=".20"/><text x="78" y="78" fill="#eef7f2" fontSize="20" fontWeight="900">ضباب · قارن قبل أن تحفظ</text><text x="78" y="102" fill="#c5d1cf" fontSize="12">المهم هو اتجاه وانتشار الحزمة، لا شكل المصباح وحده</text>
-          </>}
-
-          {scenario.id === 'position' && <>
-            <rect width="900" height="470" fill="#314f48"/><circle cx="728" cy="88" r="58" fill="#edf0d6" opacity=".32"/><circle cx="650" cy="105" r="24" fill="#e4eee1" opacity=".08"/><rect y="278" width="900" height="192" fill="#203a38"/><path d="M0 343h900" stroke="#becbc5" strokeOpacity=".14" strokeWidth="4"/>
-            <g opacity=".75"><rect x="96" y="255" width="7" height="87" fill="#65736f"/><rect x="798" y="255" width="7" height="87" fill="#65736f"/><path d="M99 255h14M801 255h14" stroke="#65736f" strokeWidth="4"/></g>
-            <image href="/spirit/car-rear.svg" x="336" y="225" width="228" height="128"/><circle cx="405" cy="293" r="11" fill="#e3edb7"/><circle cx="495" cy="293" r="11" fill="#e3edb7"/><ellipse cx="450" cy="302" rx="150" ry="72" fill="#e3edb7" opacity=".08"/>
-            <rect x="52" y="48" width="380" height="76" rx="21" fill="#172624" stroke="#dce8b0" strokeOpacity=".30"/><text x="78" y="78" fill="#eef4db" fontSize="20" fontWeight="900">أضواء الموضع · غسق</text><text x="78" y="102" fill="#c0c9b5" fontSize="12">الهدف الأساسي: أن تُرى المركبة، لا أن ترى الطريق بعيداً</text>
-          </>}
-
-          {scenario.id === 'signals' && <>
-            <rect width="900" height="470" fill="#1c3738"/><path d="M0 296h900M450 0v470" stroke="#e7f0ed" strokeOpacity=".16" strokeWidth="9" strokeDasharray="28 18"/>
-            <path d="M70 106h220v68H70zM610 106h220v68H610z" fill="#193033" opacity=".75"/><rect x="97" y="123" width="90" height="28" rx="6" fill="#5d7475" opacity=".28"/><rect x="713" y="123" width="90" height="28" rx="6" fill="#5d7475" opacity=".28"/>
-            <image href="/spirit/car-front.svg" x="337" y="286" width="226" height="144"/><image href="/spirit/car-front.svg" x="105" y="198" width="118" height="77" opacity=".68"/>
-            <path d="M450 350c0-76 68-112 156-121" fill="none" stroke="#87e5da" strokeWidth="16" strokeLinecap="round"/><path d="m606 220 25 16-28 9Z" fill="#87e5da"/>
-            <circle cx="511" cy="326" r="15" fill="#f4ae57"/><circle cx="525" cy="326" r="26" fill="#f4ae57" opacity=".12"/>
-            <rect x="52" y="48" width="410" height="76" rx="21" fill="#061217" stroke="#86e4da" strokeOpacity=".27"/><text x="78" y="78" fill="#c4f3eb" fontSize="20" fontWeight="900">تقاطع · الإشارة قبل الحركة</text><text x="78" y="102" fill="#a1b4b2" fontSize="12">راقب الطريق → أشر → تموضع → نفّذ عندما يكون آمناً</text>
-          </>}
-
-          {scenario.id === 'hazard' && <>
-            <rect width="900" height="470" fill="#0b1820"/><path d="M0 315h900" stroke="#aab8b7" strokeOpacity=".18" strokeWidth="4"/><path d="M0 365h900" stroke="#243c43" strokeWidth="52"/><image href="/spirit/car-rear.svg" x="332" y="220" width="236" height="140"/>
-            <g opacity=".72"><image href="/spirit/car-front.svg" x="92" y="260" width="110" height="70"/><image href="/spirit/car-front.svg" x="698" y="250" width="110" height="70"/></g>
-            <circle cx="405" cy="291" r="16" fill="#f4ae57"/><circle cx="495" cy="291" r="16" fill="#f4ae57"/><circle cx="450" cy="220" r="52" fill="#f1bd74" fillOpacity=".065" stroke="#f1bd74" strokeOpacity=".34" strokeWidth="3"/><path d="m450 192 24 42h-48Z" stroke="#f1bd74" strokeWidth="4"/><rect x="52" y="48" width="390" height="76" rx="21" fill="#211b13" stroke="#f1bd74" strokeOpacity=".30"/><text x="78" y="78" fill="#f4d4aa" fontSize="20" fontWeight="900">كتف الطريق · تحذير رباعي</text><text x="78" y="102" fill="#d8c1a4" fontSize="12">الإشارات الأربع تجعل مركبتك أوضح من الاتجاهين</text>
-          </>}
-
-          {scenario.id === 'rear' && <>
-            <rect width="900" height="470" fill="#08151d"/><path d="M0 314h900" stroke="#98aaac" strokeOpacity=".16" strokeWidth="4"/><path d="M80 470 450 320 820 470" fill="#0f2329" opacity=".75"/>
-            <image href="/spirit/car-rear.svg" x="332" y="215" width="236" height="142"/>
-            <circle cx="405" cy="292" r="22" fill="#ff4052"/><circle cx="495" cy="292" r="22" fill="#ff4052"/><circle cx="405" cy="292" r="38" fill="#ff4354" opacity=".16" filter={'url(#' + id + '_blur)'}/><circle cx="495" cy="292" r="38" fill="#ff4354" opacity=".16" filter={'url(#' + id + '_blur)'}/>
-            <path d="M450 357 350 430M450 357 550 430" stroke="#f7fbf4" strokeOpacity=".42" strokeWidth="40" strokeLinecap="round"/><path d="M450 360 350 430M450 360 550 430" stroke="#ffffff" strokeOpacity=".22" strokeWidth="10" strokeLinecap="round"/>
-            <rect x="52" y="48" width="430" height="76" rx="21" fill="#071117" stroke="#fff" strokeOpacity=".11"/><text x="78" y="78" fill="#ffe8e9" fontSize="20" fontWeight="900">الخلفية · فرامل أحمر / رجوع أبيض</text><text x="78" y="102" fill="#b9c7c5" fontSize="12">وظيفتان مختلفتان تظهران مباشرة خلف السيارة</text>
-          </>}
+          {scenario.id === 'position' ? (
+            <>
+              <circle cx="728" cy="88" r="58" fill="#edf0d6" opacity=".32"/>
+              <circle cx="650" cy="105" r="24" fill="#e4eee1" opacity=".08"/>
+              <rect y="278" width="900" height="192" fill="#203a38"/>
+              <path d="M0 343h900" stroke="#becbc5" strokeOpacity=".14" strokeWidth="4"/>
+              <rect x="94" y="252" width="7" height="92" fill="#65736f"/><rect x="799" y="252" width="7" height="92" fill="#65736f"/>
+              <image href="/spirit/car-rear.svg" x="336" y="225" width="228" height="128"/>
+              <ellipse cx="450" cy="300" rx="165" ry="78" fill="#e3edb7" opacity=".08"/>
+              <circle cx="405" cy="293" r="11" fill="#e3edb7"/><circle cx="495" cy="293" r="11" fill="#e3edb7"/>
+              <rect x="52" y="48" width="390" height="76" rx="21" fill="#172624" stroke="#dce8b0" strokeOpacity=".30"/>
+              <text x="78" y="78" fill="#eef4db" fontSize="20" fontWeight="900">أضواء الموضع · غسق</text>
+              <text x="78" y="102" fill="#c0c9b5" fontSize="12">الهدف: أن تُرى المركبة بوضوح، لا أن ترى الطريق بعيداً</text>
+            </>
+          ) : scenario.id === 'signals' ? (
+            <>
+              <rect width="900" height="470" fill="#1c3738"/>
+              <path d="M0 296h900M450 0v470" stroke="#e7f0ed" strokeOpacity=".16" strokeWidth="9" strokeDasharray="28 18"/>
+              <path d="M70 106h220v68H70M610 106h220v68H610" fill="none" stroke="#496264" strokeOpacity=".50" strokeWidth="4"/>
+              <image href="/spirit/car-front.svg" x="337" y="286" width="226" height="144"/>
+              <image href="/spirit/car-front.svg" x="100" y="195" width="120" height="78" opacity=".64"/>
+              <path d="M450 350c0-76 68-112 156-121" fill="none" stroke="#87e5da" strokeWidth="16" strokeLinecap="round"/>
+              <path d="m606 220 25 16-28 9Z" fill="#87e5da"/>
+              <circle cx="511" cy="326" r="15" fill="#f4ae57"/><circle cx="511" cy="326" r="28" fill="#f4ae57" opacity=".11"/>
+              <rect x="52" y="48" width="410" height="76" rx="21" fill="#061217" stroke="#86e4da" strokeOpacity=".27"/>
+              <text x="78" y="78" fill="#c4f3eb" fontSize="20" fontWeight="900">تقاطع · الإشارة قبل الحركة</text>
+              <text x="78" y="102" fill="#a1b4b2" fontSize="12">راقب → أشر → تموضع → نفّذ عندما يكون آمناً</text>
+            </>
+          ) : scenario.id === 'fog' ? (
+            <>
+              <path d="M0 470 212 132h476L900 470Z" fill={'url(#' + id + '_road)'}/>
+              <path d="M450 136v334" stroke="#e3efee" strokeOpacity=".20" strokeWidth="4" strokeDasharray="25 18"/>
+              <rect x="0" y="65" width="900" height="78" fill="#eef7f3" fillOpacity=".15"/>
+              <rect x="0" y="166" width="900" height="68" fill="#eef7f3" fillOpacity=".13"/>
+              <rect x="0" y="257" width="900" height="42" fill="#eef7f3" fillOpacity=".10"/>
+              <g opacity=".20" fill="#ffffff"><circle cx="88" cy="115" r="22"/><circle cx="207" cy="92" r="15"/><circle cx="332" cy="166" r="19"/><circle cx="575" cy="111" r="17"/><circle cx="745" cy="169" r="22"/></g>
+              <path d="M450 316 140 235M450 316 760 235" stroke="#fff7de" strokeOpacity=".20" strokeWidth="74" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/>
+              <path d="M450 318 270 284M450 318 630 284" stroke="#fff2b5" strokeOpacity=".40" strokeWidth="11" strokeLinecap="round"/>
+              <image href="/spirit/car-front.svg" x="367" y="232" width="166" height="107"/>
+              <rect x="52" y="48" width="430" height="76" rx="21" fill="#dfe9e5" fillOpacity=".09" stroke="#edf5f0" strokeOpacity=".20"/>
+              <text x="78" y="78" fill="#eef7f2" fontSize="20" fontWeight="900">ضباب · الرؤية تنخفض والتشتت يرتفع</text>
+              <text x="78" y="102" fill="#c5d1cf" fontSize="12">حزمة منخفضة قرب سطح الطريق + سرعة ومسافة أمان مناسبتان</text>
+            </>
+          ) : (
+            <>
+              <path d="M0 470 212 132h476L900 470Z" fill={'url(#' + id + '_road)'}/>
+              <path d="M450 136v334" stroke="#e3efee" strokeOpacity=".22" strokeWidth="4" strokeDasharray="25 18"/>
+              {scenario.id === 'low' && <>
+                <g opacity=".75"><rect x="86" y="174" width="5" height="106" fill="#516267"/><circle cx="89" cy="168" r="12" fill="#8fd7cd" opacity=".12"/><rect x="814" y="174" width="5" height="106" fill="#516267"/><circle cx="817" cy="168" r="12" fill="#8fd7cd" opacity=".12"/></g>
+                <path d="M450 316 250 235M450 316 650 235" stroke="#fff0ab" strokeOpacity=".48" strokeWidth="64" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/>
+                <path d="M450 316 266 244M450 316 634 244" stroke="#fff3b8" strokeOpacity=".42" strokeWidth="12" strokeLinecap="round"/>
+                <image href="/spirit/car-front.svg" x="391" y="88" width="118" height="76" opacity=".80"/>
+                <image href="/spirit/car-front.svg" x="208" y="176" width="82" height="54" opacity=".50"/>
+                <image href="/spirit/car-front.svg" x="610" y="176" width="82" height="54" opacity=".50"/>
+                <path d="M450 315V196" stroke="#86e4da" strokeOpacity=".45" strokeWidth="2" strokeDasharray="5 6"/>
+                <rect x="395" y="180" width="110" height="34" rx="17" fill="#071318" stroke="#86e4da" strokeOpacity=".25"/>
+                <text x="450" y="202" textAnchor="middle" fill="#bff1eb" fontSize="14" fontWeight="900">≈ 30 م</text>
+                <rect x="52" y="48" width="392" height="76" rx="21" fill="#061218" stroke="#86e4da" strokeOpacity=".28"/>
+                <text x="78" y="78" fill="#c6f3ed" fontSize="20" fontWeight="900">ضوء منخفض · ليل مزدحم</text>
+                <text x="78" y="102" fill="#9eb3b3" fontSize="12">حزمة موجهة للطريق وليست إلى مستوى وجه السائق المقابل</text>
+              </>}
+              {scenario.id === 'high' && <>
+                <path d="M450 316 60 70M450 316 840 70" stroke="#fff1b1" strokeOpacity=".20" strokeWidth="106" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/>
+                <path d="M450 316 68 64M450 316 832 64" stroke="#fff3b7" strokeOpacity=".35" strokeWidth="12" strokeLinecap="round"/>
+                <g opacity=".70"><path d="M126 275 154 140M774 275 746 140" stroke="#6b7b80" strokeOpacity=".35" strokeWidth="4"/><path d="M154 140l-18 8M746 140l18 8" stroke="#6b7b80" strokeOpacity=".35" strokeWidth="4"/></g>
+                {oncoming && <g><image href="/spirit/car-front.svg" x="636" y="93" width="126" height="83" transform="rotate(180 699 134)"/><ellipse cx="699" cy="145" rx="64" ry="40" fill="#fff5ca" opacity=".16" filter={'url(#' + id + '_blur)'}/><path d="M450 316 660 172" stroke="#fff0c2" strokeOpacity=".30" strokeWidth="27" strokeLinecap="round"/><rect x="52" y="48" width="410" height="76" rx="21" fill="#2b191b" stroke="#ff9fa5" strokeOpacity=".40"/><text x="78" y="78" fill="#ffd9d8" fontSize="20" fontWeight="900">مركبة مقابلة · إبهار</text><text x="78" y="102" fill="#d9babc" fontSize="12">اخفض العالي وأعد المنخفض</text></g>}
+                {!oncoming && <rect x="52" y="48" width="350" height="76" rx="21" fill="#061218" stroke="#86e4da" strokeOpacity=".26"/>}
+                <g onClick={() => setOncoming(!oncoming)} cursor="pointer"><rect x="690" y="50" width="165" height="50" rx="16" fill="#071217" stroke="#fff" strokeOpacity=".12"/><text x="712" y="81" fill="#d5e4e1" fontSize="12" fontWeight="900">{oncoming ? 'إخفاء السيارة' : 'أظهر سيارة مقابلة'}</text></g>
+              </>}
+            </>
+          )}
 
           <rect x="24" y="422" width="852" height="26" rx="13" fill="#02070a" opacity=".84"/>
           <text x="45" y="440" fill="#b8c7c5" fontSize="11">{title}</text>
         </svg>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="scenario-svg-frame">
+      <svg className="scenario-svg" viewBox="0 0 900 470" role="img" aria-label={title}>
+        <defs>
+          <linearGradient id={id + '_bg'} x1="0" y1="0" x2="0" y2="1"><stop stopColor={night ? '#041019' : '#294946'}/><stop offset="1" stopColor={night ? '#0b1c23' : '#1e3532'}/></linearGradient>
+          <filter id={id + '_blur'}><feGaussianBlur stdDeviation="16"/></filter>
+        </defs>
+        <rect width="900" height="470" fill={'url(#' + id + '_bg)'}/>
+        <path d="M0 360Q225 248 450 286T900 360v110H0Z" fill="#0d2329"/>
+        {scenario.id === 'low' && <>
+          <image href="/spirit/car-front.svg" x="337" y="270" width="226" height="144"/>
+          <path d="M450 326 128 184M450 326 772 184" stroke="#fff2b2" strokeOpacity=".13" strokeWidth="102" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/>
+          <path d="M450 326 120 174M450 326 780 174" stroke="#fff3b4" strokeOpacity=".30" strokeWidth="11" strokeLinecap="round"/>
+          <path d="M184 178V330M716 178V330" stroke="#607175" strokeOpacity=".32" strokeWidth="4"/>
+          <rect x="52" y="48" width="410" height="76" rx="21" fill="#071117" stroke="#86e4da" strokeOpacity=".28"/>
+          <text x="78" y="78" fill="#c1f2eb" fontSize="20" fontWeight="900">المنخفض · الحزمة تهبط للطريق</text><text x="78" y="102" fill="#9db1b0" fontSize="12">من الخارج ترى الفرق بين ضوء مناسب للطريق وضوء يزعج المقابل</text>
+        </>}
+        {scenario.id === 'high' && <>
+          <image href="/spirit/car-front.svg" x="337" y="270" width="226" height="144"/>
+          <path d="M450 326 50 98M450 326 850 98" stroke="#fff0b2" strokeOpacity=".16" strokeWidth="110" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/>
+          <path d="M450 326 42 88M450 326 858 88" stroke="#fff3b5" strokeOpacity=".31" strokeWidth="12" strokeLinecap="round"/>
+          {oncoming && <g><image href="/spirit/car-front.svg" x="640" y="95" width="120" height="80" transform="rotate(180 700 135)"/><ellipse cx="700" cy="145" rx="62" ry="38" fill="#fff4c9" opacity=".15" filter={'url(#' + id + '_blur)'}/><rect x="52" y="48" width="410" height="76" rx="21" fill="#281819" stroke="#f09ea4" strokeOpacity=".36"/><text x="78" y="78" fill="#ffd9d8" fontSize="20" fontWeight="900">السائق المقابل يرى إبهاراً</text><text x="78" y="102" fill="#d6babb" fontSize="12">اضغط لإخفاء المركبة ثم قارن الحزمة</text></g>}<g onClick={() => setOncoming(!oncoming)} cursor="pointer"><rect x="690" y="48" width="165" height="50" rx="16" fill="#071117" stroke="#fff" strokeOpacity=".10"/><text x="712" y="79" fill="#d5e2df" fontSize="12" fontWeight="900">{oncoming ? 'إخفاء السيارة' : 'أظهر سيارة مقابلة'}</text></g>
+        </>}
+        {scenario.id === 'fog' && <>
+          <rect x="0" y="76" width="900" height="76" fill="#eef6f2" fillOpacity=".14"/><rect x="0" y="178" width="900" height="55" fill="#eef6f2" fillOpacity=".11"/>
+          <image href="/spirit/car-front.svg" x="338" y="273" width="224" height="145"/>
+          <path d="M450 326 148 382M450 326 752 382" stroke="#fff7df" strokeOpacity=".17" strokeWidth="78" strokeLinecap="round" filter={'url(#' + id + '_blur)'}/>
+          <path d="M450 326 205 381M450 326 695 381" stroke="#fff2b6" strokeOpacity=".39" strokeWidth="11" strokeLinecap="round"/>
+          <rect x="52" y="48" width="430" height="76" rx="21" fill="#e6efeb" fillOpacity=".08" stroke="#eef5f0" strokeOpacity=".20"/>
+          <text x="78" y="78" fill="#eef7f3" fontSize="20" fontWeight="900">ضباب · قارن الضوء المرتفع والمنخفض</text><text x="78" y="102" fill="#c5d1cf" fontSize="12">الهدف: إبقاء الحزمة أقرب لسطح الطريق وتقليل التشتت في المثال</text>
+        </>}
+        {scenario.id === 'position' && <>
+          <circle cx="730" cy="92" r="58" fill="#e7ead7" opacity=".24"/><path d="M0 304h900" stroke="#aebbb6" strokeOpacity=".15" strokeWidth="4"/>
+          <image href="/spirit/car-rear.svg" x="337" y="234" width="226" height="136"/><ellipse cx="450" cy="305" rx="175" ry="78" fill="#e3edb7" opacity=".08"/>
+          <circle cx="405" cy="302" r="10" fill="#dbe8af"/><circle cx="495" cy="302" r="10" fill="#dbe8af"/>
+          <rect x="52" y="48" width="420" height="76" rx="21" fill="#162321" stroke="#d9e5b0" strokeOpacity=".30"/><text x="78" y="78" fill="#edf4dc" fontSize="20" fontWeight="900">غسق · أن تُرى المركبة</text><text x="78" y="102" fill="#bec8b5" fontSize="12">وضوح حدود السيارة في الإضاءة المحيطة الضعيفة</text>
+        </>}
+        {scenario.id === 'signals' && <>
+          <path d="M0 304h900M450 0v470" stroke="#dbe8e5" strokeOpacity=".15" strokeWidth="8" strokeDasharray="28 18"/>
+          <image href="/spirit/car-front.svg" x="337" y="285" width="226" height="144"/><image href="/spirit/car-front.svg" x="108" y="200" width="116" height="76" opacity=".66"/>
+          <path d="M450 350c62-8 116-44 147-104" fill="none" stroke="#87e5da" strokeWidth="16" strokeLinecap="round"/><path d="m597 214 23 15-27 8Z" fill="#87e5da"/>
+          <circle cx="510" cy="326" r="15" fill="#f4ae57"/><circle cx="510" cy="326" r="28" fill="#f4ae57" opacity=".10"/>
+          <rect x="52" y="48" width="430" height="76" rx="21" fill="#071117" stroke="#87e5da" strokeOpacity=".26"/><text x="78" y="78" fill="#c0f3eb" fontSize="20" fontWeight="900">تقاطع · الإشارة تُرى قبل الحركة</text><text x="78" y="102" fill="#9db1b0" fontSize="12">الآخرون يحتاجون وقتاً لقراءة نيتك</text>
+        </>}
+        {scenario.id === 'hazard' && <>
+          <path d="M0 312h900" stroke="#aab8b7" strokeOpacity=".18" strokeWidth="4"/><path d="M0 368h900" stroke="#243c43" strokeWidth="54"/>
+          <image href="/spirit/car-rear.svg" x="332" y="220" width="236" height="140"/><image href="/spirit/car-front.svg" x="95" y="263" width="108" height="70" opacity=".60"/><image href="/spirit/car-front.svg" x="698" y="255" width="112" height="72" opacity=".60"/>
+          <circle cx="405" cy="291" r="16" fill="#f4ae57"/><circle cx="495" cy="291" r="16" fill="#f4ae57"/><circle cx="450" cy="220" r="54" fill="#f1bd74" fillOpacity=".065" stroke="#f1bd74" strokeOpacity=".34" strokeWidth="3"/>
+          <path d="m450 191 24 43h-48Z" stroke="#f1bd74" strokeWidth="4"/>
+          <rect x="52" y="48" width="410" height="76" rx="21" fill="#211b13" stroke="#f1bd74" strokeOpacity=".30"/><text x="78" y="78" fill="#f4d4aa" fontSize="20" fontWeight="900">كتف الطريق · رباعي</text><text x="78" y="102" fill="#d8c1a4" fontSize="12">الإشارات الأربع تحذر القادمين من الاتجاهين</text>
+        </>}
+        {scenario.id === 'rear' && <>
+          <path d="M0 312h900" stroke="#98aaac" strokeOpacity=".16" strokeWidth="4"/><image href="/spirit/car-rear.svg" x="332" y="215" width="236" height="142"/>
+          <circle cx="405" cy="292" r="22" fill="#ff4052"/><circle cx="495" cy="292" r="22" fill="#ff4052"/>
+          <circle cx="405" cy="292" r="39" fill="#ff4354" opacity=".15" filter={'url(#' + id + '_blur)'}/><circle cx="495" cy="292" r="39" fill="#ff4354" opacity=".15" filter={'url(#' + id + '_blur)'}/>
+          <path d="M450 357 350 430M450 357 550 430" stroke="#f7fbf4" strokeOpacity=".43" strokeWidth="40" strokeLinecap="round"/>
+          <rect x="52" y="48" width="430" height="76" rx="21" fill="#071117" stroke="#fff" strokeOpacity=".11"/><text x="78" y="78" fill="#ffe8e9" fontSize="20" fontWeight="900">الخلفية · الأحمر للفرامل والأبيض للرجوع</text><text x="78" y="102" fill="#b9c7c5" fontSize="12">وظيفتان مختلفتان تظهران بوضوح خلف السيارة</text>
+        </>}
+        <rect x="24" y="422" width="852" height="26" rx="13" fill="#02070a" opacity=".84"/><text x="45" y="440" fill="#b8c7c5" fontSize="11">{title}</text>
+      </svg>
     </div>
   );
 }
