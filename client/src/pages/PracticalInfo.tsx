@@ -546,7 +546,7 @@ function CurrentScene({ mainLight, signal, flashActive, perspective, oncoming, s
             />
 
 
-            {isRear && (
+            {isRear ? (
               <>
                 <span className={'lamp rear left ' + (leftSignal ? 'amber' : '')} />
                 <span className={'lamp rear right ' + (rightSignal ? 'amber' : '')} />
@@ -555,6 +555,13 @@ function CurrentScene({ mainLight, signal, flashActive, perspective, oncoming, s
                   <span className="position-light left" />
                   <span className="position-light right" />
                 </>}
+              </>
+            ) : (
+              <>
+                <span className={'lamp front left ' + (leftSignal ? 'amber' : '')} />
+                <span className={'lamp front right ' + (rightSignal ? 'amber' : '')} />
+                <span className="lamp fog left" />
+                <span className="lamp fog right" />
               </>
             )}
           </div>
@@ -627,14 +634,22 @@ function CurrentScene({ mainLight, signal, flashActive, perspective, oncoming, s
               alt=""
               aria-hidden="true"
             />
-            {isRear && (
+            {isRear ? (
               <>
                 <span className={'lamp rear left ' + (leftSignal ? 'amber' : '')} />
                 <span className={'lamp rear right ' + (rightSignal ? 'amber' : '')} />
+                <span className="lamp rear-core" />
                 {mainLight === 'position' && <>
                   <span className="position-light left" />
                   <span className="position-light right" />
                 </>}
+              </>
+            ) : (
+              <>
+                <span className={'lamp front left ' + (leftSignal ? 'amber' : '')} />
+                <span className={'lamp front right ' + (rightSignal ? 'amber' : '')} />
+                <span className="lamp fog left" />
+                <span className="lamp fog right" />
               </>
             )}
           </div>
