@@ -455,34 +455,34 @@ function ScenarioSvg({ scenario, perspective, oncoming, setOncoming }: { scenari
                   </g>
 
                   {/* Road: right-hand lane for our vehicle, opposing lane on the left. */}
-                  <path d="M0 470 L248 248 Q450 218 652 248 L900 470Z" fill={'url(#' + id + '_road)'}/>
-                  <path d="M248 248 Q450 218 652 248" fill="none" stroke="#718286" strokeOpacity=".35" strokeWidth="3"/>
-                  <path d="M450 221 L450 470" stroke="#f3e8a7" strokeOpacity=".62" strokeWidth="4" strokeDasharray="24 20"/>
-                  <path d="M245 252 L54 470" stroke="#e9eeee" strokeOpacity=".28" strokeWidth="4"/>
-                  <path d="M655 252 L846 470" stroke="#e9eeee" strokeOpacity=".28" strokeWidth="4"/>
-                  <path d="M220 270 L95 408M680 270 L805 408" stroke="#e8eeee" strokeOpacity=".12" strokeWidth="3" strokeDasharray="12 18"/>
+                  <path d="M0 470 L238 250 Q392 218 620 250 L900 470Z" fill={'url(#' + id + '_road)'}/>
+                  <path d="M238 250 Q392 218 620 250" fill="none" stroke="#718286" strokeOpacity=".35" strokeWidth="3"/>
+                  <path d="M392 221 L255 470" stroke="#f3e8a7" strokeOpacity=".62" strokeWidth="4" strokeDasharray="24 20"/>
+                  <path d="M238 252 L0 470" stroke="#e9eeee" strokeOpacity=".28" strokeWidth="4"/>
+                  <path d="M620 252 L900 470" stroke="#e9eeee" strokeOpacity=".28" strokeWidth="4"/>
+                  <path d="M210 272 L70 420M650 272 L825 420" stroke="#e8eeee" strokeOpacity=".12" strokeWidth="3" strokeDasharray="12 18"/>
 
                   {/* Oncoming car: front view, approaching in the opposite lane. */}
-                  <image href="/spirit/car-front.svg" x="276" y="190" width="116" height="82" opacity=".96"/>
+                  <image href="/spirit/car-front.svg" x="268" y="193" width="116" height="82" opacity=".96"/>
                   <ellipse cx="300" cy="235" rx="8" ry="5" fill="#fff8d6" opacity=".86"/>
                   <ellipse cx="367" cy="235" rx="8" ry="5" fill="#fff8d6" opacity=".86"/>
 
                   {/* Car ahead: rear view, same direction, inside our right lane. */}
-                  <image href="/spirit/car-rear.svg" x="505" y="185" width="132" height="88" opacity=".98"/>
-                  <ellipse cx="532" cy="238" rx="9" ry="5" fill="#ff4a56" opacity=".75"/>
-                  <ellipse cx="604" cy="238" rx="9" ry="5" fill="#ff4a56" opacity=".75"/>
+                  <image href="/spirit/car-rear.svg" x="505" y="188" width="132" height="88" opacity=".98"/>
+                  <ellipse cx="532" cy="241" rx="9" ry="5" fill="#ff4a56" opacity=".75"/>
+                  <ellipse cx="604" cy="241" rx="9" ry="5" fill="#ff4a56" opacity=".75"/>
 
                   {/* Low beam: two soft sources from the headlamps, widening close to the road and fading toward the horizon. */}
-                  <path d="M405 405 L450 405 L400 272 L350 260 Z" fill={'url(#' + id + '_lowBeam)'} opacity=".78"/>
-                  <path d="M450 405 L495 405 L550 260 L500 272 Z" fill={'url(#' + id + '_lowBeam)'} opacity=".78"/>
-                  <path d="M410 405 L490 405 L565 278 L335 278 Z" fill="#fff2ae" opacity=".10" filter={'url(#' + id + '_blur)'}/>
-                  <path d="M418 404 L482 404 L540 289 L360 289 Z" fill="#fff4bd" opacity=".20"/>
+                  <path d="M500 405 L548 405 L432 274 L388 268 Z" fill={'url(#' + id + '_lowBeam)'} opacity=".82"/>
+                  <path d="M548 405 L596 405 L628 268 L584 274 Z" fill={'url(#' + id + '_lowBeam)'} opacity=".82"/>
+                  <path d="M500 405 L596 405 L646 280 L380 280 Z" fill="#fff2ae" opacity=".11" filter={'url(#' + id + '_blur)'}/>
+                  <path d="M510 404 L586 404 L628 292 L398 292 Z" fill="#fff4bd" opacity=".20"/>
 
                   {/* 30 m teaching marker: approximate, not a physical measurement. */}
-                  <path d="M358 282 H542" stroke="#dbeeea" strokeOpacity=".72" strokeWidth="2"/>
-                  <path d="M358 277 V287 M542 277 V287" stroke="#dbeeea" strokeOpacity=".72" strokeWidth="2"/>
-                  <rect x="394" y="258" width="112" height="25" rx="12" fill="#061116" fillOpacity=".90" stroke="#d8ece7" strokeOpacity=".28"/>
-                  <text x="450" y="275" textAnchor="middle" fill="#edf6f2" fontSize="12" fontWeight="800">مثال تعليمي: حوالي 30 م</text>
+                  <path d="M405 282 H625" stroke="#dbeeea" strokeOpacity=".72" strokeWidth="2"/>
+                  <path d="M405 277 V287 M625 277 V287" stroke="#dbeeea" strokeOpacity=".72" strokeWidth="2"/>
+                  <rect x="455" y="258" width="122" height="25" rx="12" fill="#061116" fillOpacity=".90" stroke="#d8ece7" strokeOpacity=".28"/>
+                  <text x="516" y="275" textAnchor="middle" fill="#edf6f2" fontSize="12" fontWeight="800">مثال تعليمي: حوالي 30 م</text>
 
                   {/* Driver eye-level reference: the low beam stays below it. */}
                   <path d="M267 225 H397" stroke="#ff9ea4" strokeOpacity=".45" strokeWidth="2" strokeDasharray="7 7"/>
