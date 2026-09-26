@@ -434,43 +434,6 @@ function ControlPanel({
   onFlash: () => void;
 }) {
   const activeSignal = SIGNAL_ITEMS.find(item => item.key === signal);
-  const handleScenarioActivate = (item: Scenario) => {
-    restoreScrollRef.current = window.scrollY;
-    if (item.control === 'left' || item.control === 'right' || item.control === 'hazard') {
-      chooseSignal(item.control);
-    } else {
-      chooseMain(item.control);
-    }
-
-    setSceneFocusActive(true);
-    if (restoreTimerRef.current !== null) window.clearTimeout(restoreTimerRef.current);
-
-    window.requestAnimationFrame(() => {
-      const handleTarget = simulatorLayoutRef.current;
-      if (!handleTarget) return;
-      window.scrollTo({
-        top: handleTarget.getBoundingClientRect().top + window.scrollY - 20,
-        behavior: 'smooth',
-      });
-      window.setTimeout(() => {
-        const vehicleTarget = vehicleLabRef.current;
-        if (!vehicleTarget) return;
-        window.scrollTo({
-          top: vehicleTarget.getBoundingClientRect().top + window.scrollY - 20,
-          behavior: 'smooth',
-        });
-      }, 950);
-    });
-
-    restoreTimerRef.current = window.setTimeout(() => {
-      const previous = restoreScrollRef.current;
-      if (previous !== null) window.scrollTo({ top: previous, behavior: 'smooth' });
-      setSceneFocusActive(false);
-      restoreScrollRef.current = null;
-      restoreTimerRef.current = null;
-    }, 3000);
-  };
-
   const activeLight = MAIN_LIGHTS.find(item => item.key === mainLight) || MAIN_LIGHTS[3];
 
   return (
@@ -1104,6 +1067,43 @@ export default function PracticalInfo() {
     if (action === 'left' || action === 'right') chooseSignal(action);
     else if (action === 'push') chooseMain('high');
     else triggerFlash();
+  };
+
+  const handleScenarioActivate = (item: Scenario) => {
+    restoreScrollRef.current = window.scrollY;
+    if (item.control === 'left' || item.control === 'right' || item.control === 'hazard') {
+      chooseSignal(item.control);
+    } else {
+      chooseMain(item.control);
+    }
+
+    setSceneFocusActive(true);
+    if (restoreTimerRef.current !== null) window.clearTimeout(restoreTimerRef.current);
+
+    window.requestAnimationFrame(() => {
+      const handleTarget = simulatorLayoutRef.current;
+      if (!handleTarget) return;
+      window.scrollTo({
+        top: handleTarget.getBoundingClientRect().top + window.scrollY - 20,
+        behavior: 'smooth',
+      });
+      window.setTimeout(() => {
+        const vehicleTarget = vehicleLabRef.current;
+        if (!vehicleTarget) return;
+        window.scrollTo({
+          top: vehicleTarget.getBoundingClientRect().top + window.scrollY - 20,
+          behavior: 'smooth',
+        });
+      }, 950);
+    });
+
+    restoreTimerRef.current = window.setTimeout(() => {
+      const previous = restoreScrollRef.current;
+      if (previous !== null) window.scrollTo({ top: previous, behavior: 'smooth' });
+      setSceneFocusActive(false);
+      restoreScrollRef.current = null;
+      restoreTimerRef.current = null;
+    }, 3000);
   };
 
   const activeLight = MAIN_LIGHTS.find(item => item.key === mainLight) || MAIN_LIGHTS[3];
