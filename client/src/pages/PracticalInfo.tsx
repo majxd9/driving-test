@@ -445,7 +445,7 @@ function ScenarioVisual({
     scenario.control === 'left' ? 'غماز يسار' :
     MAIN_LIGHTS.find(item => item.key === scenario.control)?.title || '';
 
-  const canActivate = scenario.id !== 'rearFog';
+  const canActivate = true;
 
   return (
     <article className={'scenario-visual scene-card-premium ' + (isActive ? 'is-active' : '')}>
@@ -796,7 +796,7 @@ export default function PracticalInfo() {
           <section id="scenes" className="scenes-section">
             <div className="section-title scenes-title"><div><span className="eyebrow">المشاهد التدريبية</span><h2>مشهد واحد لكل قاعدة، بإضاءة مختلفة فعلاً.</h2><p>الأمام للمنخفض والعالي والضباب، والخلف للموضع والغماز والرباعي والفرامل والرجوع.</p></div></div>
   <div className="scenario-grid">{SCENARIOS.map(scenario => {
-    const active = scenario.id !== 'rearFog' && (
+    const active = (
       scenario.control === 'hazard' ? signal === 'hazard'
       : scenario.control === 'right' ? signal === 'right'
       : scenario.control === 'left' ? signal === 'left'
