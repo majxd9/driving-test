@@ -49,3 +49,50 @@
     font-size:23px!important;
   }
 }
+
+
+/* Interaction v2: keep the study feedback out of the media area and make navigation immediate. */
+.study-premium-card{
+  grid-template-rows:18px clamp(120px,21dvh,158px) clamp(64px,9dvh,78px) minmax(0,1fr) auto 0 44px!important;
+}
+.study-premium-explanation.is-empty{
+  display:none!important;
+}
+.study-premium-explanation:not(.is-empty){
+  position:relative!important;
+  inset:auto!important;
+  grid-row:5!important;
+  z-index:20!important;
+  width:100%!important;
+  min-height:38px!important;
+  max-height:72px!important;
+  margin:0!important;
+  display:flex!important;
+  align-self:stretch!important;
+  box-sizing:border-box!important;
+  overflow:auto!important;
+  pointer-events:none!important;
+}
+.study-premium-action,
+.study-premium-actions{
+  transition:none!important;
+  animation:none!important;
+  touch-action:manipulation!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+.study-premium-action:not(:disabled):active{
+  transform:none!important;
+}
+
+/* Home guide modal must stack above the score/Nitro sibling inside the same hero. */
+.home-hero-copy{
+  position:relative!important;
+  z-index:100!important;
+}
+.home-hero .home-score{
+  position:relative!important;
+  z-index:4!important;
+}
+.home-hero-copy .modal-backdrop{
+  z-index:9999!important;
+}
