@@ -434,6 +434,43 @@ function ControlPanel({
   onFlash: () => void;
 }) {
   const activeSignal = SIGNAL_ITEMS.find(item => item.key === signal);
+  const handleScenarioActivate = (item: Scenario) => {
+    restoreScrollRef.current = window.scrollY;
+    if (item.control === 'left' || item.control === 'right' || item.control === 'hazard') {
+      chooseSignal(item.control);
+    } else {
+      chooseMain(item.control);
+    }
+
+    setSceneFocusActive(true);
+    if (restoreTimerRef.current !== null) window.clearTimeout(restoreTimerRef.current);
+
+    window.requestAnimationFrame(() => {
+      const handleTarget = simulatorLayoutRef.current;
+      if (!handleTarget) return;
+      window.scrollTo({
+        top: handleTarget.getBoundingClientRect().top + window.scrollY - 20,
+        behavior: 'smooth',
+      });
+      window.setTimeout(() => {
+        const vehicleTarget = vehicleLabRef.current;
+        if (!vehicleTarget) return;
+        window.scrollTo({
+          top: vehicleTarget.getBoundingClientRect().top + window.scrollY - 20,
+          behavior: 'smooth',
+        });
+      }, 950);
+    });
+
+    restoreTimerRef.current = window.setTimeout(() => {
+      const previous = restoreScrollRef.current;
+      if (previous !== null) window.scrollTo({ top: previous, behavior: 'smooth' });
+      setSceneFocusActive(false);
+      restoreScrollRef.current = null;
+      restoreTimerRef.current = null;
+    }, 3000);
+  };
+
   const activeLight = MAIN_LIGHTS.find(item => item.key === mainLight) || MAIN_LIGHTS[3];
 
   return (
@@ -580,12 +617,16 @@ function CurrentScene({
         </g>}
 
         {mode === 'hazard' && <g>
-          <ellipse cx="385" cy="327" rx="54" ry="31" fill="url(#currentAmberGlow)" opacity=".96" className="scene-lamp-blink"/><ellipse cx="515" cy="327" rx="54" ry="31" fill="url(#currentAmberGlow)" opacity=".96" className="scene-lamp-blink"/>
-          <circle cx="385" cy="327" r="14" fill="#ffc66e"/><circle cx="515" cy="327" r="14" fill="#ffc66e"/>
+          <g className="scene-hazard-lamps">
+            <ellipse cx="385" cy="327" rx="54" ry="31" fill="url(#currentAmberGlow)" opacity=".96"/>
+            <ellipse cx="515" cy="327" rx="54" ry="31" fill="url(#currentAmberGlow)" opacity=".96"/>
+            <circle cx="385" cy="327" r="14" fill="#ffc66e"/>
+            <circle cx="515" cy="327" r="14" fill="#ffc66e"/>
+          </g>
           <circle cx="450" cy="244" r="31" fill="#ffb24d" opacity=".05" stroke="#ffc96f" strokeOpacity=".28" strokeWidth="2.5"/>
           <path d="M450 227L468 257H432Z" fill="none" stroke="#ffc96f" strokeWidth="3.5"/>
           <text x="450" y="412" textAnchor="middle" fill="#f6d0a0" fontSize="14" fontWeight="900">الجهتان تومضان معاً</text>
-        </g>}
+        </g>
 
         {mode === 'rearFog' && <g>
           <path d="M385 328L330 450L442 450Z" fill="#ff4e5b" fillOpacity=".08" filter="url(#currentBlur18)"/>
@@ -600,19 +641,19 @@ function CurrentScene({
           <image href="/spirit/car-front.svg" x="646" y="108" width="90" height="55" opacity=".96"/>
           <circle cx="675" cy="138" r="5.5" fill="#fffef0"/><circle cx="710" cy="138" r="5.5" fill="#fffef0"/>
           <rect x="42" y="48" width="354" height="66" rx="18" fill="#251617" stroke="#ff8a92" strokeOpacity=".36"/>
-          <text x="66" y="76" fill="#ffd9dc" fontSize="18" fontWeight="900">مركبة مقابلة · خفض العالي</text>
-          <text x="66" y="98" fill="#d5b7ba" fontSize="11">لا تبقِ الحزمة المرتفعة باتجاه عين المقابل</text>
+          <text className="scene-caption-title" x="66" y="76" fill="#ffd9dc" fontSize="18" fontWeight="900">مركبة مقابلة · خفض العالي</text>
+          <text className="scene-caption-body" x="66" y="98" fill="#d5b7ba" fontSize="11">لا تبقِ الحزمة المرتفعة باتجاه عين المقابل</text>
         </g>}
 
         {mode === 'high' && !oncoming && <g>
           <rect x="42" y="48" width="330" height="66" rx="18" fill="#061118" stroke="#86e4da" strokeOpacity=".24"/>
-          <text x="66" y="76" fill="#c8f2ec" fontSize="18" fontWeight="900">طريق مظلم · مدى أبعد</text>
-          <text x="66" y="98" fill="#a7bbb9" fontSize="11">الحزمة أطول وأضيق من الضوء المنخفض</text>
+          <text className="scene-caption-title" x="66" y="76" fill="#c8f2ec" fontSize="18" fontWeight="900">طريق مظلم · مدى أبعد</text>
+          <text className="scene-caption-body" x="66" y="98" fill="#a7bbb9" fontSize="11">الحزمة أطول وأضيق من الضوء المنخفض</text>
         </g>}
 
         {mode === 'low' && <text x="450" y="412" textAnchor="middle" fill="#bcebe3" fontSize="14" fontWeight="900">حزمة قريبة ومركزة على سطح الطريق</text>}
         {mode === 'frontFog' && <text x="450" y="412" textAnchor="middle" fill="#d9e7e3" fontSize="14" fontWeight="900">الضباب يضعف التباين · الحزمة منخفضة وقريبة</text>}
-        {mode === 'flash' && <g><rect x="42" y="48" width="260" height="66" rx="18" fill="#1b3028" stroke="#d7f5ec" strokeOpacity=".24"/><text x="66" y="76" fill="#eafff7" fontSize="18" fontWeight="900">وميض سريع</text><text x="66" y="98" fill="#b9d0cb" fontSize="11">ضربة ضوئية قصيرة من العالي</text></g>}
+        {mode === 'flash' && <g><rect x="42" y="48" width="260" height="66" rx="18" fill="#1b3028" stroke="#d7f5ec" strokeOpacity=".24"/><text className="scene-caption-title" x="66" y="76" fill="#eafff7" fontSize="18" fontWeight="900">وميض سريع</text><text className="scene-caption-body" x="66" y="98" fill="#b9d0cb" fontSize="11">ضربة ضوئية قصيرة من العالي</text></g>}
         <rect x="18" y="440" width="864" height="18" rx="9" fill="#02080b" opacity=".88"/>
       </svg>
     </div>
@@ -786,8 +827,8 @@ function ScenarioSvg({
     <image href="/spirit/car-front.svg" x="327" y="246" width="246" height="123" filter={u('shadow')}/>
     <ellipse cx="396" cy="328" rx="34" ry="21" fill={u('lamp')}/><ellipse cx="504" cy="328" rx="34" ry="21" fill={u('lamp')}/>
     <rect x="42" y="42" width="302" height="64" rx="18" fill="#061117" stroke="#86e4da" strokeOpacity=".24"/>
-    <text x="66" y="69" fill="#c8f2ec" fontSize="18" fontWeight="900">ليل مزدحم · الضوء المنخفض</text>
-    <text x="66" y="91" fill="#a4bbb8" fontSize="11">حزمة قصيرة ومركزة قرب سطح الطريق</text>
+    <text className="scene-caption-title" x="66" y="69" fill="#c8f2ec" fontSize="18" fontWeight="900">ليل مزدحم · الضوء المنخفض</text>
+    <text className="scene-caption-body" x="66" y="91" fill="#a4bbb8" fontSize="11">حزمة قصيرة ومركزة قرب سطح الطريق</text>
     <text x="450" y="413" textAnchor="middle" fill="#bcece4" fontSize="14" fontWeight="900">رؤية قريبة + إبهار أقل</text>
   </>);
 
@@ -800,15 +841,15 @@ function ScenarioSvg({
     <ellipse cx="396" cy="328" rx="38" ry="23" fill={u('lamp')}/><ellipse cx="504" cy="328" rx="38" ry="23" fill={u('lamp')}/>
     {!oncoming ? <g>
       <rect x="42" y="42" width="305" height="64" rx="18" fill="#061117" stroke="#86e4da" strokeOpacity=".24"/>
-      <text x="66" y="69" fill="#c8f2ec" fontSize="18" fontWeight="900">طريق خارجي · الضوء العالي</text>
-      <text x="66" y="91" fill="#a4bbb8" fontSize="11">مدى أبعد عندما يكون الطريق خالياً</text>
+      <text className="scene-caption-title" x="66" y="69" fill="#c8f2ec" fontSize="18" fontWeight="900">طريق خارجي · الضوء العالي</text>
+      <text className="scene-caption-body" x="66" y="91" fill="#a4bbb8" fontSize="11">مدى أبعد عندما يكون الطريق خالياً</text>
     </g> : <g>
       <ellipse cx="692" cy="138" rx="84" ry="50" fill="#fff4cc" opacity=".20" filter={u('blur18')}/>
       <image href="/spirit/car-front.svg" x="648" y="108" width="88" height="55"/>
       <circle cx="674" cy="137" r="5" fill="#fffef0"/><circle cx="709" cy="137" r="5" fill="#fffef0"/>
       <rect x="42" y="42" width="362" height="64" rx="18" fill="#251617" stroke="#ff8c94" strokeOpacity=".34"/>
-      <text x="66" y="69" fill="#ffdadd" fontSize="18" fontWeight="900">مركبة مقابلة · اخفض العالي</text>
-      <text x="66" y="91" fill="#d5b8bc" fontSize="11">لا تبقِ الحزمة المرتفعة باتجاه المقابل</text>
+      <text className="scene-caption-title" x="66" y="69" fill="#ffdadd" fontSize="18" fontWeight="900">مركبة مقابلة · اخفض العالي</text>
+      <text className="scene-caption-body" x="66" y="91" fill="#d5b8bc" fontSize="11">لا تبقِ الحزمة المرتفعة باتجاه المقابل</text>
     </g>}
   </>);
 
@@ -823,8 +864,8 @@ function ScenarioSvg({
     <image href="/spirit/car-front.svg" x="327" y="246" width="246" height="123" filter={u('shadow')}/>
     <ellipse cx="396" cy="328" rx="40" ry="22" fill={u('lamp')} opacity=".62"/><ellipse cx="504" cy="328" rx="40" ry="22" fill={u('lamp')} opacity=".62"/>
     <rect x="42" y="42" width="330" height="64" rx="18" fill="#e5efeb" fillOpacity=".10" stroke="#eff7f3" strokeOpacity=".22"/>
-    <text x="66" y="69" fill="#edf6f3" fontSize="18" fontWeight="900">ضباب كثيف · حزمة منخفضة</text>
-    <text x="66" y="91" fill="#c4d2ce" fontSize="11">لا تجعل الضوء المرتفع يتحول إلى جدار وهج</text>
+    <text className="scene-caption-title" x="66" y="69" fill="#edf6f3" fontSize="18" fontWeight="900">ضباب كثيف · حزمة منخفضة</text>
+    <text className="scene-caption-body" x="66" y="91" fill="#c4d2ce" fontSize="11">لا تجعل الضوء المرتفع يتحول إلى جدار وهج</text>
   </>);
 
   if (scenario.id === 'position') return frame(<>
@@ -833,8 +874,8 @@ function ScenarioSvg({
     <image href="/spirit/car-rear.svg" x="302" y="232" width="296" height="148" filter={u('shadow')}/>
     <ellipse cx="385" cy="327" rx="48" ry="28" fill={u('red')} opacity=".22"/><ellipse cx="515" cy="327" rx="48" ry="28" fill={u('red')} opacity=".22"/>
     <rect x="42" y="42" width="316" height="64" rx="18" fill="#152221" stroke="#dce8b5" strokeOpacity=".24"/>
-    <text x="66" y="69" fill="#ecf3d6" fontSize="18" fontWeight="900">غسق · أضواء الموضع</text>
-    <text x="66" y="91" fill="#c0c9b7" fontSize="11">الهدف: أن تُرى المركبة وحدودها</text>
+    <text className="scene-caption-title" x="66" y="69" fill="#ecf3d6" fontSize="18" fontWeight="900">غسق · أضواء الموضع</text>
+    <text className="scene-caption-body" x="66" y="91" fill="#c0c9b7" fontSize="11">الهدف: أن تُرى المركبة وحدودها</text>
     <text x="450" y="413" textAnchor="middle" fill="#e2e9d4" fontSize="14" fontWeight="900">ضوء حضور، وليس ضوء طريق بعيد</text>
   </>);
 
@@ -846,8 +887,8 @@ function ScenarioSvg({
     <circle cx="385" cy="327" r="14" fill="#ffc66e"/>
     <path d="M398 312L365 300" fill="none" stroke="#efb05e" strokeOpacity=".24" strokeWidth="10" strokeLinecap="round"/>
     <rect x="42" y="42" width="350" height="64" rx="18" fill="#061117" stroke="#86e4da" strokeOpacity=".24"/>
-    <text x="66" y="69" fill="#c8f2ec" fontSize="18" fontWeight="900">تقاطع · الغماز قبل الحركة</text>
-    <text x="66" y="91" fill="#a6bbb9" fontSize="11">السائقون خلفك يرون الإشارة قبل الانعطاف</text>
+    <text className="scene-caption-title" x="66" y="69" fill="#c8f2ec" fontSize="18" fontWeight="900">تقاطع · الغماز قبل الحركة</text>
+    <text className="scene-caption-body" x="66" y="91" fill="#a6bbb9" fontSize="11">السائقون خلفك يرون الإشارة قبل الانعطاف</text>
   </>);
 
   if (scenario.id === 'hazard') return frame(<>
@@ -858,8 +899,8 @@ function ScenarioSvg({
     <circle cx="450" cy="244" r="31" fill="#ffb24d" opacity=".05" stroke="#ffc96f" strokeOpacity=".28" strokeWidth="2.5"/>
     <path d="M450 227L468 257H432Z" fill="none" stroke="#ffc96f" strokeWidth="3.5"/>
     <rect x="42" y="42" width="350" height="64" rx="18" fill="#251b10" stroke="#f1bd74" strokeOpacity=".30"/>
-    <text x="66" y="69" fill="#f4d4ab" fontSize="18" fontWeight="900">كتف الطريق · التحذير الرباعي</text>
-    <text x="66" y="91" fill="#d0b493" fontSize="11">الجهتان تعملان معاً لإظهار الحالة غير الاعتيادية</text>
+    <text className="scene-caption-title" x="66" y="69" fill="#f4d4ab" fontSize="18" fontWeight="900">كتف الطريق · التحذير الرباعي</text>
+    <text className="scene-caption-body" x="66" y="91" fill="#d0b493" fontSize="11">الجهتان تعملان معاً لإظهار الحالة غير الاعتيادية</text>
   </>);
 
   return frame(<>
@@ -870,8 +911,8 @@ function ScenarioSvg({
     <ellipse cx="450" cy="350" rx="180" ry="72" fill={u('red')} opacity=".18" filter={u('blur18')}/>
     <rect x="442" y="314" width="16" height="28" rx="7" fill="#ff525d"/>
     <rect x="42" y="42" width="370" height="64" rx="18" fill="#241417" stroke="#ff8c94" strokeOpacity=".30"/>
-    <text x="66" y="69" fill="#ffd9dc" fontSize="18" fontWeight="900">ضباب خلفي · ضوء أحمر واضح</text>
-    <text x="66" y="91" fill="#d5b8bc" fontSize="11">يُظهر المركبة من الخلف عندما تكون الرؤية سيئة جداً</text>
+    <text className="scene-caption-title" x="66" y="69" fill="#ffd9dc" fontSize="18" fontWeight="900">ضباب خلفي · ضوء أحمر واضح</text>
+    <text className="scene-caption-body" x="66" y="91" fill="#d5b8bc" fontSize="11">يُظهر المركبة من الخلف عندما تكون الرؤية سيئة جداً</text>
     <text x="450" y="413" textAnchor="middle" fill="#ffd0d3" fontSize="14" fontWeight="900">أحمر قوي من الخلف · أوقفه عند تحسن الرؤية</text>
   </>);
 }
@@ -901,7 +942,13 @@ export default function PracticalInfo() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [oncoming, setOncoming] = useState(true);
+  const [sceneFocusActive, setSceneFocusActive] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
+  const simulatorLayoutRef = useRef<HTMLDivElement | null>(null);
+  const vehicleLabRef = useRef<HTMLElement | null>(null);
+  const restoreScrollRef = useRef<number | null>(null);
+  const restoreTimerRef = useRef<number | null>(null);
+  const hazardSoundTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -920,6 +967,10 @@ export default function PracticalInfo() {
       body.style.overflowY = previous.bodyOverflowY;
       body.style.overflowX = previous.bodyOverflowX;
       root.classList.remove('practical-info-v2-active');
+      if (restoreTimerRef.current !== null) window.clearTimeout(restoreTimerRef.current);
+      if (hazardSoundTimerRef.current !== null) window.clearInterval(hazardSoundTimerRef.current);
+      restoreTimerRef.current = null;
+      hazardSoundTimerRef.current = null;
     };
   }, []);
 
@@ -971,8 +1022,16 @@ export default function PracticalInfo() {
     }
   };
 
+  const stopHazardSoundLoop = () => {
+    if (hazardSoundTimerRef.current !== null) {
+      window.clearInterval(hazardSoundTimerRef.current);
+      hazardSoundTimerRef.current = null;
+    }
+  };
+
   const chooseMain = (key: MainLightKey) => {
     playClick();
+    stopHazardSoundLoop();
     setMainLight(key); setSignal(null); setFlashActive(false);
     setMovement(key === 'high' ? 'push' : 'ring');
     setMobileSheetOpen(true);
@@ -1008,6 +1067,7 @@ export default function PracticalInfo() {
 
   const chooseSignal = (key: SignalKey) => {
     playClick();
+    stopHazardSoundLoop();
     if (key === 'hazard' && signal === 'hazard') {
       setSignal(null);
       setFlashActive(false);
@@ -1019,7 +1079,12 @@ export default function PracticalInfo() {
     setFlashActive(false);
     setMovement(key);
     setMobileSheetOpen(true);
-    if (key === 'hazard') playHazardSound();
+    if (key === 'hazard') {
+      playHazardSound();
+      hazardSoundTimerRef.current = window.setInterval(() => {
+        if (soundEnabled) playHazardSound();
+      }, 900);
+    }
   };
   const triggerFlash = () => {
     playClick();
@@ -1068,14 +1133,14 @@ export default function PracticalInfo() {
               <div className="sound-control"><button type="button" onClick={() => setSoundEnabled(value => { const next = !value; if (next) playClick(true); return next; })} aria-label={soundEnabled ? 'إيقاف صوت التفاعل' : 'تشغيل واختبار صوت التفاعل'}>{soundEnabled ? '♪' : '×'}</button><span>{soundEnabled ? 'صوت التفاعل' : 'الصوت مغلق'}</span>{flashCount > 0 && <b>{flashCount}× وميض</b>}</div>
             </div>
 
-            <div className="simulator-layout">
+            <div ref={simulatorLayoutRef} className={"simulator-layout " + (sceneFocusActive ? "scene-focus-active" : "")}>
               <ControlPanel group={controlGroup} setGroup={setControlGroup} mainLight={mainLight} signal={signal} flashActive={flashActive} onMain={chooseMain} onSignal={chooseSignal} onFlash={triggerFlash}/>
               <CockpitHandle mainLight={mainLight} signal={signal} movement={movement} onRingCycle={cycleRing} onLever={applyLever} onHazard={() => chooseSignal('hazard')}/>
             </div>
 
             <div className="result-heading"><span>03</span><div><b>شاهد الأثر على السيارة</b><small>السيارة من الجهة الصحيحة، والضوء يُرسم من مصدره باتجاه الطريق.</small></div></div>
 
-            <section className="vehicle-lab">
+            <section ref={vehicleLabRef} className={"vehicle-lab " + (sceneFocusActive ? "scene-focus-active" : "")}>
               <div className="vehicle-lab-head"><div><span className="eyebrow">النتيجة التعليمية</span><h3>{currentTitle}</h3><p>مشهد خارجي يوضح موضع الضوء واتجاهه على الطريق أو خلف السيارة.</p></div></div>
               {mainLight === 'high' && <button type="button" className="inline-scene-control" onClick={() => setOncoming(!oncoming)}>{oncoming ? 'السيارة المقابلة ظاهرة' : 'أظهر سيارة مقابلة'}</button>}
               <CurrentScene mainLight={mainLight} signal={signal} flashActive={flashActive} oncoming={oncoming} setOncoming={setOncoming}/>
@@ -1096,13 +1161,7 @@ export default function PracticalInfo() {
       : scenario.control === 'left' ? signal === 'left'
       : mainLight === scenario.control && !signal && !flashActive
     );
-    return <ScenarioVisual key={scenario.id} scenario={scenario} isActive={active} onActivate={(item) => {
-      if (item.control === 'left' || item.control === 'right' || item.control === 'hazard') {
-        chooseSignal(item.control);
-      } else {
-        chooseMain(item.control);
-      }
-    }}/>;
+    return <ScenarioVisual key={scenario.id} scenario={scenario} isActive={active} onActivate={handleScenarioActivate}/>;
   })}</div>
           </section>
 
