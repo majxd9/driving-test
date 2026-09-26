@@ -893,9 +893,13 @@ function ScenarioSvg({
 
   if (scenario.id === 'hazard') return frame(<>
     {base(false, true)}
-    <image href="/spirit/car-rear.svg" x="324" y="245" width="252" height="126" filter={u('shadow')}/>
-    <ellipse cx="398" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".96" className="scene-lamp-blink"/><ellipse cx="502" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".96" className="scene-lamp-blink"/>
-    <circle cx="385" cy="327" r="14" fill="#ffc66e"/><circle cx="515" cy="327" r="14" fill="#ffc66e"/>
+    <image href="/spirit/car-rear.svg" x="302" y="232" width="296" height="148" filter={u('shadow')}/>
+    <g className="scene-hazard-lamps">
+      <ellipse cx="385" cy="327" rx="54" ry="31" fill={u('amber')} opacity=".96"/>
+      <ellipse cx="515" cy="327" rx="54" ry="31" fill={u('amber')} opacity=".96"/>
+      <circle cx="385" cy="327" r="14" fill="#ffc66e"/>
+      <circle cx="515" cy="327" r="14" fill="#ffc66e"/>
+    </g>
     <circle cx="450" cy="244" r="31" fill="#ffb24d" opacity=".05" stroke="#ffc96f" strokeOpacity=".28" strokeWidth="2.5"/>
     <path d="M450 227L468 257H432Z" fill="none" stroke="#ffc96f" strokeWidth="3.5"/>
     <rect x="42" y="42" width="350" height="64" rx="18" fill="#251b10" stroke="#f1bd74" strokeOpacity=".30"/>
