@@ -539,7 +539,7 @@ function CurrentScene({
           <filter id="currentCarShadow"><feDropShadow dx="0" dy="20" stdDeviation="18" floodColor="#000" floodOpacity=".55"/></filter>
         </defs>
 
-        <rect width="900" height="470" fill={rear ? 'url(#currentDuskSky)' : 'url(#currentNightSky)'} />
+        <rect width="900" height="470" fill={rear && mode === 'position' ? 'url(#currentDuskSky)' : 'url(#currentNightSky)'} />
         <circle cx="760" cy="86" r="62" fill={mode === 'position' ? '#efe6b5' : '#dce9e2'} opacity={mode === 'position' ? '.20' : '.045'} />
         <path d="M0 470L182 132H718L900 470Z" fill="url(#currentRoad)" />
         <path d="M450 138V470" stroke="#dbe7e4" strokeOpacity=".20" strokeWidth="4" strokeDasharray="30 21" />
@@ -839,7 +839,7 @@ function ScenarioSvg({
   </>);
 
   if (scenario.id === 'signals') return frame(<>
-    {base(true, true)}
+    {base(false, true)}
     <path d="M450 138V470" stroke="#eef5f2" strokeOpacity=".20" strokeWidth="12" strokeDasharray="34 20"/>
     <image href="/spirit/car-rear.svg" x="324" y="245" width="252" height="126" filter={u('shadow')}/>
     <ellipse cx="385" cy="327" rx="54" ry="31" fill={u('amber')} opacity=".96"/><ellipse cx="515" cy="327" rx="54" ry="31" fill={u('amber')} opacity=".12"/>
@@ -851,7 +851,7 @@ function ScenarioSvg({
   </>);
 
   if (scenario.id === 'hazard') return frame(<>
-    {base(true, true)}
+    {base(false, true)}
     <image href="/spirit/car-rear.svg" x="324" y="245" width="252" height="126" filter={u('shadow')}/>
     <ellipse cx="398" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".96" className="scene-lamp-blink"/><ellipse cx="502" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".96" className="scene-lamp-blink"/>
     <circle cx="385" cy="327" r="14" fill="#ffc66e"/><circle cx="515" cy="327" r="14" fill="#ffc66e"/>
