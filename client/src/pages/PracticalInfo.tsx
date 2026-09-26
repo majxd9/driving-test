@@ -626,7 +626,7 @@ function CurrentScene({
           <circle cx="450" cy="244" r="31" fill="#ffb24d" opacity=".05" stroke="#ffc96f" strokeOpacity=".28" strokeWidth="2.5"/>
           <path d="M450 227L468 257H432Z" fill="none" stroke="#ffc96f" strokeWidth="3.5"/>
           <text x="450" y="412" textAnchor="middle" fill="#f6d0a0" fontSize="14" fontWeight="900">الجهتان تومضان معاً</text>
-        </g>
+        </g>}
 
         {mode === 'rearFog' && <g>
           <path d="M385 328L330 450L442 450Z" fill="#ff4e5b" fillOpacity=".08" filter="url(#currentBlur18)"/>
