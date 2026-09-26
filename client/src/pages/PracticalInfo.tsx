@@ -52,7 +52,7 @@ const SCENARIOS: Scenario[] = [
   { id: 'position', tag: 'أضواء الموضع', title: 'غسق · الهدف أن تُرى المركبة', control: 'position', driverTitle: 'من منظور السائق: هذه ليست إنارة طريق بعيدة.', externalTitle: 'من الخارج: حدود المركبة تصبح أوضح في الإضاءة المحيطة الضعيفة.', goal: 'حفظ الفرق: Position = أن تُرى، وليس أن ترى الطريق لمسافة طويلة.', steps: ['غسق أو إضاءة محيطة ضعيفة', 'مركبة متوقفة بأمان', 'إظهار حدود المركبة', 'لا تعتمد عليها لإنارة الطريق'], note: 'التشغيل الفعلي يعتمد على السيارة والأنظمة والظروف.' },
   { id: 'signals', tag: 'الغمازات', title: 'تقاطع · الإشارة تسبق المناورة', control: 'right', driverTitle: 'من منظور السائق: فحص ثم إشارة ثم مناورة.', externalTitle: 'من الخارج: السائقون الآخرون يرون إشارة الاتجاه قبل الحركة.', goal: 'ربط الغماز بتسلسل القيادة بدلاً من اعتباره أمراً منفصلاً عن فحص الطريق.', steps: ['راقب التقاطع', 'حدد اتجاه المناورة', 'استخدم الغماز المناسب', 'نفّذ عندما يكون آمناً'], note: 'الغماز وسيلة تواصل مع مستخدمي الطريق.' },
   { id: 'hazard', tag: 'التحذير الرباعي', title: 'كتف الطريق · توقف طارئ', control: 'hazard', driverTitle: 'من منظور السائق: حالة توقف غير اعتيادية تحتاج تحذيراً.', externalTitle: 'من الخارج: الإشارات الأربع تجعل المركبة واضحة للاتجاهين.', goal: 'تمييز التحذير الرباعي عن الغماز الذي يحدد اتجاهاً واحداً.', steps: ['توقف بأمان قدر الإمكان', 'اجعل المركبة واضحة', 'فعّل التحذير عند الحاجة', 'اتخذ الإجراء الآمن التالي'], note: 'هذا المثال يشرح فكرة التحذير العام حول مركبة متوقفة.' },
-  { id: 'rear', tag: 'الفرامل والرجوع', title: 'الخلفية · الأحمر للفرامل والأبيض للرجوع', control: 'rearFog', driverTitle: 'من منظور السائق: تغيّر حالة السيارة هو الذي يشغّل هذه الوظائف.', externalTitle: 'من الخلف: الأحمر يوضح الكبح، والأبيض يكشف منطقة الرجوع للخلف.', goal: 'تمييز الأضواء التي تتفاعل مع حالة السيارة بدلاً من مقبض الإنارة.', steps: ['ضغط الفرامل → أحمر قوي', 'اختيار الرجوع → أبيض', 'راقب ما يراه من خلفك', 'استخدم وضع السيارة الصحيح'], note: 'المشهد يشرح الوظيفة البصرية ولا يفترض وجود زر مستقل لهذه الأضواء.' },
+  { id: 'rearFog', tag: 'الضباب الخلفي', title: 'رؤية سيئة جداً · ضوء أحمر واضح من الخلف', control: 'rearFog', driverTitle: 'الضباب الخلفي وظيفة لرؤية المركبة من الخلف في ظروف الرؤية السيئة جداً.', externalTitle: 'من الخلف: مصدر أحمر واضح يساعد على تمييز المركبة في الضباب.', goal: 'تمييز الضباب الخلفي عن الغماز والفرامل: هو ضوء أحمر مخصص لتحسين ظهور المركبة من الخلف.', steps: ['رؤية خلفية ضعيفة جداً', 'تفعيل الضباب الخلفي عند الحاجة', 'ضوء أحمر واضح من الخلف', 'إطفاؤه عند تحسن الرؤية'], note: 'استخدمه وفق تجهيز المركبة وظروف الرؤية، ولا تعتبره بديلاً عن خفض السرعة ومسافة الأمان.' },
 ];
 
 function LightIcon({ type, className = '' }: { type: MainLightKey | SignalKey | 'brake' | 'reverse' | 'sun'; className?: string }) {
@@ -400,9 +400,9 @@ function CurrentScene({
         </g>}
 
         {mode === 'rearFog' && <g>
-          <ellipse cx="450" cy="335" rx="150" ry="56" fill="#ffd27d" opacity=".10" filter="url(#currentBlur18)"/>
-          <circle cx="450" cy="326" r="14" fill="#ffcf7e"/>
-          <text x="450" y="412" textAnchor="middle" fill="#e8d4aa" fontSize="14" fontWeight="900">الضباب الخلفي يجعل السيارة أوضح من الخلف</text>
+          <ellipse cx="450" cy="338" rx="150" ry="58" fill="url(#currentRedGlow)" opacity=".26" filter="url(#currentBlur18)"/>
+          <rect x="442" y="314" width="16" height="28" rx="7" fill="#ff4d59"/>
+          <text x="450" y="412" textAnchor="middle" fill="#ffd0d3" fontSize="14" fontWeight="900">الضباب الخلفي · ضوء أحمر واضح للمركبة خلفك</text>
         </g>}
 
         {mode === 'high' && oncoming && <g>
@@ -445,7 +445,7 @@ function ScenarioVisual({
     scenario.control === 'left' ? 'غماز يسار' :
     MAIN_LIGHTS.find(item => item.key === scenario.control)?.title || '';
 
-  const canActivate = scenario.id !== 'rear';
+  const canActivate = scenario.id !== 'rearFog';
 
   return (
     <article className={'scenario-visual scene-card-premium ' + (isActive ? 'is-active' : '')}>
@@ -603,12 +603,12 @@ function ScenarioSvg({
   return frame(<>
     {base(false)}
     <image href="/spirit/car-rear.svg" x="324" y="245" width="252" height="126" filter={u('shadow')}/>
-    <ellipse cx="398" cy="326" rx="40" ry="24" fill={u('red')} opacity=".82"/><ellipse cx="502" cy="326" rx="40" ry="24" fill={u('red')} opacity=".82"/>
-    <circle cx="398" cy="326" r="15" fill="#ff525d"/><circle cx="502" cy="326" r="15" fill="#ff525d"/>
-    <ellipse cx="450" cy="352" rx="110" ry="42" fill="#fff6df" opacity=".12" filter={u('blur7')}/>
-    <rect x="42" y="42" width="402" height="64" rx="18" fill="#14191a" stroke="#eff6f3" strokeOpacity=".20"/>
-    <text x="66" y="69" fill="#eef6f3" fontSize="18" fontWeight="900">الخلفية · فرامل + رجوع</text>
-    <text x="66" y="91" fill="#c4d0cc" fontSize="11">الأحمر للكبح · الأبيض عند الرجوع للخلف</text>
+    <ellipse cx="450" cy="342" rx="150" ry="58" fill={u('red')} opacity=".28" filter={u('blur18')}/>
+    <rect x="442" y="314" width="16" height="28" rx="7" fill="#ff525d"/>
+    <rect x="42" y="42" width="370" height="64" rx="18" fill="#241417" stroke="#ff8c94" strokeOpacity=".30"/>
+    <text x="66" y="69" fill="#ffd9dc" fontSize="18" fontWeight="900">ضباب خلفي · ضوء أحمر واضح</text>
+    <text x="66" y="91" fill="#d5b8bc" fontSize="11">يُظهر المركبة من الخلف عندما تكون الرؤية سيئة جداً</text>
+    <text x="450" y="413" textAnchor="middle" fill="#ffd0d3" fontSize="14" fontWeight="900">أحمر قوي من الخلف · أوقفه عند تحسن الرؤية</text>
   </>);
 }
 
@@ -796,7 +796,7 @@ export default function PracticalInfo() {
           <section id="scenes" className="scenes-section">
             <div className="section-title scenes-title"><div><span className="eyebrow">المشاهد التدريبية</span><h2>مشهد واحد لكل قاعدة، بإضاءة مختلفة فعلاً.</h2><p>الأمام للمنخفض والعالي والضباب، والخلف للموضع والغماز والرباعي والفرامل والرجوع.</p></div></div>
   <div className="scenario-grid">{SCENARIOS.map(scenario => {
-    const active = scenario.id !== 'rear' && (
+    const active = scenario.id !== 'rearFog' && (
       scenario.control === 'hazard' ? signal === 'hazard'
       : scenario.control === 'right' ? signal === 'right'
       : scenario.control === 'left' ? signal === 'left'
