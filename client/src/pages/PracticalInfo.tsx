@@ -659,13 +659,17 @@ export default function PracticalInfo() {
   const [oncoming, setOncoming] = useState(true);
   const audioRef = useRef<AudioContext | null>(null);
   const hazardSoundTimerRef = useRef<number | null>(null);
+  const vehicleLabRef = useRef<HTMLElement | null>(null);
+  const scrollTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     document.documentElement.classList.add('practical-info-v2-active');
     return () => {
       document.documentElement.classList.remove('practical-info-v2-active');
       if (hazardSoundTimerRef.current !== null) window.clearInterval(hazardSoundTimerRef.current);
+      if (scrollTimerRef.current !== null) window.clearTimeout(scrollTimerRef.current);
       hazardSoundTimerRef.current = null;
+      scrollTimerRef.current = null;
     };
   }, []);
   useEffect(() => {
@@ -805,6 +809,17 @@ export default function PracticalInfo() {
       chooseMain(item.control);
       setControlGroup(item.control === 'high' ? 'lever' : 'ring');
     }
+
+    if (scrollTimerRef.current !== null) window.clearTimeout(scrollTimerRef.current);
+    window.requestAnimationFrame(() => {
+      const target = vehicleLabRef.current;
+      if (!target) return;
+      const top = target.getBoundingClientRect().top + window.scrollY - 18;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    });
+    scrollTimerRef.current = window.setTimeout(() => {
+      scrollTimerRef.current = null;
+    }, 750);
   };
 
   const activeLight = MAIN_LIGHTS.find(item => item.key === mainLight) || MAIN_LIGHTS[3];
@@ -832,7 +847,7 @@ export default function PracticalInfo() {
 
           <section id="simulator" className="simulator-section">
             <div className="section-title">
-              <div><span className="eyebrow">المحاكي الأساسي</span><h2>اختر، حرّك، ثم شاهد النتيجة فوراً.</h2><p>الشرح يبقى في نفس السياق. لا يوجد نقل تلقائي بعيد عن الزر الذي ضغطته.</p></div>
+              <div><span className="eyebrow">المحاكي الأساسي</span><h2>اختر، حرّك، ثم شاهد النتيجة فوراً.</h2><p>عند تطبيق مشهد تدريبي، تنتقل الصفحة بسلاسة إلى أثره بدون قفزات متكررة.</p></div>
               <div className="sound-control"><button type="button" onClick={() => setSoundEnabled(value => { const next = !value; if (next) playClick(true); return next; })} aria-label={soundEnabled ? 'إيقاف صوت التفاعل' : 'تشغيل واختبار صوت التفاعل'}>{soundEnabled ? '♪' : '×'}</button><span>{soundEnabled ? 'صوت التفاعل' : 'الصوت مغلق'}</span>{flashCount > 0 && <b>{flashCount}× وميض</b>}</div>
             </div>
 
@@ -843,7 +858,7 @@ export default function PracticalInfo() {
 
             <div className="result-heading"><span>03</span><div><b>شاهد الأثر على السيارة</b><small>السيارة من الجهة الصحيحة، والضوء يُرسم من مصدره باتجاه الطريق.</small></div></div>
 
-            <section className="vehicle-lab">
+            <section ref={vehicleLabRef} className="vehicle-lab">
               <div className="vehicle-lab-head"><div><span className="eyebrow">النتيجة التعليمية</span><h3>{currentTitle}</h3><p>مشهد خارجي يوضح موضع الضوء واتجاهه على الطريق أو خلف السيارة.</p></div></div>
               {mainLight === 'high' && <button type="button" className="inline-scene-control" onClick={() => setOncoming(!oncoming)}>{oncoming ? 'السيارة المقابلة ظاهرة' : 'أظهر سيارة مقابلة'}</button>}
               <CurrentScene mainLight={mainLight} signal={signal} flashActive={flashActive} oncoming={oncoming} setOncoming={setOncoming}/>
