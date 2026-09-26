@@ -69,9 +69,7 @@ html.practical-info-v2-active #automatic{
   html.practical-info-v2-active #automatic{
     scroll-margin-top:12px;
   }
-  .practical-main{
-    padding-bottom:360px;
-  }
+  .practical-main{padding-bottom:26px}
   .handle-stage{
     overflow:visible;
   }
@@ -84,10 +82,44 @@ html.practical-info-v2-active #automatic{
 }
 
 @keyframes signalPulse{0%,100%{opacity:.28;transform:scale(.94)}50%{opacity:1;transform:scale(1)}}
-html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-active body{overflow-x:hidden;overscroll-behavior-x:none}
+html.practical-info-v2-active{scroll-behavior:auto}html.practical-info-v2-active body{overflow-x:hidden;overscroll-behavior-x:none}
 @media(prefers-reduced-motion:reduce){html.practical-info-v2-active{scroll-behavior:auto}.practical-v2 *{animation:none!important;transition:none!important}}
 @media(max-width:950px){.hero-lesson{grid-template-columns:1fr}.hero-map{justify-self:start}.simulator-layout{grid-template-columns:1fr}.dashboard-card{grid-template-columns:1fr}.automatic-grid{grid-template-columns:1fr}.scenario-grid{grid-template-columns:1fr}}
-@media(max-width:760px){.practical-header{position:relative}.practical-header-inner{width:calc(100% - 16px);min-height:58px;grid-template-columns:38px minmax(0,1fr)}.back-button{width:38px;height:38px;border-radius:12px}.brand-lockup span{font-size:7px}.brand-lockup strong{font-size:13px}.progress-status{display:none}.practical-main{width:calc(100% - 16px);padding-top:14px;padding-bottom:350px}.hero-lesson{gap:12px;padding-bottom:14px}.hero-copy h1{font-size:29px}.hero-copy p{font-size:10.5px;line-height:1.78}.hero-map{width:100%;justify-content:space-between;padding:7px}.hero-map span{font-size:7px}.hero-map b{width:23px;height:23px}.lesson-shell{border-radius:21px}.lesson-section-nav{position:sticky;top:0;display:grid;grid-template-columns:1fr 1fr 1fr;padding:6px;border-radius:21px 21px 0 0}.lesson-section-nav a{min-height:42px;font-size:7.5px}.simulator-section,.scenes-section,.automatic-section{padding:17px 10px 6px}.section-title{align-items:flex-start;flex-direction:column;gap:9px}.section-title h2{font-size:22px}.section-title p{font-size:8.5px}.sound-control{width:100%}.simulator-layout{gap:8px;margin-top:10px}.control-panel{padding:11px;border-radius:18px}.control-panel-head{grid-template-columns:1fr;gap:7px}.control-panel-head h3{font-size:17px}.control-panel-head p{font-size:8px}.selection-pill{width:max-content}.control-tabs button{min-height:40px}.control-grid{gap:5px}.control-grid button,.hazard-control{min-height:70px;padding:7px}.control-icon{width:38px;height:38px}.control-icon svg{width:28px;height:19px}.control-copy b{font-size:8.5px}.control-copy small,.control-copy em{font-size:6px}.desktop-explanation{display:none}.handle-header{grid-template-columns:1fr;gap:7px;padding:12px}.handle-header h3{font-size:18px}.handle-header p{font-size:8.2px}.handle-stage{padding:4px}.ring-zone{left:46.5%;top:22.5%;width:30%;height:29%}.lever-zone{left:75%;top:24%;width:23%;height:34%}.hazard-zone{right:2.5%;bottom:15.5%;width:58px;height:58px}.handle-hotspot span{font-size:6.5px;top:-9px;right:3px}.handle-actions{grid-template-columns:repeat(3,1fr);padding:6px;gap:4px}.handle-actions button{min-height:56px;padding:6px}.handle-actions button b{width:27px;height:27px;font-size:13px}.handle-actions button span{font-size:7.2px}.handle-actions button small{font-size:5.5px}.dashboard-card{gap:8px;padding:9px}.dashboard-grid{grid-template-columns:repeat(3,1fr);gap:4px}.dashboard-item{min-height:53px;font-size:6.8px}.result-heading{margin-top:12px}.vehicle-lab{padding:8px}.vehicle-lab-head{align-items:stretch;flex-direction:column}.view-switch{width:100%}.view-switch button{flex:1}.inline-scene-control{width:100%}.external-vehicle-stage{min-height:282px}.external-car{width:74%;height:248px}.scene-backdrop-label{top:10px;font-size:7px}.distance-tag,.oncoming-chip{font-size:7px;max-width:90%;overflow:hidden;text-overflow:ellipsis}.signal-dot{width:20px;height:20px}.scenes-title{margin-bottom:9px}.perspective-switch{width:100%;min-width:0}.perspective-switch button{flex:1}.scenario-grid{gap:9px}.scenario-content{padding:10px}.scenario-content h3{font-size:14px}.scenario-content>p{font-size:8px}.scenario-steps span{font-size:7.5px}.automatic-grid{gap:7px}.mobile-explanation{display:block;position:fixed;z-index:100;left:7px;right:7px;bottom:7px;max-height:min(37dvh,330px);overflow:auto;padding:6px;border:1px solid rgba(134,228,218,.18);border-radius:18px;background:rgba(5,14,19,.97);box-shadow:0 24px 70px rgba(0,0,0,.55);backdrop-filter:blur(18px)}.mobile-explanation>button{position:absolute;top:7px;left:7px;width:32px;height:32px;border:0;border-radius:9px;background:rgba(255,255,255,.05);color:#eaf7f5;font-size:21px;cursor:pointer;z-index:3}.mobile-explanation .explanation-card{grid-template-columns:44px minmax(0,1fr);gap:8px;padding:9px;padding-left:44px}.mobile-explanation .explanation-icon{width:44px;height:44px}.mobile-explanation .explanation-copy h3{font-size:12px}.mobile-explanation .explanation-copy p,.mobile-explanation .explanation-detail p{font-size:7.6px}.mobile-explanation .explanation-detail{grid-column:1 / -1;padding:7px 0 0;border-right:0;border-top:1px solid rgba(255,255,255,.06)}.page-footer-note{padding-bottom:4px}}
+@media(max-width:760px){.practical-header{position:relative}.practical-header-inner{width:calc(100% - 16px);min-height:58px;grid-template-columns:38px minmax(0,1fr)}.back-button{width:38px;height:38px;border-radius:12px}.brand-lockup span{font-size:7px}.brand-lockup strong{font-size:13px}.progress-status{display:none}.practical-main{width:calc(100% - 16px);padding-top:14px;padding-bottom:350px}.hero-lesson{gap:12px;padding-bottom:14px}.hero-copy h1{font-size:29px}.hero-copy p{font-size:10.5px;line-height:1.78}.hero-map{width:100%;justify-content:space-between;padding:7px}.hero-map span{font-size:7px}.hero-map b{width:23px;height:23px}.lesson-shell{border-radius:21px}.lesson-section-nav{position:sticky;top:0;display:grid;grid-template-columns:1fr 1fr 1fr;padding:6px;border-radius:21px 21px 0 0}.lesson-section-nav a{min-height:42px;font-size:7.5px}.simulator-section,.scenes-section,.automatic-section{padding:17px 10px 6px}.section-title{align-items:flex-start;flex-direction:column;gap:9px}.section-title h2{font-size:22px}.section-title p{font-size:8.5px}.sound-control{width:100%}.simulator-layout{gap:8px;margin-top:10px}.control-panel{padding:11px;border-radius:18px}.control-panel-head{grid-template-columns:1fr;gap:7px}.control-panel-head h3{font-size:17px}.control-panel-head p{font-size:8px}.selection-pill{width:max-content}.control-tabs button{min-height:40px}.control-grid{gap:5px}.control-grid button,.hazard-control{min-height:70px;padding:7px}.control-icon{width:38px;height:38px}.control-icon svg{width:28px;height:19px}.control-copy b{font-size:8.5px}.control-copy small,.control-copy em{font-size:6px}.desktop-explanation{display:none}.handle-header{grid-template-columns:1fr;gap:7px;padding:12px}.handle-header h3{font-size:18px}.handle-header p{font-size:8.2px}.handle-stage{padding:4px}.ring-zone{left:46.5%;top:22.5%;width:30%;height:29%}.lever-zone{left:75%;top:24%;width:23%;height:34%}.hazard-zone{right:2.5%;bottom:15.5%;width:58px;height:58px}.handle-hotspot span{font-size:6.5px;top:-9px;right:3px}.handle-actions{grid-template-columns:repeat(3,1fr);padding:6px;gap:4px}.handle-actions button{min-height:56px;padding:6px}.handle-actions button b{width:27px;height:27px;font-size:13px}.handle-actions button span{font-size:7.2px}.handle-actions button small{font-size:5.5px}.dashboard-card{gap:8px;padding:9px}.dashboard-grid{grid-template-columns:repeat(3,1fr);gap:4px}.dashboard-item{min-height:53px;font-size:6.8px}.result-heading{margin-top:12px}.vehicle-lab{padding:8px}.vehicle-lab-head{align-items:stretch;flex-direction:column}.view-switch{width:100%}.view-switch button{flex:1}.inline-scene-control{width:100%}.external-vehicle-stage{min-height:282px}.external-car{width:74%;height:248px}.scene-backdrop-label{top:10px;font-size:7px}.distance-tag,.oncoming-chip{font-size:7px;max-width:90%;overflow:hidden;text-overflow:ellipsis}.signal-dot{width:20px;height:20px}.scenes-title{margin-bottom:9px}.perspective-switch{width:100%;min-width:0}.perspective-switch button{flex:1}.scenario-grid{gap:9px}.scenario-content{padding:10px}.scenario-content h3{font-size:14px}.scenario-content>p{font-size:8px}.scenario-steps span{font-size:7.5px}.automatic-grid{gap:7px}.mobile-explanation{
+  display:block;
+  position:relative;
+  z-index:auto;
+  width:auto;
+  margin:12px 10px 0;
+  max-height:none;
+  overflow:visible;
+  padding:0;
+  border:1px solid rgba(134,228,218,.18);
+  border-radius:18px;
+  background:rgba(5,14,19,.97);
+  box-shadow:0 16px 38px rgba(0,0,0,.28);
+  backdrop-filter:blur(18px)
+}
+.mobile-explanation>button{
+  position:absolute;
+  top:9px;
+  left:9px;
+  width:32px;
+  height:32px;
+  border:0;
+  border-radius:9px;
+  background:rgba(255,255,255,.05);
+  color:#eaf7f5;
+  font-size:21px;
+  cursor:pointer;
+  z-index:3
+}
+.mobile-explanation .explanation-card{grid-template-columns:44px minmax(0,1fr);gap:8px;padding:12px}
+.mobile-explanation .explanation-icon{width:44px;height:44px}
+.mobile-explanation .explanation-copy h3{font-size:12px}
+.mobile-explanation .explanation-copy p,.mobile-explanation .explanation-detail p{font-size:7.8px}
+.mobile-explanation .explanation-detail{grid-column:1 / -1;padding:7px 0 0;border-right:0;border-top:1px solid rgba(255,255,255,.06)}
+.page-footer-note{padding-bottom:4px}}
 @media(max-width:430px){.hero-copy h1{font-size:26px}.lesson-section-nav a{font-size:6.5px;padding:0 4px}.control-grid button,.hazard-control{min-height:66px}.control-copy b{font-size:7.9px}.handle-svg{border-radius:13px}.hazard-zone{width:52px;height:52px}.external-vehicle-stage{min-height:252px}.external-car{height:220px}.dashboard-grid{grid-template-columns:repeat(2,1fr)}.dashboard-item{min-height:51px}.mobile-explanation{bottom:6px;left:6px;right:6px}}
 
 /* Lighting review: reduce visual clutter, preserve physical orientation, and make the external light cones directional. */
@@ -681,39 +713,86 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
 }
 
 
-/* Final polish: scene callout text, guided scene-to-simulator scroll, and true hazard on/off. */
-.scene-caption-title{
-  font-size:15.5px!important;
+
+/* Practical Info V4 — stable flow, readable Arabic, and no nested scroll trap */
+.result-scene-wrap,.current-scene-stage,.scenario-media{position:relative!important}
+.current-scene-stage{overflow:hidden!important}
+.current-scene-svg,.scenario-svg{display:block!important;width:100%!important;height:auto!important}
+.scene-callout{
+  position:absolute!important;
+  z-index:12!important;
+  top:12px!important;
+  left:12px!important;
+  max-width:min(72%,380px)!important;
+  padding:9px 11px!important;
+  border:1px solid rgba(134,228,218,.18)!important;
+  border-radius:13px!important;
+  background:rgba(3,11,16,.90)!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.20)!important;
+  pointer-events:none!important;
+  direction:rtl!important;
+  text-align:right!important;
+  backdrop-filter:blur(10px)!important
+}
+.scene-callout strong{display:block!important;color:#ecfffb!important;font-size:10px!important;line-height:1.35!important;font-weight:950!important}
+.scene-callout span{display:block!important;margin-top:3px!important;color:#a9c0bc!important;font-size:7.7px!important;line-height:1.55!important}
+.scene-callout.warning{border-color:rgba(255,119,124,.30)!important;background:rgba(50,20,23,.92)!important}
+.scene-callout.warning strong{color:#ffd8db!important}
+.scene-callout.amber{border-color:rgba(241,189,116,.30)!important;background:rgba(45,31,17,.92)!important}
+.scene-callout.amber strong{color:#f7d6a4!important}
+.scene-direction-cue{
+  position:absolute!important;
+  z-index:11!important;
+  right:12px!important;
+  bottom:10px!important;
+  padding:6px 9px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:999px!important;
+  background:rgba(2,9,13,.84)!important;
+  color:#c3dad6!important;
+  font-size:7px!important;
   font-weight:900!important;
-  letter-spacing:-.1px!important;
+  direction:rtl!important
 }
-.scene-caption-body{
-  font-size:9.5px!important;
-  font-weight:700!important;
-  letter-spacing:-.05px!important;
+.scenario-scene-toggle{
+  position:absolute!important;
+  z-index:13!important;
+  left:12px!important;
+  bottom:12px!important;
+  min-height:34px!important;
+  padding:0 10px!important;
+  border:1px solid rgba(241,189,116,.24)!important;
+  border-radius:10px!important;
+  background:rgba(20,16,10,.90)!important;
+  color:#f1d0a0!important;
+  font-size:7px!important;
+  font-weight:950!important;
+  cursor:pointer!important
 }
-.scene-focus-active{
-  position:relative!important;
-  z-index:5!important;
-  border-color:rgba(134,228,218,.30)!important;
-  box-shadow:
-    0 0 0 1px rgba(134,228,218,.08),
-    0 0 34px rgba(70,218,196,.10),
-    0 20px 55px rgba(0,0,0,.24)!important;
+.scene-explanation-scroll{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:7px!important;
+  overflow:visible!important;
+  padding-bottom:0!important;
+  scroll-snap-type:none!important
 }
-.scene-hazard-lamps{
-  animation:sceneHazardOnOff 900ms steps(1,end) infinite!important;
-  transform-box:fill-box!important;
-  transform-origin:center!important;
+.scene-explanation-card{
+  min-width:0!important;
+  width:auto!important;
+  flex:none!important;
+  min-height:82px!important;
+  scroll-snap-align:none!important
 }
-@keyframes sceneHazardOnOff{
-  0%,49%{opacity:1}
-  50%,100%{opacity:.08}
-}
+.scene-scroll-cue{display:none!important}
+.scene-focus-active{box-shadow:none!important}
 @media(max-width:760px){
-  .scene-caption-title{font-size:13.5px!important}
-  .scene-caption-body{font-size:8.5px!important}
-}
-@media(prefers-reduced-motion:reduce){
-  .scene-hazard-lamps{animation:none!important}
+  .mobile-explanation{margin:10px 0 0!important;border-radius:16px!important}
+  .scene-callout{top:8px!important;left:8px!important;max-width:74%!important;padding:7px 8px!important;border-radius:11px!important}
+  .scene-callout strong{font-size:8px!important}
+  .scene-callout span{font-size:6.9px!important}
+  .scene-direction-cue{right:8px!important;bottom:8px!important;font-size:6.3px!important;max-width:66%!important;white-space:nowrap!important}
+  .scenario-scene-toggle{left:8px!important;bottom:8px!important;min-height:30px!important;padding:0 8px!important;font-size:6.6px!important}
+  .scene-explanation-scroll{grid-template-columns:1fr 1fr!important;gap:6px!important}
+  .scene-explanation-card{min-height:76px!important}
 }
