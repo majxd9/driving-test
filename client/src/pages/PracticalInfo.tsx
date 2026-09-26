@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode, type PointerEvent as ReactPointerEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 type MainLightKey = 'off' | 'position' | 'auto' | 'low' | 'high' | 'frontFog' | 'rearFog';
@@ -20,8 +20,6 @@ type Scenario = {
   tag: string;
   title: string;
   control: MainLightKey | SignalKey;
-  driverTitle: string;
-  externalTitle: string;
   goal: string;
   steps: string[];
   note: string;
@@ -46,13 +44,16 @@ const SIGNAL_ITEMS = [
 ];
 
 const SCENARIOS: Scenario[] = [
-  { id: 'low', tag: 'الضوء المنخفض', title: 'ليل مزدحم · حزمة قريبة وموجهة للأسفل', control: 'low', driverTitle: 'من منظور السائق: الطريق مضاء قريباً أمامك.', externalTitle: 'من الخارج: الحزمة منخفضة ولا تصعد إلى مستوى عيني السائق المقابل.', goal: 'فهم أن الضوء المنخفض يبحث عن رؤية مناسبة مع تقليل الإبهار، لا عن أقصى مدى ممكن.', steps: ['طريق ليلي مع حركة مرور', 'حزمة مائلة نحو سطح الطريق', 'مدى تعليمي يقارب 30 م', 'تجنب إضاءة وجه السائق المقابل'], note: 'الرسم تعليمي لتوضيح اتجاه الحزمة، وليس قياساً ضوئياً لطراز سيارة محدد.' },
-  { id: 'high', tag: 'الضوء العالي', title: 'طريق خارجي مظلم · مدى أبعد ثم خفض فوري', control: 'high', driverTitle: 'من منظور السائق: مدى رؤية أطول على طريق مظلم.', externalTitle: 'من الخارج: عند ظهور مركبة مقابلة يجب ألا تبقى الحزمة باتجاهها.', goal: 'تعلم التحول بين العالي والمنخفض حسب وجود مستخدم طريق مقابل.', steps: ['طريق خارجي مظلم', 'تفعيل العالي', 'ظهور مركبة مقابلة', 'خفض العالي والعودة للمنخفض'], note: 'اضغط زر «أظهر سيارة مقابلة» داخل المشهد لترى التغيير التعليمي.' },
-  { id: 'fog', tag: 'أضواء الضباب', title: 'ضباب كثيف · جدار أبيض مقابل طريق أوضح', control: 'frontFog', driverTitle: 'من منظور السائق: الضوء المرتفع يتشتت داخل الضباب، والحزمة المنخفضة تبقى أقرب للطريق.', externalTitle: 'من الخارج: الحزمة المنخفضة تتحرك قرب سطح الطريق بدلاً من الارتفاع داخل الضباب.', goal: 'تمييز تشتت الضوء داخل الضباب عن توزيع منخفض وموجّه قرب الطريق.', steps: ['ضباب كثيف', 'انتشار الضوء يضعف التباين', 'حزمة منخفضة قرب الطريق', 'سرعة أقل ومسافة توقف أكبر'], note: 'الضباب يحد الرؤية مهما كان نوع المصباح؛ القيادة الآمنة تعتمد أيضاً على السرعة.' },
-  { id: 'position', tag: 'أضواء الموضع', title: 'غسق · الهدف أن تُرى المركبة', control: 'position', driverTitle: 'من منظور السائق: هذه ليست إنارة طريق بعيدة.', externalTitle: 'من الخارج: حدود المركبة تصبح أوضح في الإضاءة المحيطة الضعيفة.', goal: 'حفظ الفرق: Position = أن تُرى، وليس أن ترى الطريق لمسافة طويلة.', steps: ['غسق أو إضاءة محيطة ضعيفة', 'مركبة متوقفة بأمان', 'إظهار حدود المركبة', 'لا تعتمد عليها لإنارة الطريق'], note: 'التشغيل الفعلي يعتمد على السيارة والأنظمة والظروف.' },
-  { id: 'signals', tag: 'الغمازات', title: 'تقاطع · الإشارة تسبق المناورة', control: 'right', driverTitle: 'من منظور السائق: فحص ثم إشارة ثم مناورة.', externalTitle: 'من الخارج: السائقون الآخرون يرون إشارة الاتجاه قبل الحركة.', goal: 'ربط الغماز بتسلسل القيادة بدلاً من اعتباره أمراً منفصلاً عن فحص الطريق.', steps: ['راقب التقاطع', 'حدد اتجاه المناورة', 'استخدم الغماز المناسب', 'نفّذ عندما يكون آمناً'], note: 'الغماز وسيلة تواصل مع مستخدمي الطريق.' },
-  { id: 'hazard', tag: 'التحذير الرباعي', title: 'كتف الطريق · توقف طارئ', control: 'hazard', driverTitle: 'من منظور السائق: حالة توقف غير اعتيادية تحتاج تحذيراً.', externalTitle: 'من الخارج: الإشارات الأربع تجعل المركبة واضحة للاتجاهين.', goal: 'تمييز التحذير الرباعي عن الغماز الذي يحدد اتجاهاً واحداً.', steps: ['توقف بأمان قدر الإمكان', 'اجعل المركبة واضحة', 'فعّل التحذير عند الحاجة', 'اتخذ الإجراء الآمن التالي'], note: 'هذا المثال يشرح فكرة التحذير العام حول مركبة متوقفة.' },
-  { id: 'rearFog', tag: 'الضباب الخلفي', title: 'رؤية سيئة جداً · ضوء أحمر واضح من الخلف', control: 'rearFog', driverTitle: 'الضباب الخلفي وظيفة لرؤية المركبة من الخلف في ظروف الرؤية السيئة جداً.', externalTitle: 'من الخلف: مصدر أحمر واضح يساعد على تمييز المركبة في الضباب.', goal: 'تمييز الضباب الخلفي عن الغماز والفرامل: هو ضوء أحمر مخصص لتحسين ظهور المركبة من الخلف.', steps: ['رؤية خلفية ضعيفة جداً', 'تفعيل الضباب الخلفي عند الحاجة', 'ضوء أحمر واضح من الخلف', 'إطفاؤه عند تحسن الرؤية'], note: 'استخدمه وفق تجهيز المركبة وظروف الرؤية، ولا تعتبره بديلاً عن خفض السرعة ومسافة الأمان.' },
+  { id: 'roundabout-right', tag: 'دوّار', title: 'الخروج من الدوّار إلى اليمين', control: 'right', goal: 'اربط غماز اليمين بتحديد المخرج ومراقبة المسار قبل الخروج من الدوّار.', steps: ['راقب المرآة والمسار','حدد المخرج المطلوب','استخدم غماز اليمين عند الحاجة','اخرج ضمن المسار الآمن'], note: 'المشهد تعليمي؛ الشواخص وتخطيط الطريق وحالة المرور هي المرجع الفعلي أثناء القيادة.' },
+  { id: 'lane-change', tag: 'تغيير مسار', title: 'الانتقال إلى المسار الأيسر', control: 'left', goal: 'الغماز يعلن نيتك ولا يحل محل المرآة والنقطة العمياء وفحص المسار.', steps: ['افحص المرآة','افحص النقطة العمياء','استخدم غماز اليسار','انتقل تدريجياً عندما يكون آمناً'], note: 'الإشارة وسيلة تواصل مع الآخرين وليست إذناً تلقائياً للانتقال.' },
+  { id: 'night-oncoming', tag: 'قيادة ليلاً', title: 'مركبة مقابلة على طريق مظلم', control: 'low', goal: 'عند ظهور مركبة مقابلة، لا تبقِ الضوء العالي موجهاً إليها.', steps: ['لاحظ المركبة المقابلة','اخفض العالي','انتقل للمنخفض','حافظ على سرعة مناسبة'], note: 'الهدف هو رؤية الطريق مع تقليل إبهار مستخدم الطريق المقابل.' },
+  { id: 'empty-road', tag: 'طريق مظلم', title: 'طريق خالٍ ومدى رؤية أبعد', control: 'high', goal: 'يوضح المشهد فكرة العالي عندما يكون الطريق مظلماً والمجال أمامك مناسباً.', steps: ['تحقق من خلو المجال','فعّل العالي','استفد من المدى الأبعد','اخفضه فور ظهور مستخدم طريق'], note: 'المشهد لا يعني أن العالي مناسب في كل وقت؛ وجود مستخدمي الطريق يغيّر الاختيار.' },
+  { id: 'fog', tag: 'ضباب', title: 'ضباب كثيف ومدى رؤية منخفض', control: 'frontFog', goal: 'الرؤية الضعيفة تحتاج إنارة مناسبة وسرعة أقل ومسافة توقف أكبر.', steps: ['خفف السرعة','اختر الإنارة المناسبة','فعّل الضباب إذا كانت السيارة مجهزة','راقب مسافة التوقف'], note: 'المصباح لا يعوض عن خفض السرعة عندما تقل الرؤية.' },
+  { id: 'hazard-stop', tag: 'توقف اضطراري', title: 'مركبة متوقفة في موضع خطر', control: 'hazard', goal: 'ميّز التحذير الرباعي عن غماز الانعطاف: هنا الإشارة للجهتين معاً.', steps: ['توقف بأمان قدر الإمكان','اجعل المركبة واضحة','فعّل التحذير عند الحاجة','اتخذ الإجراء الآمن التالي'], note: 'هذا مشهد تعليمي لفكرة التحذير العام حول مركبة متوقفة.' },
+  { id: 'turn-right', tag: 'تقاطع', title: 'انعطاف يمين', control: 'right', goal: 'ثبّت التسلسل: مراقبة الطريق ثم الغماز والتموضع ثم المناورة.', steps: ['افحص المرآة','استخدم غماز اليمين','تموضع ضمن المسار الصحيح','انعطف عندما يكون آمناً'], note: 'الإشارة تنبه الآخرين ولا تغني عن مراقبة الطريق.' },
+  { id: 'rear-fog', tag: 'رؤية شديدة السوء', title: 'استخدام الضباب الخلفي', control: 'rearFog', goal: 'الضباب الخلفي يجعل المركبة أوضح من الخلف عندما تكون الرؤية سيئة جداً.', steps: ['تحقق من سوء الرؤية','فعّل الضباب الخلفي عند الحاجة','راقب السائقين خلفك','أوقفه عند تحسن الرؤية'], note: 'ضوء قوي مخصص لتحسين ظهور المركبة، وليس للاستخدام الدائم.' },
+  { id: 'park-night', tag: 'وقوف ليلاً', title: 'مركبة متوقفة وتحتاج أن تكون واضحة', control: 'position', goal: 'أضواء الموضع تساعد على إظهار حدود المركبة ولا تستبدل إنارة الطريق.', steps: ['اختر مكان الوقوف الآمن','استخدم إنارة الموضع إذا لزم','اجعل المركبة واضحة','لا تعتمد عليها لإنارة الطريق'], note: 'التشغيل الفعلي يعتمد أيضاً على قواعد المكان وتجهيز السيارة.' },
+  { id: 'overtake', tag: 'تجاوز', title: 'بدء مناورة تجاوز', control: 'left', goal: 'الغماز جزء من المناورة ولا يكفي وحده لبدء التجاوز.', steps: ['تأكد من السماح بالتجاوز','مرآة ونقطة عمياء','استخدم الغماز المناسب','نفّذ عندما تكون المناورة آمنة'], note: 'قرار التجاوز يعتمد على الطريق والرؤية والأنظمة المرورية.' },
 ];
 
 function LightIcon({ type, className = '' }: { type: MainLightKey | SignalKey | 'brake' | 'reverse' | 'sun'; className?: string }) {
@@ -909,38 +910,17 @@ export default function PracticalInfo() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [oncoming, setOncoming] = useState(true);
-  const [sceneFocusActive, setSceneFocusActive] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
-  const simulatorLayoutRef = useRef<HTMLDivElement | null>(null);
-  const vehicleLabRef = useRef<HTMLElement | null>(null);
-  const restoreScrollRef = useRef<number | null>(null);
-  const restoreTimerRef = useRef<number | null>(null);
   const hazardSoundTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const root = document.documentElement;
-    const body = document.body;
-    const previous = {
-      rootOverflowY: root.style.overflowY,
-      bodyOverflowY: body.style.overflowY,
-      bodyOverflowX: body.style.overflowX,
-    };
-    root.style.overflowY = 'auto';
-    body.style.overflowY = 'auto';
-    body.style.overflowX = 'hidden';
-    root.classList.add('practical-info-v2-active');
+    document.documentElement.classList.add('practical-info-v2-active');
     return () => {
-      root.style.overflowY = previous.rootOverflowY;
-      body.style.overflowY = previous.bodyOverflowY;
-      body.style.overflowX = previous.bodyOverflowX;
-      root.classList.remove('practical-info-v2-active');
-      if (restoreTimerRef.current !== null) window.clearTimeout(restoreTimerRef.current);
+      document.documentElement.classList.remove('practical-info-v2-active');
       if (hazardSoundTimerRef.current !== null) window.clearInterval(hazardSoundTimerRef.current);
-      restoreTimerRef.current = null;
       hazardSoundTimerRef.current = null;
     };
   }, []);
-
   useEffect(() => {
     if (!flashActive) return;
     const timer = window.setTimeout(() => {
@@ -1070,50 +1050,22 @@ export default function PracticalInfo() {
   };
 
   const handleScenarioActivate = (item: Scenario) => {
-    restoreScrollRef.current = window.scrollY;
+    setMobileSheetOpen(true);
     if (item.control === 'left' || item.control === 'right' || item.control === 'hazard') {
       chooseSignal(item.control);
+      setControlGroup('lever');
     } else {
       chooseMain(item.control);
+      setControlGroup(item.control === 'high' ? 'lever' : 'ring');
     }
-
-    setSceneFocusActive(true);
-    if (restoreTimerRef.current !== null) window.clearTimeout(restoreTimerRef.current);
-
-    window.requestAnimationFrame(() => {
-      const handleTarget = simulatorLayoutRef.current;
-      if (!handleTarget) return;
-      window.scrollTo({
-        top: handleTarget.getBoundingClientRect().top + window.scrollY - 20,
-        behavior: 'smooth',
-      });
-      window.setTimeout(() => {
-        const vehicleTarget = vehicleLabRef.current;
-        if (!vehicleTarget) return;
-        window.scrollTo({
-          top: vehicleTarget.getBoundingClientRect().top + window.scrollY - 20,
-          behavior: 'smooth',
-        });
-      }, 950);
-    });
-
-    restoreTimerRef.current = window.setTimeout(() => {
-      const previous = restoreScrollRef.current;
-      if (previous !== null) window.scrollTo({ top: previous, behavior: 'smooth' });
-      setSceneFocusActive(false);
-      restoreScrollRef.current = null;
-      restoreTimerRef.current = null;
-    }, 3000);
   };
 
   const activeLight = MAIN_LIGHTS.find(item => item.key === mainLight) || MAIN_LIGHTS[3];
   const activeSignal = SIGNAL_ITEMS.find(item => item.key === signal);
   const currentTitle = activeSignal?.title || (flashActive ? 'وميض العالي' : activeLight.title);
   const currentItem = activeSignal ? undefined : (flashActive ? undefined : activeLight);
-  const cssVars = { '--lesson-offset': '0px' } as CSSProperties;
-
   return (
-    <div className="practical-v2" dir="rtl" style={cssVars}>
+    <div className="practical-v2" dir="rtl">
       <header className="practical-header">
         <div className="practical-header-inner">
           <button type="button" className="back-button" onClick={() => navigate('/')} aria-label="العودة للرئيسية">→</button>
@@ -1137,14 +1089,14 @@ export default function PracticalInfo() {
               <div className="sound-control"><button type="button" onClick={() => setSoundEnabled(value => { const next = !value; if (next) playClick(true); return next; })} aria-label={soundEnabled ? 'إيقاف صوت التفاعل' : 'تشغيل واختبار صوت التفاعل'}>{soundEnabled ? '♪' : '×'}</button><span>{soundEnabled ? 'صوت التفاعل' : 'الصوت مغلق'}</span>{flashCount > 0 && <b>{flashCount}× وميض</b>}</div>
             </div>
 
-            <div ref={simulatorLayoutRef} className={"simulator-layout " + (sceneFocusActive ? "scene-focus-active" : "")}>
+            <div className="simulator-layout">
               <ControlPanel group={controlGroup} setGroup={setControlGroup} mainLight={mainLight} signal={signal} flashActive={flashActive} onMain={chooseMain} onSignal={chooseSignal} onFlash={triggerFlash}/>
               <CockpitHandle mainLight={mainLight} signal={signal} movement={movement} onRingCycle={cycleRing} onLever={applyLever} onHazard={() => chooseSignal('hazard')}/>
             </div>
 
             <div className="result-heading"><span>03</span><div><b>شاهد الأثر على السيارة</b><small>السيارة من الجهة الصحيحة، والضوء يُرسم من مصدره باتجاه الطريق.</small></div></div>
 
-            <section ref={vehicleLabRef} className={"vehicle-lab " + (sceneFocusActive ? "scene-focus-active" : "")}>
+            <section className="vehicle-lab">
               <div className="vehicle-lab-head"><div><span className="eyebrow">النتيجة التعليمية</span><h3>{currentTitle}</h3><p>مشهد خارجي يوضح موضع الضوء واتجاهه على الطريق أو خلف السيارة.</p></div></div>
               {mainLight === 'high' && <button type="button" className="inline-scene-control" onClick={() => setOncoming(!oncoming)}>{oncoming ? 'السيارة المقابلة ظاهرة' : 'أظهر سيارة مقابلة'}</button>}
               <CurrentScene mainLight={mainLight} signal={signal} flashActive={flashActive} oncoming={oncoming} setOncoming={setOncoming}/>
@@ -1157,7 +1109,7 @@ export default function PracticalInfo() {
           {mobileSheetOpen && <div className="mobile-explanation" role="dialog" aria-label="شرح الوظيفة المختارة"><button type="button" aria-label="إغلاق الشرح" onClick={() => setMobileSheetOpen(false)}>×</button><ExplanationCard title={currentTitle} item={currentItem} signal={activeSignal}/></div>}
 
           <section id="scenes" className="scenes-section">
-            <div className="section-title scenes-title"><div><span className="eyebrow">المشاهد التدريبية</span><h2>مشهد واحد لكل قاعدة، بإضاءة مختلفة فعلاً.</h2><p>الأمام للمنخفض والعالي والضباب، والخلف للموضع والغماز والرباعي والفرامل والرجوع.</p></div></div>
+            <div className="section-title scenes-title"><div><span className="eyebrow">المشاهد التدريبية</span><h2>10 مشاهد تدريبية تغطي القواعد الأساسية.</h2><p>من الخروج من الدوّار وتغيير المسار إلى العالي والضباب والموضع والغماز والرباعي والضباب الخلفي والتجاوز.</p></div></div>
   <div className="scenario-grid">{SCENARIOS.map(scenario => {
     const active = (
       scenario.control === 'hazard' ? signal === 'hazard'
