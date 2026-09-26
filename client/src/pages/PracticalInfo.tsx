@@ -542,8 +542,13 @@ function CurrentScene({
         <rect width="900" height="470" fill={rear ? 'url(#currentDuskSky)' : 'url(#currentNightSky)'} />
         <circle cx="760" cy="86" r="62" fill={mode === 'position' ? '#efe6b5' : '#dce9e2'} opacity={mode === 'position' ? '.20' : '.045'} />
         <path d="M0 470L182 132H718L900 470Z" fill="url(#currentRoad)" />
-        <path d="M450 138V470" stroke="#dbe7e4" strokeOpacity=".18" strokeWidth="4" strokeDasharray="30 21" />
-        <path d="M308 470L357 182M592 470L543 182" stroke="#e3ece9" strokeOpacity=".07" strokeWidth="3" />
+        <path d="M450 138V470" stroke="#dbe7e4" strokeOpacity=".20" strokeWidth="4" strokeDasharray="30 21" />
+        <path d="M292 470L356 182M608 470L544 182" stroke="#dbe7e4" strokeOpacity=".13" strokeWidth="4" />
+        {rear && <g className="rear-direction-cues">
+          <path d="M450 445L438 428H446V408H454V428H462Z" fill="#dce9e5" fillOpacity=".18"/>
+          <path d="M450 390L438 373H446V353H454V373H462Z" fill="#dce9e5" fillOpacity=".12"/>
+          <path d="M450 340L438 323H446V306H454V323H462Z" fill="#dce9e5" fillOpacity=".08"/>
+        </g>}
 
         {(mode === 'low' || mode === 'high' || mode === 'flash' || mode === 'frontFog') && <>
           <path d={mode === 'high' ? 'M393 326L110 124L440 349Z' : mode === 'frontFog' ? 'M394 327L218 282L190 470L444 351Z' : 'M394 326L242 268L192 470L446 351Z'} fill="url(#currentBeamL)" filter="url(#currentBlur7)" opacity={mode === 'frontFog' ? '.62' : '.90'} />
@@ -559,7 +564,7 @@ function CurrentScene({
           <circle cx="130" cy="116" r="28" fill="#fff"/><circle cx="300" cy="195" r="20" fill="#fff"/><circle cx="680" cy="145" r="32" fill="#fff"/><circle cx="790" cy="214" r="25" fill="#fff"/>
         </g>}
 
-        <image href={rear ? "/spirit/car-rear.svg" : "/spirit/car-front.svg"} x="324" y="242" width="252" height="126" filter="url(#currentCarShadow)" />
+        <image href={rear ? "/spirit/car-rear.svg" : "/spirit/car-front.svg"} x="302" y="232" width="296" height="148" filter="url(#currentCarShadow)" />
 
         {mode === 'position' && <g>
           <ellipse cx="397" cy="326" rx="38" ry="24" fill="url(#currentRedGlow)" opacity=".20"/><ellipse cx="503" cy="326" rx="38" ry="24" fill="url(#currentRedGlow)" opacity=".20"/>
@@ -567,23 +572,25 @@ function CurrentScene({
         </g>}
 
         {mode === 'signal' && <g>
-          <ellipse cx="397" cy="326" rx="40" ry="24" fill="url(#currentAmberGlow)" opacity={signal === 'left' ? '.98' : '.10'}/>
-          <ellipse cx="503" cy="326" rx="40" ry="24" fill="url(#currentAmberGlow)" opacity={signal === 'right' ? '.98' : '.10'}/>
-          <circle cx={signal === 'left' ? 397 : 503} cy="326" r="15" fill="#ffc66e"/>
+          <ellipse cx="385" cy="327" rx="54" ry="31" fill="url(#currentAmberGlow)" opacity={signal === 'left' ? '.98' : '.10'}/>
+          <ellipse cx="515" cy="327" rx="54" ry="31" fill="url(#currentAmberGlow)" opacity={signal === 'right' ? '.98' : '.10'}/>
+          <circle cx={signal === 'left' ? 385 : 515} cy="327" r="14" fill="#ffc66e"/>
           <path d={signal === 'right' ? 'M503 312L535 300' : 'M397 312L365 300'} fill="none" stroke="#f2b15e" strokeOpacity=".24" strokeWidth="10" strokeLinecap="round"/>
           <text x="450" y="412" textAnchor="middle" fill="#f6d0a0" fontSize="14" fontWeight="900">الإشارة ظاهرة من الخلف قبل المناورة</text>
         </g>}
 
         {mode === 'hazard' && <g>
-          <ellipse cx="397" cy="326" rx="40" ry="24" fill="url(#currentAmberGlow)" opacity=".96" className="scene-lamp-blink"/><ellipse cx="503" cy="326" rx="40" ry="24" fill="url(#currentAmberGlow)" opacity=".96" className="scene-lamp-blink"/>
-          <circle cx="397" cy="326" r="15" fill="#ffc66e"/><circle cx="503" cy="326" r="15" fill="#ffc66e"/>
+          <ellipse cx="385" cy="327" rx="54" ry="31" fill="url(#currentAmberGlow)" opacity=".96" className="scene-lamp-blink"/><ellipse cx="515" cy="327" rx="54" ry="31" fill="url(#currentAmberGlow)" opacity=".96" className="scene-lamp-blink"/>
+          <circle cx="385" cy="327" r="14" fill="#ffc66e"/><circle cx="515" cy="327" r="14" fill="#ffc66e"/>
           <circle cx="450" cy="244" r="31" fill="#ffb24d" opacity=".05" stroke="#ffc96f" strokeOpacity=".28" strokeWidth="2.5"/>
           <path d="M450 227L468 257H432Z" fill="none" stroke="#ffc96f" strokeWidth="3.5"/>
           <text x="450" y="412" textAnchor="middle" fill="#f6d0a0" fontSize="14" fontWeight="900">الجهتان تومضان معاً</text>
         </g>}
 
         {mode === 'rearFog' && <g>
-          <ellipse cx="450" cy="338" rx="150" ry="58" fill="url(#currentRedGlow)" opacity=".26" filter="url(#currentBlur18)"/>
+          <path d="M385 328L330 450L442 450Z" fill="#ff4e5b" fillOpacity=".08" filter="url(#currentBlur18)"/>
+          <path d="M515 328L570 450L458 450Z" fill="#ff4e5b" fillOpacity=".08" filter="url(#currentBlur18)"/>
+          <ellipse cx="450" cy="350" rx="180" ry="72" fill="url(#currentRedGlow)" opacity=".18" filter="url(#currentBlur18)"/>
           <rect x="442" y="314" width="16" height="28" rx="7" fill="#ff4d59"/>
           <text x="450" y="412" textAnchor="middle" fill="#ffd0d3" fontSize="14" fontWeight="900">الضباب الخلفي · ضوء أحمر واضح للمركبة خلفك</text>
         </g>}
@@ -758,11 +765,16 @@ function ScenarioSvg({
     </div>
   );
 
-  const base = (dusk: boolean) => <>
+  const base = (dusk: boolean, rearView = false) => <>
     <rect width="900" height="470" fill={dusk ? u('dusk') : u('night')} />
     <path d="M0 470L184 132H716L900 470Z" fill={u('road')} />
-    <path d="M450 138V470" stroke="#dbe7e4" strokeOpacity=".18" strokeWidth="4" strokeDasharray="29 21" />
-    <path d="M307 470L355 184M593 470L545 184" stroke="#e6efec" strokeOpacity=".07" strokeWidth="3" />
+    <path d="M450 138V470" stroke="#dbe7e4" strokeOpacity={rearView ? ".23" : ".18"} strokeWidth="4" strokeDasharray="29 21" />
+    <path d="M292 470L355 184M608 470L545 184" stroke="#e6efec" strokeOpacity={rearView ? ".13" : ".07"} strokeWidth={rearView ? "4" : "3"} />
+    {rearView && <g className="rear-direction-cues">
+      <path d="M450 444L437 425H446V404H454V425H463Z" fill="#dce9e5" fillOpacity=".18"/>
+      <path d="M450 389L437 370H446V350H454V370H463Z" fill="#dce9e5" fillOpacity=".12"/>
+      <path d="M450 337L437 318H446V300H454V318H463Z" fill="#dce9e5" fillOpacity=".08"/>
+    </g>}
   </>;
 
   if (scenario.id === 'low') return frame(<>
@@ -816,10 +828,10 @@ function ScenarioSvg({
   </>);
 
   if (scenario.id === 'position') return frame(<>
-    {base(true)}
+    {base(true, true)}
     <circle cx="758" cy="90" r="68" fill="#f1e7b9" opacity=".18"/>
-    <image href="/spirit/car-rear.svg" x="324" y="245" width="252" height="126" filter={u('shadow')}/>
-    <ellipse cx="397" cy="326" rx="38" ry="22" fill={u('red')} opacity=".22"/><ellipse cx="503" cy="326" rx="38" ry="22" fill={u('red')} opacity=".22"/>
+    <image href="/spirit/car-rear.svg" x="302" y="232" width="296" height="148" filter={u('shadow')}/>
+    <ellipse cx="385" cy="327" rx="48" ry="28" fill={u('red')} opacity=".22"/><ellipse cx="515" cy="327" rx="48" ry="28" fill={u('red')} opacity=".22"/>
     <rect x="42" y="42" width="316" height="64" rx="18" fill="#152221" stroke="#dce8b5" strokeOpacity=".24"/>
     <text x="66" y="69" fill="#ecf3d6" fontSize="18" fontWeight="900">غسق · أضواء الموضع</text>
     <text x="66" y="91" fill="#c0c9b7" fontSize="11">الهدف: أن تُرى المركبة وحدودها</text>
@@ -827,11 +839,11 @@ function ScenarioSvg({
   </>);
 
   if (scenario.id === 'signals') return frame(<>
-    {base(true)}
+    {base(true, true)}
     <path d="M450 138V470" stroke="#eef5f2" strokeOpacity=".20" strokeWidth="12" strokeDasharray="34 20"/>
     <image href="/spirit/car-rear.svg" x="324" y="245" width="252" height="126" filter={u('shadow')}/>
-    <ellipse cx="398" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".96"/><ellipse cx="502" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".12"/>
-    <circle cx="398" cy="326" r="15" fill="#ffc66e"/>
+    <ellipse cx="385" cy="327" rx="54" ry="31" fill={u('amber')} opacity=".96"/><ellipse cx="515" cy="327" rx="54" ry="31" fill={u('amber')} opacity=".12"/>
+    <circle cx="385" cy="327" r="14" fill="#ffc66e"/>
     <path d="M398 312L365 300" fill="none" stroke="#efb05e" strokeOpacity=".24" strokeWidth="10" strokeLinecap="round"/>
     <rect x="42" y="42" width="350" height="64" rx="18" fill="#061117" stroke="#86e4da" strokeOpacity=".24"/>
     <text x="66" y="69" fill="#c8f2ec" fontSize="18" fontWeight="900">تقاطع · الغماز قبل الحركة</text>
@@ -839,10 +851,10 @@ function ScenarioSvg({
   </>);
 
   if (scenario.id === 'hazard') return frame(<>
-    {base(true)}
+    {base(true, true)}
     <image href="/spirit/car-rear.svg" x="324" y="245" width="252" height="126" filter={u('shadow')}/>
     <ellipse cx="398" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".96" className="scene-lamp-blink"/><ellipse cx="502" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".96" className="scene-lamp-blink"/>
-    <circle cx="398" cy="326" r="15" fill="#ffc66e"/><circle cx="502" cy="326" r="15" fill="#ffc66e"/>
+    <circle cx="385" cy="327" r="14" fill="#ffc66e"/><circle cx="515" cy="327" r="14" fill="#ffc66e"/>
     <circle cx="450" cy="244" r="31" fill="#ffb24d" opacity=".05" stroke="#ffc96f" strokeOpacity=".28" strokeWidth="2.5"/>
     <path d="M450 227L468 257H432Z" fill="none" stroke="#ffc96f" strokeWidth="3.5"/>
     <rect x="42" y="42" width="350" height="64" rx="18" fill="#251b10" stroke="#f1bd74" strokeOpacity=".30"/>
@@ -851,9 +863,11 @@ function ScenarioSvg({
   </>);
 
   return frame(<>
-    {base(false)}
+    {base(false, true)}
     <image href="/spirit/car-rear.svg" x="324" y="245" width="252" height="126" filter={u('shadow')}/>
-    <ellipse cx="450" cy="342" rx="150" ry="58" fill={u('red')} opacity=".28" filter={u('blur18')}/>
+    <path d="M385 328L330 450L442 450Z" fill="#ff4e5b" fillOpacity=".08" filter={u('blur18')}/>
+    <path d="M515 328L570 450L458 450Z" fill="#ff4e5b" fillOpacity=".08" filter={u('blur18')}/>
+    <ellipse cx="450" cy="350" rx="180" ry="72" fill={u('red')} opacity=".18" filter={u('blur18')}/>
     <rect x="442" y="314" width="16" height="28" rx="7" fill="#ff525d"/>
     <rect x="42" y="42" width="370" height="64" rx="18" fill="#241417" stroke="#ff8c94" strokeOpacity=".30"/>
     <text x="66" y="69" fill="#ffd9dc" fontSize="18" fontWeight="900">ضباب خلفي · ضوء أحمر واضح</text>
