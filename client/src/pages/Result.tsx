@@ -41,6 +41,7 @@ export default function Result() {
     <div className="min-h-screen px-4 py-8">
       <div className="w-full max-w-3xl mx-auto">
         <section className="result-hero">
+          <button type="button" className="result-back-v1" onClick={() => navigate('/models')} aria-label="العودة إلى نماذج الاختبار">‹</button>
           <div className={`result-ring ${passed ? 'pass' : 'fail'}`}><span>{correct}</span><small>من {total}</small></div>
           <div><p className="eyebrow">نتيجة النموذج {modelId}</p><h1 className={`text-3xl font-black mt-2 ${passed ? 'text-brand' : 'text-exam'}`}>{passed ? 'مبروك، نجحت 🎉' : 'بحاجة إلى تدريب إضافي'}</h1><p className="text-muted text-sm mt-2 leading-relaxed">الصحيح {correct} • الخطأ {wrong.length} • بدون إجابة {unansweredItems.length}</p></div>
           <div className="result-stat-grid"><div><b>{correct}</b><span>صحيح</span></div><div><b>{wrong.length}</b><span>خطأ</span></div><div><b>{unansweredItems.length}</b><span>لم يُجب</span></div></div>
