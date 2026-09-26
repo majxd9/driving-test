@@ -619,6 +619,10 @@ html.practical-info-v2-active{scroll-behavior:auto}html.practical-info-v2-active
   color:#dcefeb!important;
   font-size:9px!important;
 }
+.scene-hazard-lamps{animation:sceneHazardOnOff 900ms steps(1,end) infinite!important;transform-box:fill-box!important;transform-origin:center!important}
+@keyframes sceneHazardOnOff{0%,49%{opacity:1}50%,100%{opacity:.08}}
+@media(prefers-reduced-motion:reduce){.scene-hazard-lamps{animation:none!important}}
+
 @media(max-width:760px){
   .mobile-explanation{margin:10px 0 0!important;border-radius:16px!important}
   .scene-callout{top:8px!important;left:8px!important;max-width:74%!important;padding:7px 8px!important;border-radius:11px!important}
