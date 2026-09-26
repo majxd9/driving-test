@@ -664,3 +664,18 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
 @media(prefers-reduced-motion:reduce){
   .scene-lamp-blink{animation:none!important}
 }
+
+
+/* Rear-camera scene clarity: make the vehicle visibly travel away from the viewer. */
+.rear-direction-cues{
+  animation:rearRoadFlow 2.8s ease-in-out infinite;
+  transform-box:fill-box;
+  transform-origin:center;
+}
+@keyframes rearRoadFlow{
+  0%,100%{opacity:.72}
+  50%{opacity:1}
+}
+@media(prefers-reduced-motion:reduce){
+  .rear-direction-cues{animation:none!important}
+}
