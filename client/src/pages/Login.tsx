@@ -1,6 +1,7 @@
 import { useEffect, useState, FormEvent, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../api/client';
 import OptimizedImage from '../components/OptimizedImage';
 import SiteGuide from '../components/SiteGuide';
 import SpiritLights from '../components/SpiritLights';
@@ -30,6 +31,11 @@ export default function Login() {
   useEffect(() => {
     document.documentElement.dataset.loginLights = lightsOn ? 'on' : 'off';
   }, [lightsOn]);
+
+  useEffect(() => {
+    // تشغيل طلب خفيف فور فتح شاشة الدخول لبدء إيقاظ الـAPI إذا كان خاملاً.
+    void api.warmup().catch(() => {});
+  }, []);
 
   async function handleSubmit(e:FormEvent){
     e.preventDefault();
