@@ -796,10 +796,12 @@ export default function PracticalInfo() {
           <section id="scenes" className="scenes-section">
             <div className="section-title scenes-title"><div><span className="eyebrow">المشاهد التدريبية</span><h2>مشهد واحد لكل قاعدة، بإضاءة مختلفة فعلاً.</h2><p>الأمام للمنخفض والعالي والضباب، والخلف للموضع والغماز والرباعي والفرامل والرجوع.</p></div></div>
   <div className="scenario-grid">{SCENARIOS.map(scenario => {
-    const active = scenario.control === 'hazard' ? signal === 'hazard'
+    const active = scenario.id !== 'rear' && (
+      scenario.control === 'hazard' ? signal === 'hazard'
       : scenario.control === 'right' ? signal === 'right'
       : scenario.control === 'left' ? signal === 'left'
-      : mainLight === scenario.control && !signal && !flashActive;
+      : mainLight === scenario.control && !signal && !flashActive
+    );
     return <ScenarioVisual key={scenario.id} scenario={scenario} isActive={active} onActivate={(item) => {
       if (item.id === 'signals') chooseSignal('right');
       else if (item.id === 'hazard') chooseSignal('hazard');
