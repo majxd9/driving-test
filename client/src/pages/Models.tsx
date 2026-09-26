@@ -14,6 +14,8 @@ const MODELS = [
   { id: 8, label: 'النموذج 8', meta: 'التحدي الأعلى', advanced: true },
 ];
 
+const preloadExam = () => { void import('./Exam'); };
+
 export default function Models() {
   const navigate = useNavigate();
   const [drifting, setDrifting] = useState(false);
@@ -113,7 +115,7 @@ export default function Models() {
 
         <div className="models-grid">
           {MODELS.map((model) => (
-            <button key={model.id} onClick={() => navigate(`/exam/${model.id}`)} className={`model-card ${model.advanced ? 'advanced' : ''}`} type="button">
+            <button key={model.id} onPointerEnter={preloadExam} onFocus={preloadExam} onClick={() => navigate(`/exam/${model.id}`)} className={`model-card ${model.advanced ? 'advanced' : ''}`} type="button">
               <span className="flex items-center justify-between gap-4">
                 <span className={`model-number ${model.advanced ? 'advanced' : ''}`}>{model.id}</span>
                 <span aria-hidden="true" className="text-xl text-muted">←</span>
