@@ -510,7 +510,7 @@ function CurrentScene({ mainLight, signal, flashActive, oncoming, setOncoming }:
           {rear && <g className='rear-direction-cues'><path d='M450 445L438 428H446V408H454V428H462Z' fill='#dce9e5' fillOpacity='.18'/><path d='M450 390L438 373H446V353H454V373H462Z' fill='#dce9e5' fillOpacity='.12'/><path d='M450 340L438 323H446V306H454V323H462Z' fill='#dce9e5' fillOpacity='.08'/></g>}
           {(mode === 'low' || mode === 'high' || mode === 'flash' || mode === 'frontFog') && <><path d={mode === 'high' ? 'M360 326L125 140L430 316L397 335Z' : mode === 'frontFog' ? 'M360 326L280 245L414 311L397 335Z' : 'M360 326L220 220L415 310L397 335Z'} fill='url(#currentBeamL)' filter='url(#currentBlur7)' opacity={mode === 'frontFog' ? '.70' : '.88'}/><path d={mode === 'high' ? 'M540 326L775 140L470 316L503 335Z' : mode === 'frontFog' ? 'M540 326L620 245L486 311L503 335Z' : 'M540 326L680 220L485 310L503 335Z'} fill='url(#currentBeamR)' filter='url(#currentBlur7)' opacity={mode === 'frontFog' ? '.70' : '.88'}/><ellipse cx='360' cy='324' rx='34' ry='20' fill='url(#currentHeadGlow)'/><ellipse cx='540' cy='324' rx='34' ry='20' fill='url(#currentHeadGlow)'/></>}
           {mode === 'frontFog' && <g opacity='.18'><rect x='0' y='86' width='900' height='50' fill='#f2f7f5'/><rect x='0' y='164' width='900' height='48' fill='#f2f7f5'/><rect x='0' y='242' width='900' height='40' fill='#f2f7f5'/><circle cx='130' cy='116' r='28' fill='#fff'/><circle cx='300' cy='195' r='20' fill='#fff'/><circle cx='680' cy='145' r='32' fill='#fff'/><circle cx='790' cy='214' r='25' fill='#fff'/></g>}
-          <image href={rear ? '/spirit/car-rear-realistic.svg' : '/spirit/car-front-realistic.svg'} x='300' y='220' width='300' height='171' filter='url(#currentCarShadow)'/>
+          <image href={rear ? '/spirit/car-rear.svg' : '/spirit/car-front-realistic.svg'} x='300' y='220' width='300' height='171' filter='url(#currentCarShadow)'/>
           {mode === 'position' && <g><ellipse cx='360' cy='324' rx='42' ry='25' fill='url(#currentRedGlow)' opacity='.18'/><ellipse cx='540' cy='324' rx='42' ry='25' fill='url(#currentRedGlow)' opacity='.18'/></g>}
           {mode === 'signal' && <g><ellipse cx='360' cy='324' rx='52' ry='30' fill='url(#currentAmberGlow)' opacity={signal === 'left' ? '.98' : '.08'}/><ellipse cx='540' cy='324' rx='52' ry='30' fill='url(#currentAmberGlow)' opacity={signal === 'right' ? '.98' : '.08'}/><circle cx={signal === 'left' ? 360 : 540} cy='324' r='13' fill='#ffc66e'/></g>}
           {mode === 'hazard' && <g className='scene-hazard-lamps'><ellipse cx='360' cy='324' rx='52' ry='30' fill='url(#currentAmberGlow)' opacity='.98'/><ellipse cx='540' cy='324' rx='52' ry='30' fill='url(#currentAmberGlow)' opacity='.98'/><circle cx='360' cy='324' r='13' fill='#ffc66e'/><circle cx='540' cy='324' r='13' fill='#ffc66e'/></g>}
@@ -657,19 +657,23 @@ export default function PracticalInfo() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [oncoming, setOncoming] = useState(true);
+  const [sceneFocusActive, setSceneFocusActive] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
-  const hazardSoundTimerRef = useRef<number | null>(null);
+  const simulatorLayoutRef = useRef<HTMLDivElement | null>(null);
   const vehicleLabRef = useRef<HTMLElement | null>(null);
-  const scrollTimerRef = useRef<number | null>(null);
+  const restoreScrollRef = useRef<number | null>(null);
+  const restoreTimerRef = useRef<number | null>(null);
+  const hazardSoundTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     document.documentElement.classList.add('practical-info-v2-active');
     return () => {
       document.documentElement.classList.remove('practical-info-v2-active');
+      if (restoreTimerRef.current !== null) window.clearTimeout(restoreTimerRef.current);
       if (hazardSoundTimerRef.current !== null) window.clearInterval(hazardSoundTimerRef.current);
-      if (scrollTimerRef.current !== null) window.clearTimeout(scrollTimerRef.current);
+      restoreTimerRef.current = null;
       hazardSoundTimerRef.current = null;
-      scrollTimerRef.current = null;
+      restoreScrollRef.current = null;
     };
   }, []);
   useEffect(() => {
@@ -801,25 +805,49 @@ export default function PracticalInfo() {
   };
 
   const handleScenarioActivate = (item: Scenario) => {
-    setMobileSheetOpen(true);
+    restoreScrollRef.current = window.scrollY;
+
     if (item.control === 'left' || item.control === 'right' || item.control === 'hazard') {
       chooseSignal(item.control);
-      setControlGroup('lever');
     } else {
       chooseMain(item.control);
-      setControlGroup(item.control === 'high' ? 'lever' : 'ring');
     }
 
-    if (scrollTimerRef.current !== null) window.clearTimeout(scrollTimerRef.current);
+    setSceneFocusActive(true);
+
+    if (restoreTimerRef.current !== null) {
+      window.clearTimeout(restoreTimerRef.current);
+    }
+
     window.requestAnimationFrame(() => {
-      const target = vehicleLabRef.current;
-      if (!target) return;
-      const top = target.getBoundingClientRect().top + window.scrollY - 18;
-      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      const handleTarget = simulatorLayoutRef.current;
+      if (!handleTarget) return;
+
+      window.scrollTo({
+        top: handleTarget.getBoundingClientRect().top + window.scrollY - 20,
+        behavior: 'smooth',
+      });
+
+      window.setTimeout(() => {
+        const vehicleTarget = vehicleLabRef.current;
+        if (!vehicleTarget) return;
+
+        window.scrollTo({
+          top: vehicleTarget.getBoundingClientRect().top + window.scrollY - 20,
+          behavior: 'smooth',
+        });
+      }, 950);
     });
-    scrollTimerRef.current = window.setTimeout(() => {
-      scrollTimerRef.current = null;
-    }, 750);
+
+    restoreTimerRef.current = window.setTimeout(() => {
+      const previous = restoreScrollRef.current;
+      if (previous !== null) {
+        window.scrollTo({ top: previous, behavior: 'smooth' });
+      }
+      setSceneFocusActive(false);
+      restoreScrollRef.current = null;
+      restoreTimerRef.current = null;
+    }, 3000);
   };
 
   const activeLight = MAIN_LIGHTS.find(item => item.key === mainLight) || MAIN_LIGHTS[3];
@@ -851,14 +879,14 @@ export default function PracticalInfo() {
               <div className="sound-control"><button type="button" onClick={() => setSoundEnabled(value => { const next = !value; if (next) playClick(true); return next; })} aria-label={soundEnabled ? 'إيقاف صوت التفاعل' : 'تشغيل واختبار صوت التفاعل'}>{soundEnabled ? '♪' : '×'}</button><span>{soundEnabled ? 'صوت التفاعل' : 'الصوت مغلق'}</span>{flashCount > 0 && <b>{flashCount}× وميض</b>}</div>
             </div>
 
-            <div className="simulator-layout">
+            <div ref={simulatorLayoutRef} className={"simulator-layout " + (sceneFocusActive ? "scene-focus-active" : "")}>
               <ControlPanel group={controlGroup} setGroup={setControlGroup} mainLight={mainLight} signal={signal} flashActive={flashActive} onMain={chooseMain} onSignal={chooseSignal} onFlash={triggerFlash}/>
               <CockpitHandle mainLight={mainLight} signal={signal} movement={movement} onRingCycle={cycleRing} onLever={applyLever} onHazard={() => chooseSignal('hazard')}/>
             </div>
 
             <div className="result-heading"><span>03</span><div><b>شاهد الأثر على السيارة</b><small>السيارة من الجهة الصحيحة، والضوء يُرسم من مصدره باتجاه الطريق.</small></div></div>
 
-            <section ref={vehicleLabRef} className="vehicle-lab">
+            <section ref={vehicleLabRef} className={"vehicle-lab " + (sceneFocusActive ? "scene-focus-active" : "")}>
               <div className="vehicle-lab-head"><div><span className="eyebrow">النتيجة التعليمية</span><h3>{currentTitle}</h3><p>مشهد خارجي يوضح موضع الضوء واتجاهه على الطريق أو خلف السيارة.</p></div></div>
               {mainLight === 'high' && <button type="button" className="inline-scene-control" onClick={() => setOncoming(!oncoming)}>{oncoming ? 'السيارة المقابلة ظاهرة' : 'أظهر سيارة مقابلة'}</button>}
               <CurrentScene mainLight={mainLight} signal={signal} flashActive={flashActive} oncoming={oncoming} setOncoming={setOncoming}/>
