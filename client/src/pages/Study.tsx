@@ -7,7 +7,6 @@ import DiagramRenderer from '../components/DiagramRenderer';
 import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 import SpiritTrafficSignal from '../components/SpiritTrafficSignal';
 import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
-import { preloadImages } from '../utils/imagePreload';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
@@ -44,23 +43,14 @@ export default function Study() {
     api.getQuestions(category)
       .then((items) => {
         setQuestions(items);
-        const firstThree = items.slice(0, 3)
-          .map(q => resolveQuestionImageUrl(q.imageUrl))
-          .filter(Boolean);
-        // ابدأ التحميل مسبقاً لكن لا تمنع ظهور السؤال أو التنقل.
-        preloadImages(firstThree, 3);
       })
       .catch(e => setError(e instanceof Error ? e.message : 'تعذر تحميل الأسئلة.'))
       .finally(() => setLoading(false));
   }, [category]);
 
   useEffect(() => {
-    const sources = questions.slice(index, index + 3)
-      .map(q => resolveQuestionImageUrl(q.imageUrl))
-      .filter(Boolean);
-    preloadImages(sources, 3);
     setSignalState('pending');
-  }, [questions, index]);
+  }, [index]);
 
   const goTo = useCallback((nextIndex: number) => {
     if (
@@ -170,7 +160,6 @@ export default function Study() {
               <OptimizedImage
                 src={q.imageUrl}
                 alt={`صورة السؤال ${q.id}`}
-                priority
                 sizes="(max-width: 700px) 96vw, 760px"
                 className="study-premium-image-el"
                 objectFit="contain"

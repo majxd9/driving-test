@@ -69,21 +69,15 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<IAuthLogQueue, AuthLogQueue>();
 builder.Services.AddHostedService<AuthLogWriter>();
+builder.Services.AddHostedService<StartupMaintenanceService>();
 builder.Services.AddCors(options => options.AddPolicy("Frontend", policy => policy.WithOrigins(frontendOrigin).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    await DbSeeder.SeedAsync(scope.ServiceProvider);
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-    // لا نحمل بنك الأسئلة الكامل قبل بدء استقبال الطلبات.
-    // نحتاج فقط للعدد أثناء تسجيل الدخول؛ بنك الأسئلة يُحمّل لاحقاً عند أول طلب.
-    await QuestionCountCache.InitializeAsync(db);
-}
+// لا نوقف جاهزية الـAPI بعمليات seed/repair أو قراءة عدد الأسئلة.
+// هذه الأعمال تُنفذ في الخلفية بعد بدء استقبال الطلبات.
 
 app.UseHttpsRedirection();
 app.UseResponseCompression();

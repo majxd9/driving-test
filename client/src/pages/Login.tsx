@@ -34,8 +34,9 @@ export default function Login() {
   }, [lightsOn]);
 
   useEffect(() => {
-    // تشغيل طلب خفيف فور فتح شاشة الدخول لبدء إيقاظ الـAPI إذا كان خاملاً.
+    // إيقاظ الـAPI مبكراً + تجهيز صفحة الوجهة بالتوازي، دون انتظار أي منهما.
     void api.warmup().catch(() => {});
+    void import('./Home');
   }, []);
 
   async function handleSubmit(e:FormEvent){
@@ -46,7 +47,6 @@ export default function Login() {
       await login(userName.trim(),password);
       setLoginSuccess(true);
       void playAuthFeedback(true);
-      void import('./Home');
       requestAnimationFrame(() => {
         requestAnimationFrame(() => navigate('/',{replace:true}));
       });
