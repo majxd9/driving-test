@@ -478,153 +478,51 @@ function ControlPanel({
 }
 
 
-function CurrentScene({
-  mainLight, signal, flashActive, oncoming, setOncoming,
-}: {
-  mainLight: MainLightKey;
-  signal: SignalKey | null;
-  flashActive: boolean;
-  oncoming: boolean;
-  setOncoming: (v: boolean) => void;
+function SceneCallout({ title, body, tone = 'default' }: { title:string; body:string; tone?:'default'|'warning'|'amber' }) {
+  return <div className={'scene-callout '+tone} role='note'><strong>{title}</strong><span>{body}</span></div>;
+}
+
+function CurrentScene({ mainLight, signal, flashActive, oncoming, setOncoming }: {
+  mainLight: MainLightKey; signal: SignalKey | null; flashActive:boolean; oncoming:boolean; setOncoming:(v:boolean)=>void;
 }) {
   const mode = signal === 'hazard' ? 'hazard' : signal ? 'signal' : flashActive ? 'flash' : mainLight;
   const rear = mode === 'position' || mode === 'signal' || mode === 'hazard' || mode === 'rearFog';
-
-  const title =
-    mode === 'low' ? 'الضوء المنخفض' :
-    mode === 'high' ? 'الضوء العالي' :
-    mode === 'frontFog' ? 'أضواء الضباب' :
-    mode === 'position' ? 'أضواء الموضع' :
-    mode === 'signal' ? (signal === 'right' ? 'الغماز يمين' : 'الغماز يسار') :
-    mode === 'hazard' ? 'التحذير الرباعي' :
-    mode === 'rearFog' ? 'الضباب الخلفي' :
-    mode === 'flash' ? 'وميض العالي' : 'إيقاف';
-
+  const title = mode === 'low' ? 'الضوء المنخفض' : mode === 'high' ? 'الضوء العالي' : mode === 'frontFog' ? 'أضواء الضباب' : mode === 'position' ? 'أضواء الموضع' : mode === 'signal' ? (signal === 'right' ? 'الغماز يمين' : 'الغماز يسار') : mode === 'hazard' ? 'التحذير الرباعي' : mode === 'rearFog' ? 'الضباب الخلفي' : mode === 'flash' ? 'وميض العالي' : 'إيقاف';
+  const body = mode === 'high' ? (oncoming ? 'ظهرت مركبة مقابلة — اخفض العالي فوراً.' : 'الحزمة تتجه من المصابيح إلى الطريق أمام السيارة.') : mode === 'low' ? 'الحزمة قصيرة ومنخفضة أمام السيارة لتقليل الإبهار.' : mode === 'frontFog' ? 'حزمة منخفضة وقريبة تساعد على إبقاء الطريق أوضح في الضباب.' : mode === 'position' ? 'ضوء حضور يوضح المركبة من الخلف في الإضاءة المحيطة الضعيفة.' : mode === 'signal' ? 'الإشارة الخلفية الواضحة تبيّن اتجاه المناورة.' : mode === 'hazard' ? 'الإشارتان الخلفيتان تومضان معاً للتحذير.' : mode === 'rearFog' ? 'ضوء أحمر قوي يجعل المركبة أوضح من الخلف.' : mode === 'flash' ? 'ومضة قصيرة من العالي، ثم تعود الإنارة إلى حالتها السابقة.' : 'لا توجد حزمة ضوء مختارة من وظائف المقبض.';
   return (
-    <div className="result-scene-wrap current-scene-premium">
-      <div className="current-scene-topbar">
-        <span className="scene-live-dot" />
-        <b>{title}</b>
-        <small>{rear ? 'من الخلف' : 'من الأمام'}</small>
-        {mode === 'high' && <button type="button" className="scene-inline-action" onClick={() => setOncoming(!oncoming)}>{oncoming ? 'إخفاء المركبة المقابلة' : 'إظهار مركبة مقابلة'}</button>}
+    <div className='result-scene-wrap current-scene-premium'>
+      <div className='current-scene-topbar'><span className='scene-live-dot'/><b>{title}</b><small>{rear ? 'من الخلف' : 'من الأمام'}</small>{mode === 'high' && <button type='button' className='scene-inline-action' onClick={()=>setOncoming(!oncoming)}>{oncoming ? 'إخفاء المركبة المقابلة' : 'إظهار مركبة مقابلة'}</button>}</div>
+      <div className='current-scene-stage'>
+        <svg className='current-scene-svg premium-scene-svg' viewBox='0 0 900 470' role='img' aria-label={title}>
+          <defs>
+            <linearGradient id='currentNightSky' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#02070b'/><stop offset='.58' stopColor='#07151c'/><stop offset='1' stopColor='#0d252b'/></linearGradient>
+            <linearGradient id='currentDuskSky' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#20383a'/><stop offset='.5' stopColor='#556963'/><stop offset='1' stopColor='#314640'/></linearGradient>
+            <linearGradient id='currentRoad' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#3a4d52'/><stop offset='.42' stopColor='#1a2c32'/><stop offset='1' stopColor='#050b0f'/></linearGradient>
+            <radialGradient id='currentHeadGlow'><stop stopColor='#fffef0' stopOpacity='.95'/><stop offset='.34' stopColor='#fff1a7' stopOpacity='.48'/><stop offset='1' stopColor='#fff1a7' stopOpacity='0'/></radialGradient>
+            <radialGradient id='currentAmberGlow'><stop stopColor='#ffd17e' stopOpacity='.98'/><stop offset='.35' stopColor='#ffae42' stopOpacity='.42'/><stop offset='1' stopColor='#ff9c30' stopOpacity='0'/></radialGradient>
+            <radialGradient id='currentRedGlow'><stop stopColor='#ff9ba0' stopOpacity='.95'/><stop offset='.30' stopColor='#ff4353' stopOpacity='.45'/><stop offset='1' stopColor='#ff3147' stopOpacity='0'/></radialGradient>
+            <linearGradient id='currentBeamL' x1='0' y1='1' x2='1' y2='0'><stop stopColor='#fff8cf' stopOpacity='0'/><stop offset='.42' stopColor='#fff2ac' stopOpacity='.10'/><stop offset='1' stopColor='#fff6c0' stopOpacity='.48'/></linearGradient>
+            <linearGradient id='currentBeamR' x1='1' y1='1' x2='0' y2='0'><stop stopColor='#fff8cf' stopOpacity='0'/><stop offset='.42' stopColor='#fff2ac' stopOpacity='.10'/><stop offset='1' stopColor='#fff6c0' stopOpacity='.48'/></linearGradient>
+            <filter id='currentBlur18'><feGaussianBlur stdDeviation='18'/></filter><filter id='currentBlur7'><feGaussianBlur stdDeviation='7'/></filter><filter id='currentCarShadow'><feDropShadow dx='0' dy='20' stdDeviation='18' floodColor='#000' floodOpacity='.55'/></filter>
+          </defs>
+          <rect width='900' height='470' fill={rear && mode === 'position' ? 'url(#currentDuskSky)' : 'url(#currentNightSky)'}/><circle cx='760' cy='86' r='62' fill={mode === 'position' ? '#efe6b5' : '#dce9e2'} opacity={mode === 'position' ? '.20' : '.045'}/>
+          <path d='M0 470L182 132H718L900 470Z' fill='url(#currentRoad)'/><path d='M450 138V470' stroke='#dbe7e4' strokeOpacity='.20' strokeWidth='4' strokeDasharray='30 21'/><path d='M292 470L356 182M608 470L544 182' stroke='#dbe7e4' strokeOpacity='.13' strokeWidth='4'/>
+          {rear && <g className='rear-direction-cues'><path d='M450 445L438 428H446V408H454V428H462Z' fill='#dce9e5' fillOpacity='.18'/><path d='M450 390L438 373H446V353H454V373H462Z' fill='#dce9e5' fillOpacity='.12'/><path d='M450 340L438 323H446V306H454V323H462Z' fill='#dce9e5' fillOpacity='.08'/></g>}
+          {(mode === 'low' || mode === 'high' || mode === 'flash' || mode === 'frontFog') && <><path d={mode === 'high' ? 'M360 326L125 140L430 316L397 335Z' : mode === 'frontFog' ? 'M360 326L280 245L414 311L397 335Z' : 'M360 326L220 220L415 310L397 335Z'} fill='url(#currentBeamL)' filter='url(#currentBlur7)' opacity={mode === 'frontFog' ? '.70' : '.88'}/><path d={mode === 'high' ? 'M540 326L775 140L470 316L503 335Z' : mode === 'frontFog' ? 'M540 326L620 245L486 311L503 335Z' : 'M540 326L680 220L485 310L503 335Z'} fill='url(#currentBeamR)' filter='url(#currentBlur7)' opacity={mode === 'frontFog' ? '.70' : '.88'}/><ellipse cx='360' cy='324' rx='34' ry='20' fill='url(#currentHeadGlow)'/><ellipse cx='540' cy='324' rx='34' ry='20' fill='url(#currentHeadGlow)'/></>}
+          {mode === 'frontFog' && <g opacity='.18'><rect x='0' y='86' width='900' height='50' fill='#f2f7f5'/><rect x='0' y='164' width='900' height='48' fill='#f2f7f5'/><rect x='0' y='242' width='900' height='40' fill='#f2f7f5'/><circle cx='130' cy='116' r='28' fill='#fff'/><circle cx='300' cy='195' r='20' fill='#fff'/><circle cx='680' cy='145' r='32' fill='#fff'/><circle cx='790' cy='214' r='25' fill='#fff'/></g>}
+          <image href={rear ? '/spirit/car-rear-realistic.svg' : '/spirit/car-front-realistic.svg'} x='300' y='220' width='300' height='171' filter='url(#currentCarShadow)'/>
+          {mode === 'position' && <g><ellipse cx='360' cy='324' rx='42' ry='25' fill='url(#currentRedGlow)' opacity='.18'/><ellipse cx='540' cy='324' rx='42' ry='25' fill='url(#currentRedGlow)' opacity='.18'/></g>}
+          {mode === 'signal' && <g><ellipse cx='360' cy='324' rx='52' ry='30' fill='url(#currentAmberGlow)' opacity={signal === 'left' ? '.98' : '.08'}/><ellipse cx='540' cy='324' rx='52' ry='30' fill='url(#currentAmberGlow)' opacity={signal === 'right' ? '.98' : '.08'}/><circle cx={signal === 'left' ? 360 : 540} cy='324' r='13' fill='#ffc66e'/></g>}
+          {mode === 'hazard' && <g className='scene-hazard-lamps'><ellipse cx='360' cy='324' rx='52' ry='30' fill='url(#currentAmberGlow)' opacity='.98'/><ellipse cx='540' cy='324' rx='52' ry='30' fill='url(#currentAmberGlow)' opacity='.98'/><circle cx='360' cy='324' r='13' fill='#ffc66e'/><circle cx='540' cy='324' r='13' fill='#ffc66e'/></g>}
+          {mode === 'rearFog' && <g><ellipse cx='450' cy='346' rx='175' ry='66' fill='url(#currentRedGlow)' opacity='.18' filter='url(#currentBlur18)'/><rect x='442' y='307' width='16' height='31' rx='7' fill='#ff4d59'/></g>}
+          {mode === 'high' && oncoming && <g><ellipse cx='692' cy='142' rx='88' ry='52' fill='#fff4c8' opacity='.20' filter='url(#currentBlur18)'/><image href='/spirit/car-front-realistic.svg' x='648' y='105' width='88' height='50'/></g>}
+        </svg>
+        <SceneCallout title={mode === 'high' && oncoming ? 'مركبة مقابلة · اخفض العالي' : mode === 'high' ? 'طريق مظلم · مدى أبعد' : title} body={body} tone={mode === 'high' && oncoming ? 'warning' : mode === 'hazard' ? 'amber' : 'default'}/>
+        <span className='scene-direction-cue'>{rear ? 'اتجاه الضوء: خلف السيارة → إلى من خلفها' : 'اتجاه الحزمة: من السيارة → إلى الطريق أمامها'}</span>
       </div>
-
-      <svg className="current-scene-svg premium-scene-svg" viewBox="0 0 900 470" role="img" aria-label={title}>
-        <defs>
-          <linearGradient id="currentNightSky" x1="0" y1="0" x2="0" y2="1">
-            <stop stopColor="#02070b"/><stop offset=".55" stopColor="#08171e"/><stop offset="1" stopColor="#0c242a"/>
-          </linearGradient>
-          <linearGradient id="currentDuskSky" x1="0" y1="0" x2="0" y2="1">
-            <stop stopColor="#20383a"/><stop offset=".5" stopColor="#556963"/><stop offset="1" stopColor="#314640"/>
-          </linearGradient>
-          <linearGradient id="currentRoad" x1="0" y1="0" x2="0" y2="1">
-            <stop stopColor="#3a4d52"/><stop offset=".4" stopColor="#1a2c32"/><stop offset="1" stopColor="#050b0f"/>
-          </linearGradient>
-          <radialGradient id="currentHeadGlow">
-            <stop stopColor="#fffef0" stopOpacity=".95"/><stop offset=".34" stopColor="#fff1a7" stopOpacity=".48"/><stop offset="1" stopColor="#fff1a7" stopOpacity="0"/>
-          </radialGradient>
-          <radialGradient id="currentAmberGlow">
-            <stop stopColor="#ffd17e" stopOpacity=".98"/><stop offset=".35" stopColor="#ffae42" stopOpacity=".42"/><stop offset="1" stopColor="#ff9c30" stopOpacity="0"/>
-          </radialGradient>
-          <radialGradient id="currentRedGlow">
-            <stop stopColor="#ff9ba0" stopOpacity=".95"/><stop offset=".3" stopColor="#ff4353" stopOpacity=".45"/><stop offset="1" stopColor="#ff3147" stopOpacity="0"/>
-          </radialGradient>
-          <linearGradient id="currentBeamL" x1="0" y1="0" x2="1" y2="1">
-            <stop stopColor="#fff8cf" stopOpacity="0"/><stop offset=".5" stopColor="#fff2ac" stopOpacity=".14"/><stop offset="1" stopColor="#fff6c0" stopOpacity=".48"/>
-          </linearGradient>
-          <linearGradient id="currentBeamR" x1="1" y1="0" x2="0" y2="1">
-            <stop stopColor="#fff8cf" stopOpacity="0"/><stop offset=".5" stopColor="#fff2ac" stopOpacity=".14"/><stop offset="1" stopColor="#fff6c0" stopOpacity=".48"/>
-          </linearGradient>
-          <filter id="currentBlur18"><feGaussianBlur stdDeviation="18"/></filter>
-          <filter id="currentBlur7"><feGaussianBlur stdDeviation="7"/></filter>
-          <filter id="currentCarShadow"><feDropShadow dx="0" dy="20" stdDeviation="18" floodColor="#000" floodOpacity=".55"/></filter>
-        </defs>
-
-        <rect width="900" height="470" fill={rear && mode === 'position' ? 'url(#currentDuskSky)' : 'url(#currentNightSky)'} />
-        <circle cx="760" cy="86" r="62" fill={mode === 'position' ? '#efe6b5' : '#dce9e2'} opacity={mode === 'position' ? '.20' : '.045'} />
-        <path d="M0 470L182 132H718L900 470Z" fill="url(#currentRoad)" />
-        <path d="M450 138V470" stroke="#dbe7e4" strokeOpacity=".20" strokeWidth="4" strokeDasharray="30 21" />
-        <path d="M292 470L356 182M608 470L544 182" stroke="#dbe7e4" strokeOpacity=".13" strokeWidth="4" />
-        {rear && <g className="rear-direction-cues">
-          <path d="M450 445L438 428H446V408H454V428H462Z" fill="#dce9e5" fillOpacity=".18"/>
-          <path d="M450 390L438 373H446V353H454V373H462Z" fill="#dce9e5" fillOpacity=".12"/>
-          <path d="M450 340L438 323H446V306H454V323H462Z" fill="#dce9e5" fillOpacity=".08"/>
-        </g>}
-
-        {(mode === 'low' || mode === 'high' || mode === 'flash' || mode === 'frontFog') && <>
-          <path d={mode === 'high' ? 'M393 326L110 124L440 349Z' : mode === 'frontFog' ? 'M394 327L218 282L190 470L444 351Z' : 'M394 326L242 268L192 470L446 351Z'} fill="url(#currentBeamL)" filter="url(#currentBlur7)" opacity={mode === 'frontFog' ? '.62' : '.90'} />
-          <path d={mode === 'high' ? 'M507 326L790 124L460 349Z' : mode === 'frontFog' ? 'M506 327L682 282L710 470L456 351Z' : 'M506 326L658 268L708 470L454 351Z'} fill="url(#currentBeamR)" filter="url(#currentBlur7)" opacity={mode === 'frontFog' ? '.62' : '.90'} />
-          <path d={mode === 'high' ? 'M395 326L120 142L438 348Z' : mode === 'frontFog' ? 'M395 328L226 286L438 349Z' : 'M395 327L248 272L440 349Z'} fill="#fff3b5" opacity={mode === 'high' ? '.33' : mode === 'frontFog' ? '.16' : '.26'} />
-          <path d={mode === 'high' ? 'M505 326L780 142L462 348Z' : mode === 'frontFog' ? 'M505 328L674 286L462 349Z' : 'M505 327L652 272L460 349Z'} fill="#fff3b5" opacity={mode === 'high' ? '.33' : mode === 'frontFog' ? '.16' : '.26'} />
-          <ellipse cx="391" cy="326" rx="42" ry="24" fill="url(#currentHeadGlow)" />
-          <ellipse cx="509" cy="326" rx="42" ry="24" fill="url(#currentHeadGlow)" />
-        </>}
-
-        {mode === 'frontFog' && <g opacity=".18">
-          <rect x="0" y="86" width="900" height="50" fill="#f2f7f5"/><rect x="0" y="164" width="900" height="48" fill="#f2f7f5"/><rect x="0" y="242" width="900" height="40" fill="#f2f7f5"/>
-          <circle cx="130" cy="116" r="28" fill="#fff"/><circle cx="300" cy="195" r="20" fill="#fff"/><circle cx="680" cy="145" r="32" fill="#fff"/><circle cx="790" cy="214" r="25" fill="#fff"/>
-        </g>}
-
-        <image href={rear ? "/spirit/car-rear.svg" : "/spirit/car-front.svg"} x="302" y="232" width="296" height="148" filter="url(#currentCarShadow)" />
-
-        {mode === 'position' && <g>
-          <ellipse cx="397" cy="326" rx="38" ry="24" fill="url(#currentRedGlow)" opacity=".20"/><ellipse cx="503" cy="326" rx="38" ry="24" fill="url(#currentRedGlow)" opacity=".20"/>
-          <text x="450" y="412" textAnchor="middle" fill="#e1e9d4" fontSize="14" fontWeight="900">إضاءة خفيفة · الهدف أن تُرى المركبة</text>
-        </g>}
-
-        {mode === 'signal' && <g>
-          <ellipse cx="385" cy="327" rx="54" ry="31" fill="url(#currentAmberGlow)" opacity={signal === 'left' ? '.98' : '.10'}/>
-          <ellipse cx="515" cy="327" rx="54" ry="31" fill="url(#currentAmberGlow)" opacity={signal === 'right' ? '.98' : '.10'}/>
-          <circle cx={signal === 'left' ? 385 : 515} cy="327" r="14" fill="#ffc66e"/>
-          <path d={signal === 'right' ? 'M503 312L535 300' : 'M397 312L365 300'} fill="none" stroke="#f2b15e" strokeOpacity=".24" strokeWidth="10" strokeLinecap="round"/>
-          <text x="450" y="412" textAnchor="middle" fill="#f6d0a0" fontSize="14" fontWeight="900">الإشارة ظاهرة من الخلف قبل المناورة</text>
-        </g>}
-
-        {mode === 'hazard' && <g>
-          <g className="scene-hazard-lamps">
-            <ellipse cx="385" cy="327" rx="54" ry="31" fill="url(#currentAmberGlow)" opacity=".96"/>
-            <ellipse cx="515" cy="327" rx="54" ry="31" fill="url(#currentAmberGlow)" opacity=".96"/>
-            <circle cx="385" cy="327" r="14" fill="#ffc66e"/>
-            <circle cx="515" cy="327" r="14" fill="#ffc66e"/>
-          </g>
-          <circle cx="450" cy="244" r="31" fill="#ffb24d" opacity=".05" stroke="#ffc96f" strokeOpacity=".28" strokeWidth="2.5"/>
-          <path d="M450 227L468 257H432Z" fill="none" stroke="#ffc96f" strokeWidth="3.5"/>
-          <text x="450" y="412" textAnchor="middle" fill="#f6d0a0" fontSize="14" fontWeight="900">الجهتان تومضان معاً</text>
-        </g>}
-
-        {mode === 'rearFog' && <g>
-          <path d="M385 328L330 450L442 450Z" fill="#ff4e5b" fillOpacity=".08" filter="url(#currentBlur18)"/>
-          <path d="M515 328L570 450L458 450Z" fill="#ff4e5b" fillOpacity=".08" filter="url(#currentBlur18)"/>
-          <ellipse cx="450" cy="350" rx="180" ry="72" fill="url(#currentRedGlow)" opacity=".18" filter="url(#currentBlur18)"/>
-          <rect x="442" y="314" width="16" height="28" rx="7" fill="#ff4d59"/>
-          <text x="450" y="412" textAnchor="middle" fill="#ffd0d3" fontSize="14" fontWeight="900">الضباب الخلفي · ضوء أحمر واضح للمركبة خلفك</text>
-        </g>}
-
-        {mode === 'high' && oncoming && <g>
-          <ellipse cx="690" cy="142" rx="86" ry="50" fill="#fff4c8" opacity=".20" filter="url(#currentBlur18)"/>
-          <image href="/spirit/car-front.svg" x="646" y="108" width="90" height="55" opacity=".96"/>
-          <circle cx="675" cy="138" r="5.5" fill="#fffef0"/><circle cx="710" cy="138" r="5.5" fill="#fffef0"/>
-          <rect x="42" y="48" width="354" height="66" rx="18" fill="#251617" stroke="#ff8a92" strokeOpacity=".36"/>
-          <text className="scene-caption-title" x="66" y="76" fill="#ffd9dc" fontSize="18" fontWeight="900">مركبة مقابلة · خفض العالي</text>
-          <text className="scene-caption-body" x="66" y="98" fill="#d5b7ba" fontSize="11">لا تبقِ الحزمة المرتفعة باتجاه عين المقابل</text>
-        </g>}
-
-        {mode === 'high' && !oncoming && <g>
-          <rect x="42" y="48" width="330" height="66" rx="18" fill="#061118" stroke="#86e4da" strokeOpacity=".24"/>
-          <text className="scene-caption-title" x="66" y="76" fill="#c8f2ec" fontSize="18" fontWeight="900">طريق مظلم · مدى أبعد</text>
-          <text className="scene-caption-body" x="66" y="98" fill="#a7bbb9" fontSize="11">الحزمة أطول وأضيق من الضوء المنخفض</text>
-        </g>}
-
-        {mode === 'low' && <text x="450" y="412" textAnchor="middle" fill="#bcebe3" fontSize="14" fontWeight="900">حزمة قريبة ومركزة على سطح الطريق</text>}
-        {mode === 'frontFog' && <text x="450" y="412" textAnchor="middle" fill="#d9e7e3" fontSize="14" fontWeight="900">الضباب يضعف التباين · الحزمة منخفضة وقريبة</text>}
-        {mode === 'flash' && <g><rect x="42" y="48" width="260" height="66" rx="18" fill="#1b3028" stroke="#d7f5ec" strokeOpacity=".24"/><text className="scene-caption-title" x="66" y="76" fill="#eafff7" fontSize="18" fontWeight="900">وميض سريع</text><text className="scene-caption-body" x="66" y="98" fill="#b9d0cb" fontSize="11">ضربة ضوئية قصيرة من العالي</text></g>}
-        <rect x="18" y="440" width="864" height="18" rx="9" fill="#02080b" opacity=".88"/>
-      </svg>
     </div>
   );
 }
-
-
 
 function SceneExplanationRail({
   mainLight, signal, flashActive,
@@ -693,196 +591,45 @@ function SceneExplanationRail({
   );
 }
 
-function ScenarioVisual({
-  scenario, onActivate, isActive,
-}: {
-  scenario: Scenario;
-  onActivate: (scenario: Scenario) => void;
-  isActive: boolean;
-}) {
-  const [oncoming, setOncoming] = useState(scenario.id === 'high');
-
-  const controlLabel =
-    scenario.control === 'hazard' ? 'رباعي' :
-    scenario.control === 'right' ? 'غماز يمين' :
-    scenario.control === 'left' ? 'غماز يسار' :
-    MAIN_LIGHTS.find(item => item.key === scenario.control)?.title || '';
-
-  const canActivate = true;
-
-  return (
-    <article className={'scenario-visual scene-card-premium ' + (isActive ? 'is-active' : '')}>
-      <div className="scenario-media scene-media-premium">
-        <ScenarioSvg scenario={scenario} oncoming={oncoming} setOncoming={setOncoming}/>
-        <span className="scenario-tag">{scenario.tag}</span>
-        {isActive && <span className="scenario-active-chip">مرتبط بالمقبض الآن</span>}
-      </div>
-
-      <div className="scenario-content">
-        <div className="scenario-meta">
-          <span><LightIcon type={scenario.control}/>{controlLabel}</span>
-          <b>مشهد خارجي · إضاءة تعليمية</b>
-        </div>
-        <h3>{scenario.title}</h3>
-        <p>{scenario.goal}</p>
-        <div className="scenario-steps">{scenario.steps.map((step, i) => <div key={step}><b>{i + 1}</b><span>{step}</span></div>)}</div>
-
-        <div className="scenario-footer-row">
-          <div className="scenario-note">{scenario.note}</div>
-          {canActivate && <button type="button" className="scenario-activate" onClick={() => onActivate(scenario)}>{isActive ? 'الحالة مفعّلة' : 'جرّبها على المقبض'}</button>}
-        </div>
-      </div>
-    </article>
-  );
+function ScenarioVisual({ scenario, onActivate, isActive }: { scenario: Scenario; onActivate:(scenario:Scenario)=>void; isActive:boolean }) {
+  const [oncoming,setOncoming]=useState(scenario.id==='empty-road');
+  const controlLabel = scenario.control === 'hazard' ? 'تحذير رباعي' : scenario.control === 'right' ? 'غماز يمين' : scenario.control === 'left' ? 'غماز يسار' : MAIN_LIGHTS.find(item=>item.key===scenario.control)?.title || '';
+  const tone = scenario.control === 'hazard' || scenario.id === 'rear-fog' ? 'amber' : scenario.id === 'night-oncoming' ? 'warning' : 'default';
+  const calloutBody = scenario.id === 'roundabout-right' ? 'حدد المخرج أولاً ثم استخدم الإشارة ضمن مسار الخروج.' : scenario.id === 'night-oncoming' ? 'الحزمة الأمامية قصيرة ومنخفضة عند وجود مركبة مقابلة.' : scenario.id === 'empty-road' ? (oncoming ? 'ظهرت مركبة مقابلة — هذه الحالة تستدعي خفض العالي.' : 'الحزمة الطويلة تنطلق من المصابيح إلى الطريق أمام السيارة.') : scenario.steps.slice(0,2).join(' · ');
+  return <article className={'scenario-visual scene-card-premium '+(isActive?'is-active':'')}>
+    <div className='scenario-media scene-media-premium'>
+      <ScenarioSvg scenario={scenario} oncoming={oncoming}/>
+      <SceneCallout title={scenario.title} body={calloutBody} tone={tone}/>
+      <span className='scenario-tag'>{scenario.tag}</span>{isActive && <span className='scenario-active-chip'>مرتبطة بالمقبض الآن</span>}
+      {scenario.id==='empty-road' && <button type='button' className='scenario-scene-toggle' onClick={()=>setOncoming(value=>!value)}>{oncoming?'إخفاء المركبة المقابلة':'إظهار مركبة مقابلة'}</button>}
+    </div>
+    <div className='scenario-content'>
+      <div className='scenario-meta'><span><LightIcon type={scenario.control}/>{controlLabel}</span><b>مشهد تدريبي · {scenario.steps.length} خطوات</b></div>
+      <h3>{scenario.title}</h3><p>{scenario.goal}</p>
+      <div className='scenario-steps'>{scenario.steps.map((step,i)=><div key={step}><b>{i+1}</b><span>{step}</span></div>)}</div>
+      <div className='scenario-note'>{scenario.note}</div>
+      <button type='button' className='scenario-activate' onClick={()=>onActivate(scenario)}>{isActive?'الحالة مفعّلة':'جرّبها على المقبض'}</button>
+    </div>
+  </article>;
 }
 
-function ScenarioSvg({
-  scenario, oncoming, setOncoming,
-}: {
-  scenario: Scenario;
-  oncoming: boolean;
-  setOncoming: (value: boolean) => void;
-}) {
-  const id = 'scenario_' + scenario.id;
-  const u = (name: string) => 'url(#' + id + '_' + name + ')';
-
-  const defs = (
-    <defs>
-      <linearGradient id={id + '_night'} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#02070b"/><stop offset=".58" stopColor="#07151c"/><stop offset="1" stopColor="#0d252b"/></linearGradient>
-      <linearGradient id={id + '_dusk'} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#20383a"/><stop offset=".5" stopColor="#556963"/><stop offset="1" stopColor="#314640"/></linearGradient>
-      <linearGradient id={id + '_road'} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#3a4d52"/><stop offset=".4" stopColor="#192b31"/><stop offset="1" stopColor="#050a0d"/></linearGradient>
-      <radialGradient id={id + '_lamp'}><stop stopColor="#fffef1" stopOpacity=".95"/><stop offset=".36" stopColor="#fff0a0" stopOpacity=".48"/><stop offset="1" stopColor="#fff0a0" stopOpacity="0"/></radialGradient>
-      <radialGradient id={id + '_amber'}><stop stopColor="#ffd17e" stopOpacity=".98"/><stop offset=".34" stopColor="#ffad42" stopOpacity=".44"/><stop offset="1" stopColor="#ff9a2f" stopOpacity="0"/></radialGradient>
-      <radialGradient id={id + '_red'}><stop stopColor="#ff9ba0" stopOpacity=".95"/><stop offset=".32" stopColor="#ff4353" stopOpacity=".44"/><stop offset="1" stopColor="#ff3147" stopOpacity="0"/></radialGradient>
-      <filter id={id + '_blur18'}><feGaussianBlur stdDeviation="18"/></filter>
-      <filter id={id + '_blur7'}><feGaussianBlur stdDeviation="7"/></filter>
-      <filter id={id + '_shadow'}><feDropShadow dx="0" dy="16" stdDeviation="15" floodColor="#000" floodOpacity=".52"/></filter>
-    </defs>
-  );
-
-  const frame = (children: React.ReactNode) => (
-    <div className="scenario-svg-frame scene-frame-premium">
-      <svg className="scenario-svg" viewBox="0 0 900 470" role="img" aria-label={scenario.title}>
-        {defs}
-        {children}
-        <rect x="18" y="440" width="864" height="18" rx="9" fill="#02080b" opacity=".90"/>
-      </svg>
-    </div>
-  );
-
-  const base = (dusk: boolean, rearView = false) => <>
-    <rect width="900" height="470" fill={dusk ? u('dusk') : u('night')} />
-    <path d="M0 470L184 132H716L900 470Z" fill={u('road')} />
-    <path d="M450 138V470" stroke="#dbe7e4" strokeOpacity={rearView ? ".23" : ".18"} strokeWidth="4" strokeDasharray="29 21" />
-    <path d="M292 470L355 184M608 470L545 184" stroke="#e6efec" strokeOpacity={rearView ? ".13" : ".07"} strokeWidth={rearView ? "4" : "3"} />
-    {rearView && <g className="rear-direction-cues">
-      <path d="M450 444L437 425H446V404H454V425H463Z" fill="#dce9e5" fillOpacity=".18"/>
-      <path d="M450 389L437 370H446V350H454V370H463Z" fill="#dce9e5" fillOpacity=".12"/>
-      <path d="M450 337L437 318H446V300H454V318H463Z" fill="#dce9e5" fillOpacity=".08"/>
-    </g>}
-  </>;
-
-  if (scenario.id === 'low') return frame(<>
-    {base(false)}
-    <rect x="112" y="184" width="5" height="114" fill="#56686c"/><rect x="783" y="184" width="5" height="114" fill="#56686c"/>
-    <path d="M394 329L238 274L188 470L448 352Z" fill={u('lamp')} opacity=".70" filter={u('blur7')}/>
-    <path d="M506 329L662 274L712 470L452 352Z" fill={u('lamp')} opacity=".70" filter={u('blur7')}/>
-    <path d="M395 329L252 278L444 348Z" fill="#fff4b8" opacity=".27"/><path d="M505 329L648 278L456 348Z" fill="#fff4b8" opacity=".27"/>
-    <image href="/spirit/car-front.svg" x="327" y="246" width="246" height="123" filter={u('shadow')}/>
-    <ellipse cx="396" cy="328" rx="34" ry="21" fill={u('lamp')}/><ellipse cx="504" cy="328" rx="34" ry="21" fill={u('lamp')}/>
-    <rect x="42" y="42" width="302" height="64" rx="18" fill="#061117" stroke="#86e4da" strokeOpacity=".24"/>
-    <text className="scene-caption-title" x="66" y="69" fill="#c8f2ec" fontSize="18" fontWeight="900">ليل مزدحم · الضوء المنخفض</text>
-    <text className="scene-caption-body" x="66" y="91" fill="#a4bbb8" fontSize="11">حزمة قصيرة ومركزة قرب سطح الطريق</text>
-    <text x="450" y="413" textAnchor="middle" fill="#bcece4" fontSize="14" fontWeight="900">رؤية قريبة + إبهار أقل</text>
-  </>);
-
-  if (scenario.id === 'high') return frame(<>
-    {base(false)}
-    <path d="M394 329L104 122L440 350Z" fill={u('lamp')} opacity=".84" filter={u('blur7')}/>
-    <path d="M506 329L796 122L460 350Z" fill={u('lamp')} opacity=".84" filter={u('blur7')}/>
-    <path d="M395 329L116 128L438 348Z" fill="#fff4b8" opacity=".34"/><path d="M505 329L784 128L462 348Z" fill="#fff4b8" opacity=".34"/>
-    <image href="/spirit/car-front.svg" x="327" y="246" width="246" height="123" filter={u('shadow')}/>
-    <ellipse cx="396" cy="328" rx="38" ry="23" fill={u('lamp')}/><ellipse cx="504" cy="328" rx="38" ry="23" fill={u('lamp')}/>
-    {!oncoming ? <g>
-      <rect x="42" y="42" width="305" height="64" rx="18" fill="#061117" stroke="#86e4da" strokeOpacity=".24"/>
-      <text className="scene-caption-title" x="66" y="69" fill="#c8f2ec" fontSize="18" fontWeight="900">طريق خارجي · الضوء العالي</text>
-      <text className="scene-caption-body" x="66" y="91" fill="#a4bbb8" fontSize="11">مدى أبعد عندما يكون الطريق خالياً</text>
-    </g> : <g>
-      <ellipse cx="692" cy="138" rx="84" ry="50" fill="#fff4cc" opacity=".20" filter={u('blur18')}/>
-      <image href="/spirit/car-front.svg" x="648" y="108" width="88" height="55"/>
-      <circle cx="674" cy="137" r="5" fill="#fffef0"/><circle cx="709" cy="137" r="5" fill="#fffef0"/>
-      <rect x="42" y="42" width="362" height="64" rx="18" fill="#251617" stroke="#ff8c94" strokeOpacity=".34"/>
-      <text className="scene-caption-title" x="66" y="69" fill="#ffdadd" fontSize="18" fontWeight="900">مركبة مقابلة · اخفض العالي</text>
-      <text className="scene-caption-body" x="66" y="91" fill="#d5b8bc" fontSize="11">لا تبقِ الحزمة المرتفعة باتجاه المقابل</text>
-    </g>}
-  </>);
-
-  if (scenario.id === 'fog') return frame(<>
-    {base(true)}
-    <g opacity=".18">
-      <rect x="0" y="84" width="900" height="52" fill="#f2f7f4"/><rect x="0" y="165" width="900" height="47" fill="#f2f7f4"/><rect x="0" y="245" width="900" height="38" fill="#f2f7f4"/>
-      <circle cx="120" cy="115" r="29" fill="#fff"/><circle cx="288" cy="194" r="22" fill="#fff"/><circle cx="690" cy="151" r="31" fill="#fff"/><circle cx="792" cy="216" r="24" fill="#fff"/>
-    </g>
-    <path d="M394 329L260 298L196 470L446 353Z" fill={u('lamp')} opacity=".44" filter={u('blur7')}/>
-    <path d="M506 329L640 298L704 470L454 353Z" fill={u('lamp')} opacity=".44" filter={u('blur7')}/>
-    <image href="/spirit/car-front.svg" x="327" y="246" width="246" height="123" filter={u('shadow')}/>
-    <ellipse cx="396" cy="328" rx="40" ry="22" fill={u('lamp')} opacity=".62"/><ellipse cx="504" cy="328" rx="40" ry="22" fill={u('lamp')} opacity=".62"/>
-    <rect x="42" y="42" width="330" height="64" rx="18" fill="#e5efeb" fillOpacity=".10" stroke="#eff7f3" strokeOpacity=".22"/>
-    <text className="scene-caption-title" x="66" y="69" fill="#edf6f3" fontSize="18" fontWeight="900">ضباب كثيف · حزمة منخفضة</text>
-    <text className="scene-caption-body" x="66" y="91" fill="#c4d2ce" fontSize="11">لا تجعل الضوء المرتفع يتحول إلى جدار وهج</text>
-  </>);
-
-  if (scenario.id === 'position') return frame(<>
-    {base(true, true)}
-    <circle cx="758" cy="90" r="68" fill="#f1e7b9" opacity=".18"/>
-    <image href="/spirit/car-rear.svg" x="302" y="232" width="296" height="148" filter={u('shadow')}/>
-    <ellipse cx="385" cy="327" rx="48" ry="28" fill={u('red')} opacity=".22"/><ellipse cx="515" cy="327" rx="48" ry="28" fill={u('red')} opacity=".22"/>
-    <rect x="42" y="42" width="316" height="64" rx="18" fill="#152221" stroke="#dce8b5" strokeOpacity=".24"/>
-    <text className="scene-caption-title" x="66" y="69" fill="#ecf3d6" fontSize="18" fontWeight="900">غسق · أضواء الموضع</text>
-    <text className="scene-caption-body" x="66" y="91" fill="#c0c9b7" fontSize="11">الهدف: أن تُرى المركبة وحدودها</text>
-    <text x="450" y="413" textAnchor="middle" fill="#e2e9d4" fontSize="14" fontWeight="900">ضوء حضور، وليس ضوء طريق بعيد</text>
-  </>);
-
-  if (scenario.id === 'signals') return frame(<>
-    {base(false, true)}
-    <path d="M450 138V470" stroke="#eef5f2" strokeOpacity=".20" strokeWidth="12" strokeDasharray="34 20"/>
-    <image href="/spirit/car-rear.svg" x="324" y="245" width="252" height="126" filter={u('shadow')}/>
-    <ellipse cx="385" cy="327" rx="54" ry="31" fill={u('amber')} opacity=".96"/><ellipse cx="515" cy="327" rx="54" ry="31" fill={u('amber')} opacity=".12"/>
-    <circle cx="385" cy="327" r="14" fill="#ffc66e"/>
-    <path d="M398 312L365 300" fill="none" stroke="#efb05e" strokeOpacity=".24" strokeWidth="10" strokeLinecap="round"/>
-    <rect x="42" y="42" width="350" height="64" rx="18" fill="#061117" stroke="#86e4da" strokeOpacity=".24"/>
-    <text className="scene-caption-title" x="66" y="69" fill="#c8f2ec" fontSize="18" fontWeight="900">تقاطع · الغماز قبل الحركة</text>
-    <text className="scene-caption-body" x="66" y="91" fill="#a6bbb9" fontSize="11">السائقون خلفك يرون الإشارة قبل الانعطاف</text>
-  </>);
-
-  if (scenario.id === 'hazard') return frame(<>
-    {base(false, true)}
-    <image href="/spirit/car-rear.svg" x="302" y="232" width="296" height="148" filter={u('shadow')}/>
-    <g className="scene-hazard-lamps">
-      <ellipse cx="385" cy="327" rx="54" ry="31" fill={u('amber')} opacity=".96"/>
-      <ellipse cx="515" cy="327" rx="54" ry="31" fill={u('amber')} opacity=".96"/>
-      <circle cx="385" cy="327" r="14" fill="#ffc66e"/>
-      <circle cx="515" cy="327" r="14" fill="#ffc66e"/>
-    </g>
-    <circle cx="450" cy="244" r="31" fill="#ffb24d" opacity=".05" stroke="#ffc96f" strokeOpacity=".28" strokeWidth="2.5"/>
-    <path d="M450 227L468 257H432Z" fill="none" stroke="#ffc96f" strokeWidth="3.5"/>
-    <rect x="42" y="42" width="350" height="64" rx="18" fill="#251b10" stroke="#f1bd74" strokeOpacity=".30"/>
-    <text className="scene-caption-title" x="66" y="69" fill="#f4d4ab" fontSize="18" fontWeight="900">كتف الطريق · التحذير الرباعي</text>
-    <text className="scene-caption-body" x="66" y="91" fill="#d0b493" fontSize="11">الجهتان تعملان معاً لإظهار الحالة غير الاعتيادية</text>
-  </>);
-
-  return frame(<>
-    {base(false, true)}
-    <image href="/spirit/car-rear.svg" x="324" y="245" width="252" height="126" filter={u('shadow')}/>
-    <path d="M385 328L330 450L442 450Z" fill="#ff4e5b" fillOpacity=".08" filter={u('blur18')}/>
-    <path d="M515 328L570 450L458 450Z" fill="#ff4e5b" fillOpacity=".08" filter={u('blur18')}/>
-    <ellipse cx="450" cy="350" rx="180" ry="72" fill={u('red')} opacity=".18" filter={u('blur18')}/>
-    <rect x="442" y="314" width="16" height="28" rx="7" fill="#ff525d"/>
-    <rect x="42" y="42" width="370" height="64" rx="18" fill="#241417" stroke="#ff8c94" strokeOpacity=".30"/>
-    <text className="scene-caption-title" x="66" y="69" fill="#ffd9dc" fontSize="18" fontWeight="900">ضباب خلفي · ضوء أحمر واضح</text>
-    <text className="scene-caption-body" x="66" y="91" fill="#d5b8bc" fontSize="11">يُظهر المركبة من الخلف عندما تكون الرؤية سيئة جداً</text>
-    <text x="450" y="413" textAnchor="middle" fill="#ffd0d3" fontSize="14" fontWeight="900">أحمر قوي من الخلف · أوقفه عند تحسن الرؤية</text>
-  </>);
+function ScenarioSvg({ scenario, oncoming }: { scenario: Scenario; oncoming: boolean }) {
+  const id='scenario_'+scenario.id.replace(/[^a-zA-Z0-9_-]/g,'_');
+  const u=(name:string)=>'url(#'+id+'_'+name+')';
+  const defs=<defs><linearGradient id={id+'_night'} x1='0' y1='0' x2='0' y2='1'><stop stopColor='#02070b'/><stop offset='.58' stopColor='#07151c'/><stop offset='1' stopColor='#0d252b'/></linearGradient><linearGradient id={id+'_dusk'} x1='0' y1='0' x2='0' y2='1'><stop stopColor='#20383a'/><stop offset='.5' stopColor='#556963'/><stop offset='1' stopColor='#314640'/></linearGradient><linearGradient id={id+'_road'} x1='0' y1='0' x2='0' y2='1'><stop stopColor='#3a4d52'/><stop offset='.42' stopColor='#192b31'/><stop offset='1' stopColor='#050a0d'/></linearGradient><radialGradient id={id+'_lamp'}><stop stopColor='#fffef1' stopOpacity='.95'/><stop offset='.36' stopColor='#fff0a0' stopOpacity='.48'/><stop offset='1' stopColor='#fff0a0' stopOpacity='0'/></radialGradient><radialGradient id={id+'_amber'}><stop stopColor='#ffd17e' stopOpacity='.98'/><stop offset='.34' stopColor='#ffad42' stopOpacity='.44'/><stop offset='1' stopColor='#ff9a2f' stopOpacity='0'/></radialGradient><radialGradient id={id+'_red'}><stop stopColor='#ff9ba0' stopOpacity='.95'/><stop offset='.32' stopColor='#ff4353' stopOpacity='.44'/><stop offset='1' stopColor='#ff3147' stopOpacity='0'/></radialGradient><filter id={id+'_blur18'}><feGaussianBlur stdDeviation='18'/></filter><filter id={id+'_blur7'}><feGaussianBlur stdDeviation='7'/></filter><filter id={id+'_shadow'}><feDropShadow dx='0' dy='16' stdDeviation='15' floodColor='#000' floodOpacity='.52'/></filter></defs>;
+  const road=(rear=false,dusk=false)=><><rect width='900' height='470' fill={dusk?u('dusk'):u('night')}/><path d='M0 470L184 132H716L900 470Z' fill={u('road')}/><path d='M450 138V470' stroke='#dbe7e4' strokeOpacity={rear?'.23':'.18'} strokeWidth='4' strokeDasharray='29 21'/><path d='M292 470L355 184M608 470L545 184' stroke='#e6efec' strokeOpacity={rear?'.13':'.07'} strokeWidth={rear?'4':'3'}/>{rear&&<g className='rear-direction-cues'><path d='M450 444L437 425H446V404H454V425H463Z' fill='#dce9e5' fillOpacity='.18'/><path d='M450 389L437 370H446V350H454V370H463Z' fill='#dce9e5' fillOpacity='.12'/></g>}</>;
+  const carTop=(x:number,y:number,w:number,h:number,rear=true,opacity=1)=><g transform={'translate('+x+' '+y+')'} opacity={opacity}><rect width={w} height={h} rx={Math.min(12,h*.16)} fill='#26343b' stroke='#94a5ab' strokeOpacity='.35'/><rect x={w*.14} y={h*.16} width={w*.72} height={h*.28} rx='8' fill='#0a161d'/><rect x={w*.12} y={h*.55} width={w*.18} height={h*.15} rx='3' fill={rear?'#a52e3d':'#fff1bd'}/><rect x={w*.70} y={h*.55} width={w*.18} height={h*.15} rx='3' fill={rear?'#a52e3d':'#fff1bd'}/></g>;
+  const frame=(children:ReactNode)=><div className='scenario-svg-frame scene-frame-premium'><svg className='scenario-svg' viewBox='0 0 900 470' role='img' aria-label={scenario.title}>{defs}{children}<rect x='18' y='440' width='864' height='18' rx='9' fill='#02080b' opacity='.90'/></svg></div>;
+  if(scenario.id==='roundabout-right') return <div className='scenario-svg-frame scene-frame-premium'><svg className='scenario-svg' viewBox='0 0 900 470' role='img' aria-label={scenario.title}>{defs}<rect width='900' height='470' fill='#081219'/><circle cx='450' cy='235' r='138' fill='#152831' stroke='#3e5960' strokeWidth='12'/><circle cx='450' cy='235' r='78' fill='#0a151b' stroke='#6f8589' strokeOpacity='.26' strokeWidth='6'/><path d='M450 0V97M450 373V470M0 235H312M588 235H900' stroke='#dbe8e5' strokeOpacity='.20' strokeWidth='38'/><path d='M450 0V110M450 360V470M0 235H315M585 235H900' stroke='#dbe8e5' strokeOpacity='.13' strokeWidth='4' strokeDasharray='24 17'/><g transform='translate(399 338) rotate(-20)'><rect width='102' height='58' rx='17' fill='#2b3840' stroke='#9eafb4' strokeOpacity='.42'/><rect x='17' y='9' width='68' height='20' rx='8' fill='#0a161c'/><rect x='16' y='38' width='15' height='8' rx='3' fill='#a52d3c'/><rect x='71' y='38' width='15' height='8' rx='3' fill='#ffb32f'/></g><path d='M449 345C505 335 545 304 560 257C575 209 559 168 521 143' fill='none' stroke='#73e6d5' strokeOpacity='.72' strokeWidth='8' strokeLinecap='round'/><path d='m518 129 22 16-27 7Z' fill='#73e6d5'/><circle cx='586' cy='235' r='10' fill='#ffb32f'/></svg></div>;
+  if(scenario.id==='lane-change') return frame(<>{road(true)}<image href='/spirit/car-rear-realistic.svg' x='305' y='225' width='290' height='166' filter={u('shadow')}/><path d='M435 363C370 340 334 308 315 265C304 240 298 210 296 184' fill='none' stroke='#74e3d4' strokeOpacity='.72' strokeWidth='9' strokeLinecap='round'/><path d='m289 179 21 16-25 6Z' fill='#74e3d4'/><ellipse cx='355' cy='327' rx='44' ry='26' fill={u('amber')} opacity='.90'/><circle cx='355' cy='327' r='12' fill='#ffc66e'/></>);
+  if(scenario.id==='night-oncoming') return frame(<>{road(false)}<path d='M360 326L220 220L415 310L397 335Z' fill={u('lamp')} opacity='.66' filter={u('blur7')}/><path d='M540 326L680 220L485 310L503 335Z' fill={u('lamp')} opacity='.66' filter={u('blur7')}/><image href='/spirit/car-front-realistic.svg' x='300' y='220' width='300' height='171' filter={u('shadow')}/><image href='/spirit/car-front-realistic.svg' x='368' y='96' width='164' height='93' opacity='.92' filter={u('shadow')}/></>);
+  if(scenario.id==='empty-road') return frame(<>{road(false)}<path d='M360 326L120 140L430 316L397 335Z' fill={u('lamp')} opacity='.78' filter={u('blur7')}/><path d='M540 326L780 140L470 316L503 335Z' fill={u('lamp')} opacity='.78' filter={u('blur7')}/><image href='/spirit/car-front-realistic.svg' x='300' y='220' width='300' height='171' filter={u('shadow')}/>{oncoming&&<><ellipse cx='692' cy='140' rx='84' ry='46' fill='#fff4c8' opacity='.20' filter={u('blur18')}/><image href='/spirit/car-front-realistic.svg' x='648' y='108' width='88' height='50'/></>}</>);
+  if(scenario.id==='fog') return frame(<>{road(false,true)}<g opacity='.18'><rect x='0' y='84' width='900' height='52' fill='#f2f7f4'/><rect x='0' y='165' width='900' height='47' fill='#f2f7f4'/><rect x='0' y='245' width='900' height='38' fill='#f2f7f4'/><circle cx='120' cy='115' r='29' fill='#fff'/><circle cx='288' cy='194' r='22' fill='#fff'/><circle cx='690' cy='151' r='31' fill='#fff'/></g><path d='M360 326L282 252L414 311L397 335Z' fill={u('lamp')} opacity='.52' filter={u('blur7')}/><path d='M540 326L618 252L486 311L503 335Z' fill={u('lamp')} opacity='.52' filter={u('blur7')}/><image href='/spirit/car-front-realistic.svg' x='300' y='220' width='300' height='171' filter={u('shadow')}/></>);
+  if(scenario.id==='hazard-stop') return frame(<>{road(true)}<image href='/spirit/car-rear-realistic.svg' x='300' y='220' width='300' height='171' filter={u('shadow')}/><g className='scene-hazard-lamps'><ellipse cx='360' cy='324' rx='54' ry='31' fill={u('amber')} opacity='.96'/><ellipse cx='540' cy='324' rx='54' ry='31' fill={u('amber')} opacity='.96'/><circle cx='360' cy='324' r='13' fill='#ffc66e'/><circle cx='540' cy='324' r='13' fill='#ffc66e'/></g>{carTop(665,105,86,52,false,.50)}</>);
+  if(scenario.id==='turn-right') return <div className='scenario-svg-frame scene-frame-premium'><svg className='scenario-svg' viewBox='0 0 900 470' role='img' aria-label={scenario.title}>{defs}<rect width='900' height='470' fill='#071219'/><rect y='136' width='900' height='94' fill='#193039'/><rect x='520' y='136' width='94' height='334' fill='#193039'/><path d='M0 183H900M566 136V470' stroke='#dbe8e5' strokeOpacity='.20' strokeWidth='4' strokeDasharray='24 16'/><g transform='translate(353 256)'><rect width='102' height='58' rx='17' fill='#2b3840' stroke='#9eafb4' strokeOpacity='.42'/><rect x='17' y='9' width='68' height='20' rx='8' fill='#0a161c'/><rect x='16' y='38' width='15' height='8' rx='3' fill='#a52d3c'/><rect x='71' y='38' width='15' height='8' rx='3' fill='#ffb32f'/></g><path d='M406 309C484 304 547 280 564 231' fill='none' stroke='#73e6d5' strokeOpacity='.72' strokeWidth='8' strokeLinecap='round'/><path d='m558 222 23 14-27 8Z' fill='#73e6d5'/></svg></div>;
+  if(scenario.id==='rear-fog') return frame(<>{road(true)}<ellipse cx='450' cy='340' rx='175' ry='66' fill={u('red')} opacity='.18' filter={u('blur18')}/><image href='/spirit/car-rear-realistic.svg' x='300' y='220' width='300' height='171' filter={u('shadow')}/><rect x='442' y='307' width='16' height='31' rx='7' fill='#ff4d59'/><ellipse cx='450' cy='323' rx='44' ry='25' fill={u('red')} opacity='.35'/>{carTop(660,108,88,50,false,.35)}</>);
+  if(scenario.id==='park-night') return frame(<>{road(true,true)}<circle cx='760' cy='78' r='48' fill='#efe7b8' opacity='.17'/><circle cx='760' cy='78' r='78' fill='#efe7b8' opacity='.06' filter={u('blur18')}/><image href='/spirit/car-rear-realistic.svg' x='300' y='220' width='300' height='171' filter={u('shadow')}/><ellipse cx='360' cy='324' rx='38' ry='23' fill='#ffd98d' opacity='.16'/><ellipse cx='540' cy='324' rx='38' ry='23' fill='#ffd98d' opacity='.16'/></>);
+  return frame(<>{road(true)}<image href='/spirit/car-rear-realistic.svg' x='305' y='220' width='290' height='166' filter={u('shadow')}/><image href='/spirit/car-front-realistic.svg' x='112' y='180' width='150' height='86' opacity='.55'/><path d='M425 347C356 324 310 291 270 250C238 217 210 196 174 188' fill='none' stroke='#73e6d5' strokeOpacity='.72' strokeWidth='9' strokeLinecap='round'/><path d='m168 184 25 6-16 20Z' fill='#73e6d5'/><ellipse cx='355' cy='323' rx='38' ry='23' fill={u('amber')} opacity='.84'/><circle cx='355' cy='323' r='12' fill='#ffc66e'/></>);
 }
 
 function AutomaticLights() {
