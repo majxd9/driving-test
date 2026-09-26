@@ -679,3 +679,41 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
 @media(prefers-reduced-motion:reduce){
   .rear-direction-cues{animation:none!important}
 }
+
+
+/* Final polish: scene callout text, guided scene-to-simulator scroll, and true hazard on/off. */
+.scene-caption-title{
+  font-size:15.5px!important;
+  font-weight:900!important;
+  letter-spacing:-.1px!important;
+}
+.scene-caption-body{
+  font-size:9.5px!important;
+  font-weight:700!important;
+  letter-spacing:-.05px!important;
+}
+.scene-focus-active{
+  position:relative!important;
+  z-index:5!important;
+  border-color:rgba(134,228,218,.30)!important;
+  box-shadow:
+    0 0 0 1px rgba(134,228,218,.08),
+    0 0 34px rgba(70,218,196,.10),
+    0 20px 55px rgba(0,0,0,.24)!important;
+}
+.scene-hazard-lamps{
+  animation:sceneHazardOnOff 900ms steps(1,end) infinite!important;
+  transform-box:fill-box!important;
+  transform-origin:center!important;
+}
+@keyframes sceneHazardOnOff{
+  0%,49%{opacity:1}
+  50%,100%{opacity:.08}
+}
+@media(max-width:760px){
+  .scene-caption-title{font-size:13.5px!important}
+  .scene-caption-body{font-size:8.5px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .scene-hazard-lamps{animation:none!important}
+}
