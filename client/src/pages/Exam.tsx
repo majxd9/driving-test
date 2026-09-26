@@ -2,9 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { Question } from '../types';
-import OptimizedImage from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
-import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 
 const DURATION = 15 * 60;
 const LETTERS = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
