@@ -803,9 +803,11 @@ export default function PracticalInfo() {
       : mainLight === scenario.control && !signal && !flashActive
     );
     return <ScenarioVisual key={scenario.id} scenario={scenario} isActive={active} onActivate={(item) => {
-      if (item.id === 'signals') chooseSignal('right');
-      else if (item.id === 'hazard') chooseSignal('hazard');
-      else chooseMain(item.control);
+      if (item.control === 'left' || item.control === 'right' || item.control === 'hazard') {
+        chooseSignal(item.control);
+      } else {
+        chooseMain(item.control);
+      }
     }}/>;
   })}</div>
           </section>
