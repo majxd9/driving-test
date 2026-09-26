@@ -14,6 +14,10 @@ const Icon = ({type}:{type:'rules'|'signs'|'mechanic'|'arrow'}) => {
  return <svg {...common}><path d="M5 12h14M13 6l6 6-6 6"/></svg>;
 };
 
+const preloadStudy = () => { void import('./Study'); };
+const preloadModels = () => { void import('./Models'); };
+const preloadPractical = () => { void import('./PracticalInfo'); };
+
 const categories:{key:QuestionCategory;title:string;subtitle:string;path:string;icon:'rules'|'signs'|'mechanic'}[]=[
   {key:'Ser',title:'قواعد السير',subtitle:'الأولوية، السرعة، التقاطعات وقواعد القيادة',path:'/study/Ser',icon:'rules'},
   {key:'Ishara',title:'الإشارات المرورية',subtitle:'تعرف على الإشارات ومعانيها قبل الاختبار',path:'/study/Ishara',icon:'signs'},
@@ -56,9 +60,9 @@ export default function Home(){
     </div>
    </section>
    <section className="mt-10"><div className="section-heading"><div><p className="eyebrow">مركز التدريب</p><h2>اختر ما تريد مراجعته</h2></div><span className="section-hint">ابدأ من أي قسم، ويمكنك العودة وتغيير القسم لاحقاً.</span></div>
-    <div className="grid md:grid-cols-3 gap-4 mt-4">{categories.map(c=><button key={c.key} onClick={()=>navigate(c.path)} className={`category-card ${c.key==='Ser'?'brand':c.key==='Ishara'?'signs':'mek'}`}><div className="category-icon"><Icon type={c.icon}/></div><div className="flex-1 text-right"><h3>{c.title}</h3><p>{c.subtitle}</p></div><span className="arrow"><Icon type="arrow"/></span></button>)}</div>
+    <div className="grid md:grid-cols-3 gap-4 mt-4">{categories.map(c=><button key={c.key} onPointerEnter={preloadStudy} onFocus={preloadStudy} onClick={()=>navigate(c.path)} className={`category-card ${c.key==='Ser'?'brand':c.key==='Ishara'?'signs':'mek'}`}><div className="category-icon"><Icon type={c.icon}/></div><div className="flex-1 text-right"><h3>{c.title}</h3><p>{c.subtitle}</p></div><span className="arrow"><Icon type="arrow"/></span></button>)}</div>
    </section>
-   <button type="button" className="home-practical-card" onClick={()=>navigate('/practical-info')}>
+   <button type="button" className="home-practical-card" onPointerEnter={preloadPractical} onFocus={preloadPractical} onClick={()=>navigate('/practical-info')}>
     <span className="home-practical-icon" aria-hidden="true">
      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M8 11h9c4 0 7 3 7 7v5H8z"/><path d="M11 11V8h6"/><path d="M25 11h4M25 16h6M25 21h4"/>
@@ -72,7 +76,7 @@ export default function Home(){
     </span>
     <span className="home-practical-cta">افتح المركز <Icon type="arrow"/></span>
    </button>
-   <section className="home-exam mt-5" onClick={()=>navigate('/models')} role="button" tabIndex={0} onKeyDown={e=>e.key==='Enter'&&navigate('/models')}>
+   <section className="home-exam mt-5" onPointerEnter={preloadModels} onFocus={preloadModels} onClick={()=>navigate('/models')} role="button" tabIndex={0} onKeyDown={e=>e.key==='Enter'&&navigate('/models')}>
     <div><p className="eyebrow text-white/60">محاكاة اختبار الرخصة</p><h2>اختبر مستواك الآن</h2><p>٣٠ سؤالاً · ١٥ دقيقة · النجاح من ٢٥ إجابة صحيحة</p></div><div className="exam-action">اختيار النموذج <Icon type="arrow"/></div>
    </section>
   </main>
