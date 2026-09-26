@@ -564,3 +564,103 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
 @media(prefers-reduced-motion:reduce){
   .scene-card-premium,.handle-actions-real button{transition:none!important}
 }
+
+
+/* Scene explanation rail + hazard visual/sound feedback */
+.scene-explanation-rail{
+  margin-top:9px!important;
+  padding:10px!important;
+  border:1px solid rgba(134,228,218,.08)!important;
+  border-radius:15px!important;
+  background:linear-gradient(180deg,rgba(8,20,25,.86),rgba(3,10,14,.92))!important;
+}
+.scene-explanation-head{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  margin-bottom:8px!important;
+}
+.scene-explanation-head b{
+  display:block!important;
+  margin-top:3px!important;
+  color:#dcefeb!important;
+  font-size:9px!important;
+}
+.scene-scroll-cue{
+  flex:0 0 auto!important;
+  padding:5px 8px!important;
+  border:1px solid rgba(134,228,218,.12)!important;
+  border-radius:999px!important;
+  color:#9bc1bc!important;
+  background:rgba(134,228,218,.035)!important;
+  font-size:7px!important;
+  font-weight:900!important;
+}
+.scene-explanation-scroll{
+  display:flex!important;
+  gap:7px!important;
+  overflow-x:auto!important;
+  overscroll-behavior-inline:contain!important;
+  scrollbar-width:thin!important;
+  padding-bottom:4px!important;
+  scroll-snap-type:x proximity!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.scene-explanation-scroll::-webkit-scrollbar{height:5px!important}
+.scene-explanation-scroll::-webkit-scrollbar-thumb{
+  background:rgba(134,228,218,.18)!important;
+  border-radius:999px!important;
+}
+.scene-explanation-card{
+  flex:0 0 min(250px,72vw)!important;
+  min-height:78px!important;
+  display:grid!important;
+  grid-template-columns:28px minmax(0,1fr)!important;
+  gap:8px!important;
+  align-items:start!important;
+  padding:9px!important;
+  border:1px solid rgba(255,255,255,.055)!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.018)!important;
+  scroll-snap-align:start!important;
+}
+.scene-explanation-card>span{
+  width:28px!important;
+  height:28px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:9px!important;
+  color:#a9efe5!important;
+  background:rgba(134,228,218,.08)!important;
+  font-size:7px!important;
+  font-weight:950!important;
+}
+.scene-explanation-card strong{
+  display:block!important;
+  color:#e7f7f3!important;
+  font-size:8.5px!important;
+}
+.scene-explanation-card p{
+  margin:4px 0 0!important;
+  color:#91aaa7!important;
+  font-size:7.2px!important;
+  line-height:1.65!important;
+}
+.scene-lamp-blink{
+  animation:sceneHazardBlink .72s ease-in-out infinite!important;
+  transform-box:fill-box!important;
+  transform-origin:center!important;
+}
+@keyframes sceneHazardBlink{
+  0%,100%{opacity:.45}
+  50%{opacity:1}
+}
+@media(max-width:760px){
+  .scene-explanation-rail{padding:8px!important}
+  .scene-explanation-head b{font-size:8px!important}
+  .scene-explanation-card{flex-basis:82vw!important;min-height:74px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .scene-lamp-blink{animation:none!important}
+}
