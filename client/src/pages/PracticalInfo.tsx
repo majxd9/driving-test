@@ -666,9 +666,24 @@ export default function PracticalInfo() {
   const hazardSoundTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    document.documentElement.classList.add('practical-info-v2-active');
+    const root = document.documentElement;
+    const body = document.body;
+    const previous = {
+      rootOverflowY: root.style.overflowY,
+      bodyOverflowY: body.style.overflowY,
+      bodyOverflowX: body.style.overflowX,
+    };
+
+    root.style.overflowY = 'auto';
+    body.style.overflowY = 'auto';
+    body.style.overflowX = 'hidden';
+    root.classList.add('practical-info-v2-active');
+
     return () => {
-      document.documentElement.classList.remove('practical-info-v2-active');
+      root.style.overflowY = previous.rootOverflowY;
+      body.style.overflowY = previous.bodyOverflowY;
+      body.style.overflowX = previous.bodyOverflowX;
+      root.classList.remove('practical-info-v2-active');
       if (restoreTimerRef.current !== null) window.clearTimeout(restoreTimerRef.current);
       if (hazardSoundTimerRef.current !== null) window.clearInterval(hazardSoundTimerRef.current);
       restoreTimerRef.current = null;
