@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { Question, QuestionCategory } from '../types';
@@ -69,12 +69,12 @@ export default function Study() {
       nextIndex === index
     ) return;
 
-    const src = resolveQuestionImageUrl(questions[nextIndex]?.imageUrl);
-    if (src) preloadImages([src], 1);
+    // لا نحمّل أو نفكك أي صورة داخل click handler.
+    // التحديث البصري يحدث فوراً، والـpreload يتم في effect مستقل بعده.
     setIndex(nextIndex);
   }, [index, questions]);
 
-  const jumpToQuestion = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
+  const jumpToQuestion = useCallback((event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const requested = Number.parseInt(jumpValue, 10);
     if (!Number.isFinite(requested) || requested < 1 || requested > questions.length) return;

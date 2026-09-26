@@ -26,6 +26,7 @@ import './models-drift-final.css';
 import './home-mobile-performance.css';
 import './student-name-plate.css';
 import './practical-info.css';
+import './interaction-polish-v1.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

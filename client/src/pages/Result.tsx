@@ -41,6 +41,7 @@ export default function Result() {
     <div className="min-h-screen px-4 py-8">
       <div className="w-full max-w-3xl mx-auto">
         <section className="result-hero">
+          <button type="button" className="result-back-v1" onClick={() => navigate('/models')} aria-label="العودة إلى نماذج الاختبار">‹</button>
           <div className={`result-ring ${passed ? 'pass' : 'fail'}`}><span>{correct}</span><small>من {total}</small></div>
           <div><p className="eyebrow">نتيجة النموذج {modelId}</p><h1 className={`text-3xl font-black mt-2 ${passed ? 'text-brand' : 'text-exam'}`}>{passed ? 'مبروك، نجحت 🎉' : 'بحاجة إلى تدريب إضافي'}</h1><p className="text-muted text-sm mt-2 leading-relaxed">الصحيح {correct} • الخطأ {wrong.length} • بدون إجابة {unansweredItems.length}</p></div>
           <div className="result-stat-grid"><div><b>{correct}</b><span>صحيح</span></div><div><b>{wrong.length}</b><span>خطأ</span></div><div><b>{unansweredItems.length}</b><span>لم يُجب</span></div></div>
@@ -52,7 +53,7 @@ export default function Result() {
 
         {unansweredItems.length > 0 && <section className="result-section"><div className="section-heading"><div><p className="eyebrow">تنبيه</p><h2>أسئلة لم تتم الإجابة عنها</h2></div></div><div className="mt-4 space-y-4">{unansweredItems.map((item, index) => <ReviewCard key={item.question.id} item={item} index={index + 1} mode="unanswered" />)}</div></section>}
 
-        <div className="result-actions"><button onClick={() => navigate('/models')} className="primary-cta flex-1">اختبر نموذجاً آخر ←</button><button onClick={() => navigate('/')} className="secondary-cta flex-1 py-3.5">الصفحة الرئيسية</button></div>
+        <div className="result-actions"><button onPointerEnter={() => void import('./Models')} onFocus={() => void import('./Models')} onClick={() => navigate('/models')} className="primary-cta flex-1">اختبر نموذجاً آخر ←</button><button onClick={() => navigate('/')} className="secondary-cta flex-1 py-3.5">الصفحة الرئيسية</button></div>
         <p className="text-center text-xs text-muted mt-4">أجبت عن {answered} من أصل {total} سؤالاً.</p>
       </div>
     </div>

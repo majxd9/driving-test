@@ -2,10 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { Question } from '../types';
-import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
-import { preloadImages } from '../utils/imagePreload';
-import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 
 const DURATION = 15 * 60;
 const LETTERS = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
@@ -27,7 +24,6 @@ export default function Exam() {
   const [seconds, setSeconds] = useState(DURATION);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [imageExpanded, setImageExpanded] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
   const finishedRef = useRef(false);
@@ -48,16 +44,13 @@ export default function Exam() {
       questionsRef.current = picked;
       answersRef.current = {};
       finishedRef.current = false;
-      const firstThree = picked.slice(0, 3).map(q => resolveQuestionImageUrl(q.imageUrl)).filter(Boolean);
-      // الصور تُحمّل في الخلفية؛ لا نؤخر إظهار الاختبار بانتظار decode.
-      preloadImages(firstThree, 3);
+      // صور الأسئلة لا تُعرض أثناء الاختبار ولا نحتاج لتحميلها هنا.
+      // صفحة النتيجة هي مكان مراجعة الصور.
     } catch (err) { setLoadError(err instanceof Error ? err.message : 'تعذر تحميل الأسئلة.'); }
     finally { setLoading(false); }
   }, [modelId]);
 
   useEffect(() => { void loadExam(); }, [loadExam]);
-  useEffect(() => { const sources=questions.slice(current,current+3).map(q=>resolveQuestionImageUrl(q.imageUrl)).filter(Boolean); preloadImages(sources,3); }, [questions,current]);
-  useEffect(() => { setImageExpanded(false); }, [current]);
 
   const finish = useCallback(() => {
     const currentQuestions = questionsRef.current;
@@ -74,8 +67,6 @@ export default function Exam() {
 
   const goToQuestion = useCallback((nextIndex:number) => {
     if(nextIndex===current||nextIndex<0||nextIndex>=questions.length)return;
-    const src=resolveQuestionImageUrl(questions[nextIndex]?.imageUrl);
-    if(src) preloadImages([src], 1);
     setCurrent(nextIndex);
   },[current,questions]);
 
@@ -94,8 +85,7 @@ export default function Exam() {
 
   const q=questions[current]; const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
   const selectedAnswer = answers[q.id];
-  const showImage = Boolean(q.imageUrl && (selectedAnswer !== undefined || shouldShowQuestionImageBeforeAnswer(q)));
-  const explanationNeeded = selectedAnswer !== undefined && Boolean(q.explanation);
+  // لا صورة ولا شرح أثناء الاختبار؛ كلاهما للمراجعة بعد إنهاء الاختبار فقط.
   return <div className="exam-page-v2" dir="rtl">
     <header className="exam-topbar-v2">
       <button onClick={()=>navigate('/models')} className="exam-back-v2" aria-label="العودة"><UiIcon name="back"/></button>
@@ -131,10 +121,9 @@ export default function Exam() {
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
     <main className="exam-stage-v2"><section className="exam-card-v2">
       <div className="exam-scroll-v2">
-        <div className="exam-image-slot-v2">{q.imageUrl && showImage ? <button type="button" className="exam-image-v2" onClick={()=>setImageExpanded(true)} aria-label="تكبير صورة السؤال"><OptimizedImage src={q.imageUrl} alt={`صورة السؤال ${q.id}`} priority sizes="(max-width: 700px) 92vw, 720px" className="w-full h-full" objectFit="contain"/></button> : <div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
+        <div className="exam-image-slot-v2"><div className="exam-image-placeholder-v2" aria-hidden="true"/></div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
         <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>setAnswers(a=>({...a,[q.id]:i}))} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
-        {explanationNeeded && (<div className="exam-answer-explanation-v2" role="status" aria-live="polite"><div className="exam-answer-explanation-title-v2"><UiIcon name="check"/><span>{q.category === 'Ishara' ? 'شرح الإشارة' : 'الشرح'}</span></div><p>{q.explanation}</p></div>)}
         <DiagramRenderer question={q}/>
       </div>
       <div className="exam-actions-v2">
@@ -143,6 +132,6 @@ export default function Exam() {
         <button type="button" onClick={()=>isLast?finish():goToQuestion(current+1)} className="exam-action-v2 next"><span>{isLast?'عرض النتيجة':'التالي'}</span><UiIcon name="next"/></button>
       </div>
     </section></main>
-    {imageExpanded&&q.imageUrl&&<div className="exam-image-modal-v2" onClick={()=>setImageExpanded(false)}><OptimizedImage src={q.imageUrl} alt={`الصورة المكبرة للسؤال ${q.id}`} priority sizes="100vw" className="max-w-full max-h-full" objectFit="contain"/></div>}
+
   </div>;
 }

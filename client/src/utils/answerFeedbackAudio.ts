@@ -67,3 +67,23 @@ export async function playAnswerFeedback(correct: boolean) {
     softNoise(ctx, now, 0.12, level * 0.10);
   }
 }
+
+
+export async function playAuthFeedback(success: boolean) {
+  const ctx = await getContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const savedVolume = getSpiritVolume();
+  const level = savedVolume === 0 ? 0.28 : Math.min(0.34, 0.28 * savedVolume + 0.06);
+
+  if (success) {
+    ping(ctx, 659.25, now, 0.10, level * 0.55, 'sine');
+    ping(ctx, 783.99, now + 0.055, 0.12, level * 0.68, 'sine');
+    ping(ctx, 987.77, now + 0.11, 0.20, level * 0.80, 'sine');
+  } else {
+    ping(ctx, 329.63, now, 0.12, level * 0.50, 'triangle');
+    ping(ctx, 246.94, now + 0.085, 0.18, level * 0.62, 'triangle');
+    softNoise(ctx, now, 0.14, level * 0.08);
+  }
+}
