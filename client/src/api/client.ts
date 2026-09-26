@@ -16,7 +16,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     ...options,
     credentials: 'include',
     headers: {
-      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      ...(isFormData || options.body == null ? {} : { 'Content-Type': 'application/json' }),
       ...(options.headers || {}),
     },
   });
@@ -46,6 +46,12 @@ export const api = {
       body,
     });
   },
+  // يوقظ الـAPI أثناء وجود المستخدم على شاشة الدخول، بدلاً من انتظار الضغط على زر الدخول.
+  warmup: () =>
+    request<{ status: string }>('/api/healthz', {
+      method: 'GET',
+      cache: 'no-store',
+    }),
   logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
   getQuestions: (category: 'Ser' | 'Ishara' | 'Mechanic') =>
     request<import('../types').Question[]>(`/api/questions?category=${category}`),
