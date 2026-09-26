@@ -1,26 +1,66 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 280" role="img" aria-label="منظر خلفي لسيارة" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 280" role="img" aria-label="مؤخرة سيارة من الخلف" fill="none">
   <defs>
-    <linearGradient id="rbody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fd9c2"/><stop offset=".5" stop-color="#228fd3"/><stop offset="1" stop-color="#0d478f"/></linearGradient>
-    <linearGradient id="rglass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#18384e"/><stop offset="1" stop-color="#040d16"/></linearGradient>
-    <linearGradient id="rbumper" x1="0" x2="1"><stop stop-color="#163e6a"/><stop offset=".5" stop-color="#07141f"/><stop offset="1" stop-color="#163e6a"/></linearGradient>
-    <linearGradient id="tail" x1="0" x2="1"><stop stop-color="#ff8d91"/><stop offset=".5" stop-color="#ff3f4d"/><stop offset="1" stop-color="#b0162d"/></linearGradient>
-    <radialGradient id="tailGlow"><stop stop-color="#ffd5d7"/><stop offset=".28" stop-color="#ff5662" stop-opacity=".95"/><stop offset="1" stop-color="#ff2d42" stop-opacity="0"/></radialGradient>
+    <linearGradient id="rearBody" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#63e6d0"/><stop offset=".38" stop-color="#299bcf"/><stop offset="1" stop-color="#0a3d79"/>
+    </linearGradient>
+    <linearGradient id="rearGlass" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#27475b"/><stop offset=".55" stop-color="#0b1b2a"/><stop offset="1" stop-color="#040b12"/>
+    </linearGradient>
+    <linearGradient id="rearBumper" x1="0" x2="1">
+      <stop stop-color="#19466f"/><stop offset=".5" stop-color="#08151f"/><stop offset="1" stop-color="#19466f"/>
+    </linearGradient>
+    <linearGradient id="tailRed" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#ffb1b5"/><stop offset=".25" stop-color="#ff5360"/><stop offset=".7" stop-color="#e31f39"/><stop offset="1" stop-color="#8e1023"/>
+    </linearGradient>
+    <radialGradient id="tailGlow">
+      <stop stop-color="#fff0f1"/><stop offset=".22" stop-color="#ff6972" stop-opacity=".96"/><stop offset="1" stop-color="#ff3045" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="reverseWhite" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#ffffff" stop-opacity=".92"/><stop offset="1" stop-color="#bde5e7" stop-opacity=".65"/>
+    </linearGradient>
   </defs>
 
-  <ellipse cx="280" cy="248" rx="185" ry="15" fill="#061018" opacity=".34"/>
-  <path d="M70 208C78 150 112 124 172 112L208 62C218 48 234 40 252 40H308C326 40 342 48 352 62L388 112C448 124 482 150 490 208Z" fill="url(#rbody)" stroke="#9af2e9" stroke-width="5"/>
-  <path d="M184 108l28-38c6-8 15-12 26-13h84c11 1 20 5 26 13l28 38z" fill="url(#rglass)" stroke="#6ecbdc" stroke-width="4"/>
-  <path d="M280 58v49" stroke="#4aaec2" stroke-width="3" opacity=".48"/>
-  <path d="M111 149c38-16 81-23 169-23s131 7 169 23" stroke="#a2f7ee" stroke-width="3" opacity=".20"/>
-  <path d="M102 179c30-20 56-28 88-29h180c32 1 58 9 88 29l-2 35H104z" fill="url(#rbumper)" stroke="#5cc9d8" stroke-width="3"/>
-  <path d="M122 189c23-13 48-18 73-16l22 9c-23 16-54 21-88 17z" fill="url(#tail)" stroke="#ffb4b8" stroke-width="2.5"/>
-  <path d="M438 189c-23-13-48-18-73-16l-22 9c23 16 54 21 88 17z" fill="url(#tail)" stroke="#ffb4b8" stroke-width="2.5"/>
-  <ellipse cx="168" cy="194" rx="58" ry="32" fill="url(#tailGlow)" opacity=".26"/>
-  <ellipse cx="392" cy="194" rx="58" ry="32" fill="url(#tailGlow)" opacity=".26"/>
-  <path d="M227 182h106l12 29H215z" fill="#07131d" stroke="#275265" stroke-width="3"/>
-  <path d="M209 226h142" stroke="#40d0c0" stroke-width="6" stroke-linecap="round" opacity=".50"/>
-  <circle cx="155" cy="229" r="17" fill="#09131d" stroke="#2c4f67" stroke-width="5"/>
-  <circle cx="405" cy="229" r="17" fill="#09131d" stroke="#2c4f67" stroke-width="5"/>
-  <path d="M115 215h330" stroke="#e8ffff" stroke-width="2" opacity=".18"/>
-  <path d="M271 220h18" stroke="#fb6971" stroke-width="4" stroke-linecap="round" opacity=".80"/>
+  <!-- grounded rear silhouette -->
+  <ellipse cx="280" cy="250" rx="190" ry="17" fill="#02080d" opacity=".58"/>
+  <path d="M55 205C63 158 104 126 159 115L190 67C200 51 218 42 239 40H321C342 42 360 51 370 67L401 115C456 126 497 158 505 205L497 224H63Z" fill="url(#rearBody)" stroke="#aaf6ec" stroke-width="4.5"/>
+
+  <!-- unmistakable rear windshield -->
+  <path d="M169 111L193 75C201 63 215 57 231 56H329C345 57 359 63 367 75L391 111L374 120H186Z" fill="url(#rearGlass)" stroke="#73d6e5" stroke-width="4"/>
+  <path d="M280 59V109" stroke="#61b9cd" stroke-width="2.5" opacity=".42"/>
+  <path d="M184 105H376" stroke="#e6ffff" stroke-opacity=".09" stroke-width="3"/>
+
+  <!-- trunk / hatch -->
+  <path d="M100 146C153 128 214 123 280 123S407 128 460 146L477 201H83Z" fill="#0a1823" opacity=".52"/>
+  <path d="M92 174C142 158 201 154 280 154S418 158 468 174" stroke="#8feee5" stroke-opacity=".22" stroke-width="3"/>
+  <rect x="240" y="162" width="80" height="34" rx="7" fill="#07121b" stroke="#3c7082" stroke-width="3"/>
+  <rect x="251" y="169" width="58" height="18" rx="3" fill="#18303c"/>
+
+  <!-- wide rear lamp housings -->
+  <path d="M91 172C117 157 153 153 190 159L214 174L199 201C164 207 128 202 99 193Z" fill="#1b1116" stroke="#ff858c" stroke-opacity=".34" stroke-width="2.5"/>
+  <path d="M469 172C443 157 407 153 370 159L346 174L361 201C396 207 432 202 461 193Z" fill="#1b1116" stroke="#ff858c" stroke-opacity=".34" stroke-width="2.5"/>
+
+  <!-- bright tail/brake red -->
+  <path d="M103 177C127 164 157 162 184 167L202 178L188 194C158 198 130 195 108 188Z" fill="url(#tailRed)"/>
+  <path d="M457 177C433 164 403 162 376 167L358 178L372 194C402 198 430 195 452 188Z" fill="url(#tailRed)"/>
+  <ellipse cx="157" cy="183" rx="67" ry="31" fill="url(#tailGlow)" opacity=".25"/>
+  <ellipse cx="403" cy="183" rx="67" ry="31" fill="url(#tailGlow)" opacity=".25"/>
+
+  <!-- amber indicators + reverse lights, clearly separated -->
+  <rect x="116" y="176" width="25" height="12" rx="5" fill="#ffb653"/>
+  <rect x="419" y="176" width="25" height="12" rx="5" fill="#ffb653"/>
+  <rect x="169" y="174" width="22" height="10" rx="4" fill="url(#reverseWhite)" opacity=".9"/>
+  <rect x="369" y="174" width="22" height="10" rx="4" fill="url(#reverseWhite)" opacity=".9"/>
+
+  <!-- rear bumper and lower diffuser -->
+  <path d="M82 198C137 210 204 216 280 216S423 210 478 198L485 224C430 239 363 244 280 244S130 239 75 224Z" fill="url(#rearBumper)" stroke="#62cbd4" stroke-opacity=".65" stroke-width="3"/>
+  <path d="M165 224Q280 245 395 224" stroke="#bdfcf5" stroke-opacity=".15" stroke-width="4"/>
+  <path d="M205 231H355" stroke="#40cbbf" stroke-width="5" stroke-linecap="round" opacity=".45"/>
+
+  <!-- rear wheels / stance -->
+  <circle cx="132" cy="229" r="18" fill="#071019" stroke="#2e5066" stroke-width="5"/>
+  <circle cx="428" cy="229" r="18" fill="#071019" stroke="#2e5066" stroke-width="5"/>
+
+  <!-- directional visual cues: perspective + vehicle rear -->
+  <path d="M280 246V271" stroke="#eef7f4" stroke-opacity=".24" stroke-width="4" stroke-dasharray="8 7"/>
+  <path d="M239 247L220 269M321 247L340 269" stroke="#dbe9e6" stroke-opacity=".10" stroke-width="3"/>
 </svg>
