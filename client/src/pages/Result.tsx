@@ -52,7 +52,7 @@ export default function Result() {
 
         {unansweredItems.length > 0 && <section className="result-section"><div className="section-heading"><div><p className="eyebrow">تنبيه</p><h2>أسئلة لم تتم الإجابة عنها</h2></div></div><div className="mt-4 space-y-4">{unansweredItems.map((item, index) => <ReviewCard key={item.question.id} item={item} index={index + 1} mode="unanswered" />)}</div></section>}
 
-        <div className="result-actions"><button onClick={() => navigate('/models')} className="primary-cta flex-1">اختبر نموذجاً آخر ←</button><button onClick={() => navigate('/')} className="secondary-cta flex-1 py-3.5">الصفحة الرئيسية</button></div>
+        <div className="result-actions"><button onPointerEnter={() => void import('./Models')} onFocus={() => void import('./Models')} onClick={() => navigate('/models')} className="primary-cta flex-1">اختبر نموذجاً آخر ←</button><button onClick={() => navigate('/')} className="secondary-cta flex-1 py-3.5">الصفحة الرئيسية</button></div>
         <p className="text-center text-xs text-muted mt-4">أجبت عن {answered} من أصل {total} سؤالاً.</p>
       </div>
     </div>
