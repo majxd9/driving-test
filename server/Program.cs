@@ -79,8 +79,10 @@ using (var scope = app.Services.CreateScope())
 {
     await DbSeeder.SeedAsync(scope.ServiceProvider);
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await QuestionBankCache.InitializeAsync(db);
-    QuestionCountCache.InitializeFrom(QuestionBankCache.Count);
+
+    // لا نحمل بنك الأسئلة الكامل قبل بدء استقبال الطلبات.
+    // نحتاج فقط للعدد أثناء تسجيل الدخول؛ بنك الأسئلة يُحمّل لاحقاً عند أول طلب.
+    await QuestionCountCache.InitializeAsync(db);
 }
 
 app.UseHttpsRedirection();
@@ -97,5 +99,9 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGet("/api/healthz", () => Results.Ok(new { status = "ok" }))
+    .AllowAnonymous();
+
 app.MapControllers();
 app.Run();
