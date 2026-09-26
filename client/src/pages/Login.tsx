@@ -2,6 +2,7 @@ import { useEffect, useState, FormEvent, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
+import { playAuthFeedback } from '../utils/answerFeedbackAudio';
 import OptimizedImage from '../components/OptimizedImage';
 import SiteGuide from '../components/SiteGuide';
 import SpiritLights from '../components/SpiritLights';
@@ -44,9 +45,17 @@ export default function Login() {
     try {
       await login(userName.trim(),password);
       setLoginSuccess(true);
-      navigate('/',{replace:true});
+      void playAuthFeedback(true);
+      void import('./Home');
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => navigate('/',{replace:true}));
+      });
     }
-    catch(err){ setLoginSuccess(false); setError(err instanceof Error ? err.message : 'تعذر تسجيل الدخول حالياً.'); }
+    catch(err){
+      setLoginSuccess(false);
+      setError(err instanceof Error ? err.message : 'تعذر تسجيل الدخول حالياً.');
+      void playAuthFeedback(false);
+    }
     finally { setBusy(false); }
   }
 
@@ -54,7 +63,7 @@ export default function Login() {
   const chosen=sampleAnswers[sampleIndex];
   const sampleScore=SAMPLE_QUESTIONS.reduce((n,q,i)=>n+(sampleAnswers[i]===q.correct?1:0),0);
   const closeSample=()=>{setShowSample(false);setSampleIndex(0);setSampleAnswers({});};
-  const signalState = loginSuccess ? 'green' : (userName.length + password.length) > 0 ? 'amber' : 'red';
+  const signalState = loginSuccess ? 'green' : error ? 'red' : (userName.length + password.length) > 0 ? 'amber' : 'red';
   const typed = userName.length + password.length;
   const carProgress = Math.min(1, typed / 24);
   const carMoving = typed > 0 && !loginSuccess;
