@@ -120,32 +120,55 @@ function RingSymbol({ type, active }: { type: MainLightKey; active: boolean }) {
 
 
 function CockpitHandle({
-  mainLight, signal, movement, onMain, onRingCycle, onLever, onHazard,
+  mainLight, signal, movement, onRingCycle, onLever, onHazard,
 }: {
   mainLight: MainLightKey;
   signal: SignalKey | null;
   movement: 'ring' | 'left' | 'right' | 'push' | 'pull' | 'hazard';
-  onMain: (value: MainLightKey) => void;
   onRingCycle: () => void;
   onLever: (movement: 'left' | 'right' | 'push' | 'pull') => void;
   onHazard: () => void;
 }) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const dragRef = useRef<{ zone: 'ring' | 'lever'; x: number; y: number } | null>(null);
   const suppressClick = useRef<'ring' | 'lever' | null>(null);
 
+  const ringIndex = Math.max(0, RING_LIGHTS.findIndex(item => item.key === mainLight));
+  const ringAngle = movement === 'ring' ? -2 : 0;
   const currentLabel =
     signal === 'left' ? 'غماز يسار' :
     signal === 'right' ? 'غماز يمين' :
     signal === 'hazard' ? 'تحذير رباعي' :
     MAIN_LIGHTS.find(item => item.key === mainLight)?.title || 'الإنارة';
 
-  const currentSub =
-    signal === 'left' ? 'اخفض الذراع' :
-    signal === 'right' ? 'ارفع الذراع' :
-    signal === 'hazard' ? 'زر التحذير الرباعي' :
-    mainLight === 'high' ? 'دفع الذراع للأمام' :
-    mainLight === 'off' ? 'الحلقة على OFF' :
-    'حلقة الإنارة · ' + (MAIN_LIGHTS.find(item => item.key === mainLight)?.subtitle || '');
+  const ringSymbols = RING_LIGHTS.map((item, index) => {
+    const angle = (index * 34) - (ringIndex * 34);
+    const rad = angle * Math.PI / 180;
+    const scaleY = Math.max(0.28, Math.cos(rad));
+    const y = 216 + 48 * Math.sin(rad);
+    const opacity = Math.max(0.22, 0.28 + 0.72 * Math.pow(scaleY, 1.4));
+    const isActive = index === ringIndex;
+    return (
+      <g key={item.key} className="handle-ring-mark" transform={'translate(220 ' + y + ') scale(1 ' + scaleY + ')'} opacity={opacity}>
+        <g transform="translate(2 2)" color="#000" opacity=".34">
+          <RingSymbol type={item.key} active={false} />
+        </g>
+        <g transform="translate(-15 -15) scale(.70)" color={isActive ? '#f2fffc' : '#c5d1d3'} opacity={isActive ? 1 : .86}>
+          <RingSymbol type={item.key} active={isActive} />
+        </g>
+      </g>
+    );
+  });
+
+  const ringGrooves = Array.from({ length: 15 }, (_, i) => {
+    const y = 164 + i * 7.1;
+    return <line key={i} x1="168" x2="272" y1={y} y2={y} stroke="#000" strokeOpacity={i % 3 === 0 ? '.28' : '.14'} strokeWidth={i % 3 === 0 ? '1.5' : '1'} />;
+  });
+
+  const fogSymbols = [
+    { key: 'frontFog' as const, y: 203, active: mainLight === 'frontFog' },
+    { key: 'rearFog' as const, y: 229, active: mainLight === 'rearFog' },
+  ];
 
   const beginDrag = (zone: 'ring' | 'lever', e: ReactPointerEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -159,7 +182,7 @@ function CockpitHandle({
     if (!d || d.zone !== zone) return;
     const dx = e.clientX - d.x;
     const dy = e.clientY - d.y;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < 22) return;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
 
     suppressClick.current = zone;
     dragRef.current = null;
@@ -194,45 +217,206 @@ function CockpitHandle({
     onLever(signal === 'right' ? 'left' : 'right');
   };
 
+  const leverTransform =
+    movement === 'right' ? 'translate(0 -10) rotate(-3 636 216)' :
+    movement === 'left' ? 'translate(0 10) rotate(3 636 216)' :
+    movement === 'push' ? 'translate(17 -5) rotate(-1 636 216)' :
+    movement === 'pull' ? 'translate(-17 5) rotate(1 636 216)' :
+    'translate(0 0)';
+
+  const u = (name: string) => 'url(#' + uid + name + ')';
+
   return (
-    <section className="handle-card handle-card-real">
+    <section className="handle-card">
       <div className="handle-header">
         <div>
-          <span className="eyebrow">02 · المقبض الحقيقي</span>
-          <h3>المقبض نفسه هو أداة التعلم</h3>
-          <p>الحلقة تغيّر الإنارة، والذراع يحدد الغماز أو العالي. اللمس يقع فوق القطعة نفسها بدون إطار يغطي الرسم.</p>
+          <span className="eyebrow">02 · المقبض التفاعلي</span>
+          <h3>تعلّم المقبض بيدك</h3>
+          <p>المس الحلقة لتغيير الإنارة، واسحب الذراع ↑↓ للغماز أو ↔ للعالي والوميض. لا توجد مناطق تحكم منفصلة فوق الرسم.</p>
         </div>
-        <div className="handle-state handle-state-real">
-          <span>الوضع الحالي</span>
-          <strong>{currentLabel}</strong>
-          <small>{currentSub}</small>
-        </div>
+        <div className="handle-state"><span>الوضع الحالي</span><strong>{currentLabel}</strong></div>
       </div>
 
-      <div className="handle-real-stage">
-        <img src="/spirit/stalk-lighting-realistic.svg" className="handle-real-image" alt="مقبض أضواء وغمازات السيارة" draggable={false} />
-        <button type="button" className={'handle-real-hotspot handle-real-ring ' + (movement === 'ring' ? 'is-active' : '')}
-          aria-label="تغيير وضع حلقة الإنارة"
-          onPointerDown={(e) => beginDrag('ring', e)} onPointerMove={(e) => moveDrag('ring', e)}
-          onPointerUp={endDrag} onPointerCancel={endDrag} onClick={clickRing} />
-        <button type="button" className={'handle-real-hotspot handle-real-lever ' + ((movement === 'left' || movement === 'right' || movement === 'push' || movement === 'pull') ? 'is-active' : '')}
-          aria-label="تحريك ذراع الغماز والإنارة"
-          onPointerDown={(e) => beginDrag('lever', e)} onPointerMove={(e) => moveDrag('lever', e)}
-          onPointerUp={endDrag} onPointerCancel={endDrag} onClick={clickLever} />
-        <button type="button" className={'handle-real-hotspot handle-real-hazard ' + (movement === 'hazard' ? 'is-active' : '')}
-          aria-label="تشغيل التحذير الرباعي" onClick={onHazard} />
-        <div className="handle-real-hint ring">اسحب/اضغط الحلقة</div>
-        <div className="handle-real-hint lever">↑ ↓ غماز · ↔ عالي/وميض</div>
+      <div className="handle-stage">
+        <svg viewBox="0 0 720 420" className="handle-svg" role="img" aria-label="مقبض أضواء وغمازات واقعي مبسط مع مناطق لمس مباشرة">
+          <defs>
+            <radialGradient id={uid + 'bg'} cx=".46" cy=".42" r=".78">
+              <stop offset="0" stopColor="#193b45" />
+              <stop offset=".42" stopColor="#0b222b" />
+              <stop offset="1" stopColor="#03080b" />
+            </radialGradient>
+            <linearGradient id={uid + 'housing'} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#4a5961" />
+              <stop offset=".16" stopColor="#28363e" />
+              <stop offset=".55" stopColor="#111c22" />
+              <stop offset="1" stopColor="#05090c" />
+            </linearGradient>
+            <linearGradient id={uid + 'shaft'} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#aebdc2" />
+              <stop offset=".12" stopColor="#6d7e87" />
+              <stop offset=".32" stopColor="#35454e" />
+              <stop offset=".68" stopColor="#172228" />
+              <stop offset="1" stopColor="#090f13" />
+            </linearGradient>
+            <linearGradient id={uid + 'ring'} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#98a7ac" />
+              <stop offset=".10" stopColor="#66777f" />
+              <stop offset=".28" stopColor="#3c4c55" />
+              <stop offset=".58" stopColor="#202c32" />
+              <stop offset=".82" stopColor="#0f171b" />
+              <stop offset="1" stopColor="#060a0d" />
+            </linearGradient>
+            <linearGradient id={uid + 'fog'} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#8b9ba1" />
+              <stop offset=".2" stopColor="#55666e" />
+              <stop offset=".52" stopColor="#27353c" />
+              <stop offset="1" stopColor="#0a1014" />
+            </linearGradient>
+            <linearGradient id={uid + 'rubber'} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#5b6a72" />
+              <stop offset=".18" stopColor="#35434a" />
+              <stop offset=".50" stopColor="#1b272d" />
+              <stop offset="1" stopColor="#080d11" />
+            </linearGradient>
+            <linearGradient id={uid + 'chrome'} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor="#6f8189" />
+              <stop offset=".45" stopColor="#f4f8f9" />
+              <stop offset="1" stopColor="#7d8f96" />
+            </linearGradient>
+            <radialGradient id={uid + 'glow'}>
+              <stop offset="0" stopColor="#74e7d4" stopOpacity=".28" />
+              <stop offset="1" stopColor="#74e7d4" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id={uid + 'hazardGlow'}>
+              <stop offset="0" stopColor="#ff5d63" stopOpacity=".96" />
+              <stop offset="1" stopColor="#ff5d63" stopOpacity="0" />
+            </radialGradient>
+            <filter id={uid + 'shadow'} x="-25%" y="-45%" width="160%" height="190%">
+              <feDropShadow dx="0" dy="18" stdDeviation="15" floodColor="#000" floodOpacity=".68" />
+            </filter>
+            <filter id={uid + 'soft'} x="-30%" y="-50%" width="160%" height="200%">
+              <feGaussianBlur stdDeviation="6" />
+            </filter>
+            <clipPath id={uid + 'ringClip'}>
+              <rect x="151" y="154" width="133" height="124" rx="30" />
+            </clipPath>
+            <clipPath id={uid + 'fogClip'}>
+              <rect x="283" y="176" width="46" height="80" rx="14" />
+            </clipPath>
+          </defs>
+
+          <rect width="720" height="420" rx="26" fill={u('bg')} />
+
+          {/* cockpit / steering column context */}
+          <path d="M-40 373Q170 322 365 346t395 58v50H-40Z" fill="#04090c" opacity=".96" />
+          <path d="M520 60Q608 30 699 62" stroke="#e8f9f6" strokeOpacity=".045" strokeWidth="28" strokeLinecap="round" />
+          <ellipse cx="360" cy="335" rx="310" ry="30" fill="#000" opacity=".33" filter={u('soft')} />
+
+          {/* fixed steering column housing */}
+          <g>
+            <path d="M590 75Q592 56 610 52H686Q704 56 705 74V350Q701 369 684 372H610Q593 368 590 350Z" fill={u('housing')} stroke="#010507" strokeWidth="3" />
+            <path d="M605 75H690" stroke="#fff" strokeOpacity=".10" strokeWidth="3" strokeLinecap="round" />
+            <path d="M602 132H694M602 302H694" stroke="#000" strokeOpacity=".34" strokeWidth="4" />
+            <rect x="615" y="108" width="50" height="204" rx="24" fill="#060b0e" stroke="#fff" strokeOpacity=".04" />
+            <path d="M625 132V290" stroke="#9fb0b5" strokeOpacity=".08" strokeWidth="4" strokeLinecap="round" />
+          </g>
+
+          {/* rigid stalk: only this group moves, not the ring independently */}
+          <g className="handle-lever-body" transform={leverTransform} filter={u('shadow')}>
+            <path d="M609 190L329 195Q318 196 309 207L309 225Q318 236 330 237L609 242Z" fill="#05090d" opacity=".78" />
+            <path d="M611 194L334 199Q324 200 316 209L316 222Q324 232 335 233L611 238Z" fill={u('shaft')} stroke="#04080b" strokeWidth="2" />
+            <path d="M600 198L340 203" stroke="#fff" strokeOpacity=".24" strokeWidth="3" strokeLinecap="round" />
+            <path d="M552 207V228M514 208V228M476 209V228M438 210V227" stroke="#000" strokeOpacity=".24" strokeWidth="2" strokeLinecap="round" />
+
+            {/* fog ring / secondary collar */}
+            <g opacity={signal === null ? .98 : .72}>
+              <rect x="283" y="176" width="46" height="80" rx="14" fill={u('fog')} stroke="#03070a" strokeWidth="2.5" />
+              <g clipPath={u('fogClip')}>
+                <path d="M286 185H326M286 247H326" stroke="#fff" strokeOpacity=".07" strokeWidth="3" />
+                <path d="M286 195H326M286 204H326M286 213H326M286 222H326M286 231H326" stroke="#000" strokeOpacity=".18" strokeWidth="1.3" />
+                {fogSymbols.map((item) => (
+                  <g key={item.key} transform={'translate(306 ' + item.y + ') scale(.45)'} color={item.active ? '#f0fffb' : '#bcc8ca'} opacity={item.active ? 1 : .52}>
+                    <RingSymbol type={item.key} active={item.active} />
+                  </g>
+                ))}
+              </g>
+            </g>
+
+            {/* main lighting ring */}
+            <g className={movement === 'ring' ? 'handle-ring-face is-moving' : 'handle-ring-face'} opacity={signal === null ? 1 : .62} transform={'rotate(' + ringAngle + ' 218 216)'}>
+              <rect x="151" y="154" width="133" height="124" rx="30" fill={u('ring')} stroke="#020609" strokeWidth="4" />
+              <g clipPath={u('ringClip')}>
+                {ringGrooves}
+                <rect x="153" y="156" width="129" height="20" fill="#fff" opacity=".055" />
+                <rect x="153" y="252" width="129" height="25" fill="#000" opacity=".22" />
+                {ringSymbols}
+              </g>
+              <ellipse cx="152" cy="216" rx="13" ry="60" fill="#26343b" stroke="#000" strokeOpacity=".6" strokeWidth="2" />
+              <ellipse cx="148" cy="205" rx="4" ry="22" fill="#fff" opacity=".11" />
+              <rect x="273" y="160" width="7" height="112" rx="3.5" fill={u('chrome')} opacity=".9" />
+            </g>
+
+            {/* tactile end cap */}
+            <path d="M124 192Q115 201 115 216T124 240L151 247V185Z" fill={u('rubber')} stroke="#000" strokeOpacity=".72" strokeWidth="2.5" />
+            <path d="M121 201Q118 216 121 232" stroke="#f4fbfb" strokeOpacity=".10" strokeWidth="4" strokeLinecap="round" />
+            <path d="M133 194V238M142 192V241" stroke="#000" strokeOpacity=".16" strokeWidth="2" />
+          </g>
+
+          {/* fixed selector pointer */}
+          <g>
+            <rect x="278" y="181" width="13" height="70" rx="6" fill="#05090d" stroke="#000" strokeOpacity=".72" />
+            <path d="M284.5 216L275 210V222Z" fill="#f4fffc" />
+            <path d="M286 201V231" stroke="#7fe6d5" strokeOpacity=".8" strokeWidth="2" />
+            <circle cx="286" cy="183" r="5" fill="#73e5d2" opacity=".20" />
+          </g>
+
+          {/* separate hazard switch */}
+          <g>
+            <circle cx="651" cy="54" r="40" fill={u('hazardGlow')} opacity={signal === 'hazard' ? 1 : 0} filter={u('soft')} />
+            <rect x="613" y="22" width="76" height="62" rx="16" fill="#2c3940" stroke="#05090c" strokeWidth="2.5" />
+            <rect x="621" y="30" width="60" height="46" rx="12" fill="#090f13" stroke="#fff" strokeOpacity=".08" />
+            <g transform="translate(651 53)" className={signal === 'hazard' ? 'pl-blink' : undefined}>
+              <path d="M0 -15 13 11H-13Z" fill="none" stroke={signal === 'hazard' ? '#ff777b' : '#cb555b'} strokeWidth="3" strokeLinejoin="round"/>
+              <path d="M0 -7V1M0 6V7" stroke={signal === 'hazard' ? '#ff777b' : '#cb555b'} strokeWidth="3" strokeLinecap="round"/>
+            </g>
+            <circle cx="651" cy="91" r="4" fill={signal === 'hazard' ? '#ff696f' : '#4a3135'} />
+          </g>
+
+          <text x="363" y="382" fill="#9cb2b3" fontSize="12" fontWeight="700">اسحب القطعة نفسها — الحلقة والدراع يتحركان بشكل مستقل</text>
+        </svg>
+
+        <button
+          type="button"
+          className="handle-hotspot ring-zone"
+          onPointerDown={e => beginDrag('ring', e)}
+          onPointerMove={e => moveDrag('ring', e)}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          onClick={clickRing}
+          aria-label="تدوير حلقة الإنارة"
+        />
+        <button
+          type="button"
+          className="handle-hotspot lever-zone"
+          onPointerDown={e => beginDrag('lever', e)}
+          onPointerMove={e => moveDrag('lever', e)}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          onClick={clickLever}
+          aria-label="تحريك ذراع الغمازات والضوء العالي"
+        />
+        <button type="button" className="handle-hotspot hazard-zone" onClick={onHazard} aria-label="تشغيل التحذير الرباعي" />
       </div>
 
-      <div className="handle-actions handle-actions-real">
-        <button type="button" className={mainLight === 'off' && !signal ? 'active' : ''} onClick={() => onMain('off')}><b>OFF</b><span>إيقاف</span><small>الحلقة</small></button>
-        <button type="button" className={mainLight === 'low' && !signal ? 'active' : ''} onClick={() => onMain('low')}><b>↓</b><span>منخفض</span><small>الضوء القريب</small></button>
-        <button type="button" className={mainLight === 'high' && !signal ? 'active' : ''} onClick={() => onLever('push')}><b>↗</b><span>عالي</span><small>طريق مظلم</small></button>
-        <button type="button" className={signal === 'left' ? 'active' : ''} onClick={() => onLever('left')}><b>↓</b><span>يسار</span><small>الغماز</small></button>
-        <button type="button" className={signal === 'right' ? 'active' : ''} onClick={() => onLever('right')}><b>↑</b><span>يمين</span><small>الغماز</small></button>
-        <button type="button" className={'hazard ' + (signal === 'hazard' ? 'active' : '')} onClick={onHazard}><b>⚠</b><span>رباعي</span><small>تحذير</small></button>
+      <div className="handle-actions">
+        <button type="button" className={movement === 'ring' ? 'active' : ''} onClick={onRingCycle}><b>↻</b><span>لف الحلقة</span><small>اختيار الإنارة</small></button>
+        <button type="button" className={movement === 'right' ? 'active' : ''} onClick={() => onLever('right')}><b>↑</b><span>يمين</span><small>ارفع الذراع</small></button>
+        <button type="button" className={movement === 'left' ? 'active' : ''} onClick={() => onLever('left')}><b>↓</b><span>يسار</span><small>اخفض الذراع</small></button>
+        <button type="button" className={movement === 'push' ? 'active' : ''} onClick={() => onLever('push')}><b>→</b><span>العالي</span><small>ادفع للأمام</small></button>
+        <button type="button" className={movement === 'pull' ? 'active' : ''} onClick={() => onLever('pull')}><b>←</b><span>الوميض</span><small>اسحب للحظة</small></button>
+        <button type="button" className={movement === 'hazard' ? 'active hazard' : 'hazard'} onClick={onHazard}><b>△</b><span>الرباعي</span><small>زر مستقل</small></button>
       </div>
+      <Dashboard mainLight={mainLight} signal={signal}/>
     </section>
   );
 }
@@ -386,8 +570,7 @@ function CurrentScene({
           <ellipse cx="397" cy="326" rx="40" ry="24" fill="url(#currentAmberGlow)" opacity={signal === 'left' ? '.98' : '.10'}/>
           <ellipse cx="503" cy="326" rx="40" ry="24" fill="url(#currentAmberGlow)" opacity={signal === 'right' ? '.98' : '.10'}/>
           <circle cx={signal === 'left' ? 397 : 503} cy="326" r="15" fill="#ffc66e"/>
-          <path d={signal === 'right' ? 'M502 390C558 383 615 350 650 305' : 'M398 390C342 383 285 350 250 305'} fill="none" stroke="#f2b15e" strokeOpacity=".24" strokeWidth="22" strokeLinecap="round"/>
-          <path d={signal === 'right' ? 'M502 390C558 383 615 350 650 305' : 'M398 390C342 383 285 350 250 305'} fill="none" stroke="#f2b15e" strokeWidth="6" strokeLinecap="round"/>
+          <path d={signal === 'right' ? 'M503 312L535 300' : 'M397 312L365 300'} fill="none" stroke="#f2b15e" strokeOpacity=".24" strokeWidth="10" strokeLinecap="round"/>
           <text x="450" y="412" textAnchor="middle" fill="#f6d0a0" fontSize="14" fontWeight="900">الإشارة ظاهرة من الخلف قبل المناورة</text>
         </g>}
 
@@ -429,6 +612,74 @@ function CurrentScene({
   );
 }
 
+
+
+function SceneExplanationRail({
+  mainLight, signal, flashActive,
+}: {
+  mainLight: MainLightKey;
+  signal: SignalKey | null;
+  flashActive: boolean;
+}) {
+  const mode = signal === 'hazard' ? 'hazard' : signal ? 'signal' : flashActive ? 'flash' : mainLight;
+  const items = mode === 'low' ? [
+    ['01', 'مصدر الضوء', 'المصابيح الأمامية من مقدمة السيارة.'],
+    ['02', 'مسار الضوء', 'حزمة قصيرة ومنخفضة تلامس سطح الطريق.'],
+    ['03', 'النتيجة', 'رؤية قريبة مع تقليل الإبهار.'],
+    ['04', 'احفظها', 'منخفض = قريب وموجّه للأسفل.'],
+  ] : mode === 'high' ? [
+    ['01', 'مصدر الضوء', 'المصابيح الأمامية من مقدمة السيارة.'],
+    ['02', 'مسار الضوء', 'حزمة أطول وأعلى من المنخفض.'],
+    ['03', 'شرط الاستخدام', 'طريق مظلم وخالٍ من مستخدمي الطريق المقابلين.'],
+    ['04', 'احفظها', 'عند ظهور مركبة مقابلة: اخفض العالي.'],
+  ] : mode === 'frontFog' ? [
+    ['01', 'مصدر الضوء', 'أضواء منخفضة من مقدمة السيارة.'],
+    ['02', 'مسار الضوء', 'قريب من الأرض حتى لا يتحول الضباب إلى وهج.'],
+    ['03', 'المشكلة', 'الضباب يشتت الضوء ويخفض التباين.'],
+    ['04', 'احفظها', 'ضباب = حزمة منخفضة + سرعة أقل.'],
+  ] : mode === 'signal' ? [
+    ['01', 'المصدر', 'إشارة برتقالية من الخلف في الجهة المطلوبة.'],
+    ['02', 'ما الذي يحدث؟', 'وميض واضح يخبر الآخرين باتجاه المناورة.'],
+    ['03', 'قبل الحركة', 'مرآة ونقطة عمياء ثم الغماز ثم الانتقال الآمن.'],
+    ['04', 'احفظها', 'الغماز يعلن النية ولا يمنح أولوية.'],
+  ] : mode === 'hazard' ? [
+    ['01', 'المصدر', 'مصباحا الإشارة الخلفيان يعملان معاً.'],
+    ['02', 'ما الذي يحدث؟', 'وميض برتقالي متزامن للجهتين.'],
+    ['03', 'ماذا يفهم الآخرون؟', 'هناك حالة غير اعتيادية أو حاجة لتنبيه واضح.'],
+    ['04', 'احفظها', 'الرباعي = تحذير للجهتين معاً.'],
+  ] : mode === 'position' ? [
+    ['01', 'المصدر', 'أضواء الموضع في مقدمة وخلف المركبة حسب التجهيز.'],
+    ['02', 'الهدف', 'إظهار حدود المركبة عندما تقل الإضاءة المحيطة.'],
+    ['03', 'ما لا تفعله', 'ليست بديلاً عن إنارة الطريق ليلاً.'],
+    ['04', 'احفظها', 'Position = أن تُرى.'],
+  ] : mode === 'rearFog' ? [
+    ['01', 'المصدر', 'مصباح الضباب الخلفي الأحمر.'],
+    ['02', 'الهدف', 'جعل المركبة أوضح من الخلف في الرؤية السيئة جداً.'],
+    ['03', 'القاعدة', 'شدته عالية ويُوقف عند تحسن الرؤية.'],
+    ['04', 'احفظها', 'ضباب خلفي = ظهور أوضح من الخلف.'],
+  ] : [
+    ['01', 'الحالة', 'لا توجد وظيفة إنارة مختارة.'],
+    ['02', 'النتيجة', 'لا توجد حزمة ضوء من المصابيح المختارة.'],
+    ['03', 'المقبض', 'الحلقة على وضع OFF.'],
+    ['04', 'احفظها', 'OFF = لا إنارة مختارة من الحلقة.'],
+  ];
+
+  return (
+    <div className="scene-explanation-rail" aria-label="شرح المشهد">
+      <div className="scene-explanation-head">
+        <div><span className="eyebrow">شرح سريع للمشهد</span><b>اسحب الشريط لعرض الفكرة خطوة بخطوة</b></div>
+        <span className="scene-scroll-cue">← سكرول →</span>
+      </div>
+      <div className="scene-explanation-scroll">
+        {items.map(([num, title, body]) => (
+          <article key={num} className="scene-explanation-card">
+            <span>{num}</span><div><strong>{title}</strong><p>{body}</p></div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function ScenarioVisual({
   scenario, onActivate, isActive,
@@ -581,8 +832,7 @@ function ScenarioSvg({
     <image href="/spirit/car-rear.svg" x="324" y="245" width="252" height="126" filter={u('shadow')}/>
     <ellipse cx="398" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".96"/><ellipse cx="502" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".12"/>
     <circle cx="398" cy="326" r="15" fill="#ffc66e"/>
-    <path d="M402 389C347 386 289 350 254 302" fill="none" stroke="#efb05e" strokeOpacity=".26" strokeWidth="22" strokeLinecap="round"/>
-    <path d="M402 389C347 386 289 350 254 302" fill="none" stroke="#efb05e" strokeWidth="6" strokeLinecap="round"/>
+    <path d="M398 312L365 300" fill="none" stroke="#efb05e" strokeOpacity=".24" strokeWidth="10" strokeLinecap="round"/>
     <rect x="42" y="42" width="350" height="64" rx="18" fill="#061117" stroke="#86e4da" strokeOpacity=".24"/>
     <text x="66" y="69" fill="#c8f2ec" fontSize="18" fontWeight="900">تقاطع · الغماز قبل الحركة</text>
     <text x="66" y="91" fill="#a6bbb9" fontSize="11">السائقون خلفك يرون الإشارة قبل الانعطاف</text>
@@ -714,6 +964,34 @@ export default function PracticalInfo() {
     setMobileSheetOpen(true);
     setOncoming(key === 'high');
   };
+
+  const playHazardSound = () => {
+    if (!soundEnabled || typeof window === 'undefined') return;
+    try {
+      const AudioCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtor) return;
+      const ctx = audioRef.current || new AudioCtor();
+      audioRef.current = ctx;
+      if (ctx.state === 'suspended') void ctx.resume();
+      const now = ctx.currentTime;
+      [740, 540].forEach((frequency, index) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(frequency, now + index * 0.11);
+        gain.gain.setValueAtTime(0.0001, now + index * 0.11);
+        gain.gain.exponentialRampToValueAtTime(0.045, now + index * 0.11 + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.11 + 0.075);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + index * 0.11);
+        osc.stop(now + index * 0.11 + 0.09);
+      });
+    } catch {
+      // Audio enhancement only.
+    }
+  };
+
   const chooseSignal = (key: SignalKey) => {
     playClick();
     if (key === 'hazard' && signal === 'hazard') {
@@ -727,6 +1005,7 @@ export default function PracticalInfo() {
     setFlashActive(false);
     setMovement(key);
     setMobileSheetOpen(true);
+    if (key === 'hazard') playHazardSound();
   };
   const triggerFlash = () => {
     playClick();
@@ -786,6 +1065,7 @@ export default function PracticalInfo() {
               <div className="vehicle-lab-head"><div><span className="eyebrow">النتيجة التعليمية</span><h3>{currentTitle}</h3><p>مشهد خارجي يوضح موضع الضوء واتجاهه على الطريق أو خلف السيارة.</p></div></div>
               {mainLight === 'high' && <button type="button" className="inline-scene-control" onClick={() => setOncoming(!oncoming)}>{oncoming ? 'السيارة المقابلة ظاهرة' : 'أظهر سيارة مقابلة'}</button>}
               <CurrentScene mainLight={mainLight} signal={signal} flashActive={flashActive} oncoming={oncoming} setOncoming={setOncoming}/>
+              <SceneExplanationRail mainLight={mainLight} signal={signal} flashActive={flashActive}/>
             </section>
 
             <div className="safety-note"><b>مهم</b><span>المقبض الفعلي وترتيب الوظائف يختلفان بحسب الشركة والموديل. هذه الصفحة تشرح الفكرة الشائعة للتدريب ولا تستبدل دليل سيارة محددة.</span></div>
