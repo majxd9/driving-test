@@ -575,7 +575,7 @@ function CurrentScene({
         </g>}
 
         {mode === 'hazard' && <g>
-          <ellipse cx="397" cy="326" rx="40" ry="24" fill="url(#currentAmberGlow)" opacity=".96"/><ellipse cx="503" cy="326" rx="40" ry="24" fill="url(#currentAmberGlow)" opacity=".96"/>
+          <ellipse cx="397" cy="326" rx="40" ry="24" fill="url(#currentAmberGlow)" opacity=".96" className="scene-lamp-blink"/><ellipse cx="503" cy="326" rx="40" ry="24" fill="url(#currentAmberGlow)" opacity=".96" className="scene-lamp-blink"/>
           <circle cx="397" cy="326" r="15" fill="#ffc66e"/><circle cx="503" cy="326" r="15" fill="#ffc66e"/>
           <circle cx="450" cy="244" r="31" fill="#ffb24d" opacity=".05" stroke="#ffc96f" strokeOpacity=".28" strokeWidth="2.5"/>
           <path d="M450 227L468 257H432Z" fill="none" stroke="#ffc96f" strokeWidth="3.5"/>
@@ -841,7 +841,7 @@ function ScenarioSvg({
   if (scenario.id === 'hazard') return frame(<>
     {base(true)}
     <image href="/spirit/car-rear.svg" x="324" y="245" width="252" height="126" filter={u('shadow')}/>
-    <ellipse cx="398" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".96"/><ellipse cx="502" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".96"/>
+    <ellipse cx="398" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".96" className="scene-lamp-blink"/><ellipse cx="502" cy="326" rx="40" ry="23" fill={u('amber')} opacity=".96" className="scene-lamp-blink"/>
     <circle cx="398" cy="326" r="15" fill="#ffc66e"/><circle cx="502" cy="326" r="15" fill="#ffc66e"/>
     <circle cx="450" cy="244" r="31" fill="#ffb24d" opacity=".05" stroke="#ffc96f" strokeOpacity=".28" strokeWidth="2.5"/>
     <path d="M450 227L468 257H432Z" fill="none" stroke="#ffc96f" strokeWidth="3.5"/>
