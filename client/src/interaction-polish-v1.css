@@ -1,0 +1,51 @@
+/* Interaction + navigation polish: behavior only, no redesign. */
+
+.study-premium-actions,
+.study-premium-action{
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+}
+
+.study-premium-explanation:not(.is-empty){
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:none!important;
+}
+
+.result-hero{
+  position:relative!important;
+}
+
+.result-back-v1{
+  position:absolute!important;
+  top:14px!important;
+  inset-inline-start:14px!important;
+  z-index:20!important;
+  width:42px!important;
+  height:42px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.055)!important;
+  color:#eef7f5!important;
+  font-size:26px!important;
+  line-height:1!important;
+  cursor:pointer!important;
+  touch-action:manipulation!important;
+}
+.result-back-v1:hover{
+  border-color:rgba(45,212,191,.38)!important;
+  background:rgba(45,212,191,.08)!important;
+}
+@media(max-width:700px){
+  .result-back-v1{
+    top:10px!important;
+    inset-inline-start:10px!important;
+    width:38px!important;
+    height:38px!important;
+    font-size:23px!important;
+  }
+}
