@@ -8,6 +8,7 @@ import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 import SpiritTrafficSignal from '../components/SpiritTrafficSignal';
 import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
+import { preloadImage } from '../utils/imagePreload';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -64,6 +65,14 @@ export default function Study() {
   useEffect(() => {
     setSignalState('pending');
   }, [index]);
+
+  useEffect(() => {
+    const nextQuestion = questions[index + 1];
+    if (!nextQuestion?.imageUrl || !shouldShowQuestionImageBeforeAnswer(nextQuestion)) return;
+
+    const imageUrl = resolveQuestionImageUrl(nextQuestion.imageUrl);
+    if (imageUrl) void preloadImage(imageUrl);
+  }, [index, questions]);
 
   const goTo = useCallback((nextIndex: number) => {
     if (
@@ -176,6 +185,7 @@ export default function Study() {
                 sizes="(max-width: 700px) 96vw, 760px"
                 className="study-premium-image-el"
                 objectFit="contain"
+                priority
               />
             </div>
           ) : (
