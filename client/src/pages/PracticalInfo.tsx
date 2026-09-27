@@ -49,7 +49,7 @@ const SCENARIOS: Scenario[] = [
   { id: 'night-oncoming', tag: 'قيادة ليلاً', title: 'مركبة مقابلة على طريق مظلم', control: 'low', goal: 'عند ظهور مركبة مقابلة، لا تبقِ الضوء العالي موجهاً إليها.', steps: ['لاحظ المركبة المقابلة','اخفض العالي','انتقل للمنخفض','حافظ على سرعة مناسبة'], note: 'الهدف هو رؤية الطريق مع تقليل إبهار مستخدم الطريق المقابل.' },
   { id: 'empty-road', tag: 'طريق مظلم', title: 'طريق خالٍ ومدى رؤية أبعد', control: 'high', goal: 'يوضح المشهد فكرة العالي عندما يكون الطريق مظلماً والمجال أمامك مناسباً.', steps: ['تحقق من خلو المجال','فعّل العالي','استفد من المدى الأبعد','اخفضه فور ظهور مستخدم طريق'], note: 'المشهد لا يعني أن العالي مناسب في كل وقت؛ وجود مستخدمي الطريق يغيّر الاختيار.' },
   { id: 'fog', tag: 'ضباب', title: 'ضباب كثيف ومدى رؤية منخفض', control: 'frontFog', goal: 'الرؤية الضعيفة تحتاج إنارة مناسبة وسرعة أقل ومسافة توقف أكبر.', steps: ['خفف السرعة','اختر الإنارة المناسبة','فعّل الضباب إذا كانت السيارة مجهزة','راقب مسافة التوقف'], note: 'المصباح لا يعوض عن خفض السرعة عندما تقل الرؤية.' },
-  { id: 'hazard-stop', tag: 'توقف اضطراري', title: 'مركبة متوقفة في موضع خطر', control: 'hazard', goal: 'ميّز التحذير الرباعي عن غماز الانعطاف: هنا الإشارة للجهتين معاً.', steps: ['توقف بأمان قدر الإمكان','اجعل المركبة واضحة','فعّل التحذير عند الحاجة','اتخذ الإجراء الآمن التالي'], note: 'هذا مشهد تعليمي لفكرة التحذير العام حول مركبة متوقفة.' },
+  { id: 'hazard-stop', tag: 'توقف اضطراري', title: 'مركبة متوقفة في موضع خطر', control: 'hazard', goal: 'ميّز التحذير الرباعي عن غماز الانعطاف: هنا الإشارة للجهتين معاً، لذلك نعرض لك مقدمة السيارة ومؤخرتها.', steps: ['توقف بأمان قدر الإمكان','اجعل المركبة واضحة','فعّل التحذير عند الحاجة','اتخذ الإجراء الآمن التالي'], note: 'هذا مشهد تعليمي لفكرة التحذير العام حول مركبة متوقفة.' },
   { id: 'turn-right', tag: 'تقاطع', title: 'انعطاف يمين', control: 'right', goal: 'ثبّت التسلسل: مراقبة الطريق ثم الغماز والتموضع ثم المناورة.', steps: ['افحص المرآة','استخدم غماز اليمين','تموضع ضمن المسار الصحيح','انعطف عندما يكون آمناً'], note: 'الإشارة تنبه الآخرين ولا تغني عن مراقبة الطريق.' },
   { id: 'rear-fog', tag: 'رؤية شديدة السوء', title: 'استخدام الضباب الخلفي', control: 'rearFog', goal: 'الضباب الخلفي يجعل المركبة أوضح من الخلف عندما تكون الرؤية سيئة جداً.', steps: ['تحقق من سوء الرؤية','فعّل الضباب الخلفي عند الحاجة','راقب السائقين خلفك','أوقفه عند تحسن الرؤية'], note: 'ضوء قوي مخصص لتحسين ظهور المركبة، وليس للاستخدام الدائم.' },
   { id: 'park-night', tag: 'وقوف ليلاً', title: 'مركبة متوقفة وتحتاج أن تكون واضحة', control: 'position', goal: 'أضواء الموضع تساعد على إظهار حدود المركبة ولا تستبدل إنارة الطريق.', steps: ['اختر مكان الوقوف الآمن','استخدم إنارة الموضع إذا لزم','اجعل المركبة واضحة','لا تعتمد عليها لإنارة الطريق'], note: 'التشغيل الفعلي يعتمد أيضاً على قواعد المكان وتجهيز السيارة.' },
@@ -486,39 +486,192 @@ function CurrentScene({ mainLight, signal, flashActive, oncoming, setOncoming }:
   mainLight: MainLightKey; signal: SignalKey | null; flashActive:boolean; oncoming:boolean; setOncoming:(v:boolean)=>void;
 }) {
   const mode = signal === 'hazard' ? 'hazard' : signal ? 'signal' : flashActive ? 'flash' : mainLight;
-  const rear = mode === 'position' || mode === 'signal' || mode === 'hazard' || mode === 'rearFog';
-  const title = mode === 'low' ? 'الضوء المنخفض' : mode === 'high' ? 'الضوء العالي' : mode === 'frontFog' ? 'أضواء الضباب' : mode === 'position' ? 'أضواء الموضع' : mode === 'signal' ? (signal === 'right' ? 'الغماز يمين' : 'الغماز يسار') : mode === 'hazard' ? 'التحذير الرباعي' : mode === 'rearFog' ? 'الضباب الخلفي' : mode === 'flash' ? 'وميض العالي' : 'إيقاف';
-  const body = mode === 'high' ? (oncoming ? 'ظهرت مركبة مقابلة — اخفض العالي فوراً.' : 'الحزمة تتجه من المصابيح إلى الطريق أمام السيارة.') : mode === 'low' ? 'الحزمة قصيرة ومنخفضة أمام السيارة لتقليل الإبهار.' : mode === 'frontFog' ? 'حزمة منخفضة وقريبة تساعد على إبقاء الطريق أوضح في الضباب.' : mode === 'position' ? 'ضوء حضور يوضح المركبة من الخلف في الإضاءة المحيطة الضعيفة.' : mode === 'signal' ? 'الإشارة الخلفية الواضحة تبيّن اتجاه المناورة.' : mode === 'hazard' ? 'الإشارتان الخلفيتان تومضان معاً للتحذير.' : mode === 'rearFog' ? 'ضوء أحمر قوي يجعل المركبة أوضح من الخلف.' : mode === 'flash' ? 'ومضة قصيرة من العالي، ثم تعود الإنارة إلى حالتها السابقة.' : 'لا توجد حزمة ضوء مختارة من وظائف المقبض.';
+  const rear = mode === 'signal' || mode === 'rearFog' || mode === 'position';
+  const dualPerspective = mode === 'hazard';
+  const title =
+    mode === 'low' ? 'الضوء المنخفض' :
+    mode === 'high' ? 'الضوء العالي' :
+    mode === 'frontFog' ? 'أضواء الضباب' :
+    mode === 'position' ? 'أضواء الموضع' :
+    mode === 'signal' ? (signal === 'right' ? 'الغماز يمين' : 'الغماز يسار') :
+    mode === 'hazard' ? 'التحذير الرباعي' :
+    mode === 'rearFog' ? 'الضباب الخلفي' :
+    mode === 'flash' ? 'وميض العالي' : 'إيقاف';
+
+  const body =
+    mode === 'high'
+      ? (oncoming ? 'ظهرت مركبة مقابلة — اخفض العالي فوراً.' : 'الحزمة البعيدة تخرج من المصابيح الأمامية وتمتد على الطريق أمام السيارة.')
+      : mode === 'low'
+      ? 'الحزمة قصيرة ومنخفضة، ومصدرها المصابيح الأمامية على مقدمة السيارة.'
+      : mode === 'frontFog'
+      ? 'الضوء قريب جداً من سطح الطريق لتقليل انعكاس الضباب والوهج.'
+      : mode === 'position'
+      ? 'هنا نُظهر مؤخرة السيارة لأن الهدف التعليمي هو أن يراك مستخدم الطريق من الخلف.'
+      : mode === 'signal'
+      ? 'الغماز هنا يظهر على مؤخرة السيارة في الجهة المطلوبة ليكون اتجاه المناورة واضحاً لمن خلفك.'
+      : mode === 'hazard'
+      ? 'التحذير الرباعي يعمل للجهتين؛ لذلك نعرض مقدمة السيارة ومؤخرتها معاً بدل إخفاء أحد الوجهين.'
+      : mode === 'rearFog'
+      ? 'الضباب الخلفي أحمر قوي ومصدره مؤخرة السيارة، لذلك ينتشر الضوء خلفها باتجاه مستخدمي الطريق.'
+      : mode === 'flash'
+      ? 'وميض سريع من المصابيح الأمامية، ثم تعود السيارة إلى حالة الإنارة السابقة.'
+      : 'لا توجد حزمة ضوء مختارة من وظائف المقبض.';
+
   return (
     <div className='result-scene-wrap current-scene-premium'>
-      <div className='current-scene-topbar'><span className='scene-live-dot'/><b>{title}</b><small>{rear ? 'من الخلف' : 'من الأمام'}</small>{mode === 'high' && <button type='button' className='scene-inline-action' onClick={()=>setOncoming(!oncoming)}>{oncoming ? 'إخفاء المركبة المقابلة' : 'إظهار مركبة مقابلة'}</button>}</div>
+      <div className='current-scene-topbar'>
+        <span className='scene-live-dot'/>
+        <b>{title}</b>
+        <small>{dualPerspective ? 'الوجه الأمامي + الخلفي' : rear ? 'من الخلف' : 'من الأمام'}</small>
+        {mode === 'high' && <button type='button' className='scene-inline-action' onClick={()=>setOncoming(!oncoming)}>{oncoming ? 'إخفاء المركبة المقابلة' : 'إظهار مركبة مقابلة'}</button>}
+      </div>
+
       <div className='current-scene-stage'>
-        <svg className='current-scene-svg premium-scene-svg' viewBox='0 0 900 470' role='img' aria-label={title}>
-          <defs>
-            <linearGradient id='currentNightSky' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#02070b'/><stop offset='.58' stopColor='#07151c'/><stop offset='1' stopColor='#0d252b'/></linearGradient>
-            <linearGradient id='currentDuskSky' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#20383a'/><stop offset='.5' stopColor='#556963'/><stop offset='1' stopColor='#314640'/></linearGradient>
-            <linearGradient id='currentRoad' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#3a4d52'/><stop offset='.42' stopColor='#1a2c32'/><stop offset='1' stopColor='#050b0f'/></linearGradient>
-            <radialGradient id='currentHeadGlow'><stop stopColor='#fffef0' stopOpacity='.95'/><stop offset='.34' stopColor='#fff1a7' stopOpacity='.48'/><stop offset='1' stopColor='#fff1a7' stopOpacity='0'/></radialGradient>
-            <radialGradient id='currentAmberGlow'><stop stopColor='#ffd17e' stopOpacity='.98'/><stop offset='.35' stopColor='#ffae42' stopOpacity='.42'/><stop offset='1' stopColor='#ff9c30' stopOpacity='0'/></radialGradient>
-            <radialGradient id='currentRedGlow'><stop stopColor='#ff9ba0' stopOpacity='.95'/><stop offset='.30' stopColor='#ff4353' stopOpacity='.45'/><stop offset='1' stopColor='#ff3147' stopOpacity='0'/></radialGradient>
-            <linearGradient id='currentBeamL' x1='0' y1='1' x2='1' y2='0'><stop stopColor='#fff8cf' stopOpacity='0'/><stop offset='.42' stopColor='#fff2ac' stopOpacity='.10'/><stop offset='1' stopColor='#fff6c0' stopOpacity='.48'/></linearGradient>
-            <linearGradient id='currentBeamR' x1='1' y1='1' x2='0' y2='0'><stop stopColor='#fff8cf' stopOpacity='0'/><stop offset='.42' stopColor='#fff2ac' stopOpacity='.10'/><stop offset='1' stopColor='#fff6c0' stopOpacity='.48'/></linearGradient>
-            <filter id='currentBlur18'><feGaussianBlur stdDeviation='18'/></filter><filter id='currentBlur7'><feGaussianBlur stdDeviation='7'/></filter><filter id='currentCarShadow'><feDropShadow dx='0' dy='20' stdDeviation='18' floodColor='#000' floodOpacity='.55'/></filter>
-          </defs>
-          <rect width='900' height='470' fill={rear && mode === 'position' ? 'url(#currentDuskSky)' : 'url(#currentNightSky)'}/><circle cx='760' cy='86' r='62' fill={mode === 'position' ? '#efe6b5' : '#dce9e2'} opacity={mode === 'position' ? '.20' : '.045'}/>
-          <path d='M0 470L182 132H718L900 470Z' fill='url(#currentRoad)'/><path d='M450 138V470' stroke='#dbe7e4' strokeOpacity='.20' strokeWidth='4' strokeDasharray='30 21'/><path d='M292 470L356 182M608 470L544 182' stroke='#dbe7e4' strokeOpacity='.13' strokeWidth='4'/>
-          {rear && <g className='rear-direction-cues'><path d='M450 445L438 428H446V408H454V428H462Z' fill='#dce9e5' fillOpacity='.18'/><path d='M450 390L438 373H446V353H454V373H462Z' fill='#dce9e5' fillOpacity='.12'/><path d='M450 340L438 323H446V306H454V323H462Z' fill='#dce9e5' fillOpacity='.08'/></g>}
-          {(mode === 'low' || mode === 'high' || mode === 'flash' || mode === 'frontFog') && <><path d={mode === 'high' ? 'M360 326L125 140L430 316L397 335Z' : mode === 'frontFog' ? 'M360 326L280 245L414 311L397 335Z' : 'M360 326L220 220L415 310L397 335Z'} fill='url(#currentBeamL)' filter='url(#currentBlur7)' opacity={mode === 'frontFog' ? '.70' : '.88'}/><path d={mode === 'high' ? 'M540 326L775 140L470 316L503 335Z' : mode === 'frontFog' ? 'M540 326L620 245L486 311L503 335Z' : 'M540 326L680 220L485 310L503 335Z'} fill='url(#currentBeamR)' filter='url(#currentBlur7)' opacity={mode === 'frontFog' ? '.70' : '.88'}/><ellipse cx='360' cy='324' rx='34' ry='20' fill='url(#currentHeadGlow)'/><ellipse cx='540' cy='324' rx='34' ry='20' fill='url(#currentHeadGlow)'/></>}
-          {mode === 'frontFog' && <g opacity='.18'><rect x='0' y='86' width='900' height='50' fill='#f2f7f5'/><rect x='0' y='164' width='900' height='48' fill='#f2f7f5'/><rect x='0' y='242' width='900' height='40' fill='#f2f7f5'/><circle cx='130' cy='116' r='28' fill='#fff'/><circle cx='300' cy='195' r='20' fill='#fff'/><circle cx='680' cy='145' r='32' fill='#fff'/><circle cx='790' cy='214' r='25' fill='#fff'/></g>}
-          <image href={rear ? '/spirit/car-rear.svg' : '/spirit/car-front-realistic.svg'} x='300' y='220' width='300' height='171' filter='url(#currentCarShadow)'/>
-          {mode === 'position' && <g><ellipse cx='360' cy='324' rx='42' ry='25' fill='url(#currentRedGlow)' opacity='.18'/><ellipse cx='540' cy='324' rx='42' ry='25' fill='url(#currentRedGlow)' opacity='.18'/></g>}
-          {mode === 'signal' && <g><ellipse cx='360' cy='324' rx='52' ry='30' fill='url(#currentAmberGlow)' opacity={signal === 'left' ? '.98' : '.08'}/><ellipse cx='540' cy='324' rx='52' ry='30' fill='url(#currentAmberGlow)' opacity={signal === 'right' ? '.98' : '.08'}/><circle cx={signal === 'left' ? 360 : 540} cy='324' r='13' fill='#ffc66e'/></g>}
-          {mode === 'hazard' && <g className='scene-hazard-lamps'><ellipse cx='360' cy='324' rx='52' ry='30' fill='url(#currentAmberGlow)' opacity='.98'/><ellipse cx='540' cy='324' rx='52' ry='30' fill='url(#currentAmberGlow)' opacity='.98'/><circle cx='360' cy='324' r='13' fill='#ffc66e'/><circle cx='540' cy='324' r='13' fill='#ffc66e'/></g>}
-          {mode === 'rearFog' && <g><ellipse cx='450' cy='346' rx='175' ry='66' fill='url(#currentRedGlow)' opacity='.18' filter='url(#currentBlur18)'/><rect x='442' y='307' width='16' height='31' rx='7' fill='#ff4d59'/></g>}
-          {mode === 'high' && oncoming && <g><ellipse cx='692' cy='142' rx='88' ry='52' fill='#fff4c8' opacity='.20' filter='url(#currentBlur18)'/><image href='/spirit/car-front-realistic.svg' x='648' y='105' width='88' height='50'/></g>}
-        </svg>
-        <SceneCallout title={mode === 'high' && oncoming ? 'مركبة مقابلة · اخفض العالي' : mode === 'high' ? 'طريق مظلم · مدى أبعد' : title} body={body} tone={mode === 'high' && oncoming ? 'warning' : mode === 'hazard' ? 'amber' : 'default'}/>
-        <span className='scene-direction-cue'>{rear ? 'اتجاه الضوء: خلف السيارة → إلى من خلفها' : 'اتجاه الحزمة: من السيارة → إلى الطريق أمامها'}</span>
+        {dualPerspective ? (
+          <svg className='current-scene-svg premium-scene-svg hazard-dual-scene' viewBox='0 0 900 470' role='img' aria-label='التحذير الرباعي من الأمام والخلف'>
+            <defs>
+              <linearGradient id='hazardDualSky' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#02070b'/><stop offset='.55' stopColor='#07151c'/><stop offset='1' stopColor='#10262c'/></linearGradient>
+              <linearGradient id='hazardDualRoad' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#344a51'/><stop offset='.45' stopColor='#172a31'/><stop offset='1' stopColor='#050b0f'/></linearGradient>
+              <radialGradient id='hazardAmberDual'><stop stopColor='#fff1c6' stopOpacity='.98'/><stop offset='.25' stopColor='#ffc14c' stopOpacity='.80'/><stop offset='.62' stopColor='#ff9424' stopOpacity='.26'/><stop offset='1' stopColor='#ff9424' stopOpacity='0'/></radialGradient>
+              <filter id='hazardDualBlur'><feGaussianBlur stdDeviation='8'/></filter>
+              <filter id='hazardDualShadow'><feDropShadow dx='0' dy='18' stdDeviation='16' floodColor='#000' floodOpacity='.58'/></filter>
+            </defs>
+            <rect width='900' height='470' fill='url(#hazardDualSky)'/>
+            <path d='M0 470L80 150H360L450 470Z' fill='url(#hazardDualRoad)'/>
+            <path d='M450 470L540 150H820L900 470Z' fill='url(#hazardDualRoad)'/>
+            <path d='M450 470V150' stroke='#e2edea' strokeOpacity='.10' strokeWidth='3'/>
+            <path d='M220 470L220 170M680 470L680 170' stroke='#dbe8e5' strokeOpacity='.09' strokeWidth='3' strokeDasharray='22 18'/>
+            <rect x='94' y='28' width='250' height='34' rx='17' fill='#030c11' fillOpacity='.90' stroke='#84e6dc' strokeOpacity='.18'/>
+            <rect x='556' y='28' width='250' height='34' rx='17' fill='#030c11' fillOpacity='.90' stroke='#84e6dc' strokeOpacity='.18'/>
+            <text x='219' y='50' textAnchor='middle' fill='#dffaf5' fontSize='13' fontWeight='900'>مقدمة السيارة</text>
+            <text x='681' y='50' textAnchor='middle' fill='#dffaf5' fontSize='13' fontWeight='900'>مؤخرة السيارة</text>
+
+            <ellipse className='scene-hazard-lamps' cx='169' cy='342' rx='58' ry='30' fill='url(#hazardAmberDual)' filter='url(#hazardDualBlur)'/>
+            <ellipse className='scene-hazard-lamps' cx='284' cy='342' rx='58' ry='30' fill='url(#hazardAmberDual)' filter='url(#hazardDualBlur)'/>
+            <ellipse className='scene-hazard-lamps' cx='610' cy='326' rx='52' ry='28' fill='url(#hazardAmberDual)' filter='url(#hazardDualBlur)'/>
+            <ellipse className='scene-hazard-lamps' cx='790' cy='326' rx='52' ry='28' fill='url(#hazardAmberDual)' filter='url(#hazardDualBlur)'/>
+
+            <image href='/spirit/car-front-training.svg' x='88' y='205' width='278' height='159' filter='url(#hazardDualShadow)'/>
+            <image href='/spirit/car-rear.svg' x='556' y='218' width='288' height='144' filter='url(#hazardDualShadow)'/>
+
+            <circle className='scene-hazard-lamps' cx='169' cy='342' r='12' fill='#ffc85d'/>
+            <circle className='scene-hazard-lamps' cx='284' cy='342' r='12' fill='#ffc85d'/>
+            <circle className='scene-hazard-lamps' cx='610' cy='326' r='12' fill='#ffc85d'/>
+            <circle className='scene-hazard-lamps' cx='790' cy='326' r='12' fill='#ffc85d'/>
+
+            <path d='M224 388V430' stroke='#f4faf7' strokeOpacity='.18' strokeWidth='3' strokeDasharray='8 7'/>
+            <path d='M676 382V424' stroke='#f4faf7' strokeOpacity='.18' strokeWidth='3' strokeDasharray='8 7'/>
+            <text x='225' y='451' textAnchor='middle' fill='#9db6b4' fontSize='10' fontWeight='700'>إشارات أمامية</text>
+            <text x='676' y='451' textAnchor='middle' fill='#9db6b4' fontSize='10' fontWeight='700'>إشارات خلفية</text>
+          </svg>
+        ) : (
+          <svg className='current-scene-svg premium-scene-svg' viewBox='0 0 900 470' role='img' aria-label={title}>
+            <defs>
+              <linearGradient id='currentNightSky' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#02070b'/><stop offset='.58' stopColor='#07151c'/><stop offset='1' stopColor='#0d252b'/></linearGradient>
+              <linearGradient id='currentDuskSky' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#20383a'/><stop offset='.5' stopColor='#556963'/><stop offset='1' stopColor='#314640'/></linearGradient>
+              <linearGradient id='currentRoad' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#3a4d52'/><stop offset='.42' stopColor='#1a2c32'/><stop offset='1' stopColor='#050b0f'/></linearGradient>
+              <radialGradient id='currentHeadGlow'><stop stopColor='#fffef0' stopOpacity='.98'/><stop offset='.28' stopColor='#fff1a7' stopOpacity='.52'/><stop offset='1' stopColor='#fff1a7' stopOpacity='0'/></radialGradient>
+              <radialGradient id='currentAmberGlow'><stop stopColor='#ffd17e' stopOpacity='.98'/><stop offset='.35' stopColor='#ffae42' stopOpacity='.42'/><stop offset='1' stopColor='#ff9c30' stopOpacity='0'/></radialGradient>
+              <radialGradient id='currentRedGlow'><stop stopColor='#ff9ba0' stopOpacity='.95'/><stop offset='.30' stopColor='#ff4353' stopOpacity='.45'/><stop offset='1' stopColor='#ff3147' stopOpacity='0'/></radialGradient>
+              <linearGradient id='currentLowBeam' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#fff7ca' stopOpacity='.02'/><stop offset='.45' stopColor='#fff4bb' stopOpacity='.18'/><stop offset='1' stopColor='#fff9d3' stopOpacity='.54'/></linearGradient>
+              <linearGradient id='currentHighBeam' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#fffef1' stopOpacity='.06'/><stop offset='.42' stopColor='#fff3ad' stopOpacity='.26'/><stop offset='1' stopColor='#fff7c4' stopOpacity='.68'/></linearGradient>
+              <linearGradient id='currentFogBeam' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#fffdf0' stopOpacity='.02'/><stop offset='.55' stopColor='#fff7c7' stopOpacity='.18'/><stop offset='1' stopColor='#fff9da' stopOpacity='.42'/></linearGradient>
+              <filter id='currentBlur18'><feGaussianBlur stdDeviation='18'/></filter>
+              <filter id='currentBlur7'><feGaussianBlur stdDeviation='7'/></filter>
+              <filter id='currentCarShadow'><feDropShadow dx='0' dy='20' stdDeviation='18' floodColor='#000' floodOpacity='.55'/></filter>
+            </defs>
+
+            <rect width='900' height='470' fill={mode === 'position' ? 'url(#currentDuskSky)' : 'url(#currentNightSky)'}/>
+            <circle cx='760' cy='86' r='62' fill={mode === 'position' ? '#efe6b5' : '#dce9e2'} opacity={mode === 'position' ? '.20' : '.045'}/>
+            <path d='M0 470L182 132H718L900 470Z' fill='url(#currentRoad)'/>
+            <path d='M450 138V470' stroke='#dbe7e4' strokeOpacity='.20' strokeWidth='4' strokeDasharray='30 21'/>
+            <path d='M292 470L356 182M608 470L544 182' stroke='#dbe7e4' strokeOpacity='.13' strokeWidth='4'/>
+            {rear && <g className='rear-direction-cues'>
+              <path d='M450 445L438 428H446V408H454V428H462Z' fill='#dce9e5' fillOpacity='.18'/>
+              <path d='M450 390L438 373H446V353H454V373H462Z' fill='#dce9e5' fillOpacity='.12'/>
+              <path d='M450 340L438 323H446V306H454V323H462Z' fill='#dce9e5' fillOpacity='.08'/>
+            </g>}
+
+            {(mode === 'low' || mode === 'high' || mode === 'flash' || mode === 'frontFog') && <>
+              <path
+                d={mode === 'high'
+                  ? 'M360 327L115 135L350 204L399 335Z'
+                  : mode === 'frontFog'
+                  ? 'M360 327L268 252L347 269L399 335Z'
+                  : 'M360 327L222 224L341 237L399 335Z'}
+                fill={mode === 'high' ? 'url(#currentHighBeam)' : mode === 'frontFog' ? 'url(#currentFogBeam)' : 'url(#currentLowBeam)'}
+                filter='url(#currentBlur7)'
+                opacity={mode === 'frontFog' ? '.82' : mode === 'high' ? '.92' : '.88'}
+              />
+              <path
+                d={mode === 'high'
+                  ? 'M540 327L785 135L550 204L501 335Z'
+                  : mode === 'frontFog'
+                  ? 'M540 327L632 252L553 269L501 335Z'
+                  : 'M540 327L678 224L559 237L501 335Z'}
+                fill={mode === 'high' ? 'url(#currentHighBeam)' : mode === 'frontFog' ? 'url(#currentFogBeam)' : 'url(#currentLowBeam)'}
+                filter='url(#currentBlur7)'
+                opacity={mode === 'frontFog' ? '.82' : mode === 'high' ? '.92' : '.88'}
+              />
+              <path
+                d={mode === 'high' ? 'M360 327L115 135' : mode === 'frontFog' ? 'M360 327L268 252' : 'M360 327L222 224'}
+                stroke='#fff8cc' strokeOpacity={mode === 'high' ? '.30' : '.16'} strokeWidth='2.5' strokeLinecap='round'
+              />
+              <path
+                d={mode === 'high' ? 'M540 327L785 135' : mode === 'frontFog' ? 'M540 327L632 252' : 'M540 327L678 224'}
+                stroke='#fff8cc' strokeOpacity={mode === 'high' ? '.30' : '.16'} strokeWidth='2.5' strokeLinecap='round'
+              />
+              <ellipse cx='360' cy='327' rx='35' ry='20' fill='url(#currentHeadGlow)'/>
+              <ellipse cx='540' cy='327' rx='35' ry='20' fill='url(#currentHeadGlow)'/>
+            </>}
+
+            {mode === 'frontFog' && <g opacity='.16'>
+              <rect x='0' y='86' width='900' height='50' fill='#f2f7f5'/>
+              <rect x='0' y='164' width='900' height='48' fill='#f2f7f5'/>
+              <rect x='0' y='242' width='900' height='40' fill='#f2f7f5'/>
+              <circle cx='130' cy='116' r='28' fill='#fff'/>
+              <circle cx='300' cy='195' r='20' fill='#fff'/>
+              <circle cx='680' cy='145' r='32' fill='#fff'/>
+              <circle cx='790' cy='214' r='25' fill='#fff'/>
+            </g>}
+
+            <image href={rear ? '/spirit/car-rear.svg' : '/spirit/car-front-training.svg'} x='300' y={rear ? '220' : '215'} width='300' height='171' filter='url(#currentCarShadow)'/>
+
+            {mode === 'position' && <g>
+              <ellipse cx='362' cy='328' rx='42' ry='24' fill='url(#currentRedGlow)' opacity='.20'/>
+              <ellipse cx='538' cy='328' rx='42' ry='24' fill='url(#currentRedGlow)' opacity='.20'/>
+            </g>}
+
+            {mode === 'signal' && <g className='scene-signal-lamps'>
+              <ellipse cx='362' cy='328' rx='53' ry='30' fill='url(#currentAmberGlow)' opacity={signal === 'left' ? '.98' : '.08'}/>
+              <ellipse cx='538' cy='328' rx='53' ry='30' fill='url(#currentAmberGlow)' opacity={signal === 'right' ? '.98' : '.08'}/>
+              <circle cx={signal === 'left' ? 362 : 538} cy='328' r='12' fill='#ffc66e'/>
+            </g>}
+
+            {mode === 'rearFog' && <g>
+              <ellipse cx='450' cy='346' rx='195' ry='70' fill='url(#currentRedGlow)' opacity='.20' filter='url(#currentBlur18)'/>
+              <path d='M450 332L325 455L575 455Z' fill='#ff4b5a' fillOpacity='.055' filter='url(#currentBlur7)'/>
+              <rect x='442' y='310' width='16' height='31' rx='7' fill='#ff4d59'/>
+              <ellipse cx='450' cy='328' rx='32' ry='20' fill='url(#currentRedGlow)' opacity='.46'/>
+            </g>}
+
+            {mode === 'high' && oncoming && <g>
+              <ellipse cx='692' cy='139' rx='88' ry='52' fill='#fff4c8' opacity='.20' filter='url(#currentBlur18)'/>
+              <image href='/spirit/car-front-training.svg' x='645' y='104' width='94' height='54'/>
+              <circle cx='660' cy='137' r='12' fill='#fff4c2' opacity='.55' filter='url(#currentBlur7)'/>
+              <circle cx='724' cy='137' r='12' fill='#fff4c2' opacity='.55' filter='url(#currentBlur7)'/>
+            </g>}
+          </svg>
+        )}
+
+        <SceneCallout
+          title={dualPerspective ? 'الرباعي · الوجهين معاً' : mode === 'high' && oncoming ? 'مركبة مقابلة · اخفض العالي' : mode === 'high' ? 'طريق مظلم · مدى أبعد' : title}
+          body={body}
+          tone={mode === 'high' && oncoming ? 'warning' : mode === 'hazard' ? 'amber' : 'default'}
+        />
+        <span className='scene-direction-cue'>
+          {dualPerspective ? 'الرباعي = إشارات تحذير أمامية وخلفية تعمل معاً' : rear ? 'أنت ترى مؤخرة السيارة · الضوء يخرج من الخلف باتجاه مستخدمي الطريق' : 'أنت ترى مقدمة السيارة · الحزمة تخرج من المصابيح إلى الطريق أمامها'}
+        </span>
       </div>
     </div>
   );
@@ -616,20 +769,159 @@ function ScenarioVisual({ scenario, onActivate, isActive }: { scenario: Scenario
 function ScenarioSvg({ scenario, oncoming }: { scenario: Scenario; oncoming: boolean }) {
   const id='scenario_'+scenario.id.replace(/[^a-zA-Z0-9_-]/g,'_');
   const u=(name:string)=>'url(#'+id+'_'+name+')';
-  const defs=<defs><linearGradient id={id+'_night'} x1='0' y1='0' x2='0' y2='1'><stop stopColor='#02070b'/><stop offset='.58' stopColor='#07151c'/><stop offset='1' stopColor='#0d252b'/></linearGradient><linearGradient id={id+'_dusk'} x1='0' y1='0' x2='0' y2='1'><stop stopColor='#20383a'/><stop offset='.5' stopColor='#556963'/><stop offset='1' stopColor='#314640'/></linearGradient><linearGradient id={id+'_road'} x1='0' y1='0' x2='0' y2='1'><stop stopColor='#3a4d52'/><stop offset='.42' stopColor='#192b31'/><stop offset='1' stopColor='#050a0d'/></linearGradient><radialGradient id={id+'_lamp'}><stop stopColor='#fffef1' stopOpacity='.95'/><stop offset='.36' stopColor='#fff0a0' stopOpacity='.48'/><stop offset='1' stopColor='#fff0a0' stopOpacity='0'/></radialGradient><radialGradient id={id+'_amber'}><stop stopColor='#ffd17e' stopOpacity='.98'/><stop offset='.34' stopColor='#ffad42' stopOpacity='.44'/><stop offset='1' stopColor='#ff9a2f' stopOpacity='0'/></radialGradient><radialGradient id={id+'_red'}><stop stopColor='#ff9ba0' stopOpacity='.95'/><stop offset='.32' stopColor='#ff4353' stopOpacity='.44'/><stop offset='1' stopColor='#ff3147' stopOpacity='0'/></radialGradient><filter id={id+'_blur18'}><feGaussianBlur stdDeviation='18'/></filter><filter id={id+'_blur7'}><feGaussianBlur stdDeviation='7'/></filter><filter id={id+'_shadow'}><feDropShadow dx='0' dy='16' stdDeviation='15' floodColor='#000' floodOpacity='.52'/></filter></defs>;
-  const road=(rear=false,dusk=false)=><><rect width='900' height='470' fill={dusk?u('dusk'):u('night')}/><path d='M0 470L184 132H716L900 470Z' fill={u('road')}/><path d='M450 138V470' stroke='#dbe7e4' strokeOpacity={rear?'.23':'.18'} strokeWidth='4' strokeDasharray='29 21'/><path d='M292 470L355 184M608 470L545 184' stroke='#e6efec' strokeOpacity={rear?'.13':'.07'} strokeWidth={rear?'4':'3'}/>{rear&&<g className='rear-direction-cues'><path d='M450 444L437 425H446V404H454V425H463Z' fill='#dce9e5' fillOpacity='.18'/><path d='M450 389L437 370H446V350H454V370H463Z' fill='#dce9e5' fillOpacity='.12'/></g>}</>;
-  const carTop=(x:number,y:number,w:number,h:number,rear=true,opacity=1)=><g transform={'translate('+x+' '+y+')'} opacity={opacity}><rect width={w} height={h} rx={Math.min(12,h*.16)} fill='#26343b' stroke='#94a5ab' strokeOpacity='.35'/><rect x={w*.14} y={h*.16} width={w*.72} height={h*.28} rx='8' fill='#0a161d'/><rect x={w*.12} y={h*.55} width={w*.18} height={h*.15} rx='3' fill={rear?'#a52e3d':'#fff1bd'}/><rect x={w*.70} y={h*.55} width={w*.18} height={h*.15} rx='3' fill={rear?'#a52e3d':'#fff1bd'}/></g>;
+  const defs=<defs>
+    <linearGradient id={id+'_night'} x1='0' y1='0' x2='0' y2='1'><stop stopColor='#02070b'/><stop offset='.58' stopColor='#07151c'/><stop offset='1' stopColor='#0d252b'/></linearGradient>
+    <linearGradient id={id+'_dusk'} x1='0' y1='0' x2='0' y2='1'><stop stopColor='#20383a'/><stop offset='.5' stopColor='#556963'/><stop offset='1' stopColor='#314640'/></linearGradient>
+    <linearGradient id={id+'_road'} x1='0' y1='0' x2='0' y2='1'><stop stopColor='#3a4d52'/><stop offset='.42' stopColor='#192b31'/><stop offset='1' stopColor='#050a0d'/></linearGradient>
+    <radialGradient id={id+'_lamp'}><stop stopColor='#fffef1' stopOpacity='.96'/><stop offset='.36' stopColor='#fff0a0' stopOpacity='.50'/><stop offset='1' stopColor='#fff0a0' stopOpacity='0'/></radialGradient>
+    <radialGradient id={id+'_amber'}><stop stopColor='#ffd17e' stopOpacity='.98'/><stop offset='.34' stopColor='#ffad42' stopOpacity='.48'/><stop offset='1' stopColor='#ff9a2f' stopOpacity='0'/></radialGradient>
+    <radialGradient id={id+'_red'}><stop stopColor='#ff9ba0' stopOpacity='.95'/><stop offset='.32' stopColor='#ff4353' stopOpacity='.44'/><stop offset='1' stopColor='#ff3147' stopOpacity='0'/></radialGradient>
+    <filter id={id+'_blur18'}><feGaussianBlur stdDeviation='18'/></filter>
+    <filter id={id+'_blur7'}><feGaussianBlur stdDeviation='7'/></filter>
+    <filter id={id+'_shadow'}><feDropShadow dx='0' dy='16' stdDeviation='15' floodColor='#000' floodOpacity='.52'/></filter>
+  </defs>;
+
+  const road=(rear=false,dusk=false)=><>
+    <rect width='900' height='470' fill={dusk?u('dusk'):u('night')}/>
+    <path d='M0 470L184 132H716L900 470Z' fill={u('road')}/>
+    <path d='M450 138V470' stroke='#dbe8e5' strokeOpacity={rear?'.24':'.18'} strokeWidth='4' strokeDasharray='29 21'/>
+    <path d='M292 470L355 184M608 470L545 184' stroke='#e6efec' strokeOpacity={rear?'.14':'.07'} strokeWidth={rear?'4':'3'}/>
+    {rear&&<g className='rear-direction-cues'>
+      <path d='M450 444L437 425H446V404H454V425H463Z' fill='#dce9e5' fillOpacity='.18'/>
+      <path d='M450 389L437 370H446V350H454V370H463Z' fill='#dce9e5' fillOpacity='.12'/>
+    </g>}
+  </>;
+
+  const rearCar=(x:number,y:number,w:number,h:number,opacity=1)=><image href='/spirit/car-rear.svg' x={x} y={y} width={w} height={h} opacity={opacity} filter={u('shadow')}/>;
+  const frontCar=(x:number,y:number,w:number,h:number,opacity=1)=><image href='/spirit/car-front-training.svg' x={x} y={y} width={w} height={h} opacity={opacity} filter={u('shadow')}/>;
   const frame=(children:ReactNode)=><div className='scenario-svg-frame scene-frame-premium'><svg className='scenario-svg' viewBox='0 0 900 470' role='img' aria-label={scenario.title}>{defs}{children}<rect x='18' y='440' width='864' height='18' rx='9' fill='#02080b' opacity='.90'/></svg></div>;
-  if(scenario.id==='roundabout-right') return <div className='scenario-svg-frame scene-frame-premium'><svg className='scenario-svg' viewBox='0 0 900 470' role='img' aria-label={scenario.title}>{defs}<rect width='900' height='470' fill='#081219'/><circle cx='450' cy='235' r='138' fill='#152831' stroke='#3e5960' strokeWidth='12'/><circle cx='450' cy='235' r='78' fill='#0a151b' stroke='#6f8589' strokeOpacity='.26' strokeWidth='6'/><path d='M450 0V97M450 373V470M0 235H312M588 235H900' stroke='#dbe8e5' strokeOpacity='.20' strokeWidth='38'/><path d='M450 0V110M450 360V470M0 235H315M585 235H900' stroke='#dbe8e5' strokeOpacity='.13' strokeWidth='4' strokeDasharray='24 17'/><g transform='translate(399 338) rotate(-20)'><rect width='102' height='58' rx='17' fill='#2b3840' stroke='#9eafb4' strokeOpacity='.42'/><rect x='17' y='9' width='68' height='20' rx='8' fill='#0a161c'/><rect x='16' y='38' width='15' height='8' rx='3' fill='#a52d3c'/><rect x='71' y='38' width='15' height='8' rx='3' fill='#ffb32f'/></g><path d='M449 345C505 335 545 304 560 257C575 209 559 168 521 143' fill='none' stroke='#73e6d5' strokeOpacity='.72' strokeWidth='8' strokeLinecap='round'/><path d='m518 129 22 16-27 7Z' fill='#73e6d5'/><circle cx='586' cy='235' r='10' fill='#ffb32f'/></svg></div>;
-  if(scenario.id==='lane-change') return frame(<>{road(true)}<image href='/spirit/car-rear.svg' x='305' y='225' width='290' height='166' filter={u('shadow')}/><path d='M435 363C370 340 334 308 315 265C304 240 298 210 296 184' fill='none' stroke='#74e3d4' strokeOpacity='.72' strokeWidth='9' strokeLinecap='round'/><path d='m289 179 21 16-25 6Z' fill='#74e3d4'/><ellipse cx='355' cy='327' rx='44' ry='26' fill={u('amber')} opacity='.90'/><circle cx='355' cy='327' r='12' fill='#ffc66e'/></>);
-  if(scenario.id==='night-oncoming') return frame(<>{road(false)}<path d='M360 326L220 220L415 310L397 335Z' fill={u('lamp')} opacity='.66' filter={u('blur7')}/><path d='M540 326L680 220L485 310L503 335Z' fill={u('lamp')} opacity='.66' filter={u('blur7')}/><image href='/spirit/car-front-realistic.svg' x='300' y='220' width='300' height='171' filter={u('shadow')}/><image href='/spirit/car-front-realistic.svg' x='368' y='96' width='164' height='93' opacity='.92' filter={u('shadow')}/></>);
-  if(scenario.id==='empty-road') return frame(<>{road(false)}<path d='M360 326L120 140L430 316L397 335Z' fill={u('lamp')} opacity='.78' filter={u('blur7')}/><path d='M540 326L780 140L470 316L503 335Z' fill={u('lamp')} opacity='.78' filter={u('blur7')}/><image href='/spirit/car-front-realistic.svg' x='300' y='220' width='300' height='171' filter={u('shadow')}/>{oncoming&&<><ellipse cx='692' cy='140' rx='84' ry='46' fill='#fff4c8' opacity='.20' filter={u('blur18')}/><image href='/spirit/car-front-realistic.svg' x='648' y='108' width='88' height='50'/></>}</>);
-  if(scenario.id==='fog') return frame(<>{road(false,true)}<g opacity='.18'><rect x='0' y='84' width='900' height='52' fill='#f2f7f4'/><rect x='0' y='165' width='900' height='47' fill='#f2f7f4'/><rect x='0' y='245' width='900' height='38' fill='#f2f7f4'/><circle cx='120' cy='115' r='29' fill='#fff'/><circle cx='288' cy='194' r='22' fill='#fff'/><circle cx='690' cy='151' r='31' fill='#fff'/></g><path d='M360 326L282 252L414 311L397 335Z' fill={u('lamp')} opacity='.52' filter={u('blur7')}/><path d='M540 326L618 252L486 311L503 335Z' fill={u('lamp')} opacity='.52' filter={u('blur7')}/><image href='/spirit/car-front-realistic.svg' x='300' y='220' width='300' height='171' filter={u('shadow')}/></>);
-  if(scenario.id==='hazard-stop') return frame(<>{road(true)}<image href='/spirit/car-rear.svg' x='300' y='220' width='300' height='171' filter={u('shadow')}/><g className='scene-hazard-lamps'><ellipse cx='360' cy='324' rx='54' ry='31' fill={u('amber')} opacity='.96'/><ellipse cx='540' cy='324' rx='54' ry='31' fill={u('amber')} opacity='.96'/><circle cx='360' cy='324' r='13' fill='#ffc66e'/><circle cx='540' cy='324' r='13' fill='#ffc66e'/></g>{carTop(665,105,86,52,false,.50)}</>);
-  if(scenario.id==='turn-right') return <div className='scenario-svg-frame scene-frame-premium'><svg className='scenario-svg' viewBox='0 0 900 470' role='img' aria-label={scenario.title}>{defs}<rect width='900' height='470' fill='#071219'/><rect y='136' width='900' height='94' fill='#193039'/><rect x='520' y='136' width='94' height='334' fill='#193039'/><path d='M0 183H900M566 136V470' stroke='#dbe8e5' strokeOpacity='.20' strokeWidth='4' strokeDasharray='24 16'/><g transform='translate(353 256)'><rect width='102' height='58' rx='17' fill='#2b3840' stroke='#9eafb4' strokeOpacity='.42'/><rect x='17' y='9' width='68' height='20' rx='8' fill='#0a161c'/><rect x='16' y='38' width='15' height='8' rx='3' fill='#a52d3c'/><rect x='71' y='38' width='15' height='8' rx='3' fill='#ffb32f'/></g><path d='M406 309C484 304 547 280 564 231' fill='none' stroke='#73e6d5' strokeOpacity='.72' strokeWidth='8' strokeLinecap='round'/><path d='m558 222 23 14-27 8Z' fill='#73e6d5'/></svg></div>;
-  if(scenario.id==='rear-fog') return frame(<>{road(true)}<ellipse cx='450' cy='340' rx='175' ry='66' fill={u('red')} opacity='.18' filter={u('blur18')}/><image href='/spirit/car-rear.svg' x='300' y='220' width='300' height='171' filter={u('shadow')}/><rect x='442' y='307' width='16' height='31' rx='7' fill='#ff4d59'/><ellipse cx='450' cy='323' rx='44' ry='25' fill={u('red')} opacity='.35'/>{carTop(660,108,88,50,false,.35)}</>);
-  if(scenario.id==='park-night') return frame(<>{road(true,true)}<circle cx='760' cy='78' r='48' fill='#efe7b8' opacity='.17'/><circle cx='760' cy='78' r='78' fill='#efe7b8' opacity='.06' filter={u('blur18')}/><image href='/spirit/car-rear.svg' x='300' y='220' width='300' height='171' filter={u('shadow')}/><ellipse cx='360' cy='324' rx='38' ry='23' fill='#ffd98d' opacity='.16'/><ellipse cx='540' cy='324' rx='38' ry='23' fill='#ffd98d' opacity='.16'/></>);
-  return frame(<>{road(true)}<image href='/spirit/car-rear.svg' x='305' y='220' width='290' height='166' filter={u('shadow')}/><image href='/spirit/car-front-realistic.svg' x='112' y='180' width='150' height='86' opacity='.55'/><path d='M425 347C356 324 310 291 270 250C238 217 210 196 174 188' fill='none' stroke='#73e6d5' strokeOpacity='.72' strokeWidth='9' strokeLinecap='round'/><path d='m168 184 25 6-16 20Z' fill='#73e6d5'/><ellipse cx='355' cy='323' rx='38' ry='23' fill={u('amber')} opacity='.84'/><circle cx='355' cy='323' r='12' fill='#ffc66e'/></>);
+
+  if(scenario.id==='roundabout-right') return <div className='scenario-svg-frame scene-frame-premium'>
+    <svg className='scenario-svg' viewBox='0 0 900 470' role='img' aria-label={scenario.title}>
+      {defs}
+      <rect width='900' height='470' fill='#081219'/>
+      <circle cx='450' cy='235' r='138' fill='#152831' stroke='#3e5960' strokeWidth='12'/>
+      <circle cx='450' cy='235' r='78' fill='#0a151b' stroke='#6f8589' strokeOpacity='.26' strokeWidth='6'/>
+      <path d='M450 0V97M450 373V470M0 235H312M588 235H900' stroke='#dbe8e5' strokeOpacity='.20' strokeWidth='38'/>
+      <path d='M450 0V110M450 360V470M0 235H315M585 235H900' stroke='#dbe8e5' strokeOpacity='.13' strokeWidth='4' strokeDasharray='24 17'/>
+      <g transform='translate(390 335) rotate(-18)'><image href='/spirit/car-rear.svg' x='0' y='0' width='120' height='60'/></g>
+      <path d='M447 345C503 335 545 304 560 257C575 209 559 168 521 143' fill='none' stroke='#73e6d5' strokeOpacity='.72' strokeWidth='8' strokeLinecap='round'/>
+      <path d='m518 129 22 16-27 7Z' fill='#73e6d5'/>
+      <ellipse cx='505' cy='337' rx='25' ry='15' fill={u('amber')} opacity='.85'/>
+    </svg>
+  </div>;
+
+  if(scenario.id==='lane-change') return frame(<>
+    {road(true)}
+    {rearCar(305,225,290,166)}
+    <path d='M435 363C370 340 334 308 315 265C304 240 298 210 296 184' fill='none' stroke='#74e3d4' strokeOpacity='.76' strokeWidth='9' strokeLinecap='round'/>
+    <path d='m289 179 21 16-25 6Z' fill='#74e3d4'/>
+    <ellipse cx='362' cy='328' rx='48' ry='28' fill={u('amber')} opacity='.92'/>
+    <circle cx='362' cy='328' r='12' fill='#ffc66e'/>
+  </>);
+
+  if(scenario.id==='night-oncoming') return frame(<>
+    {road(false)}
+    <path d='M360 327L222 224L341 237L399 335Z' fill={u('lamp')} opacity='.76' filter={u('blur7')}/>
+    <path d='M540 327L678 224L559 237L501 335Z' fill={u('lamp')} opacity='.76' filter={u('blur7')}/>
+    <path d='M360 327L222 224M540 327L678 224' stroke='#fff6c0' strokeOpacity='.16' strokeWidth='2.5'/>
+    {frontCar(300,215,300,171)}
+    <ellipse cx='692' cy='139' rx='82' ry='50' fill='#fff4c8' opacity='.22' filter={u('blur18')}/>
+    <circle cx='674' cy='139' r='11' fill='#fff4c8' opacity='.60' filter={u('blur7')}/>
+    <circle cx='714' cy='139' r='11' fill='#fff4c8' opacity='.60' filter={u('blur7')}/>
+    {frontCar(650,104,94,54,.92)}
+  </>);
+
+  if(scenario.id==='empty-road') return frame(<>
+    {road(false)}
+    <path d='M360 327L112 135L350 204L399 335Z' fill={u('lamp')} opacity='.82' filter={u('blur7')}/>
+    <path d='M540 327L788 135L550 204L501 335Z' fill={u('lamp')} opacity='.82' filter={u('blur7')}/>
+    <path d='M360 327L112 135M540 327L788 135' stroke='#fff6c0' strokeOpacity='.22' strokeWidth='2.5'/>
+    {frontCar(300,215,300,171)}
+    {oncoming&&<><ellipse cx='692' cy='139' rx='84' ry='46' fill='#fff4c8' opacity='.22' filter={u('blur18')}/>{frontCar(650,104,94,54)}</>}
+  </>);
+
+  if(scenario.id==='fog') return frame(<>
+    {road(false,true)}
+    <g opacity='.18'>
+      <rect x='0' y='84' width='900' height='52' fill='#f2f7f4'/>
+      <rect x='0' y='165' width='900' height='47' fill='#f2f7f4'/>
+      <rect x='0' y='245' width='900' height='38' fill='#f2f7f4'/>
+      <circle cx='120' cy='115' r='29' fill='#fff'/><circle cx='288' cy='194' r='22' fill='#fff'/><circle cx='690' cy='151' r='31' fill='#fff'/>
+    </g>
+    <path d='M360 327L270 252L347 269L399 335Z' fill={u('lamp')} opacity='.58' filter={u('blur7')}/>
+    <path d='M540 327L630 252L553 269L501 335Z' fill={u('lamp')} opacity='.58' filter={u('blur7')}/>
+    <path d='M360 327L270 252M540 327L630 252' stroke='#fff6c0' strokeOpacity='.12' strokeWidth='2.5'/>
+    {frontCar(300,215,300,171)}
+  </>);
+
+  if(scenario.id==='hazard-stop') return <div className='scenario-svg-frame scene-frame-premium hazard-scenario-frame'>
+    <svg className='scenario-svg' viewBox='0 0 900 470' role='img' aria-label='التحذير الرباعي من الأمام والخلف'>
+      {defs}
+      <rect width='900' height='470' fill={`url(#${id}_night)`}/>
+      <path d='M0 470L76 150H360L450 470Z' fill={`url(#${id}_road)`}/>
+      <path d='M450 470L540 150H824L900 470Z' fill={`url(#${id}_road)`}/>
+      <path d='M450 470V150' stroke='#dbe8e5' strokeOpacity='.10' strokeWidth='3'/>
+      <rect x='78' y='26' width='260' height='32' rx='16' fill='#030c11' fillOpacity='.90' stroke='#84e6dc' strokeOpacity='.16'/>
+      <rect x='562' y='26' width='260' height='32' rx='16' fill='#030c11' fillOpacity='.90' stroke='#84e6dc' strokeOpacity='.16'/>
+      <text x='208' y='47' textAnchor='middle' fill='#dffaf5' fontSize='12' fontWeight='900'>مقدمة السيارة</text>
+      <text x='692' y='47' textAnchor='middle' fill='#dffaf5' fontSize='12' fontWeight='900'>مؤخرة السيارة</text>
+      {frontCar(86,205,278,159)}
+      {rearCar(556,218,288,144)}
+      <ellipse className='scene-hazard-lamps' cx='169' cy='342' rx='55' ry='30' fill={u('amber')} opacity='.95' filter={u('blur7')}/>
+      <ellipse className='scene-hazard-lamps' cx='284' cy='342' rx='55' ry='30' fill={u('amber')} opacity='.95' filter={u('blur7')}/>
+      <ellipse className='scene-hazard-lamps' cx='610' cy='326' rx='52' ry='28' fill={u('amber')} opacity='.95' filter={u('blur7')}/>
+      <ellipse className='scene-hazard-lamps' cx='790' cy='326' rx='52' ry='28' fill={u('amber')} opacity='.95' filter={u('blur7')}/>
+      <circle className='scene-hazard-lamps' cx='169' cy='342' r='11' fill='#ffc66e'/>
+      <circle className='scene-hazard-lamps' cx='284' cy='342' r='11' fill='#ffc66e'/>
+      <circle className='scene-hazard-lamps' cx='610' cy='326' r='11' fill='#ffc66e'/>
+      <circle className='scene-hazard-lamps' cx='790' cy='326' r='11' fill='#ffc66e'/>
+      <path d='M220 392V428M680 382V418' stroke='#f4faf7' strokeOpacity='.15' strokeWidth='3' strokeDasharray='8 7'/>
+      <text x='220' y='450' textAnchor='middle' fill='#9db6b4' fontSize='9' fontWeight='700'>إشارات أمامية</text>
+      <text x='680' y='450' textAnchor='middle' fill='#9db6b4' fontSize='9' fontWeight='700'>إشارات خلفية</text>
+    </svg>
+  </div>;
+
+  if(scenario.id==='turn-right') return <div className='scenario-svg-frame scene-frame-premium'>
+    <svg className='scenario-svg' viewBox='0 0 900 470' role='img' aria-label={scenario.title}>
+      {defs}
+      <rect width='900' height='470' fill='#071219'/>
+      <rect y='136' width='900' height='94' fill='#193039'/>
+      <rect x='520' y='136' width='94' height='334' fill='#193039'/>
+      <path d='M0 183H900M566 136V470' stroke='#dbe8e5' strokeOpacity='.20' strokeWidth='4' strokeDasharray='24 16'/>
+      <g transform='translate(334 255)'><image href='/spirit/car-rear.svg' x='0' y='0' width='170' height='85'/></g>
+      <path d='M406 309C484 304 547 280 564 231' fill='none' stroke='#73e6d5' strokeOpacity='.72' strokeWidth='8' strokeLinecap='round'/>
+      <path d='m558 222 23 14-27 8Z' fill='#73e6d5'/>
+      <ellipse cx='462' cy='323' rx='42' ry='24' fill={u('amber')} opacity='.88'/>
+    </svg>
+  </div>;
+
+  if(scenario.id==='rear-fog') return frame(<>
+    {road(true)}
+    <ellipse cx='450' cy='345' rx='185' ry='72' fill={u('red')} opacity='.20' filter={u('blur18')}/>
+    <path d='M450 333L320 456L580 456Z' fill='#ff4858' fillOpacity='.055' filter={u('blur7')}/>
+    {rearCar(300,220,300,171)}
+    <rect x='442' y='309' width='16' height='31' rx='7' fill='#ff4d59'/>
+    <ellipse cx='450' cy='327' rx='42' ry='25' fill={u('red')} opacity='.42'/>
+  </>);
+
+  if(scenario.id==='park-night') return frame(<>
+    {road(true,true)}
+    <circle cx='760' cy='78' r='48' fill='#efe7b8' opacity='.17'/><circle cx='760' cy='78' r='78' fill='#efe7b8' opacity='.06' filter={u('blur18')}/>
+    {rearCar(300,220,300,171)}
+    <ellipse cx='360' cy='328' rx='40' ry='23' fill='#ffd98d' opacity='.18'/>
+    <ellipse cx='540' cy='328' rx='40' ry='23' fill='#ffd98d' opacity='.18'/>
+  </>);
+
+  return frame(<>
+    {road(true)}
+    {rearCar(305,220,290,166)}
+    {frontCar(106,180,150,86,.55)}
+    <path d='M425 347C356 324 310 291 270 250C238 217 210 196 174 188' fill='none' stroke='#73e6d5' strokeOpacity='.72' strokeWidth='9' strokeLinecap='round'/>
+    <path d='m168 184 25 6-16 20Z' fill='#73e6d5'/>
+    <ellipse cx='360' cy='328' rx='42' ry='24' fill={u('amber')} opacity='.86'/>
+    <circle cx='360' cy='328' r='12' fill='#ffc66e'/>
+  </>);
 }
 
 function AutomaticLights() {
