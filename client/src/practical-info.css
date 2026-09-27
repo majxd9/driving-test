@@ -797,35 +797,6 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
    native browser scrolling on mobile avoids frame-by-frame scroll jank;
    hazard animation is reserved for an actively selected hazard scene;
    Arabic typography gets a cleaner system-first stack. */
-.practical-v2{
-  font-family:"Tajawal","Cairo","Noto Sans Arabic","Segoe UI",system-ui,-apple-system,sans-serif!important;
-  font-synthesis:none!important;
-  text-rendering:optimizeLegibility!important;
-  -webkit-font-smoothing:antialiased!important;
-  -moz-osx-font-smoothing:grayscale!important;
-}
-.practical-v2 h1,
-.practical-v2 h2,
-.practical-v2 h3,
-.practical-v2 h4,
-.practical-v2 p,
-.practical-v2 span,
-.practical-v2 b,
-.practical-v2 strong,
-.practical-v2 small,
-.practical-v2 button,
-.practical-v2 a{
-  font-family:inherit!important;
-}
-.practical-v2 h1{
-  font-weight:850!important;
-  letter-spacing:-.025em!important;
-}
-.practical-v2 h2,
-.practical-v2 h3{
-  font-weight:800!important;
-  letter-spacing:-.012em!important;
-}
 .simulator-layout,
 .vehicle-lab{
   scroll-margin-top:108px!important;
