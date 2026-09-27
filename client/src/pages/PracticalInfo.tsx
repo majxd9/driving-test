@@ -546,18 +546,18 @@ function CurrentScene({ mainLight, signal, flashActive, oncoming, setOncoming }:
             <text x='219' y='50' textAnchor='middle' fill='#dffaf5' fontSize='13' fontWeight='900'>مقدمة السيارة</text>
             <text x='681' y='50' textAnchor='middle' fill='#dffaf5' fontSize='13' fontWeight='900'>مؤخرة السيارة</text>
 
-            <ellipse className='scene-hazard-lamps' cx='169' cy='342' rx='58' ry='30' fill='url(#hazardAmberDual)' filter='url(#hazardDualBlur)'/>
-            <ellipse className='scene-hazard-lamps' cx='284' cy='342' rx='58' ry='30' fill='url(#hazardAmberDual)' filter='url(#hazardDualBlur)'/>
-            <ellipse className='scene-hazard-lamps' cx='610' cy='326' rx='52' ry='28' fill='url(#hazardAmberDual)' filter='url(#hazardDualBlur)'/>
-            <ellipse className='scene-hazard-lamps' cx='790' cy='326' rx='52' ry='28' fill='url(#hazardAmberDual)' filter='url(#hazardDualBlur)'/>
+            <ellipse className={'scene-hazard-lamps' + (mode === 'hazard' ? ' is-active' : '')} cx='169' cy='342' rx='58' ry='30' fill='url(#hazardAmberDual)' filter='url(#hazardDualBlur)'/>
+            <ellipse className={'scene-hazard-lamps' + (mode === 'hazard' ? ' is-active' : '')} cx='284' cy='342' rx='58' ry='30' fill='url(#hazardAmberDual)' filter='url(#hazardDualBlur)'/>
+            <ellipse className={'scene-hazard-lamps' + (mode === 'hazard' ? ' is-active' : '')} cx='610' cy='326' rx='52' ry='28' fill='url(#hazardAmberDual)' filter='url(#hazardDualBlur)'/>
+            <ellipse className={'scene-hazard-lamps' + (mode === 'hazard' ? ' is-active' : '')} cx='790' cy='326' rx='52' ry='28' fill='url(#hazardAmberDual)' filter='url(#hazardDualBlur)'/>
 
             <image href='/spirit/car-front-training.svg' x='88' y='205' width='278' height='159' filter='url(#hazardDualShadow)'/>
             <image href='/spirit/car-rear.svg' x='556' y='218' width='288' height='144' filter='url(#hazardDualShadow)'/>
 
-            <circle className='scene-hazard-lamps' cx='169' cy='342' r='12' fill='#ffc85d'/>
-            <circle className='scene-hazard-lamps' cx='284' cy='342' r='12' fill='#ffc85d'/>
-            <circle className='scene-hazard-lamps' cx='610' cy='326' r='12' fill='#ffc85d'/>
-            <circle className='scene-hazard-lamps' cx='790' cy='326' r='12' fill='#ffc85d'/>
+            <circle className={'scene-hazard-lamps' + (mode === 'hazard' ? ' is-active' : '')} cx='169' cy='342' r='12' fill='#ffc85d'/>
+            <circle className={'scene-hazard-lamps' + (mode === 'hazard' ? ' is-active' : '')} cx='284' cy='342' r='12' fill='#ffc85d'/>
+            <circle className={'scene-hazard-lamps' + (mode === 'hazard' ? ' is-active' : '')} cx='610' cy='326' r='12' fill='#ffc85d'/>
+            <circle className={'scene-hazard-lamps' + (mode === 'hazard' ? ' is-active' : '')} cx='790' cy='326' r='12' fill='#ffc85d'/>
 
             <path d='M224 388V430' stroke='#f4faf7' strokeOpacity='.18' strokeWidth='3' strokeDasharray='8 7'/>
             <path d='M676 382V424' stroke='#f4faf7' strokeOpacity='.18' strokeWidth='3' strokeDasharray='8 7'/>
@@ -1142,17 +1142,24 @@ export default function PracticalInfo() {
         animateScrollTo(getTargetTop(target), duration, onDone);
       };
 
-      scrollToTarget(handleTarget, 1350, () => {
+      const isMobile = window.matchMedia('(max-width: 760px)').matches;
+      const handleDuration = isMobile ? 1850 : 1650;
+      const vehicleDuration = isMobile ? 2250 : 1950;
+      const returnDuration = isMobile ? 1850 : 1650;
+      const pauseBeforeVehicle = isMobile ? 850 : 650;
+      const pauseBeforeReturn = isMobile ? 1000 : 800;
+
+      scrollToTarget(handleTarget, handleDuration, () => {
         const pauseToVehicle = window.setTimeout(() => {
-          scrollToTarget(vehicleTarget, 1550, () => {
+          scrollToTarget(vehicleTarget, vehicleDuration, () => {
             const pauseToReturn = window.setTimeout(() => {
-              animateScrollTo(originTop, 1450, () => {
+              animateScrollTo(originTop, returnDuration, () => {
                 setSceneFocusActive(false);
               });
-            }, 650);
+            }, pauseBeforeReturn);
             scrollFlowTimersRef.current.push(pauseToReturn);
           });
-        }, 400);
+        }, pauseBeforeVehicle);
         scrollFlowTimersRef.current.push(pauseToVehicle);
       });
     });
@@ -1199,8 +1206,11 @@ export default function PracticalInfo() {
     playClick();
 
     if (key === 'hazard' && signal === 'hazard') {
-      startHazardSoundLoop();
-      setMobileSheetOpen(true);
+      stopHazardSoundLoop();
+      setSignal(null);
+      setMovement('ring');
+      setFlashActive(false);
+      setMobileSheetOpen(false);
       runLearningScrollFlow();
       return;
     }
