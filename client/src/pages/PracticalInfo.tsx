@@ -415,7 +415,7 @@ function CockpitHandle({
         <button type="button" className={movement === 'left' ? 'active' : ''} onClick={() => onLever('left')}><b>↓</b><span>يسار</span><small>اخفض الذراع</small></button>
         <button type="button" className={movement === 'push' ? 'active' : ''} onClick={() => onLever('push')}><b>→</b><span>العالي</span><small>ادفع للأمام</small></button>
         <button type="button" className={movement === 'pull' ? 'active' : ''} onClick={() => onLever('pull')}><b>←</b><span>الوميض</span><small>اسحب للحظة</small></button>
-        <button type="button" className={movement === 'hazard' ? 'active hazard' : 'hazard'} onClick={onHazard}><b>△</b><span>الرباعي</span><small>زر مستقل</small></button>
+        <button type="button" className={movement === 'hazard' ? 'active hazard' : 'hazard'} onClick={onHazard}><b>△</b><span>{signal === 'hazard' ? 'إيقاف الرباعي' : 'الرباعي'}</span><small>{signal === 'hazard' ? 'إيقاف التحذير' : 'زر مستقل'}</small></button>
       </div>
       <Dashboard mainLight={mainLight} signal={signal}/>
     </section>
@@ -467,7 +467,7 @@ function ControlPanel({
       </div>
 
       <button type="button" className={signal === 'hazard' ? 'hazard-control selected' : 'hazard-control'} onClick={() => onSignal('hazard')}>
-        <span className="control-icon"><LightIcon type="hazard"/></span><span className="control-copy"><b>التحذير الرباعي</b><small>زر مستقل · الاتجاهان معاً</small><em>تحذير عام للمركبة</em></span><span className="control-arrow">›</span>
+        <span className="control-icon"><LightIcon type="hazard"/></span><span className="control-copy"><b>{signal === 'hazard' ? 'إيقاف التحذير الرباعي' : 'التحذير الرباعي'}</b><small>زر مستقل · الاتجاهان معاً</small><em>تحذير عام للمركبة</em></span><span className="control-arrow">›</span>
       </button>
 
       <div className="desktop-explanation">
@@ -764,7 +764,7 @@ function ScenarioVisual({ scenario, onActivate, isActive }: { scenario: Scenario
   const calloutBody = scenario.id === 'roundabout-right' ? 'حدد المخرج أولاً ثم استخدم الإشارة ضمن مسار الخروج.' : scenario.id === 'night-oncoming' ? 'الحزمة الأمامية قصيرة ومنخفضة عند وجود مركبة مقابلة.' : scenario.id === 'empty-road' ? (oncoming ? 'ظهرت مركبة مقابلة — هذه الحالة تستدعي خفض العالي.' : 'الحزمة الطويلة تنطلق من المصابيح إلى الطريق أمام السيارة.') : scenario.steps.slice(0,2).join(' · ');
   return <article className={'scenario-visual scene-card-premium '+(isActive?'is-active':'')}>
     <div className='scenario-media scene-media-premium'>
-      <ScenarioSvg scenario={scenario} oncoming={oncoming}/>
+      <ScenarioSvg scenario={scenario} oncoming={oncoming} isActive={isActive}/>
       <SceneCallout title={scenario.title} body={calloutBody} tone={tone}/>
       <span className='scenario-tag'>{scenario.tag}</span>{isActive && <span className='scenario-active-chip'>مرتبطة بالمقبض الآن</span>}
       {scenario.id==='empty-road' && <button type='button' className='scenario-scene-toggle' onClick={()=>setOncoming(value=>!value)}>{oncoming?'إخفاء المركبة المقابلة':'إظهار مركبة مقابلة'}</button>}
@@ -779,7 +779,7 @@ function ScenarioVisual({ scenario, onActivate, isActive }: { scenario: Scenario
   </article>;
 }
 
-function ScenarioSvg({ scenario, oncoming }: { scenario: Scenario; oncoming: boolean }) {
+function ScenarioSvg({ scenario, oncoming, isActive }: { scenario: Scenario; oncoming: boolean; isActive: boolean }) {
   const id='scenario_'+scenario.id.replace(/[^a-zA-Z0-9_-]/g,'_');
   const u=(name:string)=>'url(#'+id+'_'+name+')';
   const defs=<defs>
@@ -884,14 +884,14 @@ function ScenarioSvg({ scenario, oncoming }: { scenario: Scenario; oncoming: boo
       <text x='692' y='47' textAnchor='middle' fill='#dffaf5' fontSize='12' fontWeight='900'>مؤخرة السيارة</text>
       {frontCar(86,205,278,159)}
       {rearCar(556,218,288,144)}
-      <ellipse className='scene-hazard-lamps' cx='169' cy='342' rx='55' ry='30' fill={u('amber')} opacity='.95' filter={u('blur7')}/>
-      <ellipse className='scene-hazard-lamps' cx='284' cy='342' rx='55' ry='30' fill={u('amber')} opacity='.95' filter={u('blur7')}/>
-      <ellipse className='scene-hazard-lamps' cx='610' cy='326' rx='52' ry='28' fill={u('amber')} opacity='.95' filter={u('blur7')}/>
-      <ellipse className='scene-hazard-lamps' cx='790' cy='326' rx='52' ry='28' fill={u('amber')} opacity='.95' filter={u('blur7')}/>
-      <circle className='scene-hazard-lamps' cx='169' cy='342' r='11' fill='#ffc66e'/>
-      <circle className='scene-hazard-lamps' cx='284' cy='342' r='11' fill='#ffc66e'/>
-      <circle className='scene-hazard-lamps' cx='610' cy='326' r='11' fill='#ffc66e'/>
-      <circle className='scene-hazard-lamps' cx='790' cy='326' r='11' fill='#ffc66e'/>
+      <ellipse className={'scene-hazard-lamps' + (isActive ? ' is-active' : '')} cx='169' cy='342' rx='55' ry='30' fill={u('amber')} opacity='.95' filter={u('blur7')}/>
+      <ellipse className={'scene-hazard-lamps' + (isActive ? ' is-active' : '')} cx='284' cy='342' rx='55' ry='30' fill={u('amber')} opacity='.95' filter={u('blur7')}/>
+      <ellipse className={'scene-hazard-lamps' + (isActive ? ' is-active' : '')} cx='610' cy='326' rx='52' ry='28' fill={u('amber')} opacity='.95' filter={u('blur7')}/>
+      <ellipse className={'scene-hazard-lamps' + (isActive ? ' is-active' : '')} cx='790' cy='326' rx='52' ry='28' fill={u('amber')} opacity='.95' filter={u('blur7')}/>
+      <circle className={'scene-hazard-lamps' + (isActive ? ' is-active' : '')} cx='169' cy='342' r='11' fill='#ffc66e'/>
+      <circle className={'scene-hazard-lamps' + (isActive ? ' is-active' : '')} cx='284' cy='342' r='11' fill='#ffc66e'/>
+      <circle className={'scene-hazard-lamps' + (isActive ? ' is-active' : '')} cx='610' cy='326' r='11' fill='#ffc66e'/>
+      <circle className={'scene-hazard-lamps' + (isActive ? ' is-active' : '')} cx='790' cy='326' r='11' fill='#ffc66e'/>
       <path d='M220 392V428M680 382V418' stroke='#f4faf7' strokeOpacity='.15' strokeWidth='3' strokeDasharray='8 7'/>
       <text x='220' y='450' textAnchor='middle' fill='#9db6b4' fontSize='9' fontWeight='700'>إشارات أمامية</text>
       <text x='680' y='450' textAnchor='middle' fill='#9db6b4' fontSize='9' fontWeight='700'>إشارات خلفية</text>
@@ -1069,6 +1069,12 @@ export default function PracticalInfo() {
   const animateScrollTo = (targetTop: number, duration: number, onDone: () => void) => {
     const startTop = window.scrollY;
     const distance = targetTop - startTop;
+
+    if (Math.abs(distance) < 3) {
+      onDone();
+      return;
+    }
+
     const startTime = performance.now();
 
     const tick = (now: number) => {
@@ -1094,6 +1100,7 @@ export default function PracticalInfo() {
     cancelLearningScroll();
 
     const originTop = window.scrollY;
+    const useNativeMobileScroll = window.matchMedia('(max-width: 760px)').matches;
     setSceneFocusActive(true);
 
     window.requestAnimationFrame(() => {
@@ -1105,20 +1112,37 @@ export default function PracticalInfo() {
         return;
       }
 
-      const handleTop = Math.max(0, handleTarget.getBoundingClientRect().top + window.scrollY - 28);
-      const vehicleTop = Math.max(0, vehicleTarget.getBoundingClientRect().top + window.scrollY - 28);
+      const scrollToTarget = (target: HTMLElement, duration: number, onDone: () => void) => {
+        if (useNativeMobileScroll) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          const timer = window.setTimeout(onDone, duration);
+          scrollFlowTimersRef.current.push(timer);
+          return;
+        }
 
-      animateScrollTo(handleTop, 1250, () => {
+        const targetTop = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 92);
+        animateScrollTo(targetTop, duration, onDone);
+      };
+
+      scrollToTarget(handleTarget, useNativeMobileScroll ? 850 : 1250, () => {
         const pauseToVehicle = window.setTimeout(() => {
-          animateScrollTo(vehicleTop, 1350, () => {
+          scrollToTarget(vehicleTarget, useNativeMobileScroll ? 950 : 1350, () => {
             const pauseToReturn = window.setTimeout(() => {
-              animateScrollTo(originTop, 1400, () => {
-                setSceneFocusActive(false);
-              });
-            }, 650);
+              if (useNativeMobileScroll) {
+                window.scrollTo({ top: originTop, behavior: 'smooth' });
+                const returnTimer = window.setTimeout(() => {
+                  setSceneFocusActive(false);
+                }, 950);
+                scrollFlowTimersRef.current.push(returnTimer);
+              } else {
+                animateScrollTo(originTop, 1400, () => {
+                  setSceneFocusActive(false);
+                });
+              }
+            }, useNativeMobileScroll ? 500 : 650);
             scrollFlowTimersRef.current.push(pauseToReturn);
           });
-        }, 450);
+        }, useNativeMobileScroll ? 300 : 450);
         scrollFlowTimersRef.current.push(pauseToVehicle);
       });
     });
