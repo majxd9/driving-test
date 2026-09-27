@@ -806,7 +806,7 @@ function ScenarioSvg({ scenario, oncoming }: { scenario: Scenario; oncoming: boo
   </>;
 
   const rearCar=(x:number,y:number,w:number,h:number,opacity=1)=><image href='/spirit/car-rear.svg' x={x} y={y} width={w} height={h} opacity={opacity} filter={u('shadow')}/>;
-  const frontCar=(x:number,y:number,w:number,h:number,opacity=1)=><image href='/spirit/car-front-training.svg' x={x} y={y} width={w} height={h} opacity={opacity} filter={u('shadow')}/>;
+  const frontCar=(x:number,y:number,w:number,h:number,opacity=1)=><image href='/spirit/car-front-training.svg' x={x} y={y} width={w} height={h} opacity={opacity} preserveAspectRatio='xMidYMid meet' filter={u('shadow')}/>;
   const frame=(children:ReactNode)=><div className='scenario-svg-frame scene-frame-premium'><svg className='scenario-svg' viewBox='0 0 900 470' role='img' aria-label={scenario.title}>{defs}{children}<rect x='18' y='440' width='864' height='18' rx='9' fill='#02080b' opacity='.90'/></svg></div>;
 
   if(scenario.id==='roundabout-right') return <div className='scenario-svg-frame scene-frame-premium'>
@@ -835,9 +835,10 @@ function ScenarioSvg({ scenario, oncoming }: { scenario: Scenario; oncoming: boo
 
   if(scenario.id==='night-oncoming') return frame(<>
     {road(false)}
-    <path d='M360 327L222 224L341 237L399 335Z' fill={u('lamp')} opacity='.76' filter={u('blur7')}/>
-    <path d='M540 327L678 224L559 237L501 335Z' fill={u('lamp')} opacity='.76' filter={u('blur7')}/>
-    <path d='M360 327L222 224M540 327L678 224' stroke='#fff6c0' strokeOpacity='.16' strokeWidth='2.5'/>
+    {/* The front car faces the viewer: headlights project down toward the foreground. */}
+    <path d='M384 327L220 462L370 386Z' fill={u('lamp')} opacity='.76' filter={u('blur7')}/>
+    <path d='M516 327L680 462L530 386Z' fill={u('lamp')} opacity='.76' filter={u('blur7')}/>
+    <path d='M384 327L220 462M516 327L680 462' stroke='#fff6c0' strokeOpacity='.16' strokeWidth='2.5'/>
     {frontCar(300,215,300,171)}
     <ellipse cx='692' cy='139' rx='82' ry='50' fill='#fff4c8' opacity='.22' filter={u('blur18')}/>
     <circle cx='674' cy='139' r='11' fill='#fff4c8' opacity='.60' filter={u('blur7')}/>
@@ -847,9 +848,10 @@ function ScenarioSvg({ scenario, oncoming }: { scenario: Scenario; oncoming: boo
 
   if(scenario.id==='empty-road') return frame(<>
     {road(false)}
-    <path d='M360 327L112 135L350 204L399 335Z' fill={u('lamp')} opacity='.82' filter={u('blur7')}/>
-    <path d='M540 327L788 135L550 204L501 335Z' fill={u('lamp')} opacity='.82' filter={u('blur7')}/>
-    <path d='M360 327L112 135M540 327L788 135' stroke='#fff6c0' strokeOpacity='.22' strokeWidth='2.5'/>
+    {/* Long beams still originate at the real headlights, but extend toward the viewer. */}
+    <path d='M384 327L95 468L360 386Z' fill={u('lamp')} opacity='.82' filter={u('blur7')}/>
+    <path d='M516 327L805 468L540 386Z' fill={u('lamp')} opacity='.82' filter={u('blur7')}/>
+    <path d='M384 327L95 468M516 327L805 468' stroke='#fff6c0' strokeOpacity='.22' strokeWidth='2.5'/>
     {frontCar(300,215,300,171)}
     {oncoming&&<><ellipse cx='692' cy='139' rx='84' ry='46' fill='#fff4c8' opacity='.22' filter={u('blur18')}/>{frontCar(650,104,94,54)}</>}
   </>);
@@ -862,9 +864,10 @@ function ScenarioSvg({ scenario, oncoming }: { scenario: Scenario; oncoming: boo
       <rect x='0' y='245' width='900' height='38' fill='#f2f7f4'/>
       <circle cx='120' cy='115' r='29' fill='#fff'/><circle cx='288' cy='194' r='22' fill='#fff'/><circle cx='690' cy='151' r='31' fill='#fff'/>
     </g>
-    <path d='M360 327L270 252L347 269L399 335Z' fill={u('lamp')} opacity='.58' filter={u('blur7')}/>
-    <path d='M540 327L630 252L553 269L501 335Z' fill={u('lamp')} opacity='.58' filter={u('blur7')}/>
-    <path d='M360 327L270 252M540 327L630 252' stroke='#fff6c0' strokeOpacity='.12' strokeWidth='2.5'/>
+    {/* Fog lamps are deliberately low and forward, never behind the front-facing car. */}
+    <path d='M384 327L292 458L372 386Z' fill={u('lamp')} opacity='.58' filter={u('blur7')}/>
+    <path d='M516 327L608 458L528 386Z' fill={u('lamp')} opacity='.58' filter={u('blur7')}/>
+    <path d='M384 327L292 458M516 327L608 458' stroke='#fff6c0' strokeOpacity='.12' strokeWidth='2.5'/>
     {frontCar(300,215,300,171)}
   </>);
 
