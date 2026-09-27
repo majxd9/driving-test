@@ -19,7 +19,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = sessionStorage.getItem(STORAGE_KEY);
-    if (saved) setUser(JSON.parse(saved));
+
+    if (saved) {
+      try {
+        setUser(JSON.parse(saved) as LoginResponse);
+      } catch {
+        sessionStorage.removeItem(STORAGE_KEY);
+      }
+    }
+
     setLoading(false);
   }, []);
 
