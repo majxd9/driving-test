@@ -33,7 +33,12 @@ export default function Home(){
 
  useEffect(()=>{
   const initialCount = user?.questionCount;
-  setTotal(typeof initialCount === 'number' && initialCount > 0 ? initialCount : null);
+
+  if (typeof initialCount === 'number' && initialCount > 0) {
+   setTotal(initialCount);
+   return;
+  }
+
   let active=true;
   fetch((import.meta.env.VITE_API_URL||'')+'/api/questions/count',{credentials:'include'})
    .then(r=>r.ok?r.json():Promise.reject())
