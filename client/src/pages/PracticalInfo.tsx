@@ -593,36 +593,39 @@ function CurrentScene({ mainLight, signal, flashActive, oncoming, setOncoming }:
             </g>}
 
             {(mode === 'low' || mode === 'high' || mode === 'flash' || mode === 'frontFog') && <>
+              {/* Front view: the car faces the viewer, so the headlight beams travel toward the viewer
+                  (down the road / foreground), not behind the car. The origins are aligned to the
+                  actual headlights in car-front-training.svg at x≈384/516, y≈327. */}
               <path
                 d={mode === 'high'
-                  ? 'M360 327L115 135L350 204L399 335Z'
+                  ? 'M384 327L105 468L360 386Z'
                   : mode === 'frontFog'
-                  ? 'M360 327L268 252L347 269L399 335Z'
-                  : 'M360 327L222 224L341 237L399 335Z'}
+                  ? 'M384 327L292 468L372 386Z'
+                  : 'M384 327L220 468L370 386Z'}
                 fill={mode === 'high' ? 'url(#currentHighBeam)' : mode === 'frontFog' ? 'url(#currentFogBeam)' : 'url(#currentLowBeam)'}
                 filter='url(#currentBlur7)'
                 opacity={mode === 'frontFog' ? '.82' : mode === 'high' ? '.92' : '.88'}
               />
               <path
                 d={mode === 'high'
-                  ? 'M540 327L785 135L550 204L501 335Z'
+                  ? 'M516 327L795 468L540 386Z'
                   : mode === 'frontFog'
-                  ? 'M540 327L632 252L553 269L501 335Z'
-                  : 'M540 327L678 224L559 237L501 335Z'}
+                  ? 'M516 327L608 468L528 386Z'
+                  : 'M516 327L680 468L530 386Z'}
                 fill={mode === 'high' ? 'url(#currentHighBeam)' : mode === 'frontFog' ? 'url(#currentFogBeam)' : 'url(#currentLowBeam)'}
                 filter='url(#currentBlur7)'
                 opacity={mode === 'frontFog' ? '.82' : mode === 'high' ? '.92' : '.88'}
               />
               <path
-                d={mode === 'high' ? 'M360 327L115 135' : mode === 'frontFog' ? 'M360 327L268 252' : 'M360 327L222 224'}
+                d={mode === 'high' ? 'M384 327L105 468' : mode === 'frontFog' ? 'M384 327L292 468' : 'M384 327L220 468'}
                 stroke='#fff8cc' strokeOpacity={mode === 'high' ? '.30' : '.16'} strokeWidth='2.5' strokeLinecap='round'
               />
               <path
-                d={mode === 'high' ? 'M540 327L785 135' : mode === 'frontFog' ? 'M540 327L632 252' : 'M540 327L678 224'}
+                d={mode === 'high' ? 'M516 327L795 468' : mode === 'frontFog' ? 'M516 327L608 468' : 'M516 327L680 468'}
                 stroke='#fff8cc' strokeOpacity={mode === 'high' ? '.30' : '.16'} strokeWidth='2.5' strokeLinecap='round'
               />
-              <ellipse cx='360' cy='327' rx='35' ry='20' fill='url(#currentHeadGlow)'/>
-              <ellipse cx='540' cy='327' rx='35' ry='20' fill='url(#currentHeadGlow)'/>
+              <ellipse cx='384' cy='327' rx='34' ry='19' fill='url(#currentHeadGlow)'/>
+              <ellipse cx='516' cy='327' rx='34' ry='19' fill='url(#currentHeadGlow)'/>
             </>}
 
             {mode === 'frontFog' && <g opacity='.16'>
@@ -635,7 +638,17 @@ function CurrentScene({ mainLight, signal, flashActive, oncoming, setOncoming }:
               <circle cx='790' cy='214' r='25' fill='#fff'/>
             </g>}
 
-            <image href={rear ? '/spirit/car-rear.svg' : '/spirit/car-front-training.svg'} x='300' y={rear ? '220' : '215'} width='300' height='171' filter='url(#currentCarShadow)'/>
+            {/* Both vehicle views stay on the exact center axis. The front view is the reference for
+                all forward-light origins, so the beams and lamps remain visually locked to the car. */}
+            <image
+              href={rear ? '/spirit/car-rear.svg' : '/spirit/car-front-training.svg'}
+              x='300'
+              y={rear ? '220' : '215'}
+              width='300'
+              height='171'
+              preserveAspectRatio='xMidYMid meet'
+              filter='url(#currentCarShadow)'
+            />
 
             {mode === 'position' && <g>
               <ellipse cx='362' cy='328' rx='42' ry='24' fill='url(#currentRedGlow)' opacity='.20'/>
