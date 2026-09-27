@@ -32,6 +32,9 @@ export default function Study() {
 
   useEffect(() => {
     if (!category) return;
+
+    let active = true;
+
     setSignalState('pending');
     setLoading(true);
     setError('');
@@ -42,10 +45,20 @@ export default function Study() {
 
     api.getQuestions(category)
       .then((items) => {
-        setQuestions(items);
+        if (active) setQuestions(items);
       })
-      .catch(e => setError(e instanceof Error ? e.message : 'تعذر تحميل الأسئلة.'))
-      .finally(() => setLoading(false));
+      .catch(e => {
+        if (active) {
+          setError(e instanceof Error ? e.message : 'تعذر تحميل الأسئلة.');
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [category]);
 
   useEffect(() => {
