@@ -1134,7 +1134,8 @@ export default function PracticalInfo() {
       }
 
       const getTargetTop = (target: HTMLElement) => {
-        const headerOffset = window.matchMedia('(max-width: 760px)').matches ? 112 : 108;
+        const isMobile = window.matchMedia('(max-width: 760px)').matches;
+        const headerOffset = isMobile ? 58 : 108;
         return Math.max(0, target.getBoundingClientRect().top + window.scrollY - headerOffset);
       };
 
@@ -1143,9 +1144,9 @@ export default function PracticalInfo() {
       };
 
       const isMobile = window.matchMedia('(max-width: 760px)').matches;
-      const handleDuration = isMobile ? 1850 : 1650;
-      const vehicleDuration = isMobile ? 2250 : 1950;
-      const returnDuration = isMobile ? 1850 : 1650;
+      const handleDuration = isMobile ? 2350 : 2150;
+      const vehicleDuration = isMobile ? 2750 : 2450;
+      const returnDuration = isMobile ? 2350 : 2150;
       const pauseBeforeVehicle = isMobile ? 850 : 650;
       const pauseBeforeReturn = isMobile ? 1000 : 800;
 
