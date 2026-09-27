@@ -858,9 +858,9 @@ function ScenarioSvg({ scenario, oncoming }: { scenario: Scenario; oncoming: boo
   if(scenario.id==='hazard-stop') return <div className='scenario-svg-frame scene-frame-premium hazard-scenario-frame'>
     <svg className='scenario-svg' viewBox='0 0 900 470' role='img' aria-label='التحذير الرباعي من الأمام والخلف'>
       {defs}
-      <rect width='900' height='470' fill={\`url(#\${id}_night)\`}/>
-      <path d='M0 470L76 150H360L450 470Z' fill={\`url(#\${id}_road)\`}/>
-      <path d='M450 470L540 150H824L900 470Z' fill={\`url(#\${id}_road)\`}/>
+      <rect width='900' height='470' fill={\`url(#${id}_night)\`}/>
+      <path d='M0 470L76 150H360L450 470Z' fill={\`url(#${id}_road)\`}/>
+      <path d='M450 470L540 150H824L900 470Z' fill={\`url(#${id}_road)\`}/>
       <path d='M450 470V150' stroke='#dbe8e5' strokeOpacity='.10' strokeWidth='3'/>
       <rect x='78' y='26' width='260' height='32' rx='16' fill='#030c11' fillOpacity='.90' stroke='#84e6dc' strokeOpacity='.16'/>
       <rect x='562' y='26' width='260' height='32' rx='16' fill='#030c11' fillOpacity='.90' stroke='#84e6dc' strokeOpacity='.16'/>
