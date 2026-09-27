@@ -969,8 +969,8 @@ export default function PracticalInfo() {
   const audioRef = useRef<AudioContext | null>(null);
   const simulatorLayoutRef = useRef<HTMLDivElement | null>(null);
   const vehicleLabRef = useRef<HTMLElement | null>(null);
-  const restoreScrollRef = useRef<number | null>(null);
-  const restoreTimerRef = useRef<number | null>(null);
+  const scrollFlowTimersRef = useRef<number[]>([]);
+  const scrollFlowFrameRef = useRef<number | null>(null);
   const hazardSoundTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -992,11 +992,14 @@ export default function PracticalInfo() {
       body.style.overflowY = previous.bodyOverflowY;
       body.style.overflowX = previous.bodyOverflowX;
       root.classList.remove('practical-info-v2-active');
-      if (restoreTimerRef.current !== null) window.clearTimeout(restoreTimerRef.current);
+      scrollFlowTimersRef.current.forEach(timer => window.clearTimeout(timer));
+      scrollFlowTimersRef.current = [];
+      if (scrollFlowFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFlowFrameRef.current);
+        scrollFlowFrameRef.current = null;
+      }
       if (hazardSoundTimerRef.current !== null) window.clearInterval(hazardSoundTimerRef.current);
-      restoreTimerRef.current = null;
       hazardSoundTimerRef.current = null;
-      restoreScrollRef.current = null;
     };
   }, []);
   useEffect(() => {
@@ -1054,6 +1057,73 @@ export default function PracticalInfo() {
     }
   };
 
+  const cancelLearningScroll = () => {
+    scrollFlowTimersRef.current.forEach(timer => window.clearTimeout(timer));
+    scrollFlowTimersRef.current = [];
+    if (scrollFlowFrameRef.current !== null) {
+      window.cancelAnimationFrame(scrollFlowFrameRef.current);
+      scrollFlowFrameRef.current = null;
+    }
+  };
+
+  const animateScrollTo = (targetTop: number, duration: number, onDone: () => void) => {
+    const startTop = window.scrollY;
+    const distance = targetTop - startTop;
+    const startTime = performance.now();
+
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - startTime) / duration);
+      const eased = progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+      window.scrollTo(0, startTop + distance * eased);
+
+      if (progress < 1) {
+        scrollFlowFrameRef.current = window.requestAnimationFrame(tick);
+        return;
+      }
+
+      scrollFlowFrameRef.current = null;
+      onDone();
+    };
+
+    scrollFlowFrameRef.current = window.requestAnimationFrame(tick);
+  };
+
+  const runLearningScrollFlow = () => {
+    cancelLearningScroll();
+
+    const originTop = window.scrollY;
+    setSceneFocusActive(true);
+
+    window.requestAnimationFrame(() => {
+      const handleTarget = simulatorLayoutRef.current;
+      const vehicleTarget = vehicleLabRef.current;
+
+      if (!handleTarget || !vehicleTarget) {
+        setSceneFocusActive(false);
+        return;
+      }
+
+      const handleTop = Math.max(0, handleTarget.getBoundingClientRect().top + window.scrollY - 28);
+      const vehicleTop = Math.max(0, vehicleTarget.getBoundingClientRect().top + window.scrollY - 28);
+
+      animateScrollTo(handleTop, 1250, () => {
+        const pauseToVehicle = window.setTimeout(() => {
+          animateScrollTo(vehicleTop, 1350, () => {
+            const pauseToReturn = window.setTimeout(() => {
+              animateScrollTo(originTop, 1400, () => {
+                setSceneFocusActive(false);
+              });
+            }, 650);
+            scrollFlowTimersRef.current.push(pauseToReturn);
+          });
+        }, 450);
+        scrollFlowTimersRef.current.push(pauseToVehicle);
+      });
+    });
+  };
+
   const chooseMain = (key: MainLightKey) => {
     playClick();
     stopHazardSoundLoop();
@@ -1061,6 +1131,7 @@ export default function PracticalInfo() {
     setMovement(key === 'high' ? 'push' : 'ring');
     setMobileSheetOpen(true);
     setOncoming(key === 'high');
+    runLearningScrollFlow();
   };
 
   const playHazardSound = () => {
@@ -1098,6 +1169,7 @@ export default function PracticalInfo() {
       setFlashActive(false);
       setMovement('ring');
       setMobileSheetOpen(true);
+      runLearningScrollFlow();
       return;
     }
     setSignal(key);
@@ -1110,10 +1182,12 @@ export default function PracticalInfo() {
         if (soundEnabled) playHazardSound();
       }, 900);
     }
+    runLearningScrollFlow();
   };
   const triggerFlash = () => {
     playClick();
     setSignal(null); setMovement('pull'); setFlashCount(value => value + 1); setFlashActive(true); setMobileSheetOpen(true);
+    runLearningScrollFlow();
   };
   const cycleRing = () => {
     const currentIndex = RING_LIGHTS.findIndex(item => item.key === mainLight);
@@ -1128,49 +1202,11 @@ export default function PracticalInfo() {
   };
 
   const handleScenarioActivate = (item: Scenario) => {
-    restoreScrollRef.current = window.scrollY;
-
     if (item.control === 'left' || item.control === 'right' || item.control === 'hazard') {
       chooseSignal(item.control);
     } else {
       chooseMain(item.control);
     }
-
-    setSceneFocusActive(true);
-
-    if (restoreTimerRef.current !== null) {
-      window.clearTimeout(restoreTimerRef.current);
-    }
-
-    window.requestAnimationFrame(() => {
-      const handleTarget = simulatorLayoutRef.current;
-      if (!handleTarget) return;
-
-      window.scrollTo({
-        top: handleTarget.getBoundingClientRect().top + window.scrollY - 20,
-        behavior: 'smooth',
-      });
-
-      window.setTimeout(() => {
-        const vehicleTarget = vehicleLabRef.current;
-        if (!vehicleTarget) return;
-
-        window.scrollTo({
-          top: vehicleTarget.getBoundingClientRect().top + window.scrollY - 20,
-          behavior: 'smooth',
-        });
-      }, 950);
-    });
-
-    restoreTimerRef.current = window.setTimeout(() => {
-      const previous = restoreScrollRef.current;
-      if (previous !== null) {
-        window.scrollTo({ top: previous, behavior: 'smooth' });
-      }
-      setSceneFocusActive(false);
-      restoreScrollRef.current = null;
-      restoreTimerRef.current = null;
-    }, 3000);
   };
 
   const activeLight = MAIN_LIGHTS.find(item => item.key === mainLight) || MAIN_LIGHTS[3];
