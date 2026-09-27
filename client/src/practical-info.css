@@ -703,3 +703,91 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
   border-color:rgba(134,228,218,.30)!important;
   box-shadow:0 0 0 1px rgba(134,228,218,.08),0 0 34px rgba(70,218,196,.10),0 20px 55px rgba(0,0,0,.24)!important;
 }
+
+
+/* 2026-09-27 lighting orientation pass:
+   rear vehicle = fixed car-rear.svg;
+   front vehicle = dedicated car-front-training.svg;
+   light cones originate at the actual lamp locations. */
+.current-scene-stage{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  background:
+    radial-gradient(circle at 50% 18%,rgba(92,211,198,.055),transparent 34%),
+    linear-gradient(180deg,#030a0f,#050e13)!important;
+}
+.premium-scene-svg{
+  position:relative!important;
+  z-index:1!important;
+}
+.current-scene-topbar small{
+  white-space:nowrap!important;
+}
+.scene-signal-lamps{
+  animation:sceneSignalPulse 900ms steps(1,end) infinite!important;
+}
+@keyframes sceneSignalPulse{
+  0%,49%{opacity:1}
+  50%,100%{opacity:.12}
+}
+.hazard-dual-scene,
+.hazard-scenario-frame .scenario-svg{
+  background:#03090d!important;
+}
+.scene-direction-cue{
+  z-index:8!important;
+  max-width:74%!important;
+  padding:6px 9px!important;
+  border:1px solid rgba(134,228,218,.10)!important;
+  border-radius:999px!important;
+  background:rgba(3,11,16,.82)!important;
+  backdrop-filter:blur(10px)!important;
+  color:#b9d4d1!important;
+  line-height:1.45!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.18)!important;
+}
+.scene-callout{
+  z-index:9!important;
+}
+.hazard-scenario-frame{
+  position:relative!important;
+  border-bottom:1px solid rgba(134,228,218,.09)!important;
+}
+.hazard-scenario-frame::after{
+  content:'التحذير الرباعي يَظهر في الأمام والخلف';
+  position:absolute;
+  top:9px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:6px 9px;
+  border:1px solid rgba(241,189,116,.16);
+  border-radius:999px;
+  background:rgba(3,11,16,.84);
+  color:#f1d09c;
+  font-size:7px;
+  font-weight:950;
+  pointer-events:none;
+}
+@media(max-width:760px){
+  .current-scene-topbar b{font-size:9px!important}
+  .current-scene-topbar small{font-size:6.5px!important}
+  .scene-direction-cue{
+    right:8px!important;
+    left:8px!important;
+    bottom:8px!important;
+    max-width:none!important;
+    width:calc(100% - 16px)!important;
+    text-align:center!important;
+    font-size:6.2px!important;
+  }
+  .hazard-scenario-frame::after{
+    top:8px!important;
+    font-size:6.1px!important;
+    padding:5px 7px!important;
+  }
+}
+@media(max-width:430px){
+  .scene-direction-cue{font-size:5.9px!important}
+  .hazard-scenario-frame::after{font-size:5.8px!important}
+}
