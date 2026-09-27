@@ -972,23 +972,27 @@ export default function PracticalInfo() {
   const scrollFlowTimersRef = useRef<number[]>([]);
   const scrollFlowFrameRef = useRef<number | null>(null);
   const hazardSoundTimerRef = useRef<number | null>(null);
+  const hazardSoundStopTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const root = document.documentElement;
     const body = document.body;
     const previous = {
       rootOverflowY: root.style.overflowY,
+      rootScrollBehavior: root.style.scrollBehavior,
       bodyOverflowY: body.style.overflowY,
       bodyOverflowX: body.style.overflowX,
     };
 
     root.style.overflowY = 'auto';
+    root.style.scrollBehavior = 'auto';
     body.style.overflowY = 'auto';
     body.style.overflowX = 'hidden';
     root.classList.add('practical-info-v2-active');
 
     return () => {
       root.style.overflowY = previous.rootOverflowY;
+      root.style.scrollBehavior = previous.rootScrollBehavior;
       body.style.overflowY = previous.bodyOverflowY;
       body.style.overflowX = previous.bodyOverflowX;
       root.classList.remove('practical-info-v2-active');
@@ -999,7 +1003,9 @@ export default function PracticalInfo() {
         scrollFlowFrameRef.current = null;
       }
       if (hazardSoundTimerRef.current !== null) window.clearInterval(hazardSoundTimerRef.current);
+      if (hazardSoundStopTimerRef.current !== null) window.clearTimeout(hazardSoundStopTimerRef.current);
       hazardSoundTimerRef.current = null;
+      hazardSoundStopTimerRef.current = null;
     };
   }, []);
   useEffect(() => {
@@ -1055,6 +1061,22 @@ export default function PracticalInfo() {
       window.clearInterval(hazardSoundTimerRef.current);
       hazardSoundTimerRef.current = null;
     }
+    if (hazardSoundStopTimerRef.current !== null) {
+      window.clearTimeout(hazardSoundStopTimerRef.current);
+      hazardSoundStopTimerRef.current = null;
+    }
+  };
+
+  const startHazardSoundLoop = () => {
+    stopHazardSoundLoop();
+    if (!soundEnabled || typeof window === 'undefined') return;
+    playHazardSound();
+    hazardSoundTimerRef.current = window.setInterval(() => {
+      if (soundEnabled) playHazardSound();
+    }, 900);
+    hazardSoundStopTimerRef.current = window.setTimeout(() => {
+      stopHazardSoundLoop();
+    }, 10000);
   };
 
   const cancelLearningScroll = () => {
@@ -1100,7 +1122,6 @@ export default function PracticalInfo() {
     cancelLearningScroll();
 
     const originTop = window.scrollY;
-    const useNativeMobileScroll = window.matchMedia('(max-width: 760px)').matches;
     setSceneFocusActive(true);
 
     window.requestAnimationFrame(() => {
@@ -1112,37 +1133,26 @@ export default function PracticalInfo() {
         return;
       }
 
-      const scrollToTarget = (target: HTMLElement, duration: number, onDone: () => void) => {
-        if (useNativeMobileScroll) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          const timer = window.setTimeout(onDone, duration);
-          scrollFlowTimersRef.current.push(timer);
-          return;
-        }
-
-        const targetTop = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 92);
-        animateScrollTo(targetTop, duration, onDone);
+      const getTargetTop = (target: HTMLElement) => {
+        const headerOffset = window.matchMedia('(max-width: 760px)').matches ? 112 : 108;
+        return Math.max(0, target.getBoundingClientRect().top + window.scrollY - headerOffset);
       };
 
-      scrollToTarget(handleTarget, useNativeMobileScroll ? 850 : 1250, () => {
+      const scrollToTarget = (target: HTMLElement, duration: number, onDone: () => void) => {
+        animateScrollTo(getTargetTop(target), duration, onDone);
+      };
+
+      scrollToTarget(handleTarget, 1350, () => {
         const pauseToVehicle = window.setTimeout(() => {
-          scrollToTarget(vehicleTarget, useNativeMobileScroll ? 950 : 1350, () => {
+          scrollToTarget(vehicleTarget, 1550, () => {
             const pauseToReturn = window.setTimeout(() => {
-              if (useNativeMobileScroll) {
-                window.scrollTo({ top: originTop, behavior: 'smooth' });
-                const returnTimer = window.setTimeout(() => {
-                  setSceneFocusActive(false);
-                }, 950);
-                scrollFlowTimersRef.current.push(returnTimer);
-              } else {
-                animateScrollTo(originTop, 1400, () => {
-                  setSceneFocusActive(false);
-                });
-              }
-            }, useNativeMobileScroll ? 500 : 650);
+              animateScrollTo(originTop, 1450, () => {
+                setSceneFocusActive(false);
+              });
+            }, 650);
             scrollFlowTimersRef.current.push(pauseToReturn);
           });
-        }, useNativeMobileScroll ? 300 : 450);
+        }, 400);
         scrollFlowTimersRef.current.push(pauseToVehicle);
       });
     });
@@ -1187,25 +1197,24 @@ export default function PracticalInfo() {
 
   const chooseSignal = (key: SignalKey) => {
     playClick();
-    stopHazardSoundLoop();
+
     if (key === 'hazard' && signal === 'hazard') {
-      setSignal(null);
-      setFlashActive(false);
-      setMovement('ring');
+      startHazardSoundLoop();
       setMobileSheetOpen(true);
       runLearningScrollFlow();
       return;
     }
+
+    stopHazardSoundLoop();
     setSignal(key);
     setFlashActive(false);
     setMovement(key);
     setMobileSheetOpen(true);
+
     if (key === 'hazard') {
-      playHazardSound();
-      hazardSoundTimerRef.current = window.setInterval(() => {
-        if (soundEnabled) playHazardSound();
-      }, 900);
+      startHazardSoundLoop();
     }
+
     runLearningScrollFlow();
   };
   const triggerFlash = () => {
