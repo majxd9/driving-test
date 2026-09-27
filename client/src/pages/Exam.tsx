@@ -29,25 +29,41 @@ export default function Exam() {
   const finishedRef = useRef(false);
   const questionsRef = useRef<Question[]>([]);
   const answersRef = useRef<Record<number, number>>({});
+  const loadSequenceRef = useRef(0);
 
   questionsRef.current = questions;
   answersRef.current = answers;
 
   const loadExam = useCallback(async () => {
     const id = Number(modelId) || 1;
+    const sequence = ++loadSequenceRef.current;
+
     setLoading(true);
     setLoadError(null);
+
     try {
       const picked = await api.getExamQuestions(id);
+      if (sequence !== loadSequenceRef.current) return;
       if (picked.length !== 30) throw new Error('تعذر تجهيز ٣٠ سؤالاً للاختبار.');
-      setQuestions(picked); setAnswers({}); setCurrent(0); setSeconds(DURATION); setJumpOpen(false); setJumpValue('1');
+
+      setQuestions(picked);
+      setAnswers({});
+      setCurrent(0);
+      setSeconds(DURATION);
+      setJumpOpen(false);
+      setJumpValue('1');
       questionsRef.current = picked;
       answersRef.current = {};
       finishedRef.current = false;
       // صور الأسئلة لا تُعرض أثناء الاختبار ولا نحتاج لتحميلها هنا.
       // صفحة النتيجة هي مكان مراجعة الصور.
-    } catch (err) { setLoadError(err instanceof Error ? err.message : 'تعذر تحميل الأسئلة.'); }
-    finally { setLoading(false); }
+    } catch (err) {
+      if (sequence === loadSequenceRef.current) {
+        setLoadError(err instanceof Error ? err.message : 'تعذر تحميل الأسئلة.');
+      }
+    } finally {
+      if (sequence === loadSequenceRef.current) setLoading(false);
+    }
   }, [modelId]);
 
   useEffect(() => { void loadExam(); }, [loadExam]);
