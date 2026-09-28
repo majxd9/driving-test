@@ -86,7 +86,7 @@ export default function Models() {
   return (
     <div className={`models-page ${drifting ? 'is-drifting' : ''}`} dir="rtl">
       <header className="exam-topbar-v2">
-        <button onClick={() => navigate('/')} className="exam-back-v2" aria-label="العودة إلى الصفحة الرئيسية">‹</button>
+        <button onClick={() => navigate('/app')} className="exam-back-v2" aria-label="العودة إلى الصفحة الرئيسية">‹</button>
         <div className="exam-title-v2">
           <strong>اختبارات المحاكاة</strong>
           <span>اختر نموذجاً وابدأ الاختبار</span>
