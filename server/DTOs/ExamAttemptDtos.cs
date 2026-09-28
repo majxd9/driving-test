@@ -35,3 +35,14 @@ public record ExamSubmissionResponse(
     List<int> WrongQuestionIds,
     DateTime CreatedAt,
     List<ExamReviewQuestionResponse> ReviewQuestions);
+
+
+public record ExamQuestionResponse(
+    int Id,
+    string Text,
+    List<string> Options,
+    string? ImageUrl,
+    string? DiagramType,
+    string? DiagramUrl,
+    string? DiagramTitle,
+    string? DiagramDescription);
