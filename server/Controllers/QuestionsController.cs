@@ -34,7 +34,7 @@ public class QuestionsController : ControllerBase
     }
 
     [HttpGet("exam/{modelId:int}")]
-    public async Task<ActionResult<List<Question>>> GetExam(int modelId)
+    public async Task<ActionResult<List<ExamQuestionResponse>>> GetExam(int modelId)
     {
         if (modelId is < 1 or > 8) return BadRequest(new { message = "رقم النموذج يجب أن يكون بين 1 و8." });
         Response.Headers.CacheControl = "no-store";
@@ -99,7 +99,16 @@ public class QuestionsController : ControllerBase
             picked.AddRange(categoryPicked);
         }
 
-        return Ok(picked);
+        return Ok(picked.Select(q => new ExamQuestionResponse(
+            q.Id,
+            q.Text,
+            q.Options,
+            q.ImageUrl,
+            q.DiagramType,
+            q.DiagramUrl,
+            q.DiagramTitle,
+            q.DiagramDescription
+        )).ToList());
     }
 
     private static string CategoryName(QuestionCategory category) => category switch
