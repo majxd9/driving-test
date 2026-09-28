@@ -83,3 +83,13 @@ export function DrivingTestSyriaPage(){return <InfoPage title="اختبار رخ
 export function AboutPage(){return <InfoPage title="عن رخصتي — منصة تدريب رخصة القيادة" description="تعرف على فكرة رخصتي وطريقة استخدام المنصة للتدرب على قواعد السير والإشارات والميكانيك." path="/about" heading="منصة عربية للتدريب على اختبار القيادة" intro="رخصتي تجمع قواعد السير والإشارات والميكانيك ومحاكاة الاختبار في تجربة تدريب واحدة." items={[
 ['هدف المنصة','تسهيل المراجعة وتقديم تجربة تدريب منظمة على الهاتف والكمبيوتر مع منطقة حساب محمية للطلاب ولوحة إدارة منفصلة.']
 ]}/>}
+
+
+export function NotFoundPage() {
+  useEffect(() => {
+    document.title = 'الصفحة غير موجودة — رخصتي';
+    const robots = document.head.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    if (robots) robots.content = 'noindex, nofollow';
+  }, []);
+  return <Layout><main className="mx-auto max-w-2xl px-4 py-20 text-center md:px-6"><p className="eyebrow">404</p><h1 className="mt-3 text-4xl font-black">الصفحة غير موجودة</h1><p className="mt-4 leading-8 text-muted">الرابط الذي فتحته غير متاح. يمكنك العودة إلى الصفحة الرئيسية أو تسجيل الدخول.</p><div className="mt-7 flex justify-center gap-3"><Link to="/" className="primary-cta">الصفحة الرئيسية</Link><Link to="/login" className="secondary-cta px-5 py-3.5">تسجيل الدخول</Link></div></main></Layout>;
+}
