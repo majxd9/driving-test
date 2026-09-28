@@ -6,7 +6,9 @@ function resolveAiDiagramUrl(src?: string | null): string {
   return match ? `/signs/sign_${match[1]}.svg` : '';
 }
 
-export default function DiagramRenderer({ question }: { question: Question }) {
+type DiagramQuestion = Pick<Question, 'diagramType' | 'diagramUrl' | 'diagramTitle' | 'diagramDescription'>;
+
+export default function DiagramRenderer({ question }: { question: DiagramQuestion }) {
   if (!question.diagramUrl || !question.diagramType) return null;
 
   if (question.diagramType === 'interactive') {
