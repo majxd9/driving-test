@@ -56,7 +56,7 @@ export const api = {
   getQuestions: (category: 'Ser' | 'Ishara' | 'Mechanic') =>
     request<import('../types').Question[]>(`/api/questions?category=${category}`),
   getExamQuestions: (modelId: number) =>
-    request<import('../types').Question[]>(`/api/questions/exam/${modelId}`),
+    request<import('../types').ExamQuestion[]>(`/api/questions/exam/${modelId}`),
   submitExamAttempt: (data: {
     modelId: number;
     answers: Record<number, number>;
