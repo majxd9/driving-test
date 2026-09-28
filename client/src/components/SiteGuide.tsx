@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 
 const steps = [
-  ['1', 'اختر القسم', 'قواعد السير أو الإشارات أو الميكانيك.'],
-  ['2', 'أجب عن الأسئلة', 'تدرّب سؤالاً بعد سؤال مع صور واضحة.'],
-  ['3', 'افهم الخطأ', 'بعد الإجابة يظهر لك التفسير والتوضيح البصري عند توفره.'],
-  ['4', 'اختبر نفسك', 'اختم التدريب بنموذج محاكي للامتحان مع مؤقت ونتيجة.'],
+  ['1', 'تدرّب حسب القسم', 'راجع قواعد السير أو الإشارات المرورية أو أساسيات الميكانيك.'],
+  ['2', 'أجب وراجع', 'تدرّب سؤالاً بعد سؤال، وعند الإجابة يظهر التفسير والتوضيح البصري عند توفره.'],
+  ['3', 'جرّب المحاكاة', 'اختر نموذجاً محاكياً يحتوي على ٣٠ سؤالاً مع مؤقت ١٥ دقيقة.'],
+  ['4', 'شاهد النتيجة', 'بعد إنهاء الاختبار تظهر الإجابات الصحيحة والخاطئة والأسئلة التي لم تُجب عنها مع مراجعة واضحة للأخطاء.'],
 ];
 
 export default function SiteGuide() {
@@ -26,7 +26,7 @@ export default function SiteGuide() {
             <button className="modal-close" onClick={() => setOpen(false)} aria-label="إغلاق">×</button>
             <div className="guide-icon">✦</div>
             <h2 id="guide-title" className="text-2xl font-extrabold text-ink">كيف تستخدم رخصتي؟</h2>
-            <p className="text-muted mt-2">تجربة بسيطة من أول سؤال حتى الاختبار النهائي.</p>
+            <p className="text-muted mt-2">كل ما تحتاجه لتفهم الموقع وتبدأ التدريب من مكان واحد.</p>
             <div className="mt-7 space-y-4">
               {steps.map(([n,title,text]) => <div key={n} className="flex gap-4 text-right">
                 <div className="step-number">{n}</div><div><h3 className="font-bold text-ink">{title}</h3><p className="text-sm text-muted mt-1 leading-relaxed">{text}</p></div>
