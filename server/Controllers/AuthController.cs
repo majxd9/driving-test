@@ -59,13 +59,13 @@ public class AuthController : ControllerBase
         {
             _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "AccountDisabled" });
             await _db.SaveChangesAsync();
-            return Unauthorized(new { message = "هذا الحساب معطّل حالياً." });
+            return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
         if (user.AccessExpiresAt is not null && user.AccessExpiresAt < DateTime.UtcNow)
         {
             _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "AccessExpired" });
             await _db.SaveChangesAsync();
-            return Unauthorized(new { message = "انتهت صلاحية الاشتراك" });
+            return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
         if (await _userManager.IsLockedOutAsync(user))
         {
@@ -89,7 +89,7 @@ public class AuthController : ControllerBase
         {
             _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "DeviceMismatch" });
             await _db.SaveChangesAsync();
-            return Unauthorized(new { message = "هذا الحساب مرتبط بجهاز آخر مسبقاً." });
+            return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
 
         var deviceWasAssigned = role != "Admin" && string.IsNullOrEmpty(user.DeviceId);
