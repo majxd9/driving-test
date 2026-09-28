@@ -731,8 +731,14 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
 
 /* Mobile cleanup: the learning-flow focus should not cast a halo across the action buttons. */
 @media(max-width:760px){
-  .simulator-layout.scene-focus-active{
+  .simulator-layout.scene-focus-active,
+  .simulator-layout.scene-focus-active .control-panel,
+  .simulator-layout.scene-focus-active .control-grid button,
+  .simulator-layout.scene-focus-active .hazard-control{
     box-shadow:none!important;
+  }
+  .simulator-layout.scene-focus-active{
+    border-color:transparent!important;
   }
 }
 
