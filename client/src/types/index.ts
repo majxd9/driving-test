@@ -44,6 +44,17 @@ export interface AuthLog {
   reason: string;
 }
 
+export interface ExamQuestion {
+  id: number;
+  text: string;
+  options: string[];
+  imageUrl?: string;
+  diagramType?: 'svg' | 'image' | 'interactive' | null;
+  diagramUrl?: string | null;
+  diagramTitle?: string | null;
+  diagramDescription?: string | null;
+}
+
 export interface ExamReviewQuestion {
   id: number;
   text: string;
