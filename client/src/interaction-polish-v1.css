@@ -122,3 +122,32 @@
 .study-premium-action:disabled{
   cursor:not-allowed!important;
 }
+
+
+/* FINAL NAV HIT-AREA FIX: remove any sticky/gradient hit layer from the study actions. */
+.study-premium-actions{
+  position:absolute!important;
+  left:5px!important;
+  right:5px!important;
+  bottom:5px!important;
+  top:auto!important;
+  z-index:99999!important;
+  pointer-events:auto!important;
+  overflow:visible!important;
+  background:transparent!important;
+}
+.study-premium-actions::before,
+.study-premium-actions::after{
+  content:none!important;
+  display:none!important;
+  pointer-events:none!important;
+}
+.study-premium-action{
+  position:relative!important;
+  z-index:100000!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+}
+@media(max-width:430px){
+  .study-premium-actions{bottom:5px!important;}
+}
