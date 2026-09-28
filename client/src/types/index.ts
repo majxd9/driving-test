@@ -44,6 +44,31 @@ export interface AuthLog {
   reason: string;
 }
 
+export interface ExamReviewQuestion {
+  id: number;
+  text: string;
+  options: string[];
+  correctAnswerIndex: number;
+  chosenAnswerIndex: number | null;
+  explanation?: string;
+  imageUrl?: string;
+  diagramType?: 'svg' | 'image' | 'interactive' | null;
+  diagramUrl?: string | null;
+  diagramTitle?: string | null;
+  diagramDescription?: string | null;
+}
+
+export interface ExamSubmission {
+  id: number;
+  modelId: number;
+  correct: number;
+  total: number;
+  answered: number;
+  wrongQuestionIds: number[];
+  createdAt: string;
+  reviewQuestions: ExamReviewQuestion[];
+}
+
 export interface ExamAttempt {
   id: number;
   modelId: number;
