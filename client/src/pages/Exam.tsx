@@ -26,6 +26,7 @@ export default function Exam() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const finishedRef = useRef(false);
   const questionsRef = useRef<Question[]>([]);
   const answersRef = useRef<Record<number, number>>({});
@@ -68,18 +69,50 @@ export default function Exam() {
 
   useEffect(() => { void loadExam(); }, [loadExam]);
 
-  const finish = useCallback(() => {
+  const finish = useCallback(async () => {
     const currentQuestions = questionsRef.current;
     const currentAnswers = answersRef.current;
     if (finishedRef.current || !currentQuestions.length) return;
+
     finishedRef.current = true;
-    let correct = 0;
-    const reviewQuestions = currentQuestions.map(question => { const chosen=currentAnswers[question.id]; if(chosen===question.correctAnswerIndex) correct++; return {question,chosen:chosen??null}; });
-    const answered=Object.keys(currentAnswers).length;
-    const wrongQuestionIds=reviewQuestions.filter(x=>x.chosen!==null&&x.chosen!==x.question.correctAnswerIndex).map(x=>x.question.id);
-    void api.submitExamAttempt({ modelId: Number(modelId) || 1, answers: currentAnswers }).catch(() => {});
-    navigate('/result',{state:{correct,total:currentQuestions.length,answered,reviewQuestions,modelId:Number(modelId)||1}});
-  },[navigate,modelId]);
+    setSubmitError(null);
+
+    try {
+      const result = await api.submitExamAttempt({
+        modelId: Number(modelId) || 1,
+        answers: currentAnswers,
+      });
+
+      const reviewQuestions = result.reviewQuestions.map(item => ({
+        question: {
+          id: item.id,
+          text: item.text,
+          options: item.options,
+          correctAnswerIndex: item.correctAnswerIndex,
+          explanation: item.explanation,
+          imageUrl: item.imageUrl,
+          diagramType: item.diagramType,
+          diagramUrl: item.diagramUrl,
+          diagramTitle: item.diagramTitle,
+          diagramDescription: item.diagramDescription,
+        },
+        chosen: item.chosenAnswerIndex,
+      }));
+
+      navigate('/result', {
+        state: {
+          correct: result.correct,
+          total: result.total,
+          answered: result.answered,
+          reviewQuestions,
+          modelId: result.modelId,
+        },
+      });
+    } catch (err) {
+      finishedRef.current = false;
+      setSubmitError(err instanceof Error ? err.message : 'تعذر حفظ نتيجة الاختبار. حاول مرة أخرى.');
+    }
+  }, [navigate, modelId]);
 
   const goToQuestion = useCallback((nextIndex:number) => {
     if(nextIndex===current||nextIndex<0||nextIndex>=questions.length)return;
@@ -135,6 +168,7 @@ export default function Exam() {
       <div className={`exam-timer-v2 ${seconds<=60?'urgent':''}`} aria-label={`الوقت المتبقي ${mm}:${ss}`}>{mm}:{ss}</div>
     </header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
+    {submitError&&<div className="mx-auto mt-3 w-full max-w-4xl px-4"><div className="login-v2-error" role="alert">{submitError}</div></div>}
     <main className="exam-stage-v2"><section className="exam-card-v2">
       <div className="exam-scroll-v2">
         <div className="exam-image-slot-v2"><div className="exam-image-placeholder-v2" aria-hidden="true"/></div>
