@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { LandingPage, RulesPage, TrafficSignsPage, DrivingTestSyriaPage, AboutPage, NotFoundPage } from './pages/PublicPages';
+import { RulesPage, TrafficSignsPage, DrivingTestSyriaPage, AboutPage, NotFoundPage } from './pages/PublicPages';
 
 const Login = lazy(() => import('./pages/Login'));
 const Home = lazy(() => import('./pages/Home'));
@@ -22,7 +22,7 @@ export default function App() {
       }
     >
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<Login />} />
         <Route path="/rules" element={<RulesPage />} />
         <Route path="/traffic-signs" element={<TrafficSignsPage />} />
         <Route path="/driving-test-syria" element={<DrivingTestSyriaPage />} />
