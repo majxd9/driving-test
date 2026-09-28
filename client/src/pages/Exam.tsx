@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
-import { Question } from '../types';
+import { ExamQuestion } from '../types';
 import DiagramRenderer from '../components/DiagramRenderer';
 
 const DURATION = 15 * 60;
@@ -18,7 +18,7 @@ const UiIcon = ({name}:{name:'back'|'next'|'finish'|'check'}) => {
 export default function Exam() {
   const { modelId } = useParams();
   const navigate = useNavigate();
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [current, setCurrent] = useState(0);
   const [seconds, setSeconds] = useState(DURATION);
@@ -28,7 +28,7 @@ export default function Exam() {
   const [jumpValue, setJumpValue] = useState('1');
   const [submitError, setSubmitError] = useState<string | null>(null);
   const finishedRef = useRef(false);
-  const questionsRef = useRef<Question[]>([]);
+  const questionsRef = useRef<ExamQuestion[]>([]);
   const answersRef = useRef<Record<number, number>>({});
   const loadSequenceRef = useRef(0);
 
