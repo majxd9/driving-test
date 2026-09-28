@@ -41,6 +41,8 @@ public record ExamQuestionResponse(
     int Id,
     string Text,
     List<string> Options,
+    int CorrectAnswerIndex,
+    string? Explanation,
     string? ImageUrl,
     string? DiagramType,
     string? DiagramUrl,
