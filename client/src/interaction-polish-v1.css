@@ -151,3 +151,74 @@
 @media(max-width:430px){
   .study-premium-actions{bottom:5px!important;}
 }
+
+
+/* ROOT FIX: study navigation is outside the layered card, so decorative card layers cannot intercept taps. */
+.study-navigation-portal{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:calc(10px + env(safe-area-inset-bottom, 0px))!important;
+  transform:translateX(-50%)!important;
+  width:min(970px, calc(100vw - 24px))!important;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)!important;
+  gap:6px!important;
+  margin:0!important;
+  padding:0!important;
+  z-index:2147483000!important;
+  pointer-events:auto!important;
+  isolation:isolate!important;
+  background:transparent!important;
+}
+.study-navigation-portal::before,
+.study-navigation-portal::after{
+  content:none!important;
+  display:none!important;
+  pointer-events:none!important;
+}
+.study-navigation-portal .study-premium-action{
+  position:relative!important;
+  z-index:2147483001!important;
+  width:100%!important;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  margin:0!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  cursor:pointer!important;
+}
+@media(max-width:700px){
+  .study-navigation-portal{
+    width:calc(100vw - 16px)!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    bottom:calc(6px + env(safe-area-inset-bottom, 0px))!important;
+    gap:5px!important;
+  }
+  .study-navigation-portal .study-premium-action{
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+  }
+}
+@media(max-width:430px){
+  .study-navigation-portal{
+    width:calc(100vw - 12px)!important;
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
+    bottom:calc(5px + env(safe-area-inset-bottom, 0px))!important;
+  }
+  .study-navigation-portal .study-premium-action{
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
+    font-size:12px!important;
+  }
+}
