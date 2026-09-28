@@ -18,8 +18,14 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException("لم يتم ضبط ConnectionStrings__DefaultConnection.");
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("لم يتم ضبط Jwt__Key.");
+if (jwtKey.Length < 32)
+    throw new InvalidOperationException("Jwt__Key يجب أن يكون بطول 32 محرفاً على الأقل.");
+
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "DrivingTestApi";
-var frontendOrigin = builder.Configuration["FrontendOrigin"] ?? "http://localhost:5173";
+var frontendOrigin = (builder.Configuration["FrontendOrigin"] ?? "http://localhost:5173").TrimEnd('/');
+
+if (!builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(builder.Configuration["FrontendOrigin"]))
+    throw new InvalidOperationException("يجب ضبط FrontendOrigin في بيئة الإنتاج.");
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
