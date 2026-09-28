@@ -121,7 +121,7 @@ function RingSymbol({ type, active }: { type: MainLightKey; active: boolean }) {
 
 
 function CockpitHandle({
-  mainLight, signal, movement, onRingCycle, onLever, onHazard,
+  mainLight, signal, movement, onRingCycle, onLever, onHazard, handleCardRef,
 }: {
   mainLight: MainLightKey;
   signal: SignalKey | null;
@@ -129,6 +129,7 @@ function CockpitHandle({
   onRingCycle: () => void;
   onLever: (movement: 'left' | 'right' | 'push' | 'pull') => void;
   onHazard: () => void;
+  handleCardRef: React.RefObject<HTMLElement | null>;
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const dragRef = useRef<{ zone: 'ring' | 'lever'; x: number; y: number } | null>(null);
@@ -1282,9 +1283,9 @@ export default function PracticalInfo() {
               <div className="sound-control"><button type="button" onClick={() => setSoundEnabled(value => { const next = !value; if (next) playClick(true); return next; })} aria-label={soundEnabled ? 'إيقاف صوت التفاعل' : 'تشغيل واختبار صوت التفاعل'}>{soundEnabled ? '♪' : '×'}</button><span>{soundEnabled ? 'صوت التفاعل' : 'الصوت مغلق'}</span>{flashCount > 0 && <b>{flashCount}× وميض</b>}</div>
             </div>
 
-            <div ref={simulatorLayoutRef} className={"simulator-layout " + (sceneFocusActive ? "scene-focus-active" : "")}>
+            <div className={"simulator-layout " + (sceneFocusActive ? "scene-focus-active" : "")}>
               <ControlPanel group={controlGroup} setGroup={setControlGroup} mainLight={mainLight} signal={signal} flashActive={flashActive} onMain={chooseMain} onSignal={chooseSignal} onFlash={triggerFlash}/>
-              <CockpitHandle mainLight={mainLight} signal={signal} movement={movement} onRingCycle={cycleRing} onLever={applyLever} onHazard={() => chooseSignal('hazard')}/>
+              <CockpitHandle mainLight={mainLight} signal={signal} movement={movement} onRingCycle={cycleRing} onLever={applyLever} onHazard={() => chooseSignal('hazard')} handleCardRef={handleCardRef}/>
             </div>
 
             <div className="result-heading"><span>03</span><div><b>شاهد الأثر على السيارة</b><small>السيارة من الجهة الصحيحة، والضوء يُرسم من مصدره باتجاه الطريق.</small></div></div>
