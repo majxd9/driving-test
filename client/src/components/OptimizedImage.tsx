@@ -14,7 +14,7 @@ export { resolveQuestionImageUrl } from '../utils/questionImages';
 
 function withVersion(url: string) {
   if (!url || /^(data:|blob:)/i.test(url)) return url;
-  return `${url}${url.includes('?') ? '&' : '?'}v=20260927`;
+  return `${url}${url.includes('?') ? '&' : '?'}v=20260928`;
 }
 
 function imageCandidates(src: string, canonicalSrc: string) {
