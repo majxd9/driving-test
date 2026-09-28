@@ -123,7 +123,7 @@ export default function Study() {
       dir="rtl"
     >
       <header className="study-premium-header">
-        <button className="study-premium-back" onClick={() => navigate('/')} aria-label="العودة">‹</button>
+        <button className="study-premium-back" onClick={() => navigate('/app')} aria-label="العودة">‹</button>
 
         <div className="study-premium-brand">
           <span className="study-premium-kicker">تدريب تفاعلي</span>
