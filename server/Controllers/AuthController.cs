@@ -4,6 +4,7 @@ using DrivingTestApi.Models;
 using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DrivingTestApi.Controllers;
 
@@ -29,11 +30,13 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("login")]
     [Consumes("application/json")]
     public Task<ActionResult<LoginResponse>> LoginJson([FromBody] LoginRequest request)
         => LoginCore(request);
 
     [HttpPost("login")]
+    [EnableRateLimiting("login")]
     [Consumes("application/x-www-form-urlencoded")]
     public Task<ActionResult<LoginResponse>> LoginForm([FromForm] LoginFormRequest request)
         => LoginCore(new LoginRequest(request.UserName, request.Password, request.DeviceId));
@@ -66,10 +69,22 @@ public class AuthController : ControllerBase
             await _db.SaveChangesAsync();
             return Unauthorized(new { message = "انتهت صلاحية الاشتراك" });
         }
+        if (await _userManager.IsLockedOutAsync(user))
+        {
+            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "LockedOut" });
+            await _db.SaveChangesAsync();
+            return Unauthorized(new { message = "تم إيقاف محاولات الدخول لهذا الحساب مؤقتاً بسبب محاولات فاشلة متكررة. حاول لاحقاً." });
+        }
+
         if (!await _userManager.CheckPasswordAsync(user, request.Password))
         {
+            await _userManager.AccessFailedAsync(user);
             _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "WrongPassword" });
             await _db.SaveChangesAsync();
+
+            if (await _userManager.IsLockedOutAsync(user))
+                return Unauthorized(new { message = "تم إيقاف محاولات الدخول لهذا الحساب مؤقتاً بسبب محاولات فاشلة متكررة. حاول لاحقاً." });
+
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
 
@@ -82,14 +97,18 @@ public class AuthController : ControllerBase
         }
 
         var deviceWasAssigned = role != "Admin" && string.IsNullOrEmpty(user.DeviceId);
+        var accessFailedResetNeeded = user.AccessFailedCount > 0;
         if (deviceWasAssigned)
             user.DeviceId = request.DeviceId;
+
+        if (accessFailedResetNeeded)
+            user.AccessFailedCount = 0;
 
         var jwt = _tokenService.CreateToken(user, role);
         Response.Cookies.Append("auth_token", jwt, new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.None, Expires = DateTimeOffset.UtcNow.AddHours(12) });
 
-        // حفظ DeviceId مطلوب فقط لأول دخول على الحساب.
-        if (deviceWasAssigned)
+        // حفظ تغييرات الحساب فقط عند الحاجة، مع تصفير عداد المحاولات الفاشلة بعد نجاح الدخول.
+        if (deviceWasAssigned || accessFailedResetNeeded)
             await _db.SaveChangesAsync();
 
         // نحافظ على سجل الدخول الناجح بدون إضافة كتابة PostgreSQL إلى زمن استجابة الطلب.

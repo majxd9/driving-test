@@ -46,19 +46,6 @@ const raw = fs.readFileSync(file, 'utf8');
 let questions = JSON.parse(raw);
 if (!Array.isArray(questions)) throw new Error('server seed data must be an array');
 
-const skidQuestion = 'في حال انزلقت مركبتك عليك كسائق أن تكون ردة فعلك الأولى:';
-for (const q of questions) {
-  if (q.category === 'Ser' && q.text === skidQuestion && Array.isArray(q.options) && new Set(q.options.map(normalize)).size < q.options.length) {
-    q.options = [
-      'تضغط على الفرامل وتوجه المركبة بعكس اتجاه انزلاق مؤخرتها',
-      'لا تضغط على الفرامل وتوجه المركبة إلى الجهة التي تنزل بها مؤخرتها',
-      'تضغط على الفرامل وتوجه المركبة إلى الجهة التي تنزل بها مؤخرتها',
-      'تترك المقود دون توجيه حتى تتوقف المركبة'
-    ];
-    q.correctAnswerIndex = 1;
-  }
-}
-
 const errors = [];
 const warnings = [];
 const seen = new Map();
