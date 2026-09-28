@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using DrivingTestApi.Data;
 using DrivingTestApi.DTOs;
-using DrivingTestApi.Models;
+using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,19 +22,51 @@ public class ExamAttemptsController : ControllerBase
         var studentId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (studentId is null) return Unauthorized();
 
-        if (request.Total <= 0 || request.Total > 100 ||
-            request.Correct < 0 || request.Correct > request.Total ||
-            request.Answered < 0 || request.Answered > request.Total)
-            return BadRequest(new { message = "بيانات نتيجة الاختبار غير صالحة." });
+        if (request.ModelId is < 1 or > 8 || request.Answers is null || request.Answers.Count > 30)
+            return BadRequest(new { message = "بيانات الاختبار غير صالحة." });
 
-        var wrongIds = request.WrongQuestionIds?.Distinct().Take(100).ToList() ?? new List<int>();
-        var attempt = new ExamAttempt
+        List<Models.Question> examQuestions;
+        try
+        {
+            examQuestions = await ExamQuestionPicker.GetAsync(_db, request.ModelId);
+        }
+        catch (Exception)
+        {
+            return Conflict(new { message = "تعذر التحقق من نموذج الاختبار حالياً." });
+        }
+
+        if (examQuestions.Count != 30)
+            return Conflict(new { message = "تعذر التحقق من أسئلة الاختبار." });
+
+        var expectedIds = examQuestions.Select(q => q.Id).ToHashSet();
+        if (request.Answers.Keys.Any(id => !expectedIds.Contains(id)))
+            return BadRequest(new { message = "توجد إجابات لأسئلة خارج نموذج الاختبار." });
+
+        if (request.Answers.Values.Any(answer => answer < 0 || answer > 5))
+            return BadRequest(new { message = "إحدى الإجابات غير صالحة." });
+
+        var correct = 0;
+        var answered = request.Answers.Count;
+        var wrongIds = new List<int>();
+
+        foreach (var question in examQuestions)
+        {
+            if (!request.Answers.TryGetValue(question.Id, out var selected))
+                continue;
+
+            if (selected == question.CorrectAnswerIndex)
+                correct++;
+            else
+                wrongIds.Add(question.Id);
+        }
+
+        var attempt = new Models.ExamAttempt
         {
             StudentId = studentId,
             ModelId = request.ModelId,
-            Correct = request.Correct,
-            Total = request.Total,
-            Answered = request.Answered,
+            Correct = correct,
+            Total = examQuestions.Count,
+            Answered = answered,
             WrongQuestionIds = wrongIds,
             CreatedAt = DateTime.UtcNow
         };
