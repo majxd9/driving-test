@@ -2,10 +2,7 @@ namespace DrivingTestApi.DTOs;
 
 public record SubmitExamAttemptRequest(
     int ModelId,
-    int Correct,
-    int Total,
-    int Answered,
-    List<int> WrongQuestionIds);
+    Dictionary<int, int> Answers);
 
 public record ExamAttemptResponse(
     int Id,
