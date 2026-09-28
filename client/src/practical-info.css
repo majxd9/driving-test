@@ -729,6 +729,13 @@ html.practical-info-v2-active{scroll-behavior:smooth}html.practical-info-v2-acti
   box-shadow:0 0 0 1px rgba(134,228,218,.08),0 0 34px rgba(70,218,196,.10),0 20px 55px rgba(0,0,0,.24)!important;
 }
 
+/* Mobile cleanup: the learning-flow focus should not cast a halo across the action buttons. */
+@media(max-width:760px){
+  .simulator-layout.scene-focus-active{
+    box-shadow:none!important;
+  }
+}
+
 
 /* 2026-09-27 lighting orientation pass:
    rear vehicle = fixed car-rear.svg;
