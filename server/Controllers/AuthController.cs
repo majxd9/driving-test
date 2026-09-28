@@ -18,17 +18,20 @@ public class AuthController : ControllerBase
     private readonly ITokenService _tokenService;
     private readonly AppDbContext _db;
     private readonly IAuthLogQueue _authLogQueue;
+    private readonly IClientIpResolver _clientIpResolver;
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
         ITokenService tokenService,
         AppDbContext db,
-        IAuthLogQueue authLogQueue)
+        IAuthLogQueue authLogQueue,
+        IClientIpResolver clientIpResolver)
     {
         _userManager = userManager;
         _tokenService = tokenService;
         _db = db;
         _authLogQueue = authLogQueue;
+        _clientIpResolver = clientIpResolver;
     }
 
     [HttpPost("login")]
@@ -46,7 +49,7 @@ public class AuthController : ControllerBase
     private async Task<ActionResult<LoginResponse>> LoginCore(LoginRequest request)
     {
         var username = request.UserName?.Trim() ?? string.Empty;
-        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var ip = _clientIpResolver.GetClientIp(HttpContext);
         var userAgent = Request.Headers.UserAgent.ToString();
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(request.Password))
