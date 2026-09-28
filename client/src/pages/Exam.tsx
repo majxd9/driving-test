@@ -27,6 +27,7 @@ export default function Exam() {
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const finishedRef = useRef(false);
   const questionsRef = useRef<ExamQuestion[]>([]);
   const answersRef = useRef<Record<number, number>>({});
@@ -76,12 +77,25 @@ export default function Exam() {
 
     finishedRef.current = true;
     setSubmitError(null);
+    setSubmitting(true);
 
     try {
-      const result = await api.submitExamAttempt({
-        modelId: Number(modelId) || 1,
-        answers: currentAnswers,
-      });
+      let result;
+      let lastError: unknown = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          result = await api.submitExamAttempt({
+            modelId: Number(modelId) || 1,
+            answers: currentAnswers,
+          });
+          lastError = null;
+          break;
+        } catch (error) {
+          lastError = error;
+          if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 900));
+        }
+      }
+      if (!result) throw (lastError instanceof Error ? lastError : new Error('تعذر حفظ نتيجة الاختبار. حاول مرة أخرى.'));
 
       const reviewQuestions = result.reviewQuestions.map(item => ({
         question: {
@@ -111,6 +125,8 @@ export default function Exam() {
     } catch (err) {
       finishedRef.current = false;
       setSubmitError(err instanceof Error ? err.message : 'تعذر حفظ نتيجة الاختبار. حاول مرة أخرى.');
+    } finally {
+      setSubmitting(false);
     }
   }, [navigate, modelId]);
 
@@ -168,7 +184,7 @@ export default function Exam() {
       <div className={`exam-timer-v2 ${seconds<=60?'urgent':''}`} aria-label={`الوقت المتبقي ${mm}:${ss}`}>{mm}:{ss}</div>
     </header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
-    {submitError&&<div className="mx-auto mt-3 w-full max-w-4xl px-4"><div className="login-v2-error" role="alert">{submitError}</div></div>}
+    {(submitError||submitting)&&<div className="mx-auto mt-3 w-full max-w-4xl px-4"><div className="login-v2-error" role={submitError ? 'alert' : undefined}>{submitting ? 'جارٍ حفظ النتيجة وتجهيز المراجعة...' : submitError}</div></div>}
     <main className="exam-stage-v2"><section className="exam-card-v2">
       <div className="exam-scroll-v2">
         <div className="exam-image-slot-v2"><div className="exam-image-placeholder-v2" aria-hidden="true"/></div>
@@ -178,8 +194,8 @@ export default function Exam() {
       </div>
       <div className="exam-actions-v2">
         <button type="button" onClick={()=>goToQuestion(current-1)} disabled={current===0} className="exam-action-v2 secondary"><UiIcon name="back"/><span>السابق</span></button>
-        <button type="button" onClick={finish} className="exam-action-v2 finish"><UiIcon name="finish"/><span>إنهاء الاختبار</span></button>
-        <button type="button" onClick={()=>isLast?finish():goToQuestion(current+1)} className="exam-action-v2 next"><span>{isLast?'عرض النتيجة':'التالي'}</span><UiIcon name="next"/></button>
+        <button type="button" onClick={finish} disabled={submitting} className="exam-action-v2 finish"><UiIcon name="finish"/><span>{submitting ? 'جارٍ الحفظ...' : 'إنهاء الاختبار'}</span></button>
+        <button type="button" onClick={()=>isLast?finish():goToQuestion(current+1)} disabled={submitting} className="exam-action-v2 next"><span>{isLast?(submitting?'جارٍ الحفظ...':'عرض النتيجة'):'التالي'}</span><UiIcon name="next"/></button>
       </div>
     </section></main>
 
