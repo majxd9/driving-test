@@ -138,6 +138,32 @@ CREATE INDEX IF NOT EXISTS ""IX_ExamAttempts_StudentId_CreatedAt""
         }
     }
 
+    private static async Task RepairKnownQuestionCorrectionsAsync(AppDbContext db)
+    {
+        const string skidQuestion = "في حال انزلقت مركبتك عليك كسائق أن تكون ردة فعلي الأولى:";
+
+        var question = await db.Questions
+            .FirstOrDefaultAsync(q => q.Category == QuestionCategory.Ser && q.Text == skidQuestion);
+
+        if (question is null || question.Options.Count != 4)
+            return;
+
+        var correctedOptions = new List<string>
+        {
+            "تضغط على الفرامل وتوجه المركبة بعكس اتجاه انزلاق مؤخرتها",
+            "لا تضغط على الفرامل وتوجه المركبة إلى الجهة التي تنزل بها مؤخرتها",
+            "تضغط على الفرامل وتوجه المركبة إلى الجهة التي تنزل بها مؤخرتها",
+            "تترك المقود دون توجيه حتى تتوقف المركبة"
+        };
+
+        if (question.Options.SequenceEqual(correctedOptions) && question.CorrectAnswerIndex == 1)
+            return;
+
+        question.Options = correctedOptions;
+        question.CorrectAnswerIndex = 1;
+        await db.SaveChangesAsync();
+    }
+
     private static async Task NormalizeQuestionImagesAsync(AppDbContext db)
     {
         var existing = await db.Questions.ToListAsync();
