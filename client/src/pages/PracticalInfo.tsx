@@ -129,7 +129,7 @@ function CockpitHandle({
   onRingCycle: () => void;
   onLever: (movement: 'left' | 'right' | 'push' | 'pull') => void;
   onHazard: () => void;
-  handleCardRef: React.RefObject<HTMLElement | null>;
+  handleCardRef: React.Ref<HTMLElement>;
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const dragRef = useRef<{ zone: 'ring' | 'lever'; x: number; y: number } | null>(null);
