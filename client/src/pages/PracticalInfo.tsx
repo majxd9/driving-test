@@ -121,11 +121,12 @@ function RingSymbol({ type, active }: { type: MainLightKey; active: boolean }) {
 
 
 function CockpitHandle({
-  mainLight, signal, movement, onRingCycle, onLever, onHazard, containerRef,
+  mainLight, signal, movement, handleMotionActive, onRingCycle, onLever, onHazard, containerRef,
 }: {
   mainLight: MainLightKey;
   signal: SignalKey | null;
   movement: 'ring' | 'left' | 'right' | 'push' | 'pull' | 'hazard';
+  handleMotionActive: boolean;
   onRingCycle: () => void;
   onLever: (movement: 'left' | 'right' | 'push' | 'pull') => void;
   onHazard: () => void;
@@ -136,7 +137,7 @@ function CockpitHandle({
   const suppressClick = useRef<'ring' | 'lever' | null>(null);
 
   const ringIndex = Math.max(0, RING_LIGHTS.findIndex(item => item.key === mainLight));
-  const ringAngle = movement === 'ring' ? -2 : 0;
+  const ringAngle = movement === 'ring' ? (handleMotionActive ? -6 : 0) : 0;
   const currentLabel =
     signal === 'left' ? 'غماز يسار' :
     signal === 'right' ? 'غماز يمين' :
@@ -967,6 +968,8 @@ export default function PracticalInfo() {
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [oncoming, setOncoming] = useState(true);
   const [sceneFocusActive, setSceneFocusActive] = useState(false);
+  const [handleMotionActive, setHandleMotionActive] = useState(false);
+  const handleMotionTimerRef = useRef<number | null>(null);
   const audioRef = useRef<AudioContext | null>(null);
   const simulatorLayoutRef = useRef<HTMLDivElement | null>(null);
   const handleCardRef = useRef<HTMLElement | null>(null);
@@ -1006,8 +1009,10 @@ export default function PracticalInfo() {
       }
       if (hazardSoundTimerRef.current !== null) window.clearInterval(hazardSoundTimerRef.current);
       if (hazardSoundStopTimerRef.current !== null) window.clearTimeout(hazardSoundStopTimerRef.current);
+      if (handleMotionTimerRef.current !== null) window.clearTimeout(handleMotionTimerRef.current);
       hazardSoundTimerRef.current = null;
       hazardSoundStopTimerRef.current = null;
+      handleMotionTimerRef.current = null;
     };
   }, []);
   useEffect(() => {
@@ -1154,6 +1159,12 @@ export default function PracticalInfo() {
 
       scrollToTarget(handleTarget, handleDuration, () => {
         onHandleReached?.();
+        if (handleMotionTimerRef.current !== null) window.clearTimeout(handleMotionTimerRef.current);
+        setHandleMotionActive(true);
+        handleMotionTimerRef.current = window.setTimeout(() => {
+          setHandleMotionActive(false);
+          handleMotionTimerRef.current = null;
+        }, 360);
         const pauseToVehicle = window.setTimeout(() => {
           scrollToTarget(vehicleTarget, vehicleDuration, () => {
             const pauseToReturn = window.setTimeout(() => {
@@ -1292,7 +1303,7 @@ export default function PracticalInfo() {
 
             <div ref={simulatorLayoutRef} className={"simulator-layout " + (sceneFocusActive ? "scene-focus-active" : "")}>
               <ControlPanel group={controlGroup} setGroup={setControlGroup} mainLight={mainLight} signal={signal} flashActive={flashActive} onMain={chooseMain} onSignal={chooseSignal} onFlash={triggerFlash}/>
-              <CockpitHandle mainLight={mainLight} signal={signal} movement={movement} onRingCycle={cycleRing} onLever={applyLever} onHazard={() => chooseSignal('hazard')} containerRef={(node) => { handleCardRef.current = node; }}/>
+              <CockpitHandle mainLight={mainLight} signal={signal} movement={movement} handleMotionActive={handleMotionActive} onRingCycle={cycleRing} onLever={applyLever} onHazard={() => chooseSignal('hazard')} containerRef={(node) => { handleCardRef.current = node; }}/>
             </div>
 
             <div className="result-heading"><span>03</span><div><b>شاهد الأثر على السيارة</b><small>السيارة من الجهة الصحيحة، والضوء يُرسم من مصدره باتجاه الطريق.</small></div></div>
