@@ -4,6 +4,7 @@ using DrivingTestApi.Models;
 using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace DrivingTestApi.Controllers;
@@ -30,11 +31,13 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("login")]
     [Consumes("application/json")]
     public Task<ActionResult<LoginResponse>> LoginJson([FromBody] LoginRequest request)
         => LoginCore(request);
 
     [HttpPost("login")]
+    [EnableRateLimiting("login")]
     [Consumes("application/x-www-form-urlencoded")]
     public Task<ActionResult<LoginResponse>> LoginForm([FromForm] LoginFormRequest request)
         => LoginCore(new LoginRequest(request.UserName, request.Password, request.DeviceId));
@@ -114,6 +117,22 @@ public class AuthController : ControllerBase
             Reason = "Success"
         });
 
+        return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt, QuestionCountCache.Total));
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<ActionResult<LoginResponse>> Me()
+    {
+        var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized();
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null || !user.IsActive || (user.AccessExpiresAt is not null && user.AccessExpiresAt <= DateTime.UtcNow))
+            return Unauthorized();
+
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Student";
         return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt, QuestionCountCache.Total));
     }
 
