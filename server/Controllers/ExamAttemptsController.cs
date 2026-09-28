@@ -78,8 +78,24 @@ public class ExamAttemptsController : ControllerBase
         _db.ExamAttempts.Add(attempt);
         await _db.SaveChangesAsync();
 
-        return Ok(new ExamAttemptResponse(
+        var reviewQuestions = examQuestions
+            .Select(question => new ExamReviewQuestionResponse(
+                question.Id,
+                question.Text,
+                question.Options,
+                question.CorrectAnswerIndex,
+                request.Answers.TryGetValue(question.Id, out var chosen) ? chosen : null,
+                question.Explanation,
+                question.ImageUrl,
+                question.DiagramType,
+                question.DiagramUrl,
+                question.DiagramTitle,
+                question.DiagramDescription))
+            .ToList();
+
+        return Ok(new ExamSubmissionResponse(
             attempt.Id, attempt.ModelId, attempt.Correct, attempt.Total,
-            attempt.Answered, attempt.WrongQuestionIds, attempt.CreatedAt));
+            attempt.Answered, attempt.WrongQuestionIds, attempt.CreatedAt,
+            reviewQuestions));
     }
 }
