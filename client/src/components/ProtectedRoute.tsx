@@ -12,7 +12,7 @@ export function ProtectedRoute({
 
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
-  if (adminOnly && user.role !== 'Admin') return <Navigate to="/" replace />;
+  if (adminOnly && user.role !== 'Admin') return <Navigate to="/app" replace />;
 
   return <>{children}</>;
 }
