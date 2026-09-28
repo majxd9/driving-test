@@ -237,24 +237,27 @@ export default function Study() {
 
           <div className="study-premium-diagram"><DiagramRenderer question={q} /></div>
 
-          <nav className="study-premium-actions" aria-label="التنقل بين الأسئلة">
-            <button
-              onPointerDown={(event) => { event.preventDefault(); goTo(index - 1); }}
-              disabled={index === 0}
-              className="study-premium-action ghost"
-            >
-              السابق
-            </button>
-            <button
-              onPointerDown={(event) => { event.preventDefault(); goTo(index + 1); }}
-              disabled={isLast}
-              className="study-premium-action next"
-            >
-              {isLast ? 'انتهى القسم' : 'السؤال التالي'} <span>←</span>
-            </button>
-          </nav>
         </section>
       </main>
+
+      <nav className="study-premium-actions study-navigation-portal" aria-label="التنقل بين الأسئلة">
+        <button
+          type="button"
+          onClick={() => goTo(index - 1)}
+          disabled={index === 0}
+          className="study-premium-action ghost"
+        >
+          السابق
+        </button>
+        <button
+          type="button"
+          onClick={() => goTo(index + 1)}
+          disabled={isLast}
+          className="study-premium-action next"
+        >
+          {isLast ? 'انتهى القسم' : 'السؤال التالي'} <span>←</span>
+        </button>
+      </nav>
     </div>
   );
 }
