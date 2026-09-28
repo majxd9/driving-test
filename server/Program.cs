@@ -108,6 +108,7 @@ builder.Services.Configure<BrotliCompressionProviderOptions>(o => o.Level = Syst
 builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = System.IO.Compression.CompressionLevel.Fastest);
 builder.Services.AddAuthorization();
 builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<IClientIpResolver, ClientIpResolver>();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -117,15 +118,19 @@ builder.Services.AddRateLimiter(options =>
             context.HttpContext.Response.Headers.RetryAfter = ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString(CultureInfo.InvariantCulture);
         await context.HttpContext.Response.WriteAsJsonAsync(new { message = "تم تجاوز عدد المحاولات المسموح بها. حاول بعد قليل." }, cancellationToken);
     };
-    options.AddPolicy("login", httpContext => RateLimitPartition.GetFixedWindowLimiter(
-        httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-        _ => new FixedWindowRateLimiterOptions
+    options.AddPolicy("login", httpContext =>
+    {
+        var clientIp = httpContext.RequestServices.GetRequiredService<IClientIpResolver>().GetClientIp(httpContext) ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(
+            clientIp,
+            _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 8,
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0,
             AutoReplenishment = true
-        }));
+            });
+    });
 });
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<IAuthLogQueue, AuthLogQueue>();
