@@ -48,7 +48,7 @@ export default function Login() {
       setLoginSuccess(true);
       void playAuthFeedback(true);
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => navigate('/',{replace:true}));
+        requestAnimationFrame(() => navigate('/app',{replace:true}));
       });
     }
     catch(err){
