@@ -96,3 +96,29 @@
 .home-hero-copy .modal-backdrop{
   z-index:9999!important;
 }
+
+
+/* FINAL INTERACTION SAFETY — navigation must remain above every decorative layer. */
+.study-premium-card{
+  isolation:isolate!important;
+}
+.study-premium-actions{
+  position:relative!important;
+  z-index:10000!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+}
+.study-premium-actions::before,
+.study-premium-actions::after{
+  pointer-events:none!important;
+}
+.study-premium-action{
+  position:relative!important;
+  z-index:10001!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  cursor:pointer!important;
+}
+.study-premium-action:disabled{
+  cursor:not-allowed!important;
+}
