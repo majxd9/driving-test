@@ -121,6 +121,8 @@ CREATE INDEX IF NOT EXISTS ""IX_ExamAttempts_StudentId_CreatedAt""
         var runMaintenance = config.GetValue<bool>("Maintenance:RunOnStartup");
         var hasQuestions = await db.Questions.AsNoTracking().AnyAsync();
 
+        await RepairKnownQuestionCorrectionsAsync(db);
+
         if (!hasQuestions || runMaintenance)
         {
             // نعتمد على محتوى السؤال نفسه لمنع تكرار الـseed،
