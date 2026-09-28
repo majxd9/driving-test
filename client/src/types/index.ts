@@ -48,6 +48,8 @@ export interface ExamQuestion {
   id: number;
   text: string;
   options: string[];
+  correctAnswerIndex: number;
+  explanation?: string | null;
   imageUrl?: string;
   diagramType?: 'svg' | 'image' | 'interactive' | null;
   diagramUrl?: string | null;
