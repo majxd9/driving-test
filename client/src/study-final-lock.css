@@ -317,3 +317,84 @@ html:has(.study-premium),html:has(.study-premium) body,html:has(.study-premium) 
     padding-bottom:42px!important;
   }
 }
+
+
+/* FINAL NAV VISIBILITY PATCH — keep study navigation always visible and tappable. */
+.study-premium-actions{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)!important;
+  align-items:stretch!important;
+  justify-content:stretch!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+  pointer-events:auto!important;
+  z-index:500!important;
+}
+.study-premium-action{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  margin:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  color:#eef7f5!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  background:rgba(255,255,255,.08)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.06),0 8px 20px rgba(0,0,0,.16)!important;
+}
+.study-premium-action.ghost:disabled{
+  opacity:.72!important;
+  color:#c5ced7!important;
+  background:rgba(255,255,255,.045)!important;
+}
+.study-premium-action.next{
+  background:linear-gradient(135deg,rgba(45,212,191,.22),rgba(15,65,67,.42))!important;
+  border-color:rgba(45,212,191,.42)!important;
+  color:#dffff8!important;
+}
+.study-premium-action.next:disabled{
+  opacity:.78!important;
+}
+.study-premium-action span{
+  display:inline-flex!important;
+  align-items:center!important;
+  margin-inline-start:6px!important;
+}
+@media(max-width:700px){
+  .study-premium-actions{
+    left:5px!important;
+    right:5px!important;
+    bottom:5px!important;
+    width:auto!important;
+    height:43px!important;
+    min-height:43px!important;
+    max-height:43px!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)!important;
+    visibility:visible!important;
+    opacity:1!important;
+    z-index:500!important;
+  }
+  .study-premium-action{
+    height:43px!important;
+    min-height:43px!important;
+    max-height:43px!important;
+    font-size:12px!important;
+  }
+}
+@media(max-width:430px){
+  .study-premium-actions{
+    height:41px!important;
+    min-height:41px!important;
+    max-height:41px!important;
+  }
+  .study-premium-action{
+    height:41px!important;
+    min-height:41px!important;
+    max-height:41px!important;
+    font-size:11px!important;
+  }
+}
