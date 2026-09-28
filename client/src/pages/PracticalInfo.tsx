@@ -1120,7 +1120,7 @@ export default function PracticalInfo() {
     scrollFlowFrameRef.current = window.requestAnimationFrame(tick);
   };
 
-  const runLearningScrollFlow = () => {
+  const runLearningScrollFlow = (onHandleReached?: () => void) => {
     cancelLearningScroll();
 
     const originTop = window.scrollY;
@@ -1153,6 +1153,7 @@ export default function PracticalInfo() {
       const pauseBeforeReturn = isMobile ? 1000 : 800;
 
       scrollToTarget(handleTarget, handleDuration, () => {
+        onHandleReached?.();
         const pauseToVehicle = window.setTimeout(() => {
           scrollToTarget(vehicleTarget, vehicleDuration, () => {
             const pauseToReturn = window.setTimeout(() => {
@@ -1172,10 +1173,11 @@ export default function PracticalInfo() {
     playClick();
     stopHazardSoundLoop();
     setMainLight(key); setSignal(null); setFlashActive(false);
-    setMovement(key === 'high' ? 'push' : 'ring');
     setMobileSheetOpen(true);
     setOncoming(key === 'high');
-    runLearningScrollFlow();
+    runLearningScrollFlow(() => {
+      setMovement(key === 'high' ? 'push' : 'ring');
+    });
   };
 
   const playHazardSound = () => {
@@ -1211,29 +1213,33 @@ export default function PracticalInfo() {
     if (key === 'hazard' && signal === 'hazard') {
       stopHazardSoundLoop();
       setSignal(null);
-      setMovement('ring');
       setFlashActive(false);
       setMobileSheetOpen(false);
-      runLearningScrollFlow();
+      runLearningScrollFlow(() => {
+        setMovement('ring');
+      });
       return;
     }
 
     stopHazardSoundLoop();
     setSignal(key);
     setFlashActive(false);
-    setMovement(key);
     setMobileSheetOpen(true);
 
     if (key === 'hazard') {
       startHazardSoundLoop();
     }
 
-    runLearningScrollFlow();
+    runLearningScrollFlow(() => {
+      setMovement(key);
+    });
   };
   const triggerFlash = () => {
     playClick();
-    setSignal(null); setMovement('pull'); setFlashCount(value => value + 1); setFlashActive(true); setMobileSheetOpen(true);
-    runLearningScrollFlow();
+    setSignal(null); setFlashCount(value => value + 1); setFlashActive(true); setMobileSheetOpen(true);
+    runLearningScrollFlow(() => {
+      setMovement('pull');
+    });
   };
   const cycleRing = () => {
     const currentIndex = RING_LIGHTS.findIndex(item => item.key === mainLight);
