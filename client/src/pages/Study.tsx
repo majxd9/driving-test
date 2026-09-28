@@ -239,14 +239,14 @@ export default function Study() {
 
           <nav className="study-premium-actions" aria-label="التنقل بين الأسئلة">
             <button
-              onClick={() => goTo(index - 1)}
+              onPointerDown={(event) => { event.preventDefault(); goTo(index - 1); }}
               disabled={index === 0}
               className="study-premium-action ghost"
             >
               السابق
             </button>
             <button
-              onClick={() => goTo(index + 1)}
+              onPointerDown={(event) => { event.preventDefault(); goTo(index + 1); }}
               disabled={isLast}
               className="study-premium-action next"
             >
