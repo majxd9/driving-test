@@ -130,7 +130,7 @@ function CockpitHandle({
   onLever: (movement: 'left' | 'right' | 'push' | 'pull') => void;
   onHazard: () => void;
   handleCardRef: React.Ref<HTMLElement>;
-  handleStageRef: React.Ref<HTMLElement>;
+  handleStageRef: React.Ref<HTMLDivElement>;
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const dragRef = useRef<{ zone: 'ring' | 'lever'; x: number; y: number } | null>(null);
@@ -970,7 +970,7 @@ export default function PracticalInfo() {
   const [sceneFocusActive, setSceneFocusActive] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
   const handleCardRef = useRef<HTMLElement | null>(null);
-  const handleStageRef = useRef<HTMLElement | null>(null);
+  const handleStageRef = useRef<HTMLDivElement | null>(null);
   const vehicleLabRef = useRef<HTMLElement | null>(null);
   const scrollFlowTimersRef = useRef<number[]>([]);
   const scrollFlowFrameRef = useRef<number | null>(null);
