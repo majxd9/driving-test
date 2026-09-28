@@ -1,4 +1,5 @@
 using DrivingTestApi.Data;
+using DrivingTestApi.DTOs;
 using DrivingTestApi.Models;
 using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Authorization;
