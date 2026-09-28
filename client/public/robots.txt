@@ -1,5 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /login
+Disallow: /app
+Disallow: /study/
+Disallow: /models
+Disallow: /exam/
+Disallow: /result
 Disallow: /admin
 
 Sitemap: https://driving-test-7en.pages.dev/sitemap.xml
