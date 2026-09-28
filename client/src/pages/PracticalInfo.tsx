@@ -1137,31 +1137,36 @@ export default function PracticalInfo() {
       }
 
       const isMobile = window.matchMedia('(max-width: 760px)').matches;
-
-      const getTargetTop = (target: HTMLElement, offset: number) => {
-        return Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset);
-      };
-
-      // Target the actual handle drawing, not the surrounding card. On phones
-      // place its upper area around the upper-middle of the viewport so it is
-      // unmistakably visible below the sticky section navigation.
-      const handleRect = handleTarget.getBoundingClientRect();
-      const handleOffset = isMobile
-        ? Math.max(72, Math.min(window.innerHeight * 0.34, handleRect.height * 0.34))
-        : 108;
       const vehicleOffset = isMobile ? 72 : 108;
 
-      const scrollToTarget = (target: HTMLElement, offset: number, duration: number, onDone: () => void) => {
+      const getTargetTop = (target: HTMLElement, offset: number) => (
+        Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset)
+      );
+
+      const scrollToTarget = (
+        target: HTMLElement,
+        offset: number,
+        duration: number,
+        onDone: () => void,
+      ) => {
         animateScrollTo(getTargetTop(target, offset), duration, onDone);
       };
 
-      const handleDuration = isMobile ? 2350 : 2150;
       const vehicleDuration = isMobile ? 2750 : 2450;
       const returnDuration = isMobile ? 2350 : 2150;
+      const pauseBeforeHandleFinish = isMobile ? 2350 : 2150;
       const pauseBeforeVehicle = isMobile ? 850 : 650;
       const pauseBeforeReturn = isMobile ? 1000 : 800;
 
-      scrollToTarget(handleTarget, handleOffset, handleDuration, () => {
+      // The handle card itself is the teaching target. CSS scroll-margin keeps
+      // its "02 · المقبض التفاعلي" header below the sticky section navigation.
+      handleTarget.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest',
+      });
+
+      const handleTimer = window.setTimeout(() => {
         const pauseToVehicle = window.setTimeout(() => {
           scrollToTarget(vehicleTarget, vehicleOffset, vehicleDuration, () => {
             const pauseToReturn = window.setTimeout(() => {
@@ -1173,7 +1178,9 @@ export default function PracticalInfo() {
           });
         }, pauseBeforeVehicle);
         scrollFlowTimersRef.current.push(pauseToVehicle);
-      });
+      }, pauseBeforeHandleFinish);
+
+      scrollFlowTimersRef.current.push(handleTimer);
     });
   };
 
