@@ -121,7 +121,7 @@ function RingSymbol({ type, active }: { type: MainLightKey; active: boolean }) {
 
 
 function CockpitHandle({
-  mainLight, signal, movement, onRingCycle, onLever, onHazard, handleCardRef,
+  mainLight, signal, movement, onRingCycle, onLever, onHazard, handleCardRef, handleStageRef,
 }: {
   mainLight: MainLightKey;
   signal: SignalKey | null;
@@ -130,6 +130,7 @@ function CockpitHandle({
   onLever: (movement: 'left' | 'right' | 'push' | 'pull') => void;
   onHazard: () => void;
   handleCardRef: React.Ref<HTMLElement>;
+  handleStageRef: React.Ref<HTMLElement>;
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const dragRef = useRef<{ zone: 'ring' | 'lever'; x: number; y: number } | null>(null);
@@ -239,7 +240,7 @@ function CockpitHandle({
         <div className="handle-state"><span>الوضع الحالي</span><strong>{currentLabel}</strong></div>
       </div>
 
-      <div className="handle-stage">
+      <div ref={handleStageRef} className="handle-stage">
         <svg viewBox="0 0 720 420" className="handle-svg" role="img" aria-label="مقبض أضواء وغمازات واقعي مبسط مع مناطق لمس مباشرة">
           <defs>
             <radialGradient id={uid + 'bg'} cx=".46" cy=".42" r=".78">
@@ -969,6 +970,7 @@ export default function PracticalInfo() {
   const [sceneFocusActive, setSceneFocusActive] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
   const handleCardRef = useRef<HTMLElement | null>(null);
+  const handleStageRef = useRef<HTMLElement | null>(null);
   const vehicleLabRef = useRef<HTMLElement | null>(null);
   const scrollFlowTimersRef = useRef<number[]>([]);
   const scrollFlowFrameRef = useRef<number | null>(null);
@@ -1126,7 +1128,7 @@ export default function PracticalInfo() {
     setSceneFocusActive(true);
 
     window.requestAnimationFrame(() => {
-      const handleTarget = handleCardRef.current;
+      const handleTarget = handleStageRef.current;
       const vehicleTarget = vehicleLabRef.current;
 
       if (!handleTarget || !vehicleTarget) {
@@ -1134,14 +1136,19 @@ export default function PracticalInfo() {
         return;
       }
 
+      const isMobile = window.matchMedia('(max-width: 760px)').matches;
+
       const getTargetTop = (target: HTMLElement, offset: number) => {
         return Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset);
       };
 
-      const isMobile = window.matchMedia('(max-width: 760px)').matches;
-      // On mobile the section navigation remains visible at the top. Leave
-      // extra breathing room so the actual handle card stays clearly below it.
-      const handleOffset = isMobile ? 96 : 108;
+      // Target the actual handle drawing, not the surrounding card. On phones
+      // place its upper area around the upper-middle of the viewport so it is
+      // unmistakably visible below the sticky section navigation.
+      const handleRect = handleTarget.getBoundingClientRect();
+      const handleOffset = isMobile
+        ? Math.max(72, Math.min(window.innerHeight * 0.34, handleRect.height * 0.34))
+        : 108;
       const vehicleOffset = isMobile ? 72 : 108;
 
       const scrollToTarget = (target: HTMLElement, offset: number, duration: number, onDone: () => void) => {
@@ -1288,7 +1295,8 @@ export default function PracticalInfo() {
 
             <div className={"simulator-layout " + (sceneFocusActive ? "scene-focus-active" : "")}>
               <ControlPanel group={controlGroup} setGroup={setControlGroup} mainLight={mainLight} signal={signal} flashActive={flashActive} onMain={chooseMain} onSignal={chooseSignal} onFlash={triggerFlash}/>
-              <CockpitHandle mainLight={mainLight} signal={signal} movement={movement} onRingCycle={cycleRing} onLever={applyLever} onHazard={() => chooseSignal('hazard')} handleCardRef={handleCardRef}/>
+              <CockpitHandle mainLight={mainLight} signal={signal} movement={movement} onRingCycle={cycleRing} onLever={applyLever} onHazard={() => chooseSignal('hazard')} handleCardRef={handleCardRef}
+            handleStageRef={handleStageRef}/>
             </div>
 
             <div className="result-heading"><span>03</span><div><b>شاهد الأثر على السيارة</b><small>السيارة من الجهة الصحيحة، والضوء يُرسم من مصدره باتجاه الطريق.</small></div></div>
