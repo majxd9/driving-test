@@ -75,6 +75,29 @@ export default function Exam() {
 
     finishedRef.current = true;
 
+    const answered = Object.keys(currentAnswers).length;
+    const correct = currentQuestions.reduce(
+      (total, question) =>
+        total + (currentAnswers[question.id] === question.correctAnswerIndex ? 1 : 0),
+      0
+    );
+
+    const reviewQuestions = currentQuestions.map(question => ({
+      question: {
+        id: question.id,
+        text: question.text,
+        options: question.options,
+        correctAnswerIndex: question.correctAnswerIndex,
+        explanation: question.explanation,
+        imageUrl: question.imageUrl,
+        diagramType: question.diagramType,
+        diagramUrl: question.diagramUrl,
+        diagramTitle: question.diagramTitle,
+        diagramDescription: question.diagramDescription,
+      },
+      chosen: currentAnswers[question.id] ?? null,
+    }));
+
     navigate('/result', {
       state: {
         correct,
@@ -85,7 +108,6 @@ export default function Exam() {
       },
     });
   }, [navigate, modelId]);
-
   const goToQuestion = useCallback((nextIndex:number) => {
     if(nextIndex===current||nextIndex<0||nextIndex>=questions.length)return;
     setCurrent(nextIndex);
@@ -140,7 +162,6 @@ export default function Exam() {
       <div className={`exam-timer-v2 ${seconds<=60?'urgent':''}`} aria-label={`الوقت المتبقي ${mm}:${ss}`}>{mm}:{ss}</div>
     </header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
-    {(submitError||submitting)&&<div className="mx-auto mt-3 w-full max-w-4xl px-4"><div className="login-v2-error" role={submitError ? 'alert' : undefined}>{submitting ? 'جارٍ حفظ النتيجة وتجهيز المراجعة...' : submitError}</div></div>}
     <main className="exam-stage-v2"><section className="exam-card-v2">
       <div className="exam-scroll-v2">
         <div className="exam-image-slot-v2"><div className="exam-image-placeholder-v2" aria-hidden="true"/></div>
