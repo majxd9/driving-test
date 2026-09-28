@@ -228,7 +228,7 @@ function CockpitHandle({
   const u = (name: string) => 'url(#' + uid + name + ')';
 
   return (
-    <section className="handle-card">
+    <section ref={handleCardRef} className="handle-card">
       <div className="handle-header">
         <div>
           <span className="eyebrow">02 · المقبض التفاعلي</span>
@@ -967,7 +967,7 @@ export default function PracticalInfo() {
   const [oncoming, setOncoming] = useState(true);
   const [sceneFocusActive, setSceneFocusActive] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
-  const simulatorLayoutRef = useRef<HTMLDivElement | null>(null);
+  const handleCardRef = useRef<HTMLElement | null>(null);
   const vehicleLabRef = useRef<HTMLElement | null>(null);
   const scrollFlowTimersRef = useRef<number[]>([]);
   const scrollFlowFrameRef = useRef<number | null>(null);
@@ -1125,7 +1125,7 @@ export default function PracticalInfo() {
     setSceneFocusActive(true);
 
     window.requestAnimationFrame(() => {
-      const handleTarget = simulatorLayoutRef.current;
+      const handleTarget = handleCardRef.current;
       const vehicleTarget = vehicleLabRef.current;
 
       if (!handleTarget || !vehicleTarget) {
