@@ -34,9 +34,8 @@ export default function Login() {
   }, [lightsOn]);
 
   useEffect(() => {
-    // إيقاظ الـAPI مبكراً + تجهيز صفحة الوجهة بالتوازي، دون انتظار أي منهما.
+    // إيقاظ الـAPI مبكراً دون تحميل صفحات أخرى قبل الحاجة.
     void api.warmup().catch(() => {});
-    void import('./Home');
   }, []);
 
   async function handleSubmit(e:FormEvent){
