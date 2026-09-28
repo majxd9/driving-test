@@ -59,10 +59,7 @@ export const api = {
     request<import('../types').Question[]>(`/api/questions/exam/${modelId}`),
   submitExamAttempt: (data: {
     modelId: number;
-    total: number;
-    correct: number;
-    answered: number;
-    wrongQuestionIds: number[];
+    answers: Record<number, number>;
   }) =>
     request<import('../types').ExamAttempt>('/api/exam-attempts', {
       method: 'POST',
