@@ -103,7 +103,6 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseResponseCompression();
-app.UseRateLimiter();
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = context =>
@@ -113,7 +112,10 @@ app.UseStaticFiles(new StaticFileOptions
             context.Context.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
     }
 });
+
+app.UseRouting();
 app.UseCors("Frontend");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
