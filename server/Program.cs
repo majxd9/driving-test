@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Globalization;
+using System.Security.Claims;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,6 +56,36 @@ builder.Services.AddAuthentication(options =>
         {
             if (context.Request.Cookies.TryGetValue("auth_token", out var token)) context.Token = token;
             return Task.CompletedTask;
+        },
+        OnTokenValidated = async context =>
+        {
+            var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var tokenRole = context.Principal?.FindFirstValue(ClaimTypes.Role);
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(tokenRole))
+            {
+                context.Fail("Invalid session.");
+                return;
+            }
+
+            var cache = context.HttpContext.RequestServices.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>();
+            var cacheKey = $"auth-status:{userId}:{tokenRole}";
+
+            if (!cache.TryGetValue(cacheKey, out bool valid))
+            {
+                var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+                var user = await userManager.FindByIdAsync(userId);
+                var roles = user is null ? Array.Empty<string>() : await userManager.GetRolesAsync(user);
+
+                valid = user is not null
+                    && user.IsActive
+                    && (user.AccessExpiresAt is null || user.AccessExpiresAt > DateTime.UtcNow)
+                    && roles.Contains(tokenRole, StringComparer.Ordinal);
+
+                cache.Set(cacheKey, valid, TimeSpan.FromSeconds(30));
+            }
+
+            if (!valid)
+                context.Fail("Session is no longer valid.");
         }
     };
 });
