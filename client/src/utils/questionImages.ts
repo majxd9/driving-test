@@ -55,7 +55,8 @@ export function resolveQuestionImageUrl(src?: string | null): string {
     return `/mechanic/mechanic_${number}.webp`;
   }
 
-  if (!isCanonicalSignNumber(number)) return '';
+  if (!isCanonicalSignNumber(number)) return src;
+
   return `${PRIMARY_IMAGE_BASE}/sign_${formatImageNumber(number)}.webp`;
 }
 
