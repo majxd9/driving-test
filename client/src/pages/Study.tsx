@@ -75,16 +75,18 @@ export default function Study() {
   }, [index, questions]);
 
   const goTo = useCallback((nextIndex: number) => {
-    if (
-      nextIndex < 0 ||
-      nextIndex >= questions.length ||
-      nextIndex === index
-    ) return;
+    setIndex(currentIndex => {
+      if (
+        nextIndex < 0 ||
+        nextIndex >= questions.length ||
+        nextIndex === currentIndex
+      ) return currentIndex;
 
-    // لا نحمّل أو نفكك أي صورة داخل click handler.
-    // التحديث البصري يحدث فوراً، والـpreload يتم في effect مستقل بعده.
-    setIndex(nextIndex);
-  }, [index, questions]);
+      // التنقل يعتمد على آخر قيمة فعلية للحالة، وليس على render سابق.
+      // هذا يمنع فقدان ضغطة التالي/السابق عند النقر السريع أو أثناء إعادة الرسم.
+      return nextIndex;
+    });
+  }, [questions.length]);
 
   const jumpToQuestion = useCallback((event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
