@@ -1134,26 +1134,29 @@ export default function PracticalInfo() {
         return;
       }
 
-      const getTargetTop = (target: HTMLElement) => {
-        const isMobile = window.matchMedia('(max-width: 760px)').matches;
-        const headerOffset = isMobile ? 58 : 108;
-        return Math.max(0, target.getBoundingClientRect().top + window.scrollY - headerOffset);
-      };
-
-      const scrollToTarget = (target: HTMLElement, duration: number, onDone: () => void) => {
-        animateScrollTo(getTargetTop(target), duration, onDone);
+      const getTargetTop = (target: HTMLElement, offset: number) => {
+        return Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset);
       };
 
       const isMobile = window.matchMedia('(max-width: 760px)').matches;
+      // On mobile the section navigation remains visible at the top. Leave
+      // extra breathing room so the actual handle card stays clearly below it.
+      const handleOffset = isMobile ? 96 : 108;
+      const vehicleOffset = isMobile ? 72 : 108;
+
+      const scrollToTarget = (target: HTMLElement, offset: number, duration: number, onDone: () => void) => {
+        animateScrollTo(getTargetTop(target, offset), duration, onDone);
+      };
+
       const handleDuration = isMobile ? 2350 : 2150;
       const vehicleDuration = isMobile ? 2750 : 2450;
       const returnDuration = isMobile ? 2350 : 2150;
       const pauseBeforeVehicle = isMobile ? 850 : 650;
       const pauseBeforeReturn = isMobile ? 1000 : 800;
 
-      scrollToTarget(handleTarget, handleDuration, () => {
+      scrollToTarget(handleTarget, handleOffset, handleDuration, () => {
         const pauseToVehicle = window.setTimeout(() => {
-          scrollToTarget(vehicleTarget, vehicleDuration, () => {
+          scrollToTarget(vehicleTarget, vehicleOffset, vehicleDuration, () => {
             const pauseToReturn = window.setTimeout(() => {
               animateScrollTo(originTop, returnDuration, () => {
                 setSceneFocusActive(false);
