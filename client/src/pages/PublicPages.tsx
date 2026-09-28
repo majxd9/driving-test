@@ -16,6 +16,18 @@ function Seo({title,description,path}:{title:string;description:string;path:stri
     (document.head.querySelector('meta[name="description"]') as HTMLMetaElement).content = description;
     set('meta[name="robots"]','name','robots','meta');
     (document.head.querySelector('meta[name="robots"]') as HTMLMetaElement).content = 'index, follow, max-image-preview:large';
+
+    const setProperty = (property:string, value:string) => {
+      let el = document.head.querySelector<HTMLMetaElement>(`meta[property="${property}"]`);
+      if (!el) { el = document.createElement('meta'); el.setAttribute('property', property); document.head.appendChild(el); }
+      el.content = value;
+    };
+    setProperty('og:title', title);
+    setProperty('og:description', description);
+    setProperty('og:url', url);
+    setProperty('twitter:title', title);
+    setProperty('twitter:description', description);
+
     let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
     if (!canonical) { canonical = document.createElement('link'); canonical.rel='canonical'; document.head.appendChild(canonical); }
     canonical.href=url;
