@@ -104,6 +104,8 @@ public class QuestionsController : ControllerBase
             q.Id,
             q.Text,
             q.Options,
+            q.CorrectAnswerIndex,
+            q.Explanation,
             q.ImageUrl,
             q.DiagramType,
             q.DiagramUrl,
