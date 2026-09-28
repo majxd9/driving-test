@@ -15,10 +15,16 @@ export default defineConfig({
     cssMinify: true,
     sourcemap: false,
     assetsInlineLimit: 0,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom', 'react-router-dom'],
+        codeSplitting: {
+          groups: [
+            {
+              name: 'react',
+              test: /node_modules[\\/]react(?:-dom)?|node_modules[\\/]react-router(?:-dom)?/,
+              priority: 20,
+            },
+          ],
         },
       },
     },
