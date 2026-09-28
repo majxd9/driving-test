@@ -88,7 +88,10 @@ public class AuthController : ControllerBase
         await _userManager.ResetAccessFailedCountAsync(user);
 
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Student";
-        if (!Guid.TryParse(request.DeviceId, out _) || request.DeviceId.Length > 64)\n            return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });\n\n        if (role != "Admin" && !string.IsNullOrEmpty(user.DeviceId) && !string.Equals(user.DeviceId, request.DeviceId, StringComparison.Ordinal))
+        if (!Guid.TryParse(request.DeviceId, out _) || request.DeviceId.Length > 64)
+            return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
+
+        if (role != "Admin" && !string.IsNullOrEmpty(user.DeviceId) && !string.Equals(user.DeviceId, request.DeviceId, StringComparison.Ordinal))
         {
             _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "DeviceMismatch" });
             await _db.SaveChangesAsync();
