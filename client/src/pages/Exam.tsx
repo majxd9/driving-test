@@ -77,7 +77,7 @@ export default function Exam() {
     const reviewQuestions = currentQuestions.map(question => { const chosen=currentAnswers[question.id]; if(chosen===question.correctAnswerIndex) correct++; return {question,chosen:chosen??null}; });
     const answered=Object.keys(currentAnswers).length;
     const wrongQuestionIds=reviewQuestions.filter(x=>x.chosen!==null&&x.chosen!==x.question.correctAnswerIndex).map(x=>x.question.id);
-    api.submitExamAttempt({modelId:Number(modelId)||1,total:currentQuestions.length,correct,answered,wrongQuestionIds}).catch(()=>{});
+    void api.submitExamAttempt({ modelId: Number(modelId) || 1, answers: currentAnswers }).catch(() => {});
     navigate('/result',{state:{correct,total:currentQuestions.length,answered,reviewQuestions,modelId:Number(modelId)||1}});
   },[navigate,modelId]);
 
