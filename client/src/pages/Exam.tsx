@@ -26,8 +26,6 @@ export default function Exam() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const finishedRef = useRef(false);
   const questionsRef = useRef<ExamQuestion[]>([]);
   const answersRef = useRef<Record<number, number>>({});
@@ -76,37 +74,6 @@ export default function Exam() {
     if (finishedRef.current || !currentQuestions.length) return;
 
     finishedRef.current = true;
-
-    // النتيجة لا يجب أن تنتظر قاعدة البيانات. نحسبها من نفس الأسئلة الموجودة أمام الطالب
-    // وننتقل فوراً إلى صفحة النتيجة، بينما محاولة الحفظ تعمل في الخلفية.
-    const answered = Object.keys(currentAnswers).length;
-    const correct = currentQuestions.reduce((total, question) => (
-      total + (currentAnswers[question.id] === question.correctAnswerIndex ? 1 : 0)
-    ), 0);
-
-    const reviewQuestions = currentQuestions.map(question => ({
-      question: {
-        id: question.id,
-        text: question.text,
-        options: question.options,
-        correctAnswerIndex: question.correctAnswerIndex,
-        explanation: question.explanation,
-        imageUrl: question.imageUrl,
-        diagramType: question.diagramType,
-        diagramUrl: question.diagramUrl,
-        diagramTitle: question.diagramTitle,
-        diagramDescription: question.diagramDescription,
-      },
-      chosen: currentAnswers[question.id],
-    }));
-
-    // الحفظ للتاريخ/الإحصائيات فقط، ولا يمنع الطالب من رؤية النتيجة.
-    void api.submitExamAttempt({
-      modelId: Number(modelId) || 1,
-      answers: currentAnswers,
-    }).catch(() => {
-      // فشل الحفظ لا يجب أن يحبس المستخدم على "جارٍ الحفظ".
-    });
 
     navigate('/result', {
       state: {
@@ -183,8 +150,8 @@ export default function Exam() {
       </div>
       <div className="exam-actions-v2">
         <button type="button" onClick={()=>goToQuestion(current-1)} disabled={current===0} className="exam-action-v2 secondary"><UiIcon name="back"/><span>السابق</span></button>
-        <button type="button" onClick={finish} disabled={submitting} className="exam-action-v2 finish"><UiIcon name="finish"/><span>{submitting ? 'جارٍ الحفظ...' : 'إنهاء الاختبار'}</span></button>
-        <button type="button" onClick={()=>isLast?finish():goToQuestion(current+1)} disabled={submitting} className="exam-action-v2 next"><span>{isLast?(submitting?'جارٍ الحفظ...':'عرض النتيجة'):'التالي'}</span><UiIcon name="next"/></button>
+        <button type="button" onClick={finish} className="exam-action-v2 finish"><UiIcon name="finish"/><span>إنهاء الاختبار</span></button>
+        <button type="button" onClick={()=>isLast?finish():goToQuestion(current+1)} className="exam-action-v2 next"><span>{isLast ? 'عرض النتيجة' : 'التالي'}</span><UiIcon name="next"/></button>
       </div>
     </section></main>
 
