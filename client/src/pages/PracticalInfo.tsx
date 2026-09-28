@@ -121,7 +121,7 @@ function RingSymbol({ type, active }: { type: MainLightKey; active: boolean }) {
 
 
 function CockpitHandle({
-  mainLight, signal, movement, onRingCycle, onLever, onHazard,
+  mainLight, signal, movement, onRingCycle, onLever, onHazard, containerRef,
 }: {
   mainLight: MainLightKey;
   signal: SignalKey | null;
@@ -129,6 +129,7 @@ function CockpitHandle({
   onRingCycle: () => void;
   onLever: (movement: 'left' | 'right' | 'push' | 'pull') => void;
   onHazard: () => void;
+  containerRef?: (node: HTMLElement | null) => void;
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const dragRef = useRef<{ zone: 'ring' | 'lever'; x: number; y: number } | null>(null);
@@ -228,7 +229,7 @@ function CockpitHandle({
   const u = (name: string) => 'url(#' + uid + name + ')';
 
   return (
-    <section className="handle-card">
+    <section ref={containerRef} className="handle-card">
       <div className="handle-header">
         <div>
           <span className="eyebrow">02 · المقبض التفاعلي</span>
@@ -968,6 +969,7 @@ export default function PracticalInfo() {
   const [sceneFocusActive, setSceneFocusActive] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
   const simulatorLayoutRef = useRef<HTMLDivElement | null>(null);
+  const handleCardRef = useRef<HTMLElement | null>(null);
   const vehicleLabRef = useRef<HTMLElement | null>(null);
   const scrollFlowTimersRef = useRef<number[]>([]);
   const scrollFlowFrameRef = useRef<number | null>(null);
@@ -1125,7 +1127,7 @@ export default function PracticalInfo() {
     setSceneFocusActive(true);
 
     window.requestAnimationFrame(() => {
-      const handleTarget = simulatorLayoutRef.current;
+      const handleTarget = handleCardRef.current;
       const vehicleTarget = vehicleLabRef.current;
 
       if (!handleTarget || !vehicleTarget) {
@@ -1284,7 +1286,7 @@ export default function PracticalInfo() {
 
             <div ref={simulatorLayoutRef} className={"simulator-layout " + (sceneFocusActive ? "scene-focus-active" : "")}>
               <ControlPanel group={controlGroup} setGroup={setControlGroup} mainLight={mainLight} signal={signal} flashActive={flashActive} onMain={chooseMain} onSignal={chooseSignal} onFlash={triggerFlash}/>
-              <CockpitHandle mainLight={mainLight} signal={signal} movement={movement} onRingCycle={cycleRing} onLever={applyLever} onHazard={() => chooseSignal('hazard')}/>
+              <CockpitHandle mainLight={mainLight} signal={signal} movement={movement} onRingCycle={cycleRing} onLever={applyLever} onHazard={() => chooseSignal('hazard')} containerRef={(node) => { handleCardRef.current = node; }}/>
             </div>
 
             <div className="result-heading"><span>03</span><div><b>شاهد الأثر على السيارة</b><small>السيارة من الجهة الصحيحة، والضوء يُرسم من مصدره باتجاه الطريق.</small></div></div>
