@@ -1280,7 +1280,7 @@ export default function PracticalInfo() {
     <div className="practical-v2" dir="rtl">
       <header className="practical-header">
         <div className="practical-header-inner">
-          <button type="button" className="back-button" onClick={() => navigate('/')} aria-label="العودة للرئيسية">→</button>
+          <button type="button" className="back-button" onClick={() => navigate('/app')} aria-label="العودة للرئيسية">→</button>
           <div className="brand-lockup"><span>مركز التدريب العملي</span><strong>أضواء السيارة والغمازات</strong></div>
           <div className="progress-status"><i />درس تفاعلي</div>
         </div>
