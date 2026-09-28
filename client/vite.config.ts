@@ -11,7 +11,7 @@ export default defineConfig({
   },
   build: {
     target: 'es2020',
-    minify: 'esbuild',
+    minify: 'oxc',
     cssMinify: true,
     sourcemap: false,
     assetsInlineLimit: 0,
