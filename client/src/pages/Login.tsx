@@ -34,9 +34,30 @@ export default function Login() {
   }, [lightsOn]);
 
   useEffect(() => {
-    // إيقاظ الـAPI مبكراً + تجهيز صفحة الوجهة بالتوازي، دون انتظار أي منهما.
+    // إيقاظ الـAPI فوراً. تحميل الصفحة التالية يؤجل إلى وقت خمول حتى لا ينافس طلب تسجيل الدخول.
     void api.warmup().catch(() => {});
-    void import('./Home');
+
+    let idleId: number | undefined;
+    let timeoutId: number | undefined;
+    const win = window as Window & {
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    if (win.requestIdleCallback) {
+      idleId = win.requestIdleCallback(() => {
+        void import('./Home');
+      }, { timeout: 1800 });
+    } else {
+      timeoutId = window.setTimeout(() => {
+        void import('./Home');
+      }, 1200);
+    }
+
+    return () => {
+      if (idleId !== undefined && win.cancelIdleCallback) win.cancelIdleCallback(idleId);
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
   }, []);
 
   async function handleSubmit(e:FormEvent){
