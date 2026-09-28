@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using DrivingTestApi.Data;
 using DrivingTestApi.DTOs;
 using DrivingTestApi.Models;
@@ -127,7 +128,7 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<ActionResult<LoginResponse>> Me()
     {
-        var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId))
             return Unauthorized();
 
