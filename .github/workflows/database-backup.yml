@@ -1,0 +1,30 @@
+name: Database Backup
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 2 * * *"
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify backup secret
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          test -n "$DATABASE_URL" || { echo "DATABASE_URL secret is required"; exit 1; }
+
+      - name: Create PostgreSQL backup
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          mkdir -p backups
+          pg_dump "$DATABASE_URL"             --format=custom             --no-owner             --no-acl             --file="backups/driving-test-$(date -u +%Y-%m-%d_%H-%M-%S).dump"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: driving-test-postgresql-backup-${{ github.run_id }}
+          path: backups/*.dump
+          retention-days: 14
