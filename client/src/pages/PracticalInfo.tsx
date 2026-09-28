@@ -1128,7 +1128,7 @@ export default function PracticalInfo() {
     setSceneFocusActive(true);
 
     window.requestAnimationFrame(() => {
-      const handleTarget = handleStageRef.current;
+      const handleTarget = handleCardRef.current;
       const vehicleTarget = vehicleLabRef.current;
 
       if (!handleTarget || !vehicleTarget) {
