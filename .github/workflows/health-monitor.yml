@@ -1,0 +1,22 @@
+name: API Health Monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify healthcheck secret
+        env:
+          HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL }}
+        run: |
+          test -n "$HEALTHCHECK_URL" || { echo "HEALTHCHECK_URL secret is required"; exit 1; }
+
+      - name: Check API health
+        env:
+          HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL }}
+        run: |
+          curl --fail --show-error --silent --max-time 20 "$HEALTHCHECK_URL"
