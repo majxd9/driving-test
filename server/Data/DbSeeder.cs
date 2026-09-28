@@ -140,7 +140,7 @@ CREATE INDEX IF NOT EXISTS ""IX_ExamAttempts_StudentId_CreatedAt""
 
     private static async Task RepairKnownQuestionCorrectionsAsync(AppDbContext db)
     {
-        const string skidQuestion = "في حال انزلقت مركبتك عليك كسائق أن تكون ردة فعلي الأولى:";
+        const string skidQuestion = "في حال انزلقت مركبتك عليك كسائق أن تكون ردة فعلك الأولى:";
 
         var question = await db.Questions
             .FirstOrDefaultAsync(q => q.Category == QuestionCategory.Ser && q.Text == skidQuestion);
