@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Memory;
 using System.Globalization;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
@@ -73,7 +74,7 @@ builder.Services.AddAuthentication(options =>
                 return;
             }
 
-            var cache = context.HttpContext.RequestServices.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>();
+            var cache = context.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
             var cacheKey = $"auth-status:{userId}:{tokenRole}";
 
             if (!cache.TryGetValue(cacheKey, out bool valid))
