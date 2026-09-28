@@ -1,1 +1,12 @@
-/* /index.html 200
+/rules / 200
+/traffic-signs / 200
+/driving-test-syria / 200
+/about / 200
+/login / 200
+/app / 200
+/practical-info / 200
+/study/* / 200
+/models / 200
+/exam/* / 200
+/result / 200
+/admin / 200
