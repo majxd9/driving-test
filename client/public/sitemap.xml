@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://driving-test-7en.pages.dev/</loc>
-  </url>
+  <url><loc>https://driving-test-7en.pages.dev/</loc></url>
+  <url><loc>https://driving-test-7en.pages.dev/rules</loc></url>
+  <url><loc>https://driving-test-7en.pages.dev/traffic-signs</loc></url>
+  <url><loc>https://driving-test-7en.pages.dev/driving-test-syria</loc></url>
+  <url><loc>https://driving-test-7en.pages.dev/about</loc></url>
 </urlset>
