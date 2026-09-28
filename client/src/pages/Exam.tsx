@@ -70,64 +70,53 @@ export default function Exam() {
 
   useEffect(() => { void loadExam(); }, [loadExam]);
 
-  const finish = useCallback(async () => {
+  const finish = useCallback(() => {
     const currentQuestions = questionsRef.current;
     const currentAnswers = answersRef.current;
     if (finishedRef.current || !currentQuestions.length) return;
 
     finishedRef.current = true;
-    setSubmitError(null);
-    setSubmitting(true);
 
-    try {
-      let result;
-      let lastError: unknown = null;
-      for (let attempt = 0; attempt < 2; attempt++) {
-        try {
-          result = await api.submitExamAttempt({
-            modelId: Number(modelId) || 1,
-            answers: currentAnswers,
-          });
-          lastError = null;
-          break;
-        } catch (error) {
-          lastError = error;
-          if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 900));
-        }
-      }
-      if (!result) throw (lastError instanceof Error ? lastError : new Error('تعذر حفظ نتيجة الاختبار. حاول مرة أخرى.'));
+    // النتيجة لا يجب أن تنتظر قاعدة البيانات. نحسبها من نفس الأسئلة الموجودة أمام الطالب
+    // وننتقل فوراً إلى صفحة النتيجة، بينما محاولة الحفظ تعمل في الخلفية.
+    const answered = Object.keys(currentAnswers).length;
+    const correct = currentQuestions.reduce((total, question) => (
+      total + (currentAnswers[question.id] === question.correctAnswerIndex ? 1 : 0)
+    ), 0);
 
-      const reviewQuestions = result.reviewQuestions.map(item => ({
-        question: {
-          id: item.id,
-          text: item.text,
-          options: item.options,
-          correctAnswerIndex: item.correctAnswerIndex,
-          explanation: item.explanation,
-          imageUrl: item.imageUrl,
-          diagramType: item.diagramType,
-          diagramUrl: item.diagramUrl,
-          diagramTitle: item.diagramTitle,
-          diagramDescription: item.diagramDescription,
-        },
-        chosen: item.chosenAnswerIndex,
-      }));
+    const reviewQuestions = currentQuestions.map(question => ({
+      question: {
+        id: question.id,
+        text: question.text,
+        options: question.options,
+        correctAnswerIndex: question.correctAnswerIndex,
+        explanation: question.explanation,
+        imageUrl: question.imageUrl,
+        diagramType: question.diagramType,
+        diagramUrl: question.diagramUrl,
+        diagramTitle: question.diagramTitle,
+        diagramDescription: question.diagramDescription,
+      },
+      chosen: currentAnswers[question.id],
+    }));
 
-      navigate('/result', {
-        state: {
-          correct: result.correct,
-          total: result.total,
-          answered: result.answered,
-          reviewQuestions,
-          modelId: result.modelId,
-        },
-      });
-    } catch (err) {
-      finishedRef.current = false;
-      setSubmitError(err instanceof Error ? err.message : 'تعذر حفظ نتيجة الاختبار. حاول مرة أخرى.');
-    } finally {
-      setSubmitting(false);
-    }
+    // الحفظ للتاريخ/الإحصائيات فقط، ولا يمنع الطالب من رؤية النتيجة.
+    void api.submitExamAttempt({
+      modelId: Number(modelId) || 1,
+      answers: currentAnswers,
+    }).catch(() => {
+      // فشل الحفظ لا يجب أن يحبس المستخدم على "جارٍ الحفظ".
+    });
+
+    navigate('/result', {
+      state: {
+        correct,
+        total: currentQuestions.length,
+        answered,
+        reviewQuestions,
+        modelId: Number(modelId) || 1,
+      },
+    });
   }, [navigate, modelId]);
 
   const goToQuestion = useCallback((nextIndex:number) => {
