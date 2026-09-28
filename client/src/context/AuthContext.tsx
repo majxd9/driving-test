@@ -18,17 +18,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = sessionStorage.getItem(STORAGE_KEY);
+    let active = true;
 
-    if (saved) {
+    async function restoreSession() {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+
+      if (!saved) {
+        if (active) setLoading(false);
+        return;
+      }
+
       try {
-        setUser(JSON.parse(saved) as LoginResponse);
+        const cached = JSON.parse(saved) as LoginResponse;
+        const current = await api.me();
+        if (!active) return;
+        setUser(current);
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(current));
       } catch {
+        if (!active) return;
         sessionStorage.removeItem(STORAGE_KEY);
+        setUser(null);
+      } finally {
+        if (active) setLoading(false);
       }
     }
 
-    setLoading(false);
+    void restoreSession();
+    return () => { active = false; };
   }, []);
 
   async function login(userName: string, password: string) {
