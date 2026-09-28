@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using DrivingTestApi.Data;
 using DrivingTestApi.DTOs;
+using DrivingTestApi.Models;
 using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,7 @@ public class ExamAttemptsController : ControllerBase
         if (request.ModelId is < 1 or > 8 || request.Answers is null || request.Answers.Count > 30)
             return BadRequest(new { message = "بيانات الاختبار غير صالحة." });
 
-        List<Models.Question> examQuestions;
+        List<Question> examQuestions;
         try
         {
             examQuestions = await ExamQuestionPicker.GetAsync(_db, request.ModelId);
@@ -54,13 +55,16 @@ public class ExamAttemptsController : ControllerBase
             if (!request.Answers.TryGetValue(question.Id, out var selected))
                 continue;
 
+            if (selected < 0 || selected >= question.Options.Count)
+                return BadRequest(new { message = "إحدى الإجابات غير صالحة." });
+
             if (selected == question.CorrectAnswerIndex)
                 correct++;
             else
                 wrongIds.Add(question.Id);
         }
 
-        var attempt = new Models.ExamAttempt
+        var attempt = new ExamAttempt
         {
             StudentId = studentId,
             ModelId = request.ModelId,
