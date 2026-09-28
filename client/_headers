@@ -1,3 +1,10 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
@@ -7,18 +14,26 @@
 /mechanic/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Do not index authenticated application pages.
-*/login
+/login
   X-Robots-Tag: noindex, nofollow
-*/app
+
+/app
   X-Robots-Tag: noindex, nofollow
-*/study/*
+
+/study/*
   X-Robots-Tag: noindex, nofollow
-*/models
+
+/models
   X-Robots-Tag: noindex, nofollow
-*/exam/*
+
+/exam/*
   X-Robots-Tag: noindex, nofollow
-*/result
+
+/result
   X-Robots-Tag: noindex, nofollow
-*/admin
+
+/admin
+  X-Robots-Tag: noindex, nofollow
+
+/admin/*
   X-Robots-Tag: noindex, nofollow
