@@ -52,6 +52,7 @@ export const api = {
       method: 'GET',
       cache: 'no-store',
     }),
+  me: () => request<import('../types').LoginResponse>('/api/auth/me'),
   logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
   getQuestions: (category: 'Ser' | 'Ishara' | 'Mechanic') =>
     request<import('../types').Question[]>(`/api/questions?category=${category}`),
