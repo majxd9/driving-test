@@ -1,4 +1,3 @@
-import '../practical-info.css';
 import '../zero-scroll-explanation.css';
 
 import { useEffect, useId, useRef, useState, type ReactNode, type PointerEvent as ReactPointerEvent } from 'react';
