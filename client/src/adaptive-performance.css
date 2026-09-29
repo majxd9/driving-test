@@ -1,0 +1,49 @@
+html[data-performance="lite"] .login-v2-glow,
+html[data-performance="lite"] .login-light-overlay,
+html[data-performance="lite"] .student-name-glow,
+html[data-performance="lite"] .guide-pulse {
+  opacity: .18 !important;
+}
+
+html[data-performance="lite"] .glass-panel,
+html[data-performance="lite"] .glass-card,
+html[data-performance="lite"] [class*="glass"],
+html[data-performance="lite"] [class*="backdrop"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html[data-performance="lite"] .surface-panel,
+html[data-performance="lite"] .home-exam,
+html[data-performance="lite"] .category-card,
+html[data-performance="lite"] .result-card,
+html[data-performance="lite"] .review-card {
+  box-shadow: none !important;
+}
+
+html[data-performance="lite"] *,
+html[data-performance="lite"] *::before,
+html[data-performance="lite"] *::after {
+  animation-duration: .001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .001ms !important;
+  transition-delay: 0ms !important;
+}
+
+html[data-performance="lite"] .spirit-ambient,
+html[data-performance="lite"] .spirit-particles,
+html[data-performance="lite"] .login-car-smoke {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  html *, html *::before, html *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
