@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 
 type ContentProtectionProps = {
   children: ReactNode;
@@ -9,16 +9,15 @@ const BLOCKED_KEYS = new Set(['PrintScreen']);
 
 export function ContentProtection({ children, studentName = 'رخصتي' }: ContentProtectionProps) {
   const [notice, setNotice] = useState(false);
+  const noticeTimer = useRef<number | undefined>(undefined);
+
+  const showNotice = () => {
+    setNotice(true);
+    window.clearTimeout(noticeTimer.current);
+    noticeTimer.current = window.setTimeout(() => setNotice(false), 1400);
+  };
 
   useEffect(() => {
-    let timer: number | undefined;
-
-    const showNotice = () => {
-      setNotice(true);
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => setNotice(false), 1400);
-    };
-
     const handleKeyDown = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
       const modified = event.ctrlKey || event.metaKey;
@@ -46,9 +45,9 @@ export function ContentProtection({ children, studentName = 'رخصتي' }: Cont
     window.addEventListener('dragstart', handleDragStart, true);
 
     return () => {
-      window.clearTimeout(timer);
+      window.clearTimeout(noticeTimer.current);
       window.removeEventListener('keydown', handleKeyDown, true);
-      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('beforeprint', handleBeforePrint, true);
       window.removeEventListener('dragstart', handleDragStart, true);
     };
   }, []);
