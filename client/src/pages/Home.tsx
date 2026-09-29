@@ -32,19 +32,8 @@ export default function Home(){
  },[]);
 
  useEffect(()=>{
-  const initialCount = user?.questionCount;
-
-  if (typeof initialCount === 'number' && initialCount > 0) {
-   setTotal(initialCount);
-   return;
-  }
-
-  let active=true;
-  fetch((import.meta.env.VITE_API_URL||'')+'/api/questions/count',{credentials:'include'})
-   .then(r=>r.ok?r.json():Promise.reject())
-   .then(n=>{if(active)setTotal(Number(n));})
-   .catch(()=>{});
-  return()=>{active=false;};
+  const count = user?.questionCount;
+  setTotal(typeof count === 'number' && count > 0 ? count : null);
  },[user?.questionCount]);
 
  const firstName=user?.fullName?.split(' ')[0]??'';
