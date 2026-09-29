@@ -24,7 +24,8 @@ public class TokenService : ITokenService
         {
             new(ClaimTypes.NameIdentifier, user.Id),
             new(ClaimTypes.Name, user.UserName ?? string.Empty),
-            new(ClaimTypes.Role, role)
+            new(ClaimTypes.Role, role),
+            new("device_id", user.DeviceId ?? string.Empty)
         };
 
         var credentials = new SigningCredentials(
