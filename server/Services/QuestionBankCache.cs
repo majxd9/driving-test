@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using DrivingTestApi.Data;
 using DrivingTestApi.Models;
 using Microsoft.EntityFrameworkCore;
@@ -5,41 +6,43 @@ using Microsoft.EntityFrameworkCore;
 namespace DrivingTestApi.Services;
 
 /// <summary>
-/// In-memory read cache for the relatively small, mostly-static question bank.
-/// Admin mutations invalidate it, so normal student traffic does not repeatedly
-/// query PostgreSQL for the same 397-ish questions.
+/// In-memory read cache partitioned by question category.
+/// A student request for one category only queries that category from PostgreSQL.
+/// Admin mutations invalidate the category cache.
 /// </summary>
 public static class QuestionBankCache
 {
     private static readonly SemaphoreSlim LoadLock = new(1, 1);
-    private static IReadOnlyList<Question> _questions = Array.Empty<Question>();
-    private static int _initialized;
+    private static readonly ConcurrentDictionary<QuestionCategory, IReadOnlyList<Question>> Categories = new();
 
-    public static int Count => Volatile.Read(ref _questions).Count;
+    public static int Count => Categories.Values.Sum(list => list.Count);
 
     public static async Task InitializeAsync(AppDbContext db)
     {
-        await GetAllAsync(db);
+        foreach (var category in Enum.GetValues<QuestionCategory>())
+            await GetCategoryAsync(db, category);
     }
 
-    public static async Task<IReadOnlyList<Question>> GetAllAsync(AppDbContext db)
+    public static async Task<IReadOnlyList<Question>> GetCategoryAsync(
+        AppDbContext db,
+        QuestionCategory category)
     {
-        var cached = Volatile.Read(ref _questions);
-        if (Volatile.Read(ref _initialized) == 1) return cached;
+        if (Categories.TryGetValue(category, out var cached))
+            return cached;
 
         await LoadLock.WaitAsync();
         try
         {
-            cached = Volatile.Read(ref _questions);
-            if (Volatile.Read(ref _initialized) == 1) return cached;
+            if (Categories.TryGetValue(category, out cached))
+                return cached;
 
             var loaded = await db.Questions
                 .AsNoTracking()
+                .Where(q => q.Category == category)
                 .OrderBy(q => q.Id)
                 .ToListAsync();
 
-            Volatile.Write(ref _questions, loaded);
-            Volatile.Write(ref _initialized, 1);
+            Categories[category] = loaded;
             return loaded;
         }
         finally
@@ -48,17 +51,18 @@ public static class QuestionBankCache
         }
     }
 
-    public static async Task<IReadOnlyList<Question>> GetCategoryAsync(
-        AppDbContext db,
-        QuestionCategory category)
+    public static async Task<IReadOnlyList<Question>> GetAllAsync(AppDbContext db)
     {
-        var all = await GetAllAsync(db);
-        return all.Where(q => q.Category == category).ToList();
+        var all = new List<Question>();
+
+        foreach (var category in Enum.GetValues<QuestionCategory>())
+            all.AddRange(await GetCategoryAsync(db, category));
+
+        return all.OrderBy(q => q.Id).ToList();
     }
 
     public static void Invalidate()
     {
-        Volatile.Write(ref _questions, Array.Empty<Question>());
-        Volatile.Write(ref _initialized, 0);
+        Categories.Clear();
     }
 }
