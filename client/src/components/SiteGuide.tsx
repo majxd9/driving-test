@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getPerformanceMode, setPerformanceMode, type PerformanceMode } from '../utils/performanceMode';
 
 const steps = [
   ['1', 'تدرّب حسب القسم', 'راجع قواعد السير أو الإشارات المرورية أو أساسيات الميكانيك.'],
@@ -9,6 +10,8 @@ const steps = [
 
 export default function SiteGuide() {
   const [open, setOpen] = useState(false);
+  const [performanceMode, setPerformance] = useState<PerformanceMode>('auto');
+  useEffect(() => { setPerformance(getPerformanceMode()); }, [open]);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
@@ -31,6 +34,28 @@ export default function SiteGuide() {
               {steps.map(([n,title,text]) => <div key={n} className="flex gap-4 text-right">
                 <div className="step-number">{n}</div><div><h3 className="font-bold text-ink">{title}</h3><p className="text-sm text-muted mt-1 leading-relaxed">{text}</p></div>
               </div>)}
+            </div>
+            <div className="mt-6 rounded-2xl border border-line bg-paper/50 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-bold text-ink">أداء الهاتف</h3>
+                  <p className="text-xs text-muted mt-1 leading-relaxed">الوضع التلقائي يخفف المؤثرات على الأجهزة أو الشبكات الأبطأ مع إبقاء كل المحتوى والوظائف.</p>
+                </div>
+                <select
+                  value={performanceMode}
+                  onChange={(e) => {
+                    const mode = e.target.value as PerformanceMode;
+                    setPerformanceMode(mode);
+                    setPerformance(mode);
+                  }}
+                  className="rounded-xl border border-line bg-paper px-3 py-2 text-sm text-ink"
+                  aria-label="وضع أداء الهاتف"
+                >
+                  <option value="auto">تلقائي</option>
+                  <option value="full">كامل</option>
+                  <option value="save">توفير</option>
+                </select>
+              </div>
             </div>
             <button type="button" onClick={() => setOpen(false)} className="w-full mt-7 rounded-2xl bg-brand py-3.5 font-bold text-white">فهمت، لنبدأ</button>
           </section>
