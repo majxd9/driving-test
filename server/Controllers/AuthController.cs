@@ -52,7 +52,10 @@ public class AuthController : ControllerBase
         var ip = _clientIpResolver.GetClientIp(HttpContext);
         var userAgent = Request.Headers.UserAgent.ToString();
 
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(request.Password))
+        if (string.IsNullOrWhiteSpace(username) ||
+            username.Length > 64 ||
+            string.IsNullOrEmpty(request.Password) ||
+            request.Password.Length > 128)
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
 
         var user = await _userManager.FindByNameAsync(username);
@@ -107,7 +110,16 @@ public class AuthController : ControllerBase
             user.DeviceId = request.DeviceId;
 
         var jwt = _tokenService.CreateToken(user, role);
-        Response.Cookies.Append("auth_token", jwt, new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.None, Path = "/", IsEssential = true, Expires = DateTimeOffset.UtcNow.AddHours(12) });
+        Response.Headers.CacheControl = "no-store";
+        Response.Cookies.Append("auth_token", jwt, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/",
+            IsEssential = true,
+            Expires = DateTimeOffset.UtcNow.AddHours(12)
+        });
 
         // حفظ DeviceId مطلوب فقط لأول دخول على الحساب.
         if (deviceWasAssigned)
@@ -140,6 +152,7 @@ public class AuthController : ControllerBase
             return Unauthorized();
 
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Student";
+        Response.Headers.CacheControl = "no-store";
         return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt, QuestionCountCache.Total));
     }
 
