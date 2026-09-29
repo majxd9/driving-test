@@ -5,8 +5,6 @@ import { QuestionCategory } from '../types';
 import SiteGuide from '../components/SiteGuide';
 import SpiritDriveScene from '../components/SpiritDriveScene';
 import SpiritNitro from '../components/SpiritNitro';
-import '../home-mobile-performance.css';
-import '../student-name-plate.css';
 
 const Icon = ({type}:{type:'rules'|'signs'|'mechanic'|'arrow'}) => {
  const common={width:24,height:24,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.9,strokeLinecap:'round' as const,strokeLinejoin:'round' as const};
