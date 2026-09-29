@@ -34,6 +34,7 @@ public sealed class StartupMaintenanceService : BackgroundService
         {
             using var scope = _services.CreateScope();
             await DbSeeder.SeedAsync(scope.ServiceProvider);
+            QuestionBankCache.Invalidate();
 
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await QuestionCountCache.InitializeAsync(db);

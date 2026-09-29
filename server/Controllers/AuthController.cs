@@ -52,6 +52,17 @@ public class AuthController : ControllerBase
         var ip = _clientIpResolver.GetClientIp(HttpContext);
         var userAgent = Request.Headers.UserAgent.ToString();
 
+        void EnqueueFailure(ApplicationUser? account, string reason) =>
+            _authLogQueue.TryEnqueue(new AuthLog
+            {
+                UserId = account?.Id,
+                AttemptedUserName = username,
+                IpAddress = ip,
+                UserAgent = userAgent,
+                Success = false,
+                Reason = reason
+            });
+
         if (string.IsNullOrWhiteSpace(username) ||
             username.Length > 64 ||
             string.IsNullOrEmpty(request.Password) ||
@@ -61,34 +72,29 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByNameAsync(username);
         if (user is null)
         {
-            _db.AuthLogs.Add(new AuthLog { AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "UserNotFound" });
-            await _db.SaveChangesAsync();
+            EnqueueFailure(null, "UserNotFound");
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
         if (!user.IsActive)
         {
-            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "AccountDisabled" });
-            await _db.SaveChangesAsync();
+            EnqueueFailure(user, "AccountDisabled");
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
         if (user.AccessExpiresAt is not null && user.AccessExpiresAt < DateTime.UtcNow)
         {
-            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "AccessExpired" });
-            await _db.SaveChangesAsync();
+            EnqueueFailure(user, "AccessExpired");
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
         if (await _userManager.IsLockedOutAsync(user))
         {
-            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "LockedOut" });
-            await _db.SaveChangesAsync();
+            EnqueueFailure(user, "LockedOut");
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
 
         if (!await _userManager.CheckPasswordAsync(user, request.Password))
         {
             await _userManager.AccessFailedAsync(user);
-            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "WrongPassword" });
-            await _db.SaveChangesAsync();
+            EnqueueFailure(user, "WrongPassword");
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
 
@@ -100,8 +106,7 @@ public class AuthController : ControllerBase
 
         if (role != "Admin" && !string.IsNullOrEmpty(user.DeviceId) && !string.Equals(user.DeviceId, request.DeviceId, StringComparison.Ordinal))
         {
-            _db.AuthLogs.Add(new AuthLog { UserId = user.Id, AttemptedUserName = username, IpAddress = ip, UserAgent = userAgent, Success = false, Reason = "DeviceMismatch" });
-            await _db.SaveChangesAsync();
+            EnqueueFailure(user, "DeviceMismatch");
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
 
@@ -124,6 +129,9 @@ public class AuthController : ControllerBase
         // حفظ DeviceId مطلوب فقط لأول دخول على الحساب.
         if (deviceWasAssigned)
             await _db.SaveChangesAsync();
+
+        if (QuestionCountCache.Total == 0)
+            await QuestionCountCache.InitializeAsync(_db);
 
         // نحافظ على سجل الدخول الناجح بدون إضافة كتابة PostgreSQL إلى زمن استجابة الطلب.
         _authLogQueue.TryEnqueue(new AuthLog
@@ -152,6 +160,8 @@ public class AuthController : ControllerBase
             return Unauthorized();
 
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Student";
+        if (QuestionCountCache.Total == 0)
+            await QuestionCountCache.InitializeAsync(_db);
         Response.Headers.CacheControl = "no-store";
         return Ok(new LoginResponse(user.FullName, role, user.AccessExpiresAt, QuestionCountCache.Total));
     }
