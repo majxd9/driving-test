@@ -47,7 +47,7 @@ export function ContentProtection({ children, studentName = 'رخصتي' }: Cont
     return () => {
       window.clearTimeout(noticeTimer.current);
       window.removeEventListener('keydown', handleKeyDown, true);
-      window.removeEventListener('beforeprint', handleBeforePrint, true);
+      window.removeEventListener('beforeprint', handleBeforePrint);
       window.removeEventListener('dragstart', handleDragStart, true);
     };
   }, []);
