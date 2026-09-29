@@ -68,7 +68,7 @@ export function resolveQuestionImageUrl(src?: string | null): string {
  * until the student chooses an answer.
  */
 export function shouldShowQuestionImageBeforeAnswer(
-  question: Pick<Question, 'category' | 'text' | 'imageUrl'>,
+  question: Pick<Question, 'text' | 'imageUrl'> & { category?: Question['category'] },
 ): boolean {
   if (!question.imageUrl) return false;
 
