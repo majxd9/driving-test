@@ -75,6 +75,12 @@ export default function Exam() {
 
     finishedRef.current = true;
 
+    // Persist the attempt without delaying the instant local result screen.
+    void api.submitExamAttempt({
+      modelId: Number(modelId) || 1,
+      answers: currentAnswers,
+    }).catch(() => {});
+
     const answered = Object.keys(currentAnswers).length;
     const correct = currentQuestions.reduce(
       (total, question) =>

@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
+import AppErrorBoundary from './components/AppErrorBoundary';
+import { applyPerformancePreference } from './utils/performanceMode';
 import './index.css';
 import './unified.css';
 import './modern-overrides.css';
@@ -27,12 +29,17 @@ import './home-mobile-performance.css';
 import './student-name-plate.css';
 import './practical-info.css';
 import './interaction-polish-v1.css';
+import './adaptive-performance.css';
+
+applyPerformancePreference();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <AppErrorBoundary>
+          <App />
+        </AppErrorBoundary>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
