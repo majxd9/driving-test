@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import OptimizedImage from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
 
@@ -26,10 +26,7 @@ export default function Result() {
   };
   const navigate = useNavigate();
 
-  if (!state) {
-    navigate('/app');
-    return null;
-  }
+  if (!state) return <Navigate to="/app" replace />;
 
   const { correct, total, answered, reviewQuestions = [], modelId } = state;
   const wrong = reviewQuestions.filter((x) => x.chosen !== null && x.chosen !== x.question.correctAnswerIndex);
