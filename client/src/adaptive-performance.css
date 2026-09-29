@@ -1,0 +1,22 @@
+html[data-performance='save'] { scroll-behavior: auto !important; }
+
+html[data-performance='save'] *,
+html[data-performance='save'] *::before,
+html[data-performance='save'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+html[data-performance='save'] * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-performance='save'] svg [filter] { filter: none !important; }
+
+html[data-performance='save'] .login-v2-glow,
+html[data-performance='save'] .home-spirit-scene::before,
+html[data-performance='save'] .home-spirit-scene::after {
+  opacity: 0 !important;
+}
