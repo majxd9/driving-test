@@ -18,7 +18,6 @@ public static class ExamQuestionPicker
             (Category: QuestionCategory.Mechanic, Count: 6)
         };
 
-        var allQuestions = await QuestionBankCache.GetAllAsync(db);
         var picked = new List<Question>(30);
         var salts = new Dictionary<QuestionCategory, int>
         {
@@ -29,8 +28,7 @@ public static class ExamQuestionPicker
 
         foreach (var (category, count) in required)
         {
-            var source = allQuestions
-                .Where(q => q.Category == category)
+            var source = (await QuestionBankCache.GetCategoryAsync(db, category))
                 .OrderBy(q => q.Id)
                 .ToList();
 
