@@ -12,25 +12,52 @@ function getDeviceId(): string {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const isFormData = options.body instanceof FormData;
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      ...(isFormData || options.body == null ? {} : { 'Content-Type': 'application/json' }),
-      ...(options.headers || {}),
-    },
-  });
+  let res: Response;
+
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      credentials: 'include',
+      headers: {
+        ...(isFormData || options.body == null ? {} : { 'Content-Type': 'application/json' }),
+        ...(options.headers || {}),
+      },
+    });
+  } catch {
+    throw new Error('تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت وحاول مرة أخرى.');
+  }
 
   if (!res.ok) {
-    let message = 'حدث خطأ غير متوقع';
+    let message = 'حدث خطأ غير متوقع. حاول مرة أخرى.';
     try {
       const body = await res.json();
-      message = Array.isArray(body) ? body.join('، ') : (body.message || message);
-    } catch { /* no JSON body */ }
+      if (Array.isArray(body)) {
+        message = body.join('، ') || message;
+      } else if (body && typeof body.message === 'string' && body.message.trim()) {
+        message = body.message;
+      }
+    } catch {
+      // Non-JSON error responses are handled by the generic message above.
+    }
+
+    if (res.status === 401) {
+      message = message || 'انتهت الجلسة أو بيانات الدخول غير صحيحة.';
+    } else if (res.status === 429) {
+      message = message || 'تم تجاوز عدد المحاولات المسموح بها. حاول بعد قليل.';
+    } else if (res.status >= 500) {
+      message = 'حدث خطأ مؤقت في الخادم. حاول مرة أخرى بعد قليل.';
+    }
+
     throw new Error(message);
   }
+
   if (res.status === 204) return undefined as T;
-  return res.json();
+
+  try {
+    return await res.json();
+  } catch {
+    throw new Error('وصلت استجابة غير صالحة من الخادم. حاول مرة أخرى.');
+  }
 }
 
 export const api = {
