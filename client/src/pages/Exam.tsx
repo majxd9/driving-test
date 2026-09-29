@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { ExamQuestion } from '../types';
 import DiagramRenderer from '../components/DiagramRenderer';
+import OptimizedImage from '../components/OptimizedImage';
+import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 
 const DURATION = 15 * 60;
 const LETTERS = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
@@ -126,7 +128,7 @@ export default function Exam() {
   if(loading)return <div className="page-shell flex items-center justify-center px-4"><div className="surface-panel w-full max-w-xl p-5"><div className="skeleton h-44 rounded-2xl"/><p className="text-center text-muted text-sm mt-4">جارِ تجهيز الاختبار...</p></div></div>;
   if(loadError||!questions.length)return <div className="page-shell flex items-center justify-center px-5"><div className="surface-panel w-full max-w-md text-center p-7"><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-xl font-black mb-2">تعذر تحضير الاختبار</h1><p className="text-muted text-sm leading-relaxed">{loadError??'لم يتم العثور على أسئلة.'}</p><button onClick={loadExam} className="primary-cta mt-5 w-full">إعادة المحاولة</button></div></div>;
 
-  const q=questions[current]; const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
+  const q=questions[current]; const showExamImage = shouldShowQuestionImageBeforeAnswer(q); const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
   const selectedAnswer = answers[q.id];
   // لا صورة ولا شرح أثناء الاختبار؛ كلاهما للمراجعة بعد إنهاء الاختبار فقط.
   return <div className="exam-page-v2" dir="rtl">
@@ -164,10 +166,23 @@ export default function Exam() {
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
     <main className="exam-stage-v2"><section className="exam-card-v2">
       <div className="exam-scroll-v2">
-        <div className="exam-image-slot-v2"><div className="exam-image-placeholder-v2" aria-hidden="true"/></div>
+        <div className="exam-image-slot-v2">
+          {showExamImage && q.imageUrl ? (
+            <OptimizedImage
+              src={q.imageUrl}
+              alt={`صورة السؤال ${q.id}`}
+              sizes="(max-width: 700px) 96vw, 760px"
+              className="exam-image-el-v2"
+              objectFit="contain"
+              priority
+            />
+          ) : (
+            <div className="exam-image-placeholder-v2" aria-hidden="true"/>
+          )}
+        </div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
         <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>setAnswers(a=>({...a,[q.id]:i}))} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
-        <DiagramRenderer question={q}/>
+        {showExamImage && <DiagramRenderer question={q}/>}
       </div>
       <div className="exam-actions-v2">
         <button type="button" onClick={()=>goToQuestion(current-1)} disabled={current===0} className="exam-action-v2 secondary"><UiIcon name="back"/><span>السابق</span></button>
