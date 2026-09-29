@@ -104,13 +104,13 @@ public class AuthController : ControllerBase
         if (!Guid.TryParse(request.DeviceId, out _) || request.DeviceId.Length > 64)
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
 
-        if (role != "Admin" && !string.IsNullOrEmpty(user.DeviceId) && !string.Equals(user.DeviceId, request.DeviceId, StringComparison.Ordinal))
+        if (!string.IsNullOrEmpty(user.DeviceId) && !string.Equals(user.DeviceId, request.DeviceId, StringComparison.Ordinal))
         {
             EnqueueFailure(user, "DeviceMismatch");
             return Unauthorized(new { message = "اسم المستخدم أو كلمة المرور غير صحيحة" });
         }
 
-        var deviceWasAssigned = role != "Admin" && string.IsNullOrEmpty(user.DeviceId);
+        var deviceWasAssigned = string.IsNullOrEmpty(user.DeviceId);
         if (deviceWasAssigned)
             user.DeviceId = request.DeviceId;
 
