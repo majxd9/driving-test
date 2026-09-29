@@ -12,14 +12,19 @@ function getDeviceId(): string {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const isFormData = options.body instanceof FormData;
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      ...(isFormData || options.body == null ? {} : { 'Content-Type': 'application/json' }),
-      ...(options.headers || {}),
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      credentials: 'include',
+      headers: {
+        ...(isFormData || options.body == null ? {} : { 'Content-Type': 'application/json' }),
+        ...(options.headers || {}),
+      },
+    });
+  } catch {
+    throw new Error('تعذر الاتصال بالخادم حالياً. تحقق من اتصال الإنترنت وحاول مجدداً.');
+  }
 
   if (!res.ok) {
     let message = 'حدث خطأ غير متوقع';
@@ -27,6 +32,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       const body = await res.json();
       message = Array.isArray(body) ? body.join('، ') : (body.message || message);
     } catch { /* no JSON body */ }
+    if (res.status >= 500) message = 'حدث خلل مؤقت في الخادم. حاول مجدداً بعد قليل.';
     throw new Error(message);
   }
   if (res.status === 204) return undefined as T;
