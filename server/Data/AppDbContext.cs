@@ -50,5 +50,11 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<ExamAttempt>()
             .HasIndex(e => new { e.StudentId, e.CreatedAt });
+
+        builder.Entity<AuthLog>()
+            .HasIndex(e => new { e.UserId, e.Timestamp });
+
+        builder.Entity<ExamResult>()
+            .HasIndex(e => new { e.UserId, e.CreatedAt });
     }
 }

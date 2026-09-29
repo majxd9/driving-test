@@ -61,10 +61,17 @@ public AdminController(
     public async Task<ActionResult<StudentResponse>> CreateStudent(
         CreateStudentRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.UserName) || request.UserName.Length > 64 ||
+            string.IsNullOrWhiteSpace(request.FullName) || request.FullName.Length > 120 ||
+            string.IsNullOrWhiteSpace(request.Password) || request.Password.Length > 128 ||
+            request.AccessDays is <= 0 or > 3650)
+        {
+            return BadRequest(new { message = "بيانات الطالب غير صالحة." });
+        }
         var user = new ApplicationUser
         {
-            UserName = request.UserName,
-            FullName = request.FullName,
+            UserName = request.UserName.Trim(),
+            FullName = request.FullName.Trim(),
             IsActive = true,
             AccessExpiresAt =
                 request.AccessDays is int days
@@ -219,26 +226,11 @@ public AdminController(
     public async Task<ActionResult<Question>> CreateQuestion(
         QuestionUpsertRequest request)
     {
-        if (request.Options.Count < 2 ||
-            request.Options.Count > 6)
-        {
-            return BadRequest(new
-            {
-                message = "يجب أن يحتوي السؤال على 2 إلى 6 إجابات."
-            });
-        }
-
-        if (request.CorrectAnswerIndex < 0 ||
-            request.CorrectAnswerIndex >= request.Options.Count)
-        {
-            return BadRequest(new
-            {
-                message = "رقم الإجابة الصحيحة غير صالح."
-            });
-        }
+        var validation = ValidateQuestionRequest(request);
+        if (validation is not null)
+            return BadRequest(new { message = validation });
 
         var q = FromRequest(request);
-
         _db.Questions.Add(q);
 
         await _db.SaveChangesAsync();
@@ -253,35 +245,24 @@ public AdminController(
         int id,
         QuestionUpsertRequest request)
     {
-        var q =
-            await _db.Questions.FindAsync(id);
-
+        var q = await _db.Questions.FindAsync(id);
         if (q is null)
             return NotFound();
 
-        if (request.Options.Count < 2 ||
-            request.Options.Count > 6 ||
-            request.CorrectAnswerIndex < 0 ||
-            request.CorrectAnswerIndex >= request.Options.Count)
-        {
-            return BadRequest(new
-            {
-                message = "بيانات الإجابات غير صالحة."
-            });
-        }
+        var validation = ValidateQuestionRequest(request);
+        if (validation is not null)
+            return BadRequest(new { message = validation });
 
         q.Category = request.Category;
-        q.Text = request.Text;
-        q.Options = request.Options;
-        q.CorrectAnswerIndex =
-            request.CorrectAnswerIndex;
-        q.Explanation = request.Explanation;
-        q.ImageUrl = request.ImageUrl;
-        q.DiagramType = request.DiagramType;
-        q.DiagramUrl = request.DiagramUrl;
-        q.DiagramTitle = request.DiagramTitle;
-        q.DiagramDescription =
-            request.DiagramDescription;
+        q.Text = request.Text.Trim();
+        q.Options = request.Options.Select(x => x.Trim()).ToList();
+        q.CorrectAnswerIndex = request.CorrectAnswerIndex;
+        q.Explanation = request.Explanation?.Trim();
+        q.ImageUrl = request.ImageUrl?.Trim();
+        q.DiagramType = request.DiagramType?.Trim();
+        q.DiagramUrl = request.DiagramUrl?.Trim();
+        q.DiagramTitle = request.DiagramTitle?.Trim();
+        q.DiagramDescription = request.DiagramDescription?.Trim();
 
         await _db.SaveChangesAsync();
         QuestionBankCache.Invalidate();
@@ -310,73 +291,72 @@ public AdminController(
     [HttpGet("analytics")]
     public async Task<IActionResult> Analytics()
     {
-        var students =
-            await _userManager.GetUsersInRoleAsync("Student");
+        var students = await _userManager.GetUsersInRoleAsync("Student");
 
-        var questionCounts =
-            await _db.Questions
-                .AsNoTracking()
-                .GroupBy(q => q.Category)
-                .Select(g => new
-                {
-                    Category = g.Key,
-                    Count = g.Count()
-                })
-                .ToListAsync();
+        var questionCounts = await _db.Questions
+            .AsNoTracking()
+            .GroupBy(q => q.Category)
+            .Select(g => new { Category = g.Key, Count = g.Count() })
+            .ToListAsync();
 
-        var totalReferenced =
-            await _db.Questions
-                .AsNoTracking()
-                .CountAsync(q =>
-                    q.ImageUrl != null &&
-                    q.ImageUrl != "");
+        var totalReferenced = await _db.Questions
+            .AsNoTracking()
+            .CountAsync(q => q.ImageUrl != null && q.ImageUrl != "");
 
-        var legacyExams =
-            await _db.ExamResults
-                .AsNoTracking()
-                .ToListAsync();
+        var legacy = await _db.ExamResults
+            .AsNoTracking()
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Total = g.Count(),
+                Passed = g.Count(x => x.Passed),
+                Score = g.Sum(x => (double?)x.Correct) ?? 0
+            })
+            .FirstOrDefaultAsync();
 
-        var attemptsData =
-            await _db.ExamAttempts
-                .AsNoTracking()
-                .ToListAsync();
+        var attempts = await _db.ExamAttempts
+            .AsNoTracking()
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Total = g.Count(),
+                Passed = g.Count(x => x.Correct >= 25),
+                Score = g.Sum(x => (double?)x.Correct) ?? 0
+            })
+            .FirstOrDefaultAsync();
 
-        var examTotal =
-            legacyExams.Count +
-            attemptsData.Count;
+        var auth = await _db.AuthLogs
+            .AsNoTracking()
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Total = g.Count(),
+                Successful = g.Count(x => x.Success)
+            })
+            .FirstOrDefaultAsync();
 
-        var passedTotal =
-            legacyExams.Count(x => x.Passed) +
-            attemptsData.Count(x => x.Correct >= 25);
+        var examTotal = (legacy?.Total ?? 0) + (attempts?.Total ?? 0);
+        var passedTotal = (legacy?.Passed ?? 0) + (attempts?.Passed ?? 0);
+        var scoreTotal = (legacy?.Score ?? 0) + (attempts?.Score ?? 0);
+        var authTotal = auth?.Total ?? 0;
+        var authSuccess = auth?.Successful ?? 0;
 
-        var scoreTotal =
-            legacyExams.Sum(x => (double)x.Correct) +
-            attemptsData.Sum(x => (double)x.Correct);
-
-        var authTotal =
-            await _db.AuthLogs.CountAsync();
-
-        var authSuccess =
-            await _db.AuthLogs.CountAsync(
-                x => x.Success);
-
-        // المخطط الحالي لا يحفظ إجابات كل سؤال على حدة،
-        // لذلك نعرض آخر الأسئلة بدلاً من اختلاق إحصائيات غير موجودة.
-        var top =
-            await _db.Questions
-                .AsNoTracking()
-                .OrderByDescending(q => q.Id)
-                .Take(8)
-                .Select(q => new
-                {
-                    questionId = q.Id,
-                    category = q.Category,
-                    text = q.Text,
-                    attempts = 0,
-                    correct = 0,
-                    accuracy = 0
-                })
-                .ToListAsync();
+        // لا توجد إجابات لكل سؤال مخزنة في قاعدة البيانات حالياً،
+        // لذلك لا نختلق إحصائيات سؤال-بسؤال.
+        var top = await _db.Questions
+            .AsNoTracking()
+            .OrderByDescending(q => q.Id)
+            .Take(8)
+            .Select(q => new
+            {
+                questionId = q.Id,
+                category = q.Category,
+                text = q.Text,
+                attempts = 0,
+                correct = 0,
+                accuracy = 0
+            })
+            .ToListAsync();
 
         return Ok(new
         {
@@ -385,91 +365,85 @@ public AdminController(
                 total = students.Count,
                 active = students.Count(s => s.IsActive)
             },
-
             questions = new
             {
                 total = questionCounts.Sum(x => x.Count),
-
                 byCategory = new
                 {
-                    Ser = questionCounts
-                        .Where(x =>
-                            x.Category ==
-                            QuestionCategory.Ser)
-                        .Select(x => x.Count)
-                        .FirstOrDefault(),
-
-                    Ishara = questionCounts
-                        .Where(x =>
-                            x.Category ==
-                            QuestionCategory.Ishara)
-                        .Select(x => x.Count)
-                        .FirstOrDefault(),
-
-                    Mechanic = questionCounts
-                        .Where(x =>
-                            x.Category ==
-                            QuestionCategory.Mechanic)
-                        .Select(x => x.Count)
-                        .FirstOrDefault()
+                    Ser = questionCounts.Where(x => x.Category == QuestionCategory.Ser).Select(x => x.Count).FirstOrDefault(),
+                    Ishara = questionCounts.Where(x => x.Category == QuestionCategory.Ishara).Select(x => x.Count).FirstOrDefault(),
+                    Mechanic = questionCounts.Where(x => x.Category == QuestionCategory.Mechanic).Select(x => x.Count).FirstOrDefault()
                 }
             },
-
-            media = new
-            {
-                totalReferenced
-            },
-
+            media = new { totalReferenced },
             exams = new
             {
                 total = examTotal,
                 passed = passedTotal,
-
-                passRate =
-                    examTotal == 0
-                        ? 0
-                        : Math.Round(
-                            passedTotal * 100.0 /
-                            examTotal,
-                            1),
-
-                averageScore =
-                    examTotal == 0
-                        ? 0
-                        : Math.Round(
-                            scoreTotal /
-                            examTotal,
-                            1)
+                passRate = examTotal == 0 ? 0 : Math.Round(passedTotal * 100.0 / examTotal, 1),
+                averageScore = examTotal == 0 ? 0 : Math.Round(scoreTotal / examTotal, 1)
             },
-
-            auth = new
-            {
-                totalAttempts = authTotal,
-                successful = authSuccess,
-                failed = authTotal - authSuccess
-            },
-
+            auth = new { totalAttempts = authTotal, successful = authSuccess, failed = authTotal - authSuccess },
             topQuestions = top
         });
     }
 
-    private static Question FromRequest(
-        QuestionUpsertRequest r)
+    private static string? ValidateQuestionRequest(QuestionUpsertRequest request)
+    {
+        if (request is null)
+            return "بيانات السؤال غير صالحة.";
+
+        if (!Enum.IsDefined(request.Category))
+            return "قسم السؤال غير صالح.";
+
+        if (string.IsNullOrWhiteSpace(request.Text) || request.Text.Length > 1500)
+            return "نص السؤال غير صالح.";
+
+        if (request.Options is null ||
+            request.Options.Count != 4 ||
+            request.Options.Any(o => string.IsNullOrWhiteSpace(o) || o.Length > 500))
+            return "يجب أن يحتوي السؤال على 4 إجابات غير فارغة.";
+
+        if (request.Options.Distinct(StringComparer.Ordinal).Count() != 4)
+            return "يجب ألا تتكرر الإجابات.";
+
+        if (request.CorrectAnswerIndex < 0 ||
+            request.CorrectAnswerIndex >= request.Options.Count)
+            return "رقم الإجابة الصحيحة غير صالح.";
+
+        if (!IsSafeAssetPath(request.ImageUrl) || !IsSafeAssetPath(request.DiagramUrl))
+            return "مسار الصورة غير صالح.";
+
+        return null;
+    }
+
+    private static bool IsSafeAssetPath(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return true;
+
+        var trimmed = value.Trim();
+        return trimmed.StartsWith("/", StringComparison.Ordinal) &&
+               !trimmed.Contains("..", StringComparison.Ordinal) &&
+               !trimmed.Contains("\\", StringComparison.Ordinal) &&
+               !trimmed.Contains("://", StringComparison.Ordinal) &&
+               !trimmed.StartsWith("//", StringComparison.Ordinal);
+    }
+
+    private static Question FromRequest(QuestionUpsertRequest r)
     {
         return new Question
         {
             Category = r.Category,
-            Text = r.Text,
-            Options = r.Options,
-            CorrectAnswerIndex =
-                r.CorrectAnswerIndex,
-            Explanation = r.Explanation,
-            ImageUrl = r.ImageUrl,
-            DiagramType = r.DiagramType,
-            DiagramUrl = r.DiagramUrl,
-            DiagramTitle = r.DiagramTitle,
-            DiagramDescription =
-                r.DiagramDescription
+            Text = r.Text.Trim(),
+            Options = r.Options.Select(x => x.Trim()).ToList(),
+            CorrectAnswerIndex = r.CorrectAnswerIndex,
+            Explanation = r.Explanation?.Trim(),
+            ImageUrl = r.ImageUrl?.Trim(),
+            DiagramType = r.DiagramType?.Trim(),
+            DiagramUrl = r.DiagramUrl?.Trim(),
+            DiagramTitle = r.DiagramTitle?.Trim(),
+            DiagramDescription = r.DiagramDescription?.Trim()
         };
     }
 

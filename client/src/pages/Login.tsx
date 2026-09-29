@@ -7,6 +7,8 @@ import OptimizedImage from '../components/OptimizedImage';
 import SiteGuide from '../components/SiteGuide';
 import SpiritLights from '../components/SpiritLights';
 import SpiritHorn from '../components/SpiritHorn';
+import '../login-v3.css';
+import '../login-scene-final.css';
 
 const SAMPLE_QUESTIONS = [
   { text: 'ما معنى هذه الإشارة؟', imageUrl: '/signs/sign_03.webp', options: ['منحدر خطر','طريق ضيق من جهتين','طريق زلقة','منعطف مزدوج، الأول باتجاه اليسار'], correct: 3, explanation: 'تحذّر الإشارة من منعطفين متتاليين، الأول باتجاه اليسار.' },

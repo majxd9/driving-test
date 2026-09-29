@@ -37,81 +37,31 @@ public class QuestionsController : ControllerBase
     [HttpGet("exam/{modelId:int}")]
     public async Task<ActionResult<List<ExamQuestionResponse>>> GetExam(int modelId)
     {
-        if (modelId is < 1 or > 8) return BadRequest(new { message = "رقم النموذج يجب أن يكون بين 1 و8." });
+        if (modelId is < 1 or > 8)
+            return BadRequest(new { message = "رقم النموذج يجب أن يكون بين 1 و8." });
+
         Response.Headers.CacheControl = "no-store";
 
-        var required = new[]
+        try
         {
-            (Category: QuestionCategory.Ser, Count: 12),
-            (Category: QuestionCategory.Ishara, Count: 12),
-            (Category: QuestionCategory.Mechanic, Count: 6)
-        };
-
-        var allQuestions = await QuestionBankCache.GetAllAsync(_db);
-        var picked = new List<Question>(30);
-        var salts = new Dictionary<QuestionCategory, int>
-        {
-            [QuestionCategory.Ser] = 11,
-            [QuestionCategory.Ishara] = 23,
-            [QuestionCategory.Mechanic] = 37
-        };
-
-        foreach (var (category, count) in required)
-        {
-            var source = allQuestions
-                .Where(q => q.Category == category)
-                .OrderBy(q => q.Id)
-                .ToList();
-
-            var unique = DeduplicateQuestions(source);
-            if (unique.Count < count)
-                return Conflict(new { message = $"قسم {CategoryName(category)} لا يحتوي عدداً كافياً من الأسئلة الفريدة الصالحة لهذا النموذج." });
-
-            var categoryPicked = Pick(unique, count, checked(modelId * 1009 + salts[category]));
-
-            // ضمان ظهور الأسئلة الجديدة ذات الرسومات (236-245) في نماذج الامتحان.
-            // لا نضيفها فوق العدد المحدد؛ نستبدل سؤالاً واحداً فقط إذا لم يكن موجوداً.
-            if (category == QuestionCategory.Ishara)
-            {
-                var priority = unique
-                    .Where(q => Regex.IsMatch(q.ImageUrl ?? string.Empty, @"/signs/sign_(23[6-9]|24[0-5])\.svg$", RegexOptions.IgnoreCase))
-                    .OrderBy(q => q.Id)
-                    .ToList();
-
-                if (priority.Count > 0 && !categoryPicked.Any(q => priority.Any(p => p.Id == q.Id)))
-                {
-                    var guaranteed = priority[(modelId - 1) % priority.Count];
-                    categoryPicked[^1] = guaranteed;
-                }
-            }
-
-            // ضمان أن سؤال دخول النفق موجود ضمن نماذج الامتحان، دون زيادة عدد الأسئلة.
-            if (category == QuestionCategory.Ser)
-            {
-                var tunnel = unique
-                    .Where(q => q.Text.Contains("نفق", StringComparison.Ordinal))
-                    .OrderBy(q => q.Id)
-                    .FirstOrDefault();
-
-                if (tunnel is not null && !categoryPicked.Any(q => q.Id == tunnel.Id))
-                    categoryPicked[^1] = tunnel;
-            }
-
-            picked.AddRange(categoryPicked);
+            var picked = await ExamQuestionPicker.GetAsync(_db, modelId);
+            return Ok(picked.Select(q => new ExamQuestionResponse(
+                q.Id,
+                q.Text,
+                q.Options,
+                q.CorrectAnswerIndex,
+                q.Explanation,
+                q.ImageUrl,
+                q.DiagramType,
+                q.DiagramUrl,
+                q.DiagramTitle,
+                q.DiagramDescription
+            )).ToList());
         }
-
-        return Ok(picked.Select(q => new ExamQuestionResponse(
-            q.Id,
-            q.Text,
-            q.Options,
-            q.CorrectAnswerIndex,
-            q.Explanation,
-            q.ImageUrl,
-            q.DiagramType,
-            q.DiagramUrl,
-            q.DiagramTitle,
-            q.DiagramDescription
-        )).ToList());
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
 
     private static string CategoryName(QuestionCategory category) => category switch

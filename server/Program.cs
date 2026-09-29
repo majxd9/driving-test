@@ -68,14 +68,15 @@ builder.Services.AddAuthentication(options =>
         {
             var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
             var tokenRole = context.Principal?.FindFirstValue(ClaimTypes.Role);
-            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(tokenRole))
+            var tokenDeviceId = context.Principal?.FindFirstValue("device_id");
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(tokenRole) || string.IsNullOrWhiteSpace(tokenDeviceId))
             {
                 context.Fail("Invalid session.");
                 return;
             }
 
             var cache = context.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
-            var cacheKey = $"auth-status:{userId}:{tokenRole}";
+            var cacheKey = $"auth-status:{userId}:{tokenRole}:{tokenDeviceId}";
 
             if (!cache.TryGetValue(cacheKey, out bool valid))
             {
@@ -86,6 +87,7 @@ builder.Services.AddAuthentication(options =>
                 valid = user is not null
                     && user.IsActive
                     && (user.AccessExpiresAt is null || user.AccessExpiresAt > DateTime.UtcNow)
+                    && string.Equals(user.DeviceId, tokenDeviceId, StringComparison.Ordinal)
                     && roles.Contains(tokenRole, StringComparer.Ordinal);
 
                 cache.Set(cacheKey, valid, TimeSpan.FromSeconds(30));
@@ -143,6 +145,23 @@ builder.Services.AddEndpointsApiExplorer();
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
+    app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json; charset=utf-8";
+        if (context.Request.Path.StartsWithSegments("/api"))
+        {
+            await context.Response.WriteAsJsonAsync(new { message = "حدث خطأ داخلي مؤقت. حاول مرة أخرى." });
+            return;
+        }
+
+        await context.Response.WriteAsync("حدث خطأ غير متوقع.");
+    });
+});
+
+if (!app.Environment.IsDevelopment())
     app.UseHsts();
 
 app.Use(async (context, next) =>
@@ -151,11 +170,12 @@ app.Use(async (context, next) =>
     context.Response.Headers["X-Frame-Options"] = "DENY";
     context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+    context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
 
     if (HttpMethods.IsPost(context.Request.Method) || HttpMethods.IsPut(context.Request.Method) || HttpMethods.IsPatch(context.Request.Method) || HttpMethods.IsDelete(context.Request.Method))
     {
         var origin = context.Request.Headers.Origin.ToString();
-        if (!string.IsNullOrWhiteSpace(origin) && !string.Equals(origin, frontendOrigin, StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(origin) || !string.Equals(origin.TrimEnd('/'), frontendOrigin, StringComparison.OrdinalIgnoreCase))
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             await context.Response.WriteAsJsonAsync(new { message = "الطلب غير مسموح من هذا المصدر." });

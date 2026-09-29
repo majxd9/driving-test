@@ -19,4 +19,16 @@ jobs:
         env:
           HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL }}
         run: |
-          curl --fail --show-error --silent --max-time 20 "$HEALTHCHECK_URL"
+          for attempt in 1 2 3; do
+            echo "Health check attempt $attempt/3"
+            if curl --fail-with-body --show-error --silent --max-time 20 "$HEALTHCHECK_URL"; then
+              echo
+              echo "Health check passed."
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              sleep 5
+            fi
+          done
+          echo "Health check failed after 3 attempts."
+          exit 1

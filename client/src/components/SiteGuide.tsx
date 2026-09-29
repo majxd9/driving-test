@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getPerformancePreference, setPerformancePreference, type PerformancePreference } from '../utils/performanceMode';
 
 const steps = [
   ['1', 'تدرّب حسب القسم', 'راجع قواعد السير أو الإشارات المرورية أو أساسيات الميكانيك.'],
@@ -9,12 +10,19 @@ const steps = [
 
 export default function SiteGuide() {
   const [open, setOpen] = useState(false);
+  const [performancePreference, setPerformancePreferenceState] = useState<PerformancePreference>(() => getPerformancePreference());
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
+
+  const choosePerformance = (value: PerformancePreference) => {
+    setPerformancePreferenceState(value);
+    setPerformancePreference(value);
+  };
+
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="guide-button group">
@@ -32,6 +40,30 @@ export default function SiteGuide() {
                 <div className="step-number">{n}</div><div><h3 className="font-bold text-ink">{title}</h3><p className="text-sm text-muted mt-1 leading-relaxed">{text}</p></div>
               </div>)}
             </div>
+            <div className="mt-7 rounded-2xl border border-line bg-paper/70 p-4">
+              <div className="text-right">
+                <p className="text-sm font-extrabold text-ink">أداء الهاتف</p>
+                <p className="text-xs text-muted mt-1">الوضع الذكي يخفف المؤثرات الثقيلة تلقائياً على الأجهزة أو الشبكات الأضعف، من دون حذف أي محتوى.</p>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-3">
+                {([
+                  ['auto', 'ذكي'],
+                  ['full', 'عادي'],
+                  ['lite', 'توفير']
+                ] as const).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={performancePreference === value}
+                    onClick={() => choosePerformance(value)}
+                    className={performancePreference === value ? 'rounded-xl border border-brand bg-brand-soft text-brand px-2.5 py-2 text-xs font-bold' : 'rounded-xl border border-line bg-paper text-muted px-2.5 py-2 text-xs font-bold'}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <button type="button" onClick={() => setOpen(false)} className="w-full mt-7 rounded-2xl bg-brand py-3.5 font-bold text-white">فهمت، لنبدأ</button>
           </section>
         </div>

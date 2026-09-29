@@ -6,32 +6,35 @@ namespace DrivingTestApi.Services;
 public static class QuestionCountCache
 {
     private static int _total;
-    private static bool _initialized;
+    private static int _initialized;
     private static readonly SemaphoreSlim InitLock = new(1, 1);
 
     public static int Total => Volatile.Read(ref _total);
 
-    public static void InitializeFrom(int total)
-    {
-        Volatile.Write(ref _total, Math.Max(0, total));
-        Volatile.Write(ref _initialized, true);
-    }
-
     public static async Task InitializeAsync(AppDbContext db)
     {
-        if (_initialized) return;
+        if (Volatile.Read(ref _initialized) == 1)
+            return;
+
         await InitLock.WaitAsync();
         try
         {
-            if (_initialized) return;
-            _total = await db.Questions.AsNoTracking().CountAsync();
-            _initialized = true;
+            if (Volatile.Read(ref _initialized) == 1)
+                return;
+
+            var total = await db.Questions.AsNoTracking().CountAsync();
+            Volatile.Write(ref _total, total);
+            Volatile.Write(ref _initialized, 1);
         }
-        finally { InitLock.Release(); }
+        finally
+        {
+            InitLock.Release();
+        }
     }
 
     public static void ApplyChanges(int added, int deleted)
     {
-        if (_initialized) Interlocked.Add(ref _total, added - deleted);
+        if (Volatile.Read(ref _initialized) == 1)
+            Interlocked.Add(ref _total, added - deleted);
     }
 }

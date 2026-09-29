@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { ExamQuestion } from '../types';
 import DiagramRenderer from '../components/DiagramRenderer';
+import '../exam-counter-final-v2.css';
 
 const DURATION = 15 * 60;
 const LETTERS = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
@@ -74,6 +75,12 @@ export default function Exam() {
     if (finishedRef.current || !currentQuestions.length) return;
 
     finishedRef.current = true;
+
+    // Persist the attempt without delaying the instant local result screen.
+    void api.submitExamAttempt({
+      modelId: Number(modelId) || 1,
+      answers: currentAnswers,
+    }).catch(() => {});
 
     const answered = Object.keys(currentAnswers).length;
     const correct = currentQuestions.reduce(
