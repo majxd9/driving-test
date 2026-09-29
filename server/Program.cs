@@ -68,14 +68,15 @@ builder.Services.AddAuthentication(options =>
         {
             var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
             var tokenRole = context.Principal?.FindFirstValue(ClaimTypes.Role);
-            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(tokenRole))
+            var tokenDeviceId = context.Principal?.FindFirstValue("device_id");
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(tokenRole) || string.IsNullOrWhiteSpace(tokenDeviceId))
             {
                 context.Fail("Invalid session.");
                 return;
             }
 
             var cache = context.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
-            var cacheKey = $"auth-status:{userId}:{tokenRole}";
+            var cacheKey = $"auth-status:{userId}:{tokenRole}:{tokenDeviceId}";
 
             if (!cache.TryGetValue(cacheKey, out bool valid))
             {
@@ -86,6 +87,7 @@ builder.Services.AddAuthentication(options =>
                 valid = user is not null
                     && user.IsActive
                     && (user.AccessExpiresAt is null || user.AccessExpiresAt > DateTime.UtcNow)
+                    && string.Equals(user.DeviceId, tokenDeviceId, StringComparison.Ordinal)
                     && roles.Contains(tokenRole, StringComparer.Ordinal);
 
                 cache.Set(cacheKey, valid, TimeSpan.FromSeconds(30));
