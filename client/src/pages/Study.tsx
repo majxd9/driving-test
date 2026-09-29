@@ -240,7 +240,7 @@ export default function Study() {
         </section>
       </main>
 
-      <nav className="study-premium-actions study-navigation-portal" aria-label="التنقل بين الأسئلة">
+      <nav className="study-premium-actions" aria-label="التنقل بين الأسئلة">
         <button
           type="button"
           onClick={() => goTo(index - 1)}
