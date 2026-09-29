@@ -39,11 +39,6 @@ export function ContentProtection({ children }: ContentProtectionProps) {
 
         if (event.key === 'PrintScreen') {
           brieflyHideContent();
-          // Clearing the clipboard is best-effort and only works where the
-          // browser permits clipboard writes without an explicit user gesture.
-          if (navigator.clipboard?.writeText) {
-            void navigator.clipboard.writeText('').catch(() => undefined);
-          }
         }
       }
     };
