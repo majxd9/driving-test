@@ -61,10 +61,17 @@ public AdminController(
     public async Task<ActionResult<StudentResponse>> CreateStudent(
         CreateStudentRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.UserName) || request.UserName.Length > 64 ||
+            string.IsNullOrWhiteSpace(request.FullName) || request.FullName.Length > 120 ||
+            string.IsNullOrWhiteSpace(request.Password) || request.Password.Length > 128 ||
+            request.AccessDays is <= 0 or > 3650)
+        {
+            return BadRequest(new { message = "بيانات الطالب غير صالحة." });
+        }
         var user = new ApplicationUser
         {
-            UserName = request.UserName,
-            FullName = request.FullName,
+            UserName = request.UserName.Trim(),
+            FullName = request.FullName.Trim(),
             IsActive = true,
             AccessExpiresAt =
                 request.AccessDays is int days
@@ -219,8 +226,8 @@ public AdminController(
     public async Task<ActionResult<Question>> CreateQuestion(
         QuestionUpsertRequest request)
     {
-        if (request.Options.Count < 2 ||
-            request.Options.Count > 6)
+        if (request.Options.Count != 4 ||
+            request.Options.Any(o => string.IsNullOrWhiteSpace(o) || o.Length > 500))
         {
             return BadRequest(new
             {
@@ -271,17 +278,16 @@ public AdminController(
         }
 
         q.Category = request.Category;
-        q.Text = request.Text;
-        q.Options = request.Options;
+        q.Text = request.Text.Trim();
+        q.Options = request.Options.Select(x => x.Trim()).ToList();
         q.CorrectAnswerIndex =
             request.CorrectAnswerIndex;
-        q.Explanation = request.Explanation;
-        q.ImageUrl = request.ImageUrl;
-        q.DiagramType = request.DiagramType;
-        q.DiagramUrl = request.DiagramUrl;
-        q.DiagramTitle = request.DiagramTitle;
-        q.DiagramDescription =
-            request.DiagramDescription;
+        q.Explanation = request.Explanation?.Trim();
+        q.ImageUrl = request.ImageUrl?.Trim();
+        q.DiagramType = request.DiagramType?.Trim();
+        q.DiagramUrl = request.DiagramUrl?.Trim();
+        q.DiagramTitle = request.DiagramTitle?.Trim();
+        q.DiagramDescription = request.DiagramDescription?.Trim();
 
         await _db.SaveChangesAsync();
         QuestionBankCache.Invalidate();
