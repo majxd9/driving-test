@@ -1,5 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import ErrorBoundary from './components/ErrorBoundary';
+import { applyPerformanceMode } from './utils/performanceMode';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
@@ -27,13 +29,18 @@ import './home-mobile-performance.css';
 import './student-name-plate.css';
 import './practical-info.css';
 import './interaction-polish-v1.css';
+import './adaptive-performance.css';
+
+applyPerformanceMode();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
       <AuthProvider>
         <App />
       </AuthProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 );
