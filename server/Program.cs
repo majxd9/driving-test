@@ -154,12 +154,19 @@ app.Use(async (context, next) =>
 
     if (HttpMethods.IsPost(context.Request.Method) || HttpMethods.IsPut(context.Request.Method) || HttpMethods.IsPatch(context.Request.Method) || HttpMethods.IsDelete(context.Request.Method))
     {
-        var origin = context.Request.Headers.Origin.ToString();
-        if (!string.IsNullOrWhiteSpace(origin) && !string.Equals(origin, frontendOrigin, StringComparison.OrdinalIgnoreCase))
+        // Auth uses an HttpOnly cross-origin cookie. For authenticated state changes,
+        // require the browser Origin to match the configured frontend so a third-party
+        // site cannot submit a CSRF request with the user's cookie.
+        var hasAuthCookie = context.Request.Cookies.ContainsKey("auth_token");
+        if (hasAuthCookie)
         {
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            await context.Response.WriteAsJsonAsync(new { message = "الطلب غير مسموح من هذا المصدر." });
-            return;
+            var origin = context.Request.Headers.Origin.ToString();
+            if (!string.Equals(origin, frontendOrigin, StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await context.Response.WriteAsJsonAsync(new { message = "الطلب غير مسموح من هذا المصدر." });
+                return;
+            }
         }
     }
 
