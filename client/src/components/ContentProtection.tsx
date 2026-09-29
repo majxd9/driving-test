@@ -64,7 +64,6 @@ export function ContentProtection({ children, studentName = 'رخصتي' }: Cont
       onCopyCapture={block}
       onCutCapture={block}
       onDragStartCapture={block}
-      onSelectStartCapture={block}
     >
       <div className="content-protection-watermark" aria-hidden="true">
         {Array.from({ length: 12 }, (_, index) => (
