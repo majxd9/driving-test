@@ -29,6 +29,7 @@ import './glass-visibility-v2.css';
 import './spirit-v20.css';
 import './spirit-v20-controls.css';
 import './interaction-polish-v1.css';
+import './study-stable-layout.css';
 import './adaptive-performance.css';
 
 applyPerformancePreference();
