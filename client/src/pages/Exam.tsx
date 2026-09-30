@@ -176,7 +176,7 @@ export default function Exam() {
         <div className="exam-image-slot-v2">{shouldShowQuestionImageBeforeAnswer(q) ? <OptimizedImage src={q.imageUrl ?? ''} alt="صورة السؤال" className="h-full w-full" priority objectFit="contain" /> : <div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
         {q.audioUrl && (
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0 12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, margin: '8px 0 12px' }}>
             <audio
               ref={audioRef}
               src={resolveApiUrl(q.audioUrl)}
@@ -188,16 +188,29 @@ export default function Exam() {
               onClick={() => {
                 const audio = audioRef.current;
                 if (!audio) return;
-                if (audioPlaying) {
-                  audio.pause();
-                  setAudioPlaying(false);
-                } else {
-                  void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false));
-                }
+                audio.currentTime = 0;
+                void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false));
               }}
-              style={{ border: '1px solid rgba(45,212,191,.35)', borderRadius: 999, padding: '8px 16px', background: 'rgba(45,212,191,.10)', color: 'inherit', fontWeight: 800, cursor: 'pointer' }}
+              aria-label="تشغيل صوت السؤال والاختيارات"
+              title="تشغيل الصوت من البداية"
+              style={{ width: 38, height: 32, border: '1px solid rgba(45,212,191,.35)', borderRadius: 9, background: 'rgba(45,212,191,.10)', color: 'inherit', fontWeight: 900, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              {audioPlaying ? '⏸ إيقاف الاستماع' : '🔊 استمع للسؤال والاختيارات'}
+              ▶
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const audio = audioRef.current;
+                if (!audio) return;
+                audio.pause();
+                audio.currentTime = 0;
+                setAudioPlaying(false);
+              }}
+              aria-label="إيقاف صوت السؤال"
+              title="إيقاف الصوت"
+              style={{ width: 38, height: 32, border: '1px solid rgba(248,113,113,.35)', borderRadius: 9, background: 'rgba(248,113,113,.10)', color: 'inherit', fontWeight: 900, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              ■
             </button>
           </div>
         )}
