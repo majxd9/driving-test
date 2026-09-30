@@ -111,11 +111,11 @@
     gap:5px!important;
   }
   .study-audio-strip .study-question-audio-header > .audio-control{
-    width:40px!important;
-    min-width:40px!important;
+    width:70px!important;
+    min-width:70px!important;
     height:36px!important;
     min-height:36px!important;
-    flex:0 0 40px!important;
+    flex:0 0 70px!important;
     border-radius:10px!important;
     font-size:11px!important;
   }
@@ -161,14 +161,14 @@
     padding:3px 5px!important;
   }
   .study-audio-strip .study-question-audio-header > .audio-control{
-    width:42px!important;
-    min-width:42px!important;
+    width:68px!important;
+    min-width:68px!important;
     height:36px!important;
     min-height:36px!important;
-    flex-basis:42px!important;
+    flex-basis:68px!important;
   }
   .study-premium-card{
-    grid-template-rows:16px 0 54px auto 0 0 40px!important;
+    grid-template-rows:16px 0 54px calc(var(--option-count,4) * 50px + (var(--option-count,4) - 1) * 4px) 0 0 40px!important;
     gap:4px!important;
   }
   .study-premium-option{
