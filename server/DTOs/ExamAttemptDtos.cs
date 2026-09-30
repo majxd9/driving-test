@@ -24,8 +24,7 @@ public record ExamReviewQuestionResponse(
     string? DiagramType,
     string? DiagramUrl,
     string? DiagramTitle,
-    string? DiagramDescription,
-    string? AudioUrl);
+    string? DiagramDescription);
 
 public record ExamSubmissionResponse(
     int Id,
@@ -37,7 +36,6 @@ public record ExamSubmissionResponse(
     DateTime CreatedAt,
     List<ExamReviewQuestionResponse> ReviewQuestions);
 
-
 public record ExamQuestionResponse(
     int Id,
     string Text,
@@ -48,4 +46,5 @@ public record ExamQuestionResponse(
     string? DiagramType,
     string? DiagramUrl,
     string? DiagramTitle,
-    string? DiagramDescription);
+    string? DiagramDescription,
+    string? AudioUrl);
