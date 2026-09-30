@@ -2,7 +2,7 @@
 *{box-sizing:border-box}
 button{-webkit-tap-highlight-color:transparent}
 
-@media (max-width:767px){
+@media (max-width:1200px){
   .login-v2{width:100%!important;min-height:100svh!important;height:auto!important;max-height:none!important;overflow-x:hidden!important;overflow-y:auto!important;padding:0!important;align-items:flex-start!important}
   .login-v2-wrap{width:100%!important;max-width:1160px!important;height:auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;margin:0!important;border:0!important;border-radius:0!important;overflow:visible!important}
   .login-v2-showcase{display:flex!important;width:100%!important;min-height:300px!important;height:auto!important;flex:0 0 auto!important;order:1!important;padding:24px 18px!important}
@@ -25,7 +25,7 @@ button{-webkit-tap-highlight-color:transparent}
 }
 
 /* EXAM — the device chooses the frame once; questions never move the controls. */
-@media (max-width:767px){
+@media (max-width:900px){
   .exam-page-v2{width:100%!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
   .exam-topbar-v2{height:56px!important;min-height:56px!important;max-height:56px!important;flex:0 0 56px!important;padding:6px 9px!important}
   .exam-back-v2{width:40px!important;height:40px!important;border-radius:999px!important}
