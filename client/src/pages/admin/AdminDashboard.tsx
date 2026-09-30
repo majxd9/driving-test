@@ -4,6 +4,7 @@ import { api, resolveApiUrl } from '../../api/client';
 import { Analytics, Question, QuestionCategory, Student } from '../../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../../components/OptimizedImage';
 import { StudentAuditModal } from './StudentAuditModal';
+import AudioDiagnostics from '../../components/AudioDiagnostics';
 
 type Tab='overview'|'students'|'questions';
 const tabs:[Tab,string][]=[['overview','نظرة عامة'],['students','الطلاب'],['questions','الأسئلة']];
@@ -47,13 +48,12 @@ function AdminAudioPreview({src}:{src:string}){
      ref={audioRef}
      src={src}
      preload="metadata"
-     crossOrigin="use-credentials"
      onEnded={()=>setPlaying(false)}
      onError={()=>{setPlaying(false);setError('فشل تحميل ملف الصوت من الخادم.');}}
    />
    <button type="button" onClick={play}>{playing?'▶ يعمل':'🔊 استماع'}</button>
    <button type="button" onClick={stop}>إيقاف</button>
-   {error&&<small className="text-exam">{error}</small>}
+   {error&&<small className="text-exam">{error}</small>}<AudioDiagnostics src={src} />
  </span>;
 }
 
