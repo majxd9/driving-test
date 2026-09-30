@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api, resolveApiUrl } from '../api/client';
+import { api } from '../api/client';
+import { loadQuestionAudio } from '../utils/questionAudio';
 import { Question, QuestionCategory } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
@@ -32,7 +33,9 @@ export default function Study() {
   const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const [audioError, setAudioError] = useState(false);
+  const [audioSrc, setAudioSrc] = useState<string | null>(null);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!category) return;
@@ -69,8 +72,50 @@ export default function Study() {
     setSignalState('pending');
     audioRef.current?.pause();
     setAudioPlaying(false);
-    setAudioError(false);
+    setAudioError(null);
   }, [index]);
+
+  const currentAudioPath = questions[index]?.audioUrl ?? null;
+
+  useEffect(() => {
+    let active = true;
+    const controller = new AbortController();
+
+    setAudioPlaying(false);
+    setAudioError(null);
+    setAudioLoading(Boolean(currentAudioPath));
+    setAudioSrc(null);
+
+    if (!currentAudioPath) {
+      setAudioLoading(false);
+      return () => controller.abort();
+    }
+
+    void loadQuestionAudio(currentAudioPath, controller.signal)
+      .then(result => {
+        if (!active) {
+          URL.revokeObjectURL(result.url);
+          return;
+        }
+        setAudioSrc(result.url);
+      })
+      .catch(error => {
+        if (!active || (error instanceof DOMException && error.name === 'AbortError')) return;
+        setAudioError(error instanceof Error ? error.message : 'تعذر تحميل الصوت.');
+      })
+      .finally(() => {
+        if (active) setAudioLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+      setAudioSrc(previous => {
+        if (previous) URL.revokeObjectURL(previous);
+        return null;
+      });
+    };
+  }, [currentAudioPath]);
 
   useEffect(() => {
     const nextQuestion = questions[index + 1];
@@ -175,28 +220,54 @@ export default function Study() {
             <div className="study-question-audio-header">
               <audio
                 ref={audioRef}
-                src={resolveApiUrl(q.audioUrl)}
+                src={audioSrc ?? undefined}
                 preload="auto"
                 onEnded={() => setAudioPlaying(false)}
-                onError={() => { setAudioPlaying(false); setAudioError(true); }}
+                onError={() => {
+                  setAudioPlaying(false);
+                  setAudioError('المتصفح لم يستطع تشغيل ملف الصوت.');
+                }}
               />
-              <button type="button" className={`audio-control audio-play ${audioPlaying ? 'is-playing' : ''}`} onClick={() => { const audio = audioRef.current; if (!audio) return;
-                  setAudioError(false);
+              <button
+                type="button"
+                disabled={audioLoading || !audioSrc}
+                className={`audio-control audio-play ${audioPlaying ? 'is-playing' : ''}`}
+                onClick={() => {
+                  const audio = audioRef.current;
+                  if (!audio || !audioSrc) return;
+                  setAudioError(null);
                   audio.pause();
                   audio.currentTime = 0;
-                  audio.load();
-                  void audio.play().then(() => setAudioPlaying(true)).catch(() => { setAudioPlaying(false); setAudioError(true); }); }} aria-label="تشغيل صوت السؤال والاختيارات" title="تشغيل الصوت من البداية">
+                  void audio.play()
+                    .then(() => setAudioPlaying(true))
+                    .catch(() => {
+                      setAudioPlaying(false);
+                      setAudioError('المتصفح رفض تشغيل الصوت. اضغط تشغيل مرة ثانية.');
+                    });
+                }}
+                aria-label="تشغيل صوت السؤال والاختيارات"
+                title={audioLoading ? 'جارٍ تجهيز الصوت' : 'تشغيل الصوت من البداية'}
+              >
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.8v14.4a1.2 1.2 0 0 0 1.82 1.03l11.4-7.2a1.2 1.2 0 0 0 0-2.06L6.82 3.77A1.2 1.2 0 0 0 5 4.8Z"/></svg>
-                <span>صوت</span>
+                <span>{audioLoading ? 'تحميل' : 'صوت'}</span>
               </button>
-              <button type="button" className="audio-control audio-stop" onClick={() => { const audio = audioRef.current; if (!audio) return;
+              <button
+                type="button"
+                className="audio-control audio-stop"
+                onClick={() => {
+                  const audio = audioRef.current;
+                  if (!audio) return;
                   audio.pause();
                   audio.currentTime = 0;
-                  setAudioPlaying(false); }} aria-label="إيقاف صوت السؤال" title="إيقاف الصوت">
+                  setAudioPlaying(false);
+                }}
+                aria-label="إيقاف صوت السؤال"
+                title="إيقاف الصوت"
+              >
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
                 <span>إيقاف</span>
               </button>
-              {audioError && <small className="audio-error">الصوت غير متوفر لهذا السؤال</small>}
+              {audioError && <small className="audio-error">{audioError}</small>}
             </div>
           )}
         </div>
