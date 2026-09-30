@@ -275,7 +275,7 @@ public class QuestionsController : ControllerBase
         {
             return Ok(new GenerateAudioResponse(
                 id,
-                $"/api/questions/{id}/audio?v={hash}",
+                $"/api/questions/{id}/audio-play?v={hash}",
                 false,
                 hash));
         }
@@ -383,7 +383,7 @@ public class QuestionsController : ControllerBase
 
         return Ok(new GenerateAudioResponse(
             id,
-            $"/api/questions/{id}/audio?v={hash}",
+            $"/api/questions/{id}/audio-play?v={hash}",
             true,
             hash));
     }
