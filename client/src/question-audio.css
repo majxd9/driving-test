@@ -81,18 +81,26 @@
   .question-audio-nav__status{min-width:46px;font-size:8.5px;}
 }
 
-/* The new top navigation owns previous/next; keep the old bottom study portal out of the layout. */
-.study-navigation-portal,
-.study-premium-actions{display:none!important;}
-
-/* Exam keeps a compact finish bar at the bottom; previous/next live beside the audio above. */
-.exam-actions-v2{grid-template-columns:1fr!important;}
+/* Navigation stays underneath, as in the original layout. Audio remains above the question. */
+.study-navigation-portal{display:grid!important;}
+.study-premium-actions{display:grid!important;}
+.exam-actions-v2{
+  grid-template-columns:1fr 1.12fr 1fr!important;
+}
 .exam-actions-v2 .exam-action-v2.secondary,
-.exam-actions-v2 .exam-action-v2.next{display:none!important;}
-.exam-actions-v2 .exam-action-v2.finish{width:100%!important;}
+.exam-actions-v2 .exam-action-v2.next,
+.exam-actions-v2 .exam-action-v2.finish{
+  display:flex!important;
+}
+.exam-actions-v2 .exam-action-v2.finish{width:auto!important;}
 @media(max-width:700px){
-  .exam-actions-v2{min-height:60px!important;}
-  .exam-actions-v2 .exam-action-v2.finish{height:46px!important;min-height:46px!important;}
+  .exam-actions-v2{min-height:64px!important;}
+  .exam-actions-v2 .exam-action-v2.secondary,
+  .exam-actions-v2 .exam-action-v2.next,
+  .exam-actions-v2 .exam-action-v2.finish{
+    height:48px!important;
+    min-height:48px!important;
+  }
 }
 
 /* Reserve real space for the new top control row inside the locked study/exam viewport. */
