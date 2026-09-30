@@ -181,6 +181,28 @@ public class QuestionsController : ControllerBase
         };
     }
 
+
+    // Full-file playback endpoint for mobile browsers/WebViews that reject 206 Range responses.
+    [HttpGet("{id:int}/audio-play")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAudioForPlayback(int id, CancellationToken cancellationToken)
+    {
+        var audio = await _db.QuestionAudios
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
+
+        if (audio is null || audio.AudioBytes.Length == 0)
+            return NotFound(new { message = "ملف الصوت غير موجود لهذا السؤال." });
+
+        Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+        Response.Headers.ETag = $"\"{audio.ContentHash}\"";
+        Response.Headers["Content-Disposition"] = "inline";
+        Response.Headers["X-Audio-Bytes"] = audio.AudioBytes.LongLength.ToString();
+        Response.Headers["X-Audio-Format"] = "mp3";
+
+        return File(audio.AudioBytes, "audio/mpeg", enableRangeProcessing: false);
+    }
+
     private async Task AttachAudioUrlsAsync(IEnumerable<Question> questions)
     {
         var list = questions.ToList();
@@ -200,7 +222,7 @@ public class QuestionsController : ControllerBase
             {
                 // وجود bytes يعني أن هناك ملفاً محفوظاً بالفعل؛ لا نحجب تشغيله
                 // فقط لأن محتوى السؤال تغيّر بعد توليد الصوت.
-                question.AudioUrl = $"/api/questions/{question.Id}/audio?v={item.ContentHash}";
+                question.AudioUrl = $"/api/questions/{question.Id}/audio-play?v={item.ContentHash}";
             }
         }
     }
