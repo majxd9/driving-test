@@ -2,6 +2,8 @@ using DrivingTestApi.Data;
 using DrivingTestApi.DTOs;
 using DrivingTestApi.Models;
 using DrivingTestApi.Services;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -214,16 +216,19 @@ public AdminController(
             .ToListAsync();
 
         var ids = questions.Select(q => q.Id).ToArray();
-        var audioHashes = await _db.QuestionAudios
+        var audioRows = await _db.QuestionAudios
             .AsNoTracking()
-            .Where(x => ids.Contains(x.QuestionId))
+            .Where(x => ids.Contains(x.QuestionId) && x.AudioBytes.Length > 0)
             .Select(x => new { x.QuestionId, x.ContentHash })
             .ToListAsync();
 
-        foreach (var audio in audioHashes)
+        foreach (var audio in audioRows)
         {
             var question = questions.FirstOrDefault(q => q.Id == audio.QuestionId);
-            if (question is not null)
+            if (question is null) continue;
+
+            var currentHash = GetAudioContentHash(question);
+            if (string.Equals(currentHash, audio.ContentHash, StringComparison.Ordinal))
                 question.AudioUrl = $"/api/questions/{question.Id}/audio?v={audio.ContentHash}";
         }
 
@@ -466,6 +471,60 @@ public AdminController(
 
             topQuestions = top
         });
+    }
+
+    [HttpGet("questions/{id:int}/audio-status")]
+    public async Task<IActionResult> GetQuestionAudioStatus(int id, CancellationToken cancellationToken)
+    {
+        var question = await _db.Questions
+            .AsNoTracking()
+            .SingleOrDefaultAsync(q => q.Id == id, cancellationToken);
+
+        if (question is null)
+            return NotFound(new { message = "السؤال غير موجود." });
+
+        var audio = await _db.QuestionAudios
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
+
+        var currentHash = GetAudioContentHash(question);
+        var hasBytes = audio is not null && audio.AudioBytes.Length > 0;
+        var hashMatches = hasBytes && string.Equals(currentHash, audio!.ContentHash, StringComparison.Ordinal);
+
+        return Ok(new
+        {
+            questionId = id,
+            stored = audio is not null,
+            bytes = audio?.AudioBytes.Length ?? 0,
+            currentHash,
+            storedHash = audio?.ContentHash,
+            hashMatches,
+            playable = hashMatches,
+            audioUrl = hashMatches ? $"/api/questions/{id}/audio?v={audio!.ContentHash}" : null
+        });
+    }
+
+    private static string BuildAudioText(Question question)
+    {
+        var builder = new StringBuilder();
+        builder.Append("السؤال: ").Append(question.Text.Trim());
+
+        var letters = new[] { "أ", "ب", "ج", "د", "هـ", "و" };
+        for (var i = 0; i < question.Options.Count; i++)
+        {
+            builder.Append(". الإجابة ")
+                .Append(i < letters.Length ? letters[i] : (i + 1).ToString())
+                .Append(": ")
+                .Append(question.Options[i].Trim());
+        }
+
+        return builder.ToString();
+    }
+
+    private static string GetAudioContentHash(Question question)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(BuildAudioText(question)));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 
     private static Question FromRequest(
