@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Rukhsati" parent="Base.Theme.Rukhsati">
+        <!-- System splash screen (Android 12+) in the app's colour instead of white. -->
+        <item name="android:windowSplashScreenBackground">@color/brand_bg</item>
+    </style>
+</resources>

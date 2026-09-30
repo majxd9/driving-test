@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        A *light* platform theme on purpose: with a dark theme, Android may auto-darken the
+        WebView content on Android 10-12 and change the site's colours. Our own screens set
+        their colours explicitly, so nothing else depends on this.
+    -->
+    <style name="Base.Theme.Rukhsati" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/brand_bg</item>
+        <item name="android:colorBackground">@color/brand_bg</item>
+    </style>
+
+    <style name="Theme.Rukhsati" parent="Base.Theme.Rukhsati" />
+</resources>

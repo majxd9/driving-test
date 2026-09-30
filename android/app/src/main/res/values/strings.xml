@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">رخصتي</string>
+    <string name="error_title">تعذّر تحميل رخصتي</string>
+    <string name="error_message">تأكّد من اتصالك بالإنترنت ثم أعد المحاولة. سيُعاد التحميل تلقائياً عند عودة الاتصال.</string>
+    <string name="retry">إعادة المحاولة</string>
+    <string name="press_back_again">اضغط رجوع مرة أخرى للخروج</string>
+    <string name="external_link_failed">تعذّر فتح الرابط</string>
+    <string name="webview_missing">يحتاج التطبيق إلى «Android System WebView». حدّثه أو فعّله من متجر Play ثم أعد فتح التطبيق.</string>
+</resources>

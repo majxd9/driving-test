@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Base.Theme.Rukhsati" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/brand_bg</item>
+        <item name="android:colorBackground">@color/brand_bg</item>
+        <!-- Stop manufacturers' "dark mode for all apps" from re-colouring the site. -->
+        <item name="android:forceDarkAllowed">false</item>
+    </style>
+</resources>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "No connection": Wi-Fi arcs with a slash through them. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M24.93,38.93 A10,10 0,0 1,39.07 38.93 M17.86,31.86 A20,20 0,0 1,46.14 31.86 M10.79,24.79 A30,30 0,0 1,53.21 24.79"
+        android:strokeColor="#2DD4BF"
+        android:strokeLineCap="round"
+        android:strokeWidth="4" />
+    <path
+        android:fillColor="#2DD4BF"
+        android:pathData="M28.5,48a3.5,3.5 0,1 0,7 0a3.5,3.5 0,1 0,-7 0Z" />
+    <!-- dark outline first, so the slash visibly cuts through the arcs -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M14,12 L50,54"
+        android:strokeColor="#071018"
+        android:strokeLineCap="round"
+        android:strokeWidth="10" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M14,12 L50,54"
+        android:strokeColor="#FBBF24"
+        android:strokeLineCap="round"
+        android:strokeWidth="4" />
+</vector>
