@@ -141,10 +141,22 @@ public class QuestionsController : ControllerBase
             .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
 
         if (audio is null || audio.AudioBytes.Length == 0)
-            return NotFound();
+            return NotFound(new { message = "ملف الصوت غير موجود لهذا السؤال." });
+
+        var question = await _db.Questions
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        if (question is null)
+            return NotFound(new { message = "السؤال غير موجود." });
+
+        var currentHash = GetContentHash(BuildAudioText(question));
+        if (!string.Equals(currentHash, audio.ContentHash, StringComparison.Ordinal))
+            return Conflict(new { message = "ملف الصوت قديم ويحتاج إعادة توليد." });
 
         Response.Headers.CacheControl = "public,max-age=31536000,immutable";
         Response.Headers.ETag = $"\"{audio.ContentHash}\"";
+        Response.Headers["Content-Disposition"] = "inline";
         return File(audio.AudioBytes, "audio/mpeg", enableRangeProcessing: true);
     }
 
@@ -156,7 +168,7 @@ public class QuestionsController : ControllerBase
         var ids = list.Select(q => q.Id).ToArray();
         var hashes = await _db.QuestionAudios
             .AsNoTracking()
-            .Where(x => ids.Contains(x.QuestionId))
+            .Where(x => ids.Contains(x.QuestionId) && x.AudioBytes.Length > 0)
             .Select(x => new { x.QuestionId, x.ContentHash })
             .ToListAsync();
 
