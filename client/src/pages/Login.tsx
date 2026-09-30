@@ -34,8 +34,11 @@ export default function Login() {
   }, [lightsOn]);
 
   useEffect(() => {
-    // إيقاظ الـAPI مبكراً دون تحميل صفحات أخرى قبل الحاجة.
-    void api.warmup().catch(() => {});
+    // لا ننافس تسجيل الدخول بطلب شبكة عند فتح الصفحة، خصوصاً على الهاتف.
+    const timer = window.setTimeout(() => {
+      void api.warmup().catch(() => {});
+    }, 1500);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function handleSubmit(e:FormEvent){
