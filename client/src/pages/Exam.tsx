@@ -37,7 +37,7 @@ export default function Exam() {
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
-  const [audioError, setAudioError] = useState<string | null>(null);
+  const [audioError, setAudioError] = useState<string | null>(null);\n  const [audioPrompt, setAudioPrompt] = useState(true);
 
   questionsRef.current = questions;
   answersRef.current = answers;
@@ -232,12 +232,14 @@ export default function Exam() {
       <div className={`exam-timer-v2 ${seconds<=60?'urgent':''}`} aria-label={`الوقت المتبقي ${mm}:${ss}`}>{mm}:{ss}</div>
     </header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
-    <div className="question-audio-nav exam-top" role="group" aria-label="التنقل والصوت">
+
+    <div className="question-audio-nav exam-top" role="group" aria-label="التحكم بالصوت">
       <button
         type="button"
+        className={`question-audio-nav__audio play ${audioEnabled && audioPlaying ? 'playing' : ''}`}
         disabled={!currentAudioUrl}
-        className={`question-audio-nav__audio ${audioEnabled ? 'playing' : ''}`}
         onClick={() => {
+          setAudioPrompt(false);
           setAudioError(null);
           setAudioEnabled(true);
           const audio = audioRef.current;
@@ -245,40 +247,42 @@ export default function Exam() {
             audio.currentTime = 0;
             void audio.play()
               .then(() => setAudioPlaying(true))
-              .catch(() => setAudioError('المتصفح رفض تشغيل الصوت. اضغط «صوت» مرة ثانية.'));
+              .catch(() => setAudioError('اضغط زر السماعة لبدء الصوت.'));
           }
         }}
-        aria-label="تشغيل الصوت المستمر"
+        aria-label="تشغيل الصوت"
+        title="تشغيل الصوت"
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.8v14.4a1.2 1.2 0 0 0 1.82 1.03l11.4-7.2a1.2 1.2 0 0 0 0-2.06L6.82 3.77A1.2 1.2 0 0 0 5 4.8Z"/></svg>
-        <span>{audioEnabled ? 'صوت يعمل' : 'صوت'}</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6L7 10H4Zm11.2-.8a4 4 0 0 1 0 5.6M17.7 7.2a7.4 7.4 0 0 1 0 9.6"/></svg>
       </button>
       <button
         type="button"
         className="question-audio-nav__audio stop"
         onClick={() => {
           setAudioEnabled(false);
+          setAudioPrompt(false);
           const audio = audioRef.current;
           if (!audio) return;
           audio.pause();
           audio.currentTime = 0;
           setAudioPlaying(false);
+          setAudioError(null);
         }}
         aria-label="إيقاف الصوت"
+        title="إيقاف الصوت"
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-        <span>إيقاف</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6L7 10H4l5 7"/><path d="m4 4 16 16"/></svg>
       </button>
-      <span className={`question-audio-nav__status ${audioError ? 'error' : audioReady ? 'ready' : ''}`} aria-live="polite">
-        {audioError ? audioError : audioPlaying ? 'يعمل الآن' : audioEnabled ? 'الصوت مفعّل' : audioReady ? 'جاهز' : 'جارٍ التحضير'}
-      </span>
+      <div className={`question-audio-nav__status ${audioPrompt ? 'prompt' : audioError ? 'error' : audioEnabled ? 'ready' : 'off'}`}>
+        {audioPrompt ? 'بدك تشغيل الصوت؟ اضغط السماعة' : audioError ? audioError : audioEnabled ? 'الصوت سيبقى شغال حتى تضغط إيقاف' : 'الصوت متوقف'}
+      </div>
       <audio
         ref={audioRef}
         preload="auto"
         onEnded={() => setAudioPlaying(false)}
         onError={() => {
           setAudioPlaying(false);
-          setAudioError('تعذر فك ملف الصوت على هذا الجهاز.');
+          setAudioError('تعذر تشغيل ملف الصوت على هذا الجهاز.');
         }}
       />
     </div>
