@@ -132,7 +132,7 @@ public class QuestionsController : ControllerBase
         )).ToList());
     }
 
-    [HttpGet("{id:int}/audio")]
+    [HttpGet("{id:int}/audio-debug")]\n    [AllowAnonymous]\n    public async Task<IActionResult> GetAudioDebug(int id, CancellationToken cancellationToken)\n    {\n        var audio = await _db.QuestionAudios.AsNoTracking().SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);\n        if (audio is null) return NotFound(new { message = "لا يوجد سجل صوت لهذا السؤال." });\n        var question = await _db.Questions.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, cancellationToken);\n        var currentHash = question is null ? null : GetContentHash(BuildAudioText(question));\n        var bytes = audio.AudioBytes ?? Array.Empty<byte>();\n        var firstBytes = bytes.Take(16).Select(b => b.ToString("X2")).ToArray();\n        var looksLikeMp3 = bytes.Length >= 3 && ((bytes[0] == 0x49 && bytes[1] == 0x44 && bytes[2] == 0x33) || (bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0));\n        return Ok(new { questionId = id, bytes = bytes.Length, firstBytes, looksLikeMp3, storedHash = audio.ContentHash, currentHash, hashMatches = currentHash is not null && string.Equals(currentHash, audio.ContentHash, StringComparison.Ordinal), contentType = "audio/mpeg" });\n    }\n\n    [HttpGet("{id:int}/audio")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAudio(int id, CancellationToken cancellationToken)
     {
