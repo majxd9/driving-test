@@ -150,10 +150,8 @@ public class QuestionsController : ControllerBase
         if (question is null)
             return NotFound(new { message = "السؤال غير موجود." });
 
-        var currentHash = GetContentHash(BuildAudioText(question));
-        if (!string.Equals(currentHash, audio.ContentHash, StringComparison.Ordinal))
-            return Conflict(new { message = "ملف الصوت قديم ويحتاج إعادة توليد." });
-
+        // لا نمنع تشغيل ملف صوت موجود بسبب اختلاف الـhash.
+        // الـhash يحدد فقط إن كان الملف مطابقاً للمحتوى الحالي، وليس صلاحية تشغيله.
         Response.Headers.CacheControl = "public,max-age=31536000,immutable";
         Response.Headers.ETag = $"\"{audio.ContentHash}\"";
         Response.Headers["Content-Disposition"] = "inline";
@@ -177,9 +175,9 @@ public class QuestionsController : ControllerBase
             var question = list.FirstOrDefault(q => q.Id == item.QuestionId);
             if (question is not null)
             {
-                var currentHash = GetContentHash(BuildAudioText(question));
-                if (currentHash == item.ContentHash)
-                    question.AudioUrl = $"/api/questions/{question.Id}/audio?v={item.ContentHash}";
+                // وجود bytes يعني أن هناك ملفاً محفوظاً بالفعل؛ لا نحجب تشغيله
+                // فقط لأن محتوى السؤال تغيّر بعد توليد الصوت.
+                question.AudioUrl = $"/api/questions/{question.Id}/audio?v={item.ContentHash}";
             }
         }
     }
