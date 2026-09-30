@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 
 type SpiritHornProps = { variant?: 'deep' | 'default' | string; className?: string };
 
 /** User-triggered dual-tone horn; AudioContext is created only after a click. */
-export default function SpiritHorn({ variant = 'default', className = '' }: SpiritHornProps) {
+function SpiritHorn({ variant = 'default', className = '' }: SpiritHornProps) {
   const contextRef = useRef<AudioContext | null>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -73,3 +73,5 @@ export default function SpiritHorn({ variant = 'default', className = '' }: Spir
     </button>
   );
 }
+
+export default memo(SpiritHorn);
