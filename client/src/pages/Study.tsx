@@ -170,6 +170,13 @@ export default function Study() {
             </div>
           )}
         </div>
+        {q.audioUrl && (
+          <div className="study-question-audio-controls study-question-audio-header">
+            <audio ref={audioRef} src={resolveApiUrl(q.audioUrl)} preload="none" onEnded={() => setAudioPlaying(false)} />
+            <button type="button" onClick={() => { const audio = audioRef.current; if (!audio) return; audio.currentTime = 0; void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false)); }} aria-label="تشغيل صوت السؤال والاختيارات" title="تشغيل الصوت من البداية">▶</button>
+            <button type="button" onClick={() => { const audio = audioRef.current; if (!audio) return; audio.pause(); audio.currentTime = 0; setAudioPlaying(false); }} aria-label="إيقاف صوت السؤال" title="إيقاف الصوت">■</button>
+          </div>
+        )}
       </header>
 
       <div className="study-premium-progress"><span style={{ width: `${progress}%` }} /></div>
@@ -201,66 +208,26 @@ export default function Study() {
           <div className="study-premium-question">{q.text}</div>
 
           {q.audioUrl && (
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 6, margin: '8px 0 12px' }}>
+            <div className="study-question-audio-controls">
               <audio
                 ref={audioRef}
                 src={resolveApiUrl(q.audioUrl)}
                 preload="none"
                 onEnded={() => setAudioPlaying(false)}
               />
-              <button
-                type="button"
-                onClick={() => {
-                  const audio = audioRef.current;
-                  if (!audio) return;
-                  audio.currentTime = 0;
-                  void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false));
-                }}
-                aria-label="تشغيل صوت السؤال والاختيارات"
-                title="تشغيل الصوت من البداية"
-                style={{
-                  width: 38,
-                  height: 32,
-                  border: '1px solid rgba(45,212,191,.35)',
-                  borderRadius: 9,
-                  background: 'rgba(45,212,191,.10)',
-                  color: 'inherit',
-                  fontWeight: 900,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                ▶
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const audio = audioRef.current;
-                  if (!audio) return;
-                  audio.pause();
-                  audio.currentTime = 0;
-                  setAudioPlaying(false);
-                }}
-                aria-label="إيقاف صوت السؤال"
-                title="إيقاف الصوت"
-                style={{
-                  width: 38,
-                  height: 32,
-                  border: '1px solid rgba(248,113,113,.35)',
-                  borderRadius: 9,
-                  background: 'rgba(248,113,113,.10)',
-                  color: 'inherit',
-                  fontWeight: 900,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                ■
-              </button>
+              <button type="button" onClick={() => {
+                const audio = audioRef.current;
+                if (!audio) return;
+                audio.currentTime = 0;
+                void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false));
+              }} aria-label="تشغيل صوت السؤال والاختيارات" title="تشغيل الصوت من البداية">▶</button>
+              <button type="button" onClick={() => {
+                const audio = audioRef.current;
+                if (!audio) return;
+                audio.pause();
+                audio.currentTime = 0;
+                setAudioPlaying(false);
+              }} aria-label="إيقاف صوت السؤال" title="إيقاف الصوت">■</button>
             </div>
           )}
 
