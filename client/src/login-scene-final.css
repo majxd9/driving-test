@@ -46,7 +46,7 @@
 
 .login-lights-on .login-static-hero-car{opacity:.115!important;filter:drop-shadow(0 18px 30px rgba(0,0,0,.18)) drop-shadow(0 0 44px rgba(234,255,251,.34))!important}
 
-@media(max-width:900px){
+@media(max-width:767px){
   .login-v2-panel{padding:20px 18px 18px!important;justify-content:flex-start!important}
   .login-static-hero-car{top:10px!important;right:-74px!important;width:310px!important;height:148px!important;opacity:.055!important}
   .login-v2-panel-head{margin-bottom:9px!important}
@@ -73,7 +73,7 @@
 @media(prefers-reduced-motion:reduce){.login-car-smoke i{animation:none!important}}
 
 
-@media (min-width:901px) and (max-height:900px){
+@media (min-width:768px) and (max-height:900px){
   .login-static-hero-car{
     right:-26px!important;
     width:330px!important;
