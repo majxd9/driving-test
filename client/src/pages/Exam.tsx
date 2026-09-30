@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api } from '../api/client';
-import { loadQuestionAudio } from '../utils/questionAudio';
+import { api, resolveApiUrl } from '../api/client';
 import { ExamQuestion } from '../types';
 import DiagramRenderer from '../components/DiagramRenderer';
 import OptimizedImage from '../components/OptimizedImage';
@@ -35,8 +34,6 @@ export default function Exam() {
   const loadSequenceRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const [audioSrc, setAudioSrc] = useState<string | null>(null);
-  const [audioLoading, setAudioLoading] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
 
   questionsRef.current = questions;
@@ -123,46 +120,7 @@ export default function Exam() {
   }, [current]);
 
   const currentAudioPath = questions[current]?.audioUrl ?? null;
-
-  useEffect(() => {
-    let active = true;
-    const controller = new AbortController();
-
-    setAudioPlaying(false);
-    setAudioError(null);
-    setAudioLoading(Boolean(currentAudioPath));
-    setAudioSrc(null);
-
-    if (!currentAudioPath) {
-      setAudioLoading(false);
-      return () => controller.abort();
-    }
-
-    void loadQuestionAudio(currentAudioPath, controller.signal)
-      .then(result => {
-        if (!active) {
-          URL.revokeObjectURL(result.url);
-          return;
-        }
-        setAudioSrc(result.url);
-      })
-      .catch(error => {
-        if (!active || (error instanceof DOMException && error.name === 'AbortError')) return;
-        setAudioError(error instanceof Error ? error.message : 'تعذر تحميل الصوت.');
-      })
-      .finally(() => {
-        if (active) setAudioLoading(false);
-      });
-
-    return () => {
-      active = false;
-      controller.abort();
-      setAudioSrc(previous => {
-        if (previous) URL.revokeObjectURL(previous);
-        return null;
-      });
-    };
-  }, [currentAudioPath]);
+  const currentAudioUrl = currentAudioPath ? resolveApiUrl(currentAudioPath) : null;
 
   const goToQuestion = useCallback((nextIndex:number) => {
     if(nextIndex===current||nextIndex<0||nextIndex>=questions.length)return;
@@ -217,8 +175,8 @@ export default function Exam() {
             <div className="study-question-audio-header">
               <audio
                 ref={audioRef}
-                src={audioSrc ?? undefined}
-                preload="auto"
+                src={currentAudioUrl ?? undefined}
+                preload="none"
                 onEnded={() => setAudioPlaying(false)}
                 onError={() => {
                   setAudioPlaying(false);
@@ -227,11 +185,11 @@ export default function Exam() {
               />
               <button
                 type="button"
-                disabled={audioLoading || !audioSrc}
+                disabled={!currentAudioUrl}
                 className={`audio-control audio-play ${audioPlaying ? 'is-playing' : ''}`}
                 onClick={() => {
                   const audio = audioRef.current;
-                  if (!audio || !audioSrc) return;
+                  if (!audio || !currentAudioUrl) return;
                   setAudioError(null);
                   audio.pause();
                   audio.currentTime = 0;
@@ -243,10 +201,10 @@ export default function Exam() {
                     });
                 }}
                 aria-label="تشغيل صوت السؤال والاختيارات"
-                title={audioLoading ? 'جارٍ تجهيز الصوت' : 'تشغيل الصوت من البداية'}
+                title="تشغيل الصوت من البداية"
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.8v14.4a1.2 1.2 0 0 0 1.82 1.03l11.4-7.2a1.2 1.2 0 0 0 0-2.06L6.82 3.77A1.2 1.2 0 0 0 5 4.8Z"/></svg>
-                <span>{audioLoading ? 'تحميل' : 'صوت'}</span>
+                <span>صوت</span>
               </button>
               <button
                 type="button"
