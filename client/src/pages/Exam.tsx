@@ -126,9 +126,42 @@ export default function Exam() {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentAudioUrl) return;
-    audio.load();
+
+    let active = true;
+    let objectUrl: string | null = null;
+
+    // Fetch the MP3 once and play it from a Blob URL. This avoids mobile
+    // WebViews rejecting the API's HTTP media response during decoding.
     setAudioPlaying(false);
-    setAudioError(null);
+    setAudioError('جاري تجهيز الصوت…');
+    audio.pause();
+    audio.removeAttribute('src');
+    audio.load();
+
+    fetch(currentAudioUrl, { credentials: 'omit', cache: 'no-store' })
+      .then(async response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+        if (!blob.size) throw new Error('ملف الصوت فارغ');
+        if (active) {
+          objectUrl = URL.createObjectURL(new Blob([blob], { type: 'audio/mpeg' }));
+          audio.src = objectUrl;
+          audio.load();
+          setAudioError(null);
+        }
+      })
+      .catch(error => {
+        if (!active) return;
+        setAudioError(`تعذر تجهيز الصوت: ${error instanceof Error ? error.message : String(error)}`);
+      });
+
+    return () => {
+      active = false;
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [currentAudioUrl]);
 
   const goToQuestion = useCallback((nextIndex:number) => {
