@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace DrivingTestApi.Models;
 
 public enum QuestionCategory
@@ -26,4 +28,8 @@ public class Question
     public string? DiagramUrl { get; set; }
     public string? DiagramTitle { get; set; }
     public string? DiagramDescription { get; set; }
+
+    // Filled from the separate persistent AI-audio store; not a database column.
+    [NotMapped]
+    public string? AudioUrl { get; set; }
 }
