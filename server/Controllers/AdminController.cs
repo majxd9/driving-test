@@ -499,7 +499,7 @@ public AdminController(
             storedHash = audio?.ContentHash,
             hashMatches,
             playable = hasBytes,
-            audioUrl = hasBytes ? $"/api/questions/{id}/audio?v={audio!.ContentHash}" : null
+            audioUrl = hasBytes ? $"/api/questions/{id}/audio-play?v={audio!.ContentHash}" : null
         });
     }
 
