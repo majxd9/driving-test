@@ -9,7 +9,6 @@ import SpiritTrafficSignal from '../components/SpiritTrafficSignal';
 import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
-import { speakArabic, stopArabicSpeech } from '../utils/arabicTts';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -100,8 +99,6 @@ export default function Study() {
   if (loading) return <div className="study-premium-loading">جارِ تجهيز التدريب...</div>;
   if (error) return <div className="study-premium-loading">{error}</div>;
 
-  useEffect(() => () => stopArabicSpeech(), []);
-
   const q = questions[index];
   if (!q) return <div className="study-premium-loading">لا توجد أسئلة بهذا القسم.</div>;
 
@@ -112,8 +109,6 @@ export default function Study() {
   const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0;
   const isLast = index === questions.length - 1;
   const explanationNeeded = chosen !== undefined && Boolean(q.explanation);
-
-  const readAll = () => void speakArabic(`السؤال: ${q.text}. ${q.options.map((option, i) => `الاختيار ${LETTERS[i]}: ${option}`).join('. ')}`);
 
   const choose = (answerIndex: number) => {
     if (chosen !== undefined) return;
@@ -199,7 +194,7 @@ export default function Study() {
             <div className="study-premium-no-image" aria-hidden="true" />
           )}
 
-          <div className="study-premium-question"><div className="study-question-reading"><span>السؤال</span><button type="button" className="voice-read-button" onClick={readAll} aria-label="قراءة السؤال والاختيارات"><span className="voice-read-icon">🔊</span><span>استمع للسؤال والاختيارات</span></button></div>{q.text}</div>
+          <div className="study-premium-question">{q.text}</div>
 
           <div
             className="study-premium-answers"
@@ -214,19 +209,17 @@ export default function Study() {
               }
 
               return (
-                <div className="study-option-row" key={i}>
-                  <button
-                    type="button"
-                    disabled={chosen !== undefined}
-                    onClick={() => choose(i)}
-                    className={`study-premium-option ${state}`}
-                  >
-                    <span className="study-premium-letter">{LETTERS[i]}</span>
-                    <span className="study-premium-option-text">{opt}</span>
-                    {chosen !== undefined && isCorrect && <span className="study-premium-check">✓</span>}
-                  </button>
-                  <button type="button" className="voice-read-option" onClick={() => void speakArabic(`الاختيار ${LETTERS[i]}: ${opt}`)} aria-label={`قراءة الاختيار ${LETTERS[i]}`}>🔊</button>
-                </div>
+                <button
+                  key={i}
+                  type="button"
+                  disabled={chosen !== undefined}
+                  onClick={() => choose(i)}
+                  className={`study-premium-option ${state}`}
+                >
+                  <span className="study-premium-letter">{LETTERS[i]}</span>
+                  <span className="study-premium-option-text">{opt}</span>
+                  {chosen !== undefined && isCorrect && <span className="study-premium-check">✓</span>}
+                </button>
               );
             })}
           </div>
