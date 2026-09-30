@@ -46,29 +46,61 @@
   inset:auto!important;
   float:none!important;
   display:inline-flex!important;
-  width:34px!important;
-  height:30px!important;
-  min-width:34px!important;
-  min-height:30px!important;
+  width:48px!important;
+  height:34px!important;
+  min-width:48px!important;
+  min-height:34px!important;
   margin:0!important;
-  padding:0!important;
+  padding:0 7px!important;
   align-items:center!important;
   justify-content:center!important;
-  border-radius:8px!important;
+  gap:4px!important;
+  border-radius:11px!important;
   box-sizing:border-box!important;
   line-height:1!important;
+  font-family:inherit!important;
+  font-size:8px!important;
+  font-weight:950!important;
+  cursor:pointer!important;
+  transition:transform .16s ease,box-shadow .16s ease,background .16s ease!important;
 }
-.study-premium-header .study-question-audio-header button:first-of-type,
-.exam-topbar-v2 .study-question-audio-header button:first-of-type{border:1px solid rgba(45,212,191,.45)!important;background:rgba(45,212,191,.12)!important;color:#2dd4bf!important}
-.study-premium-header .study-question-audio-header button:last-of-type,
-.exam-topbar-v2 .study-question-audio-header button:last-of-type{border:1px solid rgba(248,113,113,.45)!important;background:rgba(248,113,113,.12)!important;color:#f87171!important}
+.study-premium-header .study-question-audio-header .audio-control svg,
+.exam-topbar-v2 .study-question-audio-header .audio-control svg{
+  width:15px!important;height:15px!important;display:block!important;fill:currentColor!important;stroke:currentColor!important;stroke-width:1.5!important;flex:0 0 auto!important;
+}
+.study-premium-header .study-question-audio-header .audio-control span,
+.exam-topbar-v2 .study-question-audio-header .audio-control span{white-space:nowrap!important}
+.study-premium-header .study-question-audio-header .audio-play,
+.exam-topbar-v2 .study-question-audio-header .audio-play{
+  border:1px solid rgba(45,212,191,.5)!important;
+  background:linear-gradient(145deg,rgba(45,212,191,.28),rgba(18,70,66,.52))!important;
+  color:#8ff8e7!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.16),0 5px 14px rgba(45,212,191,.12)!important;
+}
+.study-premium-header .study-question-audio-header .audio-stop,
+.exam-topbar-v2 .study-question-audio-header .audio-stop{
+  border:1px solid rgba(248,113,113,.42)!important;
+  background:linear-gradient(145deg,rgba(248,113,113,.20),rgba(70,25,31,.50))!important;
+  color:#ffaaa5!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.12),0 5px 14px rgba(248,113,113,.09)!important;
+}
+.study-premium-header .study-question-audio-header .audio-control:hover,
+.exam-topbar-v2 .study-question-audio-header .audio-control:hover{transform:translateY(-1px)!important}
+.study-premium-header .study-question-audio-header .audio-play.is-playing,
+.exam-topbar-v2 .study-question-audio-header .audio-play.is-playing{
+  box-shadow:inset 0 1px rgba(255,255,255,.20),0 0 18px rgba(45,212,191,.22)!important;
+  background:linear-gradient(145deg,rgba(45,212,191,.40),rgba(18,86,78,.62))!important;
+}
 .study-premium-header .study-premium-counter-wrap{display:flex!important;align-items:center!important;gap:6px!important;position:relative!important}
 .exam-topbar-v2 .exam-question-counter-wrap{display:flex!important;align-items:center!important;gap:6px!important;position:relative!important}
 @media(max-width:430px){
   .study-premium-header .study-question-audio-header button,
-  .exam-topbar-v2 .study-question-audio-header button{width:30px!important;min-width:30px!important;height:28px!important;min-height:28px!important;font-size:11px!important}
+  .exam-topbar-v2 .study-question-audio-header button{width:42px!important;min-width:42px!important;height:30px!important;min-height:30px!important;font-size:7px!important}
   .study-premium-header .study-question-audio-header,
   .exam-topbar-v2 .study-question-audio-header{gap:3px!important}
+  .study-premium-header .study-question-audio-header .audio-control svg,
+  .exam-topbar-v2 .study-question-audio-header .audio-control svg{width:13px!important;height:13px!important}
+  .study-premium-header .study-question-audio-header .audio-control{gap:3px!important;padding:0 5px!important}
   .study-premium-header .study-premium-counter-wrap{gap:4px!important}
   .exam-topbar-v2 .exam-question-counter-wrap{gap:4px!important}
 }
