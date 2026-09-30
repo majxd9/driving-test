@@ -1,0 +1,96 @@
+/* Question audio/navigation: one compact control bar above the question. */
+.question-audio-nav{
+  width:min(1040px,calc(100vw - 20px));
+  margin:5px auto 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  position:relative;
+  z-index:2147482000;
+  direction:rtl;
+}
+.question-audio-nav__button,
+.question-audio-nav__audio{
+  min-height:42px;
+  height:42px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:13px;
+  background:rgba(12,25,35,.90);
+  color:#edf6f4;
+  box-shadow:0 8px 22px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.03);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:0 12px;
+  font-size:12px;
+  font-weight:950;
+  line-height:1;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.question-audio-nav__button:not(:disabled):active,
+.question-audio-nav__audio:not(:disabled):active{transform:translateY(1px);}
+.question-audio-nav__button:disabled{opacity:.42;cursor:not-allowed;}
+.question-audio-nav__audio.playing{
+  border-color:rgba(45,212,191,.75);
+  background:linear-gradient(140deg,rgba(45,212,191,.22),rgba(45,212,191,.07));
+  color:#7af0da;
+  box-shadow:0 8px 24px rgba(45,212,191,.13),inset 0 0 0 1px rgba(45,212,191,.10);
+}
+.question-audio-nav__audio.stop{
+  border-color:rgba(248,113,113,.22);
+  color:#ffb5af;
+  background:rgba(248,113,113,.07);
+}
+.question-audio-nav__audio svg,
+.question-audio-nav__button svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto;}
+.question-audio-nav__audio.playing::after{
+  content:"";
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:currentColor;
+  box-shadow:0 0 0 5px rgba(45,212,191,.09);
+  animation:question-audio-pulse 1.2s ease-in-out infinite;
+}
+@keyframes question-audio-pulse{0%,100%{transform:scale(.8);opacity:.55}50%{transform:scale(1.15);opacity:1}}
+.question-audio-nav__status{
+  min-width:78px;
+  text-align:center;
+  font-size:10px;
+  color:rgba(230,241,239,.68);
+  white-space:nowrap;
+}
+.question-audio-nav__status.ready{color:#7af0da;}
+.question-audio-nav__status.error{color:#ffaaa6;max-width:220px;overflow:hidden;text-overflow:ellipsis;}
+.question-audio-nav audio{display:none;}
+@media(max-width:700px){
+  .question-audio-nav{width:calc(100vw - 12px);gap:5px;margin-top:4px;}
+  .question-audio-nav__button,
+  .question-audio-nav__audio{height:40px;min-height:40px;padding:0 9px;border-radius:11px;font-size:10.5px;gap:5px;}
+  .question-audio-nav__status{min-width:58px;font-size:9px;}
+  .question-audio-nav__audio svg,.question-audio-nav__button svg{width:16px;height:16px;}
+  .question-audio-nav__status.error{max-width:105px;}
+}
+@media(max-width:430px){
+  .question-audio-nav{width:calc(100vw - 8px);gap:4px;}
+  .question-audio-nav__button,
+  .question-audio-nav__audio{height:38px;min-height:38px;padding:0 7px;border-radius:10px;font-size:10px;}
+  .question-audio-nav__status{min-width:46px;font-size:8.5px;}
+}
+
+/* The new top navigation owns previous/next; keep the old bottom study portal out of the layout. */
+.study-navigation-portal,
+.study-premium-actions{display:none!important;}
+
+/* Exam keeps a compact finish bar at the bottom; previous/next live beside the audio above. */
+.exam-actions-v2{grid-template-columns:1fr!important;}
+.exam-actions-v2 .exam-action-v2.secondary,
+.exam-actions-v2 .exam-action-v2.next{display:none!important;}
+.exam-actions-v2 .exam-action-v2.finish{width:100%!important;}
+@media(max-width:700px){
+  .exam-actions-v2{min-height:60px!important;}
+  .exam-actions-v2 .exam-action-v2.finish{height:46px!important;min-height:46px!important;}
+}
