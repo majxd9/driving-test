@@ -122,6 +122,14 @@ export default function Exam() {
   const currentAudioPath = questions[current]?.audioUrl ?? null;
   const currentAudioUrl = currentAudioPath ? resolveApiUrl(currentAudioPath) : null;
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentAudioUrl) return;
+    audio.load();
+    setAudioPlaying(false);
+    setAudioError(null);
+  }, [currentAudioUrl]);
+
   const goToQuestion = useCallback((nextIndex:number) => {
     if(nextIndex===current||nextIndex<0||nextIndex>=questions.length)return;
     setCurrent(nextIndex);
@@ -176,11 +184,12 @@ export default function Exam() {
               <audio
                 ref={audioRef}
                 src={currentAudioUrl ?? undefined}
-                preload="none"
+                preload="metadata"
+                onLoadedMetadata={() => setAudioError(null)}
                 onEnded={() => setAudioPlaying(false)}
                 onError={() => {
                   setAudioPlaying(false);
-                  setAudioError('المتصفح لم يستطع تشغيل ملف الصوت.');
+                  setAudioError('المتصفح لم يستطع تشغيل ملف الصوت. اضغط «صوت» للمحاولة مجدداً.');
                 }}
               />
               <button
