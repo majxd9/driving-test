@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, resolveApiUrl } from '../api/client';
+import AudioDiagnostics from '../components/AudioDiagnostics';
 import { ExamQuestion } from '../types';
 import DiagramRenderer from '../components/DiagramRenderer';
 import OptimizedImage from '../components/OptimizedImage';
@@ -179,7 +180,7 @@ export default function Exam() {
               <small>اكتب رقم السؤال من 1 إلى {questions.length}</small>
             </div>
           )}
-          {q.audioUrl && (
+          {(q.audioUrl || currentAudioUrl) && (
             <div className="study-question-audio-header">
               <audio
                 ref={audioRef}
@@ -231,7 +232,7 @@ export default function Exam() {
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
                 <span>إيقاف</span>
               </button>
-              {audioError && <small className="audio-error">{audioError}</small>}
+              {audioError && <small className="audio-error">{audioError}</small>}<AudioDiagnostics src={currentAudioUrl} questionId={q.id} />
             </div>
           )}
         </div>
