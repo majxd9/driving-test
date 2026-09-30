@@ -180,7 +180,12 @@ export default function Exam() {
               <small>اكتب رقم السؤال من 1 إلى {questions.length}</small>
             </div>
           )}
-          {q && (
+        </div>
+      </div>
+      <div className={`exam-timer-v2 ${seconds<=60?'urgent':''}`} aria-label={`الوقت المتبقي ${mm}:${ss}`}>{mm}:{ss}</div>
+    </header>
+    <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
+    <div className="study-audio-strip exam-audio-strip">{q && (
             <div className="study-question-audio-header">
               <audio
                 ref={audioRef}
@@ -234,12 +239,7 @@ export default function Exam() {
               </button>
               {audioError && <small className="audio-error">{audioError}</small>}<AudioDiagnostics src={currentAudioUrl} questionId={q.id} />
             </div>
-          )}
-        </div>
-      </div>
-      <div className={`exam-timer-v2 ${seconds<=60?'urgent':''}`} aria-label={`الوقت المتبقي ${mm}:${ss}`}>{mm}:{ss}</div>
-    </header>
-    <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
+          )}</div>
     <main className="exam-stage-v2"><section className="exam-card-v2">
       <div className="exam-scroll-v2">
         <div className="exam-image-slot-v2">{shouldShowQuestionImageBeforeAnswer(q) ? <OptimizedImage src={q.imageUrl ?? ''} alt="صورة السؤال" className="h-full w-full" priority objectFit="contain" /> : <div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
