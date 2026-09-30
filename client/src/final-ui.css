@@ -183,3 +183,51 @@ button:focus-visible{outline:2px solid rgba(45,212,191,.75);outline-offset:3px}
   }
   .exam-topbar-v2 .exam-title-v2{gap:6px!important;}
 }
+
+
+/* Audio diagnostics: always visible on mobile so audio failures produce a precise code. */
+.audio-diagnostics{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:6px;
+  width:100%;
+  margin-top:5px;
+  direction:rtl;
+}
+.audio-diagnostic-button{
+  min-height:30px;
+  padding:5px 10px;
+  border:1px solid rgba(96,165,250,.35);
+  border-radius:8px;
+  background:rgba(96,165,250,.10);
+  color:inherit;
+  font-size:11px;
+  font-weight:800;
+}
+.audio-diagnostic-button:disabled{opacity:.65;}
+.audio-diagnostic-result{
+  width:100%;
+  box-sizing:border-box;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:6px;
+  padding:8px;
+  border-radius:9px;
+  font-size:11px;
+  line-height:1.5;
+  background:rgba(127,127,127,.10);
+}
+.audio-diagnostic-result.ok{border:1px solid rgba(45,212,191,.35);}
+.audio-diagnostic-result.bad{border:1px solid rgba(248,113,113,.38);}
+.audio-diagnostic-result strong{font-family:ui-monospace,monospace;letter-spacing:.3px;}
+.audio-diagnostic-result small{width:100%;opacity:.78;word-break:break-word;}
+.audio-diagnostic-result button{
+  min-height:26px;
+  padding:3px 8px;
+  border:0;
+  border-radius:7px;
+  font-size:10px;
+  font-weight:800;
+}
