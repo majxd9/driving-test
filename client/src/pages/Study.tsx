@@ -169,14 +169,14 @@ export default function Study() {
               <small>اكتب رقم السؤال من 1 إلى {questions.length}</small>
             </div>
           )}
+          {q.audioUrl && (
+            <div className="study-question-audio-header">
+              <audio ref={audioRef} src={resolveApiUrl(q.audioUrl)} preload="none" onEnded={() => setAudioPlaying(false)} />
+              <button type="button" onClick={() => { const audio = audioRef.current; if (!audio) return; audio.currentTime = 0; void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false)); }} aria-label="تشغيل صوت السؤال والاختيارات" title="تشغيل الصوت من البداية">▶</button>
+              <button type="button" onClick={() => { const audio = audioRef.current; if (!audio) return; audio.pause(); audio.currentTime = 0; setAudioPlaying(false); }} aria-label="إيقاف صوت السؤال" title="إيقاف الصوت">■</button>
+            </div>
+          )}
         </div>
-        {q.audioUrl && (
-          <div className="study-question-audio-header">
-            <audio ref={audioRef} src={resolveApiUrl(q.audioUrl)} preload="none" onEnded={() => setAudioPlaying(false)} />
-            <button type="button" onClick={() => { const audio = audioRef.current; if (!audio) return; audio.currentTime = 0; void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false)); }} aria-label="تشغيل صوت السؤال والاختيارات" title="تشغيل الصوت من البداية">▶</button>
-            <button type="button" onClick={() => { const audio = audioRef.current; if (!audio) return; audio.pause(); audio.currentTime = 0; setAudioPlaying(false); }} aria-label="إيقاف صوت السؤال" title="إيقاف الصوت">■</button>
-          </div>
-        )}
       </header>
 
       <div className="study-premium-progress"><span style={{ width: `${progress}%` }} /></div>
