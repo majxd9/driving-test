@@ -271,8 +271,8 @@ public class QuestionsController : ControllerBase
                         providerStatus = detail.TryGetProperty("status", out var status)
                             ? status.GetString() ?? string.Empty
                             : string.Empty;
-                        providerMessage = detail.TryGetProperty("message", out var message)
-                            ? message.GetString() ?? string.Empty
+                        providerMessage = detail.TryGetProperty("message", out var detailMessage)
+                            ? detailMessage.GetString() ?? string.Empty
                             : string.Empty;
                     }
                     else
