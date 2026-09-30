@@ -368,8 +368,7 @@ public class QuestionsController : ControllerBase
     private static string NormalizeText(string? value)
     {
         if (string.IsNullOrWhiteSpace(value)) return string.Empty;
-        return string.Join(" ", value.Split(new[] { ' ', '	', '', '
-' }, StringSplitOptions.RemoveEmptyEntries));
+        return string.Join(" ", value.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
     }
 
     private static string NormalizeQuestionImage(string? src)
