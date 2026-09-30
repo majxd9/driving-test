@@ -163,7 +163,11 @@ public class QuestionsController : ControllerBase
         {
             var question = list.FirstOrDefault(q => q.Id == item.QuestionId);
             if (question is not null)
-                question.AudioUrl = $"/api/questions/{question.Id}/audio?v={item.ContentHash}";
+            {
+                var currentHash = GetContentHash(BuildAudioText(question));
+                if (currentHash == item.ContentHash)
+                    question.AudioUrl = $"/api/questions/{question.Id}/audio?v={item.ContentHash}";
+            }
         }
     }
 
