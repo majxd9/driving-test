@@ -238,16 +238,6 @@ export default function Study() {
       <div className="question-audio-nav study-top" role="group" aria-label="التنقل والصوت">
         <button
           type="button"
-          className="question-audio-nav__button"
-          onClick={() => goTo(index - 1)}
-          disabled={index === 0}
-          aria-label="السؤال السابق"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
-          <span>السابق</span>
-        </button>
-        <button
-          type="button"
           disabled={!currentAudioUrl}
           className={`question-audio-nav__audio ${audioEnabled ? 'playing' : ''}`}
           onClick={() => {
@@ -285,16 +275,6 @@ export default function Study() {
         <span className={`question-audio-nav__status ${audioError ? 'error' : audioReady ? 'ready' : ''}`} aria-live="polite">
           {audioError ? audioError : audioPlaying ? 'يعمل الآن' : audioEnabled ? 'الصوت مفعّل' : audioReady ? 'جاهز' : 'جارٍ التحضير'}
         </span>
-        <button
-          type="button"
-          className="question-audio-nav__button"
-          onClick={() => goTo(index + 1)}
-          disabled={isLast}
-          aria-label={isLast ? 'انتهى القسم' : 'السؤال التالي'}
-        >
-          <span>{isLast ? 'انتهى القسم' : 'التالي'}</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </button>
         <audio
           ref={audioRef}
           preload="auto"
@@ -374,6 +354,15 @@ export default function Study() {
 
         </section>
       </main>
+
+      <nav className="study-premium-actions study-navigation-portal" aria-label="التنقل بين الأسئلة">
+        <button type="button" onClick={() => goTo(index - 1)} disabled={index === 0} className="study-premium-action ghost">
+          السابق
+        </button>
+        <button type="button" onClick={() => goTo(index + 1)} disabled={isLast} className="study-premium-action next">
+          {isLast ? 'انتهى القسم' : 'السؤال التالي'} <span>←</span>
+        </button>
+      </nav>
 
     </div>
   );
