@@ -138,6 +138,11 @@ builder.Services.AddHostedService<AuthLogWriter>();
 builder.Services.AddHostedService<StartupMaintenanceService>();
 builder.Services.AddCors(options => options.AddPolicy("Frontend", policy => policy.WithOrigins(frontendOrigin).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 builder.Services.AddControllers();
+builder.Services.AddHttpClient("ElevenLabs", client =>
+{
+    client.BaseAddress = new Uri("https://api.elevenlabs.io/");
+    client.Timeout = TimeSpan.FromSeconds(90);
+});
 builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
