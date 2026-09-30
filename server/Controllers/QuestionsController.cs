@@ -169,7 +169,16 @@ public class QuestionsController : ControllerBase
         Response.Headers.CacheControl = "public,max-age=31536000,immutable";
         Response.Headers.ETag = $"\"{audio.ContentHash}\"";
         Response.Headers["Content-Disposition"] = "inline";
-        return File(audio.AudioBytes, "audio/mpeg", enableRangeProcessing: true);
+        Response.Headers["Accept-Ranges"] = "bytes";
+        Response.Headers["X-Audio-Bytes"] = audio.AudioBytes.LongLength.ToString();
+
+        // استخدم Stream بدلاً من تمرير byte[] مباشرةً حتى تكون استجابة Range
+        // أكثر ثباتاً على متصفحات الهاتف وWebView.
+        var stream = new MemoryStream(audio.AudioBytes, writable: false);
+        return new FileStreamResult(stream, "audio/mpeg")
+        {
+            EnableRangeProcessing = true
+        };
     }
 
     private async Task AttachAudioUrlsAsync(IEnumerable<Question> questions)
