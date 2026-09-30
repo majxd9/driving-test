@@ -128,7 +128,8 @@
 
   /* Never stretch four answers to fill the whole phone viewport. */
   .study-premium-card{
-    grid-template-rows:18px 0 58px auto 0 0 42px!important;
+    align-content:start!important;
+    grid-template-rows:18px 0 58px calc(var(--option-count,4) * 50px + (var(--option-count,4) - 1) * 6px) 0 0 42px!important;
     gap:5px!important;
   }
   .study-premium-no-image{
