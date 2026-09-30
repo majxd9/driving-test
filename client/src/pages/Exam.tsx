@@ -271,10 +271,10 @@ export default function Exam() {
         aria-label="إيقاف الصوت"
         title="إيقاف الصوت"
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6L7 10H4l5 7"/><path d="m4 4 16 16"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="m4 4 16 16"/></svg>
       </button>
       <div className={`question-audio-nav__status ${audioPrompt ? 'prompt' : audioError ? 'error' : audioEnabled ? 'ready' : 'off'}`}>
-        {audioPrompt ? 'بدك تشغيل الصوت؟ اضغط السماعة' : audioError ? audioError : audioEnabled ? 'الصوت سيبقى شغال حتى تضغط إيقاف' : 'الصوت متوقف'}
+        {audioPrompt ? 'إذا بدك تشغيل الصوت، اضغط زر التشغيل' : audioError ? audioError : audioEnabled ? 'الصوت سيبقى شغال حتى تضغط إيقاف' : 'الصوت متوقف'}
       </div>
       <audio
         ref={audioRef}
