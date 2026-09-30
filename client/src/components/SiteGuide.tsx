@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 const steps = [
   ['1', 'تدرّب حسب القسم', 'راجع قواعد السير أو الإشارات المرورية أو أساسيات الميكانيك.'],
@@ -7,7 +7,7 @@ const steps = [
   ['4', 'شاهد النتيجة', 'بعد إنهاء الاختبار تظهر الإجابات الصحيحة والخاطئة والأسئلة التي لم تُجب عنها مع مراجعة واضحة للأخطاء.'],
 ];
 
-export default function SiteGuide() {
+function SiteGuide() {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (!open) return;
@@ -39,3 +39,5 @@ export default function SiteGuide() {
     </>
   );
 }
+
+export default memo(SiteGuide);
