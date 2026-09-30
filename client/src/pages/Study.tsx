@@ -207,30 +207,6 @@ export default function Study() {
 
           <div className="study-premium-question">{q.text}</div>
 
-          {q.audioUrl && (
-            <div className="study-question-audio-controls">
-              <audio
-                ref={audioRef}
-                src={resolveApiUrl(q.audioUrl)}
-                preload="none"
-                onEnded={() => setAudioPlaying(false)}
-              />
-              <button type="button" onClick={() => {
-                const audio = audioRef.current;
-                if (!audio) return;
-                audio.currentTime = 0;
-                void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false));
-              }} aria-label="تشغيل صوت السؤال والاختيارات" title="تشغيل الصوت من البداية">▶</button>
-              <button type="button" onClick={() => {
-                const audio = audioRef.current;
-                if (!audio) return;
-                audio.pause();
-                audio.currentTime = 0;
-                setAudioPlaying(false);
-              }} aria-label="إيقاف صوت السؤال" title="إيقاف الصوت">■</button>
-            </div>
-          )}
-
           <div
             className="study-premium-answers"
             style={{ '--option-count': q.options.length } as React.CSSProperties}
