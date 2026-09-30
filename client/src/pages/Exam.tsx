@@ -233,10 +233,6 @@ export default function Exam() {
     </header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
     <div className="question-audio-nav exam-top" role="group" aria-label="التنقل والصوت">
-      <button type="button" className="question-audio-nav__button" onClick={() => goToQuestion(current - 1)} disabled={current === 0} aria-label="السؤال السابق">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
-        <span>السابق</span>
-      </button>
       <button
         type="button"
         disabled={!currentAudioUrl}
@@ -276,10 +272,6 @@ export default function Exam() {
       <span className={`question-audio-nav__status ${audioError ? 'error' : audioReady ? 'ready' : ''}`} aria-live="polite">
         {audioError ? audioError : audioPlaying ? 'يعمل الآن' : audioEnabled ? 'الصوت مفعّل' : audioReady ? 'جاهز' : 'جارٍ التحضير'}
       </span>
-      <button type="button" className="question-audio-nav__button" onClick={() => isLast ? finish() : goToQuestion(current + 1)} aria-label={isLast ? 'عرض النتيجة' : 'السؤال التالي'}>
-        <span>{isLast ? 'النتيجة' : 'التالي'}</span>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </button>
       <audio
         ref={audioRef}
         preload="auto"
@@ -298,7 +290,9 @@ export default function Exam() {
         <DiagramRenderer question={q}/>
       </div>
       <div className="exam-actions-v2">
+        <button type="button" onClick={() => goToQuestion(current - 1)} disabled={current === 0} className="exam-action-v2 secondary"><UiIcon name="back"/><span>السابق</span></button>
         <button type="button" onClick={finish} className="exam-action-v2 finish"><UiIcon name="finish"/><span>إنهاء الاختبار</span></button>
+        <button type="button" onClick={() => isLast ? finish() : goToQuestion(current + 1)} className="exam-action-v2 next"><span>{isLast ? 'عرض النتيجة' : 'التالي'}</span><UiIcon name="next"/></button>
       </div>
     </section></main>
 
