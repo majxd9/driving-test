@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 const STORAGE_KEY = 'driving-spirit-lights';
 
 type Props = { className?: string; compact?: boolean; onChange?: (on: boolean) => void };
 
-export default function SpiritLights({ className = '', compact = false, onChange }: Props) {
+function SpiritLights({ className = '', compact = false, onChange }: Props) {
   const [on, setOn] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) !== 'off';
@@ -42,3 +42,5 @@ export default function SpiritLights({ className = '', compact = false, onChange
     </button>
   );
 }
+
+export default memo(SpiritLights);
