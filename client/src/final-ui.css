@@ -139,3 +139,47 @@ button:focus-visible{outline:2px solid rgba(45,212,191,.75);outline-offset:3px}
   .login-v2-panel{padding:26px 32px!important}
   .exam-stage-v2,.study-premium-stage{padding-block:8px!important}
 }
+
+
+/* Question audio controls: fixed beside the question counter, never over the image. */
+.study-question-audio-header{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  flex:0 0 auto!important;
+  flex-direction:row!important;
+  white-space:nowrap!important;
+  direction:ltr!important;
+  position:relative!important;
+  z-index:20!important;
+}
+.study-question-audio-header audio{display:none!important;}
+.study-question-audio-header button{
+  width:34px!important;
+  height:32px!important;
+  min-width:34px!important;
+  min-height:32px!important;
+  padding:0!important;
+  margin:0!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex:0 0 34px!important;
+  border-radius:9px!important;
+  font-size:12px!important;
+  line-height:1!important;
+  font-weight:900!important;
+}
+@media(max-width:700px){
+  .study-question-audio-header{gap:4px!important;}
+  .study-question-audio-header button{
+    width:31px!important;
+    min-width:31px!important;
+    height:30px!important;
+    min-height:30px!important;
+    flex-basis:31px!important;
+    border-radius:8px!important;
+  }
+  .exam-topbar-v2 .exam-title-v2{gap:6px!important;}
+}
