@@ -183,7 +183,7 @@ export default function Study() {
               <small>اكتب رقم السؤال من 1 إلى {questions.length}</small>
             </div>
           )}
-          {(q.audioUrl || currentAudioUrl) && (
+          {q && (
             <div className="study-question-audio-header">
               <audio
                 ref={audioRef}
