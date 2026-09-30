@@ -227,9 +227,8 @@ public AdminController(
             var question = questions.FirstOrDefault(q => q.Id == audio.QuestionId);
             if (question is null) continue;
 
-            var currentHash = GetAudioContentHash(question);
-            if (string.Equals(currentHash, audio.ContentHash, StringComparison.Ordinal))
-                question.AudioUrl = $"/api/questions/{question.Id}/audio?v={audio.ContentHash}";
+            // الملف الموجود يجب أن يبقى قابلاً للاستماع حتى لو تغيّر نص السؤال لاحقاً.
+            question.AudioUrl = $"/api/questions/{question.Id}/audio?v={audio.ContentHash}";
         }
 
         return Ok(questions);
@@ -499,8 +498,8 @@ public AdminController(
             currentHash,
             storedHash = audio?.ContentHash,
             hashMatches,
-            playable = hashMatches,
-            audioUrl = hashMatches ? $"/api/questions/{id}/audio?v={audio!.ContentHash}" : null
+            playable = hasBytes,
+            audioUrl = hasBytes ? $"/api/questions/{id}/audio?v={audio!.ContentHash}" : null
         });
     }
 
