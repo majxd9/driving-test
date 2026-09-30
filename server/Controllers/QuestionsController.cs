@@ -234,7 +234,7 @@ public class QuestionsController : ControllerBase
 
         var text = Regex.Replace(
             value.Normalize(NormalizationForm.FormC),
-            @"\\s+",
+            @"\s+",
             " ").Trim();
 
         // تشكيل موجّه للنطق للكلمات الشائعة في نصوص رخصتي. لا نغيّر بقية
@@ -262,7 +262,7 @@ public class QuestionsController : ControllerBase
         {
             text = Regex.Replace(
                 text,
-                $@"(?<![\\u0600-\\u06FF]){Regex.Escape(word)}(?![\\u0600-\\u06FF])",
+                $@"(?<![\u0600-\u06FF]){Regex.Escape(word)}(?![\u0600-\u06FF])",
                 marked);
         }
 
