@@ -177,9 +177,11 @@ export default function Exam() {
 
 
   const goToQuestion = useCallback((nextIndex:number) => {
-    if(nextIndex===current||nextIndex<0||nextIndex>=questions.length)return;
-    setCurrent(nextIndex);
-  },[current,questions]);
+    setCurrent(currentIndex => {
+      if (nextIndex === currentIndex || nextIndex < 0 || nextIndex >= questions.length) return currentIndex;
+      return nextIndex;
+    });
+  }, [questions.length]);
 
   const jumpToQuestion = useCallback((event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
