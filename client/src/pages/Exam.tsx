@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api } from '../api/client';
+import { api, resolveApiUrl } from '../api/client';
 import { ExamQuestion } from '../types';
 import DiagramRenderer from '../components/DiagramRenderer';
 import OptimizedImage from '../components/OptimizedImage';
@@ -32,6 +32,8 @@ export default function Exam() {
   const questionsRef = useRef<ExamQuestion[]>([]);
   const answersRef = useRef<Record<number, number>>({});
   const loadSequenceRef = useRef(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
 
   questionsRef.current = questions;
   answersRef.current = answers;
@@ -110,6 +112,11 @@ export default function Exam() {
       },
     });
   }, [navigate, modelId]);
+  useEffect(() => {
+    audioRef.current?.pause();
+    setAudioPlaying(false);
+  }, [current]);
+
   const goToQuestion = useCallback((nextIndex:number) => {
     if(nextIndex===current||nextIndex<0||nextIndex>=questions.length)return;
     setCurrent(nextIndex);
@@ -168,6 +175,32 @@ export default function Exam() {
       <div className="exam-scroll-v2">
         <div className="exam-image-slot-v2">{shouldShowQuestionImageBeforeAnswer(q) ? <OptimizedImage src={q.imageUrl ?? ''} alt="صورة السؤال" className="h-full w-full" priority objectFit="contain" /> : <div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
+        {q.audioUrl && (
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0 12px' }}>
+            <audio
+              ref={audioRef}
+              src={resolveApiUrl(q.audioUrl)}
+              preload="none"
+              onEnded={() => setAudioPlaying(false)}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const audio = audioRef.current;
+                if (!audio) return;
+                if (audioPlaying) {
+                  audio.pause();
+                  setAudioPlaying(false);
+                } else {
+                  void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false));
+                }
+              }}
+              style={{ border: '1px solid rgba(45,212,191,.35)', borderRadius: 999, padding: '8px 16px', background: 'rgba(45,212,191,.10)', color: 'inherit', fontWeight: 800, cursor: 'pointer' }}
+            >
+              {audioPlaying ? '⏸ إيقاف الاستماع' : '🔊 استمع للسؤال والاختيارات'}
+            </button>
+          </div>
+        )}
         <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>setAnswers(a=>({...a,[q.id]:i}))} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
         <DiagramRenderer question={q}/>
       </div>

@@ -15,6 +15,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<AuthLog> AuthLogs => Set<AuthLog>();
     public DbSet<ExamAttempt> ExamAttempts => Set<ExamAttempt>();
     public DbSet<ExamResult> ExamResults => Set<ExamResult>();
+    public DbSet<QuestionAudio> QuestionAudios => Set<QuestionAudio>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -33,6 +34,15 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Question>()
             .Property(q => q.Options)
             .HasConversion(stringListConverter);
+
+        builder.Entity<QuestionAudio>()
+            .HasKey(x => x.QuestionId);
+
+        builder.Entity<QuestionAudio>()
+            .HasOne<Question>()
+            .WithOne()
+            .HasForeignKey<QuestionAudio>(x => x.QuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<ExamModel>()
             .Property(e => e.QuestionIds)

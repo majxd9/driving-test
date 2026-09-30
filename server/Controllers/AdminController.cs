@@ -208,11 +208,26 @@ public AdminController(
     [HttpGet("questions")]
     public async Task<ActionResult<List<Question>>> GetQuestions()
     {
-        return Ok(
-            await _db.Questions
-                .AsNoTracking()
-                .OrderBy(q => q.Id)
-                .ToListAsync());
+        var questions = await _db.Questions
+            .AsNoTracking()
+            .OrderBy(q => q.Id)
+            .ToListAsync();
+
+        var ids = questions.Select(q => q.Id).ToArray();
+        var audioHashes = await _db.QuestionAudios
+            .AsNoTracking()
+            .Where(x => ids.Contains(x.QuestionId))
+            .Select(x => new { x.QuestionId, x.ContentHash })
+            .ToListAsync();
+
+        foreach (var audio in audioHashes)
+        {
+            var question = questions.FirstOrDefault(q => q.Id == audio.QuestionId);
+            if (question is not null)
+                question.AudioUrl = $"/api/questions/{question.Id}/audio?v={audio.ContentHash}";
+        }
+
+        return Ok(questions);
     }
 
     [HttpPost("questions")]

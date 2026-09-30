@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api } from '../api/client';
+import { api, resolveApiUrl } from '../api/client';
 import { Question, QuestionCategory } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
@@ -30,6 +30,8 @@ export default function Study() {
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
   const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
 
   useEffect(() => {
     if (!category) return;
@@ -64,6 +66,8 @@ export default function Study() {
 
   useEffect(() => {
     setSignalState('pending');
+    audioRef.current?.pause();
+    setAudioPlaying(false);
   }, [index]);
 
   useEffect(() => {
@@ -195,6 +199,42 @@ export default function Study() {
           )}
 
           <div className="study-premium-question">{q.text}</div>
+
+          {q.audioUrl && (
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0 12px' }}>
+              <audio
+                ref={audioRef}
+                src={resolveApiUrl(q.audioUrl)}
+                preload="none"
+                onEnded={() => setAudioPlaying(false)}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const audio = audioRef.current;
+                  if (!audio) return;
+                  if (audioPlaying) {
+                    audio.pause();
+                    setAudioPlaying(false);
+                  } else {
+                    void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false));
+                  }
+                }}
+                aria-label="استمع للسؤال والاختيارات"
+                style={{
+                  border: '1px solid rgba(45,212,191,.35)',
+                  borderRadius: 999,
+                  padding: '8px 16px',
+                  background: 'rgba(45,212,191,.10)',
+                  color: 'inherit',
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+              >
+                {audioPlaying ? '⏸ إيقاف الاستماع' : '🔊 استمع للسؤال والاختيارات'}
+              </button>
+            </div>
+          )}
 
           <div
             className="study-premium-answers"

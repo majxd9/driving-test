@@ -1,5 +1,10 @@
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
+export function resolveApiUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${API_BASE}${path}`;
+}
+
 function getDeviceId(): string {
   const key = 'drv_device_id';
   let id = localStorage.getItem(key);
@@ -79,6 +84,7 @@ export const api = {
     createQuestion: (data: Omit<import('../types').Question, 'id'>) => request<import('../types').Question>('/api/admin/questions', { method: 'POST', body: JSON.stringify(data) }),
     updateQuestion: (id: number, data: Omit<import('../types').Question, 'id'>) => request<import('../types').Question>(`/api/admin/questions/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     deleteQuestion: (id: number) => request<void>(`/api/admin/questions/${id}`, { method: 'DELETE' }),
+    generateQuestionAudio: (id: number) => request<{ questionId: number; audioUrl: string; generated: boolean; contentHash: string }>(`/api/admin/questions/${id}/generate-audio`, { method: 'POST' }),
     analytics: () => request<import('../types').Analytics>('/api/admin/analytics'),
 
   },
