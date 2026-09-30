@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, resolveApiUrl } from '../api/client';
-import AudioDiagnostics from '../components/AudioDiagnostics';
 import { Question, QuestionCategory } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import DiagramRenderer from '../components/DiagramRenderer';
@@ -10,6 +9,7 @@ import SpiritTrafficSignal from '../components/SpiritTrafficSignal';
 import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
+import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -17,7 +17,7 @@ const THEME: Record<QuestionCategory, { name: string; accent: string; soft: stri
   Mechanic: { name: 'الميكانيك', accent: '#F59E0B', soft: 'rgba(245,158,11,.12)' },
 };
 
-const LETTERS = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
+const OPTION_NUMBERS = ['١', '٢', '٣', '٤', '٥', '٦'];
 
 export default function Study() {
   const { category } = useParams<{ category: QuestionCategory }>();
@@ -32,7 +32,9 @@ export default function Study() {
   const [jumpValue, setJumpValue] = useState('1');
   const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -68,54 +70,66 @@ export default function Study() {
 
   useEffect(() => {
     setSignalState('pending');
-    audioRef.current?.pause();
-    setAudioPlaying(false);
-    setAudioError(null);
   }, [index]);
 
   const currentAudioPath = questions[index]?.audioUrl ?? null;
   const currentAudioUrl = currentAudioPath ? resolveApiUrl(currentAudioPath) : null;
+  const nextAudioPath = questions[index + 1]?.audioUrl ?? null;
+  const nextAudioUrl = nextAudioPath ? resolveApiUrl(nextAudioPath) : null;
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !currentAudioUrl) return;
+    if (!audio) return;
 
     let active = true;
-    let objectUrl: string | null = null;
-
-    // Fetch the MP3 once and play it from a Blob URL. This avoids mobile
-    // WebViews rejecting the API's HTTP media response during decoding.
+    setAudioReady(false);
     setAudioPlaying(false);
-    setAudioError('جاري تجهيز الصوت…');
+    setAudioError(null);
     audio.pause();
     audio.removeAttribute('src');
     audio.load();
 
-    fetch(currentAudioUrl, { credentials: 'omit', cache: 'no-store' })
-      .then(async response => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const blob = await response.blob();
-        if (!blob.size) throw new Error('ملف الصوت فارغ');
-        if (active) {
-          objectUrl = URL.createObjectURL(new Blob([blob], { type: 'audio/mpeg' }));
-          audio.src = objectUrl;
+    if (currentAudioUrl) {
+      preloadQuestionAudio(currentAudioUrl);
+      void getQuestionAudioSource(currentAudioUrl)
+        .then(source => {
+          if (!active) return;
+          audio.src = source;
+          audio.preload = 'auto';
           audio.load();
-          setAudioError(null);
-        }
-      })
-      .catch(error => {
-        if (!active) return;
-        setAudioError(`تعذر تجهيز الصوت: ${error instanceof Error ? error.message : String(error)}`);
-      });
+          setAudioReady(true);
+        })
+        .catch(error => {
+          if (!active) return;
+          setAudioError(error instanceof Error ? error.message : String(error));
+        });
+    } else {
+      setAudioError('لا يوجد صوت لهذا السؤال.');
+    }
+
+    preloadQuestionAudio(nextAudioUrl);
 
     return () => {
       active = false;
       audio.pause();
       audio.removeAttribute('src');
       audio.load();
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [currentAudioUrl]);
+  }, [currentAudioUrl, nextAudioUrl]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !audioEnabled || !audioReady) return;
+
+    audio.currentTime = 0;
+    void audio.play()
+      .then(() => setAudioPlaying(true))
+      .catch(() => {
+        setAudioPlaying(false);
+        setAudioError('المتصفح رفض التشغيل التلقائي للصوت. اضغط «صوت» مرة واحدة.');
+      });
+  }, [audioEnabled, audioReady, currentAudioUrl]);
+
 
   useEffect(() => {
     const nextQuestion = questions[index + 1];
@@ -221,64 +235,76 @@ export default function Study() {
 
       <div className="study-premium-progress"><span style={{ width: `${progress}%` }} /></div>
 
-      <div className="study-audio-strip">
-        {q && (
-            <div className="study-question-audio-header">
-              <audio
-                ref={audioRef}
-                src={currentAudioUrl ?? undefined}
-                preload="metadata"
-                onLoadedMetadata={() => setAudioError(null)}
-                onEnded={() => setAudioPlaying(false)}
-                onError={() => {
-                  setAudioPlaying(false);
-                  setAudioError('المتصفح لم يستطع تشغيل ملف الصوت. اضغط «صوت» للمحاولة مجدداً.');
-                }}
-              />
-              <button
-                type="button"
-                disabled={!currentAudioUrl}
-                className={`audio-control audio-play ${audioPlaying ? 'is-playing' : ''}`}
-                onClick={() => {
-                  const audio = audioRef.current;
-                  if (!audio || !currentAudioUrl) return;
-                  setAudioError(null);
-                  audio.pause();
-                  audio.currentTime = 0;
-                  void audio.play()
-                    .then(() => setAudioPlaying(true))
-                    .catch(() => {
-                      setAudioPlaying(false);
-                      setAudioError('المتصفح رفض تشغيل الصوت. اضغط تشغيل مرة ثانية.');
-                    });
-                }}
-                aria-label="تشغيل صوت السؤال والاختيارات"
-                title="تشغيل الصوت من البداية"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.8v14.4a1.2 1.2 0 0 0 1.82 1.03l11.4-7.2a1.2 1.2 0 0 0 0-2.06L6.82 3.77A1.2 1.2 0 0 0 5 4.8Z"/></svg>
-                <span>صوت</span>
-              </button>
-              <button
-                type="button"
-                className="audio-control audio-stop"
-                onClick={() => {
-                  const audio = audioRef.current;
-                  if (!audio) return;
-                  audio.pause();
-                  audio.currentTime = 0;
-                  setAudioPlaying(false);
-                }}
-                aria-label="إيقاف صوت السؤال"
-                title="إيقاف الصوت"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-                <span>إيقاف</span>
-              </button>
-              {audioError && <small className="audio-error">{audioError}</small>}<AudioDiagnostics src={currentAudioUrl} questionId={q.id} />
-            </div>
-          )}
+      <div className="question-audio-nav study-top" role="group" aria-label="التنقل والصوت">
+        <button
+          type="button"
+          className="question-audio-nav__button"
+          onClick={() => goTo(index - 1)}
+          disabled={index === 0}
+          aria-label="السؤال السابق"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+          <span>السابق</span>
+        </button>
+        <button
+          type="button"
+          disabled={!currentAudioUrl}
+          className={`question-audio-nav__audio ${audioEnabled ? 'playing' : ''}`}
+          onClick={() => {
+            setAudioError(null);
+            setAudioEnabled(true);
+            const audio = audioRef.current;
+            if (audio && audioReady) {
+              audio.currentTime = 0;
+              void audio.play()
+                .then(() => setAudioPlaying(true))
+                .catch(() => setAudioError('المتصفح رفض تشغيل الصوت. اضغط «صوت» مرة ثانية.'));
+            }
+          }}
+          aria-label="تشغيل الصوت المستمر"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.8v14.4a1.2 1.2 0 0 0 1.82 1.03l11.4-7.2a1.2 1.2 0 0 0 0-2.06L6.82 3.77A1.2 1.2 0 0 0 5 4.8Z"/></svg>
+          <span>{audioEnabled ? 'صوت يعمل' : 'صوت'}</span>
+        </button>
+        <button
+          type="button"
+          className="question-audio-nav__audio stop"
+          onClick={() => {
+            setAudioEnabled(false);
+            const audio = audioRef.current;
+            if (!audio) return;
+            audio.pause();
+            audio.currentTime = 0;
+            setAudioPlaying(false);
+          }}
+          aria-label="إيقاف الصوت"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          <span>إيقاف</span>
+        </button>
+        <span className={`question-audio-nav__status ${audioError ? 'error' : audioReady ? 'ready' : ''}`} aria-live="polite">
+          {audioError ? audioError : audioPlaying ? 'يعمل الآن' : audioEnabled ? 'الصوت مفعّل' : audioReady ? 'جاهز' : 'جارٍ التحضير'}
+        </span>
+        <button
+          type="button"
+          className="question-audio-nav__button"
+          onClick={() => goTo(index + 1)}
+          disabled={isLast}
+          aria-label={isLast ? 'انتهى القسم' : 'السؤال التالي'}
+        >
+          <span>{isLast ? 'انتهى القسم' : 'التالي'}</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+        <audio
+          ref={audioRef}
+          preload="auto"
+          onEnded={() => setAudioPlaying(false)}
+          onError={() => {
+            setAudioPlaying(false);
+            setAudioError('تعذر فك ملف الصوت على هذا الجهاز.');
+          }}
+        />
       </div>
-
       <main className="study-premium-stage">
         <section className="study-premium-card">
           <SpiritTrafficSignal state={signalState} />
@@ -325,7 +351,7 @@ export default function Study() {
                   onClick={() => choose(i)}
                   className={`study-premium-option ${state}`}
                 >
-                  <span className="study-premium-letter">{LETTERS[i]}</span>
+                  <span className="study-premium-letter">{OPTION_NUMBERS[i] ?? String(i + 1)}</span>
                   <span className="study-premium-option-text">{opt}</span>
                   {chosen !== undefined && isCorrect && <span className="study-premium-check">✓</span>}
                 </button>
@@ -349,24 +375,6 @@ export default function Study() {
         </section>
       </main>
 
-      <nav className="study-premium-actions study-navigation-portal" aria-label="التنقل بين الأسئلة">
-        <button
-          type="button"
-          onClick={() => goTo(index - 1)}
-          disabled={index === 0}
-          className="study-premium-action ghost"
-        >
-          السابق
-        </button>
-        <button
-          type="button"
-          onClick={() => goTo(index + 1)}
-          disabled={isLast}
-          className="study-premium-action next"
-        >
-          {isLast ? 'انتهى القسم' : 'السؤال التالي'} <span>←</span>
-        </button>
-      </nav>
     </div>
   );
 }
