@@ -1,5 +1,10 @@
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
+export function resolveApiUrl(path: string): string {
+  if (/^https?:\\/\\//i.test(path)) return path;
+  return `${API_BASE}${path}`;
+}
+
 function getDeviceId(): string {
   const key = 'drv_device_id';
   let id = localStorage.getItem(key);
