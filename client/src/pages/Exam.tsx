@@ -34,6 +34,7 @@ export default function Exam() {
   const loadSequenceRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioError, setAudioError] = useState(false);
 
   questionsRef.current = questions;
   answersRef.current = answers;
@@ -115,6 +116,7 @@ export default function Exam() {
   useEffect(() => {
     audioRef.current?.pause();
     setAudioPlaying(false);
+    setAudioError(false);
   }, [current]);
 
   const goToQuestion = useCallback((nextIndex:number) => {
@@ -168,12 +170,21 @@ export default function Exam() {
           )}
           {q.audioUrl && (
             <div className="study-question-audio-header">
-              <audio ref={audioRef} src={resolveApiUrl(q.audioUrl)} preload="none" onEnded={() => setAudioPlaying(false)} />
+              <audio
+                ref={audioRef}
+                src={resolveApiUrl(q.audioUrl)}
+                preload="auto"
+                onEnded={() => setAudioPlaying(false)}
+                onError={() => { setAudioPlaying(false); setAudioError(true); }}
+              />
               <button type="button" className={`audio-control audio-play ${audioPlaying ? 'is-playing' : ''}`} onClick={() => {
                 const audio = audioRef.current;
                 if (!audio) return;
+                setAudioError(false);
+                audio.pause();
                 audio.currentTime = 0;
-                void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false));
+                audio.load();
+                void audio.play().then(() => setAudioPlaying(true)).catch(() => { setAudioPlaying(false); setAudioError(true); });
               }} aria-label="تشغيل صوت السؤال والاختيارات" title="تشغيل الصوت من البداية">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.8v14.4a1.2 1.2 0 0 0 1.82 1.03l11.4-7.2a1.2 1.2 0 0 0 0-2.06L6.82 3.77A1.2 1.2 0 0 0 5 4.8Z"/></svg>
                 <span>صوت</span>
@@ -188,6 +199,7 @@ export default function Exam() {
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
                 <span>إيقاف</span>
               </button>
+              {audioError && <small className="audio-error">الصوت غير متوفر لهذا السؤال</small>}
             </div>
           )}
         </div>
