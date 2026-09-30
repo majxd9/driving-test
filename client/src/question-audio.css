@@ -94,3 +94,17 @@
   .exam-actions-v2{min-height:60px!important;}
   .exam-actions-v2 .exam-action-v2.finish{height:46px!important;min-height:46px!important;}
 }
+
+/* Reserve real space for the new top control row inside the locked study/exam viewport. */
+.study-premium,
+.exam-page-v2{display:flex!important;flex-direction:column!important;}
+.study-premium-stage,
+.exam-stage-v2{flex:1 1 auto!important;min-height:0!important;}
+.study-premium-progress,
+.exam-progress-v2{flex:0 0 auto!important;}
+@media(min-width:768px){
+  .study-premium-stage,
+  .exam-stage-v2{height:auto!important;}
+  .study-premium-card,
+  .exam-card-v2{height:100%!important;}
+}
