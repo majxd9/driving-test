@@ -76,6 +76,14 @@ export default function Study() {
   const currentAudioUrl = currentAudioPath ? resolveApiUrl(currentAudioPath) : null;
 
   useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentAudioUrl) return;
+    audio.load();
+    setAudioPlaying(false);
+    setAudioError(null);
+  }, [currentAudioUrl]);
+
+  useEffect(() => {
     const nextQuestion = questions[index + 1];
     if (!nextQuestion?.imageUrl || !shouldShowQuestionImageBeforeAnswer(nextQuestion)) return;
 
@@ -179,11 +187,12 @@ export default function Study() {
               <audio
                 ref={audioRef}
                 src={currentAudioUrl ?? undefined}
-                preload="none"
+                preload="metadata"
+                onLoadedMetadata={() => setAudioError(null)}
                 onEnded={() => setAudioPlaying(false)}
                 onError={() => {
                   setAudioPlaying(false);
-                  setAudioError('المتصفح لم يستطع تشغيل ملف الصوت.');
+                  setAudioError('المتصفح لم يستطع تشغيل ملف الصوت. اضغط «صوت» للمحاولة مجدداً.');
                 }}
               />
               <button
