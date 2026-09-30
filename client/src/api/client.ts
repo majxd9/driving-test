@@ -1,8 +1,11 @@
-const API_BASE = import.meta.env.VITE_API_URL || '';
+// Production fallback keeps the app connected to the known Render API even if
+// VITE_API_URL was omitted from a static-site build. The environment value still wins.
+const configuredApiBase = String(import.meta.env.VITE_API_URL || '').trim();
+const API_BASE = (configuredApiBase || 'https://driving-test-evd0.onrender.com').replace(/\/+$/, '');
 
 export function resolveApiUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path;
-  return `${API_BASE}${path}`;
+  return `${API_BASE}/${path.replace(/^\/+/, '')}`;
 }
 
 function getDeviceId(): string {
