@@ -32,6 +32,7 @@ export default function Study() {
   const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioError, setAudioError] = useState(false);
 
   useEffect(() => {
     if (!category) return;
@@ -68,6 +69,7 @@ export default function Study() {
     setSignalState('pending');
     audioRef.current?.pause();
     setAudioPlaying(false);
+    setAudioError(false);
   }, [index]);
 
   useEffect(() => {
@@ -171,15 +173,30 @@ export default function Study() {
           )}
           {q.audioUrl && (
             <div className="study-question-audio-header">
-              <audio ref={audioRef} src={resolveApiUrl(q.audioUrl)} preload="none" onEnded={() => setAudioPlaying(false)} />
-              <button type="button" className={`audio-control audio-play ${audioPlaying ? 'is-playing' : ''}`} onClick={() => { const audio = audioRef.current; if (!audio) return; audio.currentTime = 0; void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false)); }} aria-label="تشغيل صوت السؤال والاختيارات" title="تشغيل الصوت من البداية">
+              <audio
+                ref={audioRef}
+                src={resolveApiUrl(q.audioUrl)}
+                preload="auto"
+                onEnded={() => setAudioPlaying(false)}
+                onError={() => { setAudioPlaying(false); setAudioError(true); }}
+              />
+              <button type="button" className={`audio-control audio-play ${audioPlaying ? 'is-playing' : ''}`} onClick={() => { const audio = audioRef.current; if (!audio) return;
+                  setAudioError(false);
+                  audio.pause();
+                  audio.currentTime = 0;
+                  audio.load();
+                  void audio.play().then(() => setAudioPlaying(true)).catch(() => { setAudioPlaying(false); setAudioError(true); }); }} aria-label="تشغيل صوت السؤال والاختيارات" title="تشغيل الصوت من البداية">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.8v14.4a1.2 1.2 0 0 0 1.82 1.03l11.4-7.2a1.2 1.2 0 0 0 0-2.06L6.82 3.77A1.2 1.2 0 0 0 5 4.8Z"/></svg>
                 <span>صوت</span>
               </button>
-              <button type="button" className="audio-control audio-stop" onClick={() => { const audio = audioRef.current; if (!audio) return; audio.pause(); audio.currentTime = 0; setAudioPlaying(false); }} aria-label="إيقاف صوت السؤال" title="إيقاف الصوت">
+              <button type="button" className="audio-control audio-stop" onClick={() => { const audio = audioRef.current; if (!audio) return;
+                  audio.pause();
+                  audio.currentTime = 0;
+                  setAudioPlaying(false); }} aria-label="إيقاف صوت السؤال" title="إيقاف الصوت">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
                 <span>إيقاف</span>
               </button>
+              {audioError && <small className="audio-error">الصوت غير متوفر لهذا السؤال</small>}
             </div>
           )}
         </div>
