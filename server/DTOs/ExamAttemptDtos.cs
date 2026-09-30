@@ -24,7 +24,8 @@ public record ExamReviewQuestionResponse(
     string? DiagramType,
     string? DiagramUrl,
     string? DiagramTitle,
-    string? DiagramDescription);
+    string? DiagramDescription,
+    string? AudioUrl);
 
 public record ExamSubmissionResponse(
     int Id,
