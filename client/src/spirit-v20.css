@@ -216,7 +216,7 @@
 /* =========================
    6. MOBILE
    ========================= */
-@media (max-width: 767px) {
+@media (max-width: 900px) {
   .home-spirit-scene,
   .models-spirit-scene { opacity:1 !important; }
 
