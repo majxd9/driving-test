@@ -142,6 +142,26 @@ builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
 
+// The production database already exists and this project does not use EF migrations.
+// Create the small AI-audio table before accepting requests so question queries never
+// race the schema creation on a cold start.
+using (var schemaScope = app.Services.CreateScope())
+{
+    var db = schemaScope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.ExecuteSqlRawAsync("""
+        CREATE TABLE IF NOT EXISTS "QuestionAudios" (
+            "QuestionId" integer NOT NULL,
+            "AudioBytes" bytea NOT NULL,
+            "ContentHash" text NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_QuestionAudios" PRIMARY KEY ("QuestionId"),
+            CONSTRAINT "FK_QuestionAudios_Questions_QuestionId"
+                FOREIGN KEY ("QuestionId") REFERENCES "Questions" ("Id") ON DELETE CASCADE
+        );
+        """);
+}
+
+
 if (!app.Environment.IsDevelopment())
     app.UseHsts();
 
