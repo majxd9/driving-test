@@ -12,6 +12,7 @@ export interface Question {
   diagramUrl?: string | null;
   diagramTitle?: string | null;
   diagramDescription?: string | null;
+  audioUrl?: string | null;
 }
 
 export interface LoginResponse {
@@ -55,6 +56,7 @@ export interface ExamQuestion {
   diagramUrl?: string | null;
   diagramTitle?: string | null;
   diagramDescription?: string | null;
+  audioUrl?: string | null;
 }
 
 export interface ExamReviewQuestion {
