@@ -167,6 +167,24 @@ export default function Exam() {
             </div>
           )}
         </div>
+        {q.audioUrl && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginInlineStart: 8 }}>
+            <audio ref={audioRef} src={resolveApiUrl(q.audioUrl)} preload="none" onEnded={() => setAudioPlaying(false)} />
+            <button type="button" onClick={() => {
+              const audio = audioRef.current;
+              if (!audio) return;
+              audio.currentTime = 0;
+              void audio.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false));
+            }} aria-label="تشغيل صوت السؤال والاختيارات" title="تشغيل الصوت من البداية" style={{ width: 34, height: 30, border: '1px solid rgba(45,212,191,.35)', borderRadius: 8, background: 'rgba(45,212,191,.10)', color: 'inherit', fontWeight: 900, cursor: 'pointer' }}>▶</button>
+            <button type="button" onClick={() => {
+              const audio = audioRef.current;
+              if (!audio) return;
+              audio.pause();
+              audio.currentTime = 0;
+              setAudioPlaying(false);
+            }} aria-label="إيقاف صوت السؤال" title="إيقاف الصوت" style={{ width: 34, height: 30, border: '1px solid rgba(248,113,113,.35)', borderRadius: 8, background: 'rgba(248,113,113,.10)', color: 'inherit', fontWeight: 900, cursor: 'pointer' }}>■</button>
+          </div>
+        )}
       </div>
       <div className={`exam-timer-v2 ${seconds<=60?'urgent':''}`} aria-label={`الوقت المتبقي ${mm}:${ss}`}>{mm}:{ss}</div>
     </header>
