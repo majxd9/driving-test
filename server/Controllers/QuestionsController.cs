@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
+using System.Text;
+using System.Net.Http.Json;
 
 namespace DrivingTestApi.Controllers;
 
@@ -14,13 +17,26 @@ namespace DrivingTestApi.Controllers;
 [Authorize]
 public class QuestionsController : ControllerBase
 {
+    private const string ElevenLabsVoiceId = "kkRCiWf4hNt6FiXgdXnk";
     private readonly AppDbContext _db;
-    public QuestionsController(AppDbContext db) => _db = db;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
+
+    public QuestionsController(
+        AppDbContext db,
+        IHttpClientFactory httpClientFactory,
+        IConfiguration configuration)
+    {
+        _db = db;
+        _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
+    }
 
     [HttpGet]
     public async Task<ActionResult<List<Question>>> GetByCategory([FromQuery] QuestionCategory category)
     {
         var questions = await QuestionBankCache.GetCategoryAsync(_db, category);
+        await AttachAudioUrlsAsync(questions);
 
         Response.Headers.CacheControl = "private,max-age=60,stale-while-revalidate=30";
         return Ok(DeduplicateQuestions(questions));
@@ -98,6 +114,8 @@ public class QuestionsController : ControllerBase
             picked.AddRange(categoryPicked);
         }
 
+        await AttachAudioUrlsAsync(picked);
+
         return Ok(picked.Select(q => new ExamQuestionResponse(
             q.Id,
             q.Text,
@@ -108,8 +126,164 @@ public class QuestionsController : ControllerBase
             q.DiagramType,
             q.DiagramUrl,
             q.DiagramTitle,
-            q.DiagramDescription
+            q.DiagramDescription,
+            q.AudioUrl
         )).ToList());
+    }
+
+    [HttpGet("{id:int}/audio")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAudio(int id, CancellationToken cancellationToken)
+    {
+        var audio = await _db.QuestionAudios
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
+
+        if (audio is null || audio.AudioBytes.Length == 0)
+            return NotFound();
+
+        Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+        Response.Headers.ETag = $"\"{audio.ContentHash}\"";
+        return File(audio.AudioBytes, "audio/mpeg", enableRangeProcessing: true);
+    }
+
+    private async Task AttachAudioUrlsAsync(IEnumerable<Question> questions)
+    {
+        var list = questions.ToList();
+        if (list.Count == 0) return;
+
+        var ids = list.Select(q => q.Id).ToArray();
+        var hashes = await _db.QuestionAudios
+            .AsNoTracking()
+            .Where(x => ids.Contains(x.QuestionId))
+            .Select(x => new { x.QuestionId, x.ContentHash })
+            .ToListAsync();
+
+        foreach (var item in hashes)
+        {
+            var question = list.FirstOrDefault(q => q.Id == item.QuestionId);
+            if (question is not null)
+                question.AudioUrl = $"/api/questions/{question.Id}/audio?v={item.ContentHash}";
+        }
+    }
+
+    private static string BuildAudioText(Question question)
+    {
+        var builder = new StringBuilder();
+        builder.Append("السؤال: ").Append(question.Text.Trim());
+
+        var letters = new[] { "أ", "ب", "ج", "د", "هـ", "و" };
+        for (var i = 0; i < question.Options.Count; i++)
+        {
+            builder.Append(". الإجابة ").Append(i < letters.Length ? letters[i] : (i + 1).ToString())
+                   .Append(": ").Append(question.Options[i].Trim());
+        }
+
+        return builder.ToString();
+    }
+
+    private static string GetContentHash(string text)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(text));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
+
+    public sealed record GenerateAudioResponse(
+        int QuestionId,
+        string AudioUrl,
+        bool Generated,
+        string ContentHash);
+
+    [HttpPost("/api/admin/questions/{id:int}/generate-audio")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<GenerateAudioResponse>> GenerateAudio(int id, CancellationToken cancellationToken)
+    {
+        var question = await _db.Questions
+            .AsNoTracking()
+            .SingleOrDefaultAsync(q => q.Id == id, cancellationToken);
+
+        if (question is null)
+            return NotFound(new { message = "السؤال غير موجود." });
+
+        var text = BuildAudioText(question);
+        var hash = GetContentHash(text);
+
+        var existing = await _db.QuestionAudios
+            .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
+
+        if (existing is not null && existing.ContentHash == hash && existing.AudioBytes.Length > 0)
+        {
+            return Ok(new GenerateAudioResponse(
+                id,
+                $"/api/questions/{id}/audio?v={hash}",
+                false,
+                hash));
+        }
+
+        var apiKey = _configuration["ELEVENLABS_API_KEY"];
+        if (string.IsNullOrWhiteSpace(apiKey))
+            return Problem("لم يتم ضبط ELEVENLABS_API_KEY على الخادم.");
+
+        var client = _httpClientFactory.CreateClient("ElevenLabs");
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"v1/text-to-speech/{ElevenLabsVoiceId}?output_format=mp3_44100_128");
+
+        request.Headers.TryAddWithoutValidation("xi-api-key", apiKey);
+        request.Content = JsonContent.Create(new
+        {
+            text,
+            model_id = "eleven_multilingual_v2",
+            voice_settings = new
+            {
+                stability = 0.55,
+                similarity_boost = 0.8,
+                style = 0.1,
+                use_speaker_boost = true
+            }
+        });
+
+        using var response = await client.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            return StatusCode(
+                (int)response.StatusCode,
+                new { message = "تعذر توليد الصوت من ElevenLabs.", details = error });
+        }
+
+        var audioBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+        if (audioBytes.Length == 0)
+            return Problem("تمت استجابة ElevenLabs بدون ملف صوتي.");
+
+        if (existing is null)
+        {
+            _db.QuestionAudios.Add(new QuestionAudio
+            {
+                QuestionId = id,
+                AudioBytes = audioBytes,
+                ContentHash = hash,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+        else
+        {
+            existing.AudioBytes = audioBytes;
+            existing.ContentHash = hash;
+            existing.CreatedAt = DateTime.UtcNow;
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return Ok(new GenerateAudioResponse(
+            id,
+            $"/api/questions/{id}/audio?v={hash}",
+            true,
+            hash));
     }
 
     private static string CategoryName(QuestionCategory category) => category switch
