@@ -133,7 +133,6 @@ export default function Exam() {
   const selectedAnswer = answers[q.id];
   useEffect(() => () => stopArabicSpeech(), []);
 
-  const readQuestion = () => void speakArabic(`السؤال: ${q.text}`);
   const readAll = () => void speakArabic(`السؤال: ${q.text}. ${q.options.map((option, i) => `الاختيار ${LETTERS[i]}: ${option}`).join('. ')}`);
   // لا صورة ولا شرح أثناء الاختبار؛ كلاهما للمراجعة بعد إنهاء الاختبار فقط.
   return <div className="exam-page-v2" dir="rtl">
