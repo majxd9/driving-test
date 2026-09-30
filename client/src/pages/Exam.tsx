@@ -5,6 +5,7 @@ import { ExamQuestion } from '../types';
 import DiagramRenderer from '../components/DiagramRenderer';
 import OptimizedImage from '../components/OptimizedImage';
 import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
+import { speakArabic, stopArabicSpeech } from '../utils/arabicTts';
 
 const DURATION = 15 * 60;
 const LETTERS = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
@@ -130,6 +131,9 @@ export default function Exam() {
 
   const q=questions[current]; const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
   const selectedAnswer = answers[q.id];
+  useEffect(() => () => stopArabicSpeech(), []);
+
+  const readAll = () => void speakArabic(`السؤال: ${q.text}. ${q.options.map((option, i) => `الاختيار ${LETTERS[i]}: ${option}`).join('. ')}`);
   // لا صورة ولا شرح أثناء الاختبار؛ كلاهما للمراجعة بعد إنهاء الاختبار فقط.
   return <div className="exam-page-v2" dir="rtl">
     <header className="exam-topbar-v2">
@@ -167,8 +171,8 @@ export default function Exam() {
     <main className="exam-stage-v2"><section className="exam-card-v2">
       <div className="exam-scroll-v2">
         <div className="exam-image-slot-v2">{shouldShowQuestionImageBeforeAnswer(q) ? <OptimizedImage src={q.imageUrl ?? ''} alt="صورة السؤال" className="h-full w-full" priority objectFit="contain" /> : <div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
-        <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
-        <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>setAnswers(a=>({...a,[q.id]:i}))} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
+        <div className="exam-question-v2"><div className="exam-question-reading"><span className="exam-question-label">السؤال {current+1}</span><button type="button" className="voice-read-button" onClick={readAll} aria-label="قراءة السؤال والاختيارات"><span className="voice-read-icon">🔊</span><span>استمع للسؤال والاختيارات</span></button></div>{q.text}</div>
+        <div className="exam-answers-v2">{q.options.map((opt,i)=><div className="exam-option-row" key={i}><button type="button" onClick={()=>setAnswers(a=>({...a,[q.id]:i}))} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{LETTERS[i]}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button><button type="button" className="voice-read-option" onClick={()=>void speakArabic(`الاختيار ${LETTERS[i]}: ${opt}`)} aria-label={`قراءة الاختيار ${LETTERS[i]}`}>🔊</button></div>)}</div>
         <DiagramRenderer question={q}/>
       </div>
       <div className="exam-actions-v2">
