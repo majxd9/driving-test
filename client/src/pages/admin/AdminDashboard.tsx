@@ -28,13 +28,44 @@ function AdminAudioPreview({src}:{src:string}){
  const audioRef=useRef<HTMLAudioElement|null>(null);
  const [playing,setPlaying]=useState(false);
  const [error,setError]=useState('');
+ useEffect(()=>{
+   const audio=audioRef.current;
+   if(!audio||!src)return;
+   let active=true;
+   let objectUrl:string|null=null;
+   setPlaying(false);
+   setError('جاري تجهيز الصوت…');
+   audio.pause();
+   audio.removeAttribute('src');
+   audio.load();
+   fetch(src,{credentials:'omit',cache:'no-store'})
+     .then(async response=>{
+       if(!response.ok)throw new Error(`HTTP ${response.status}`);
+       const blob=await response.blob();
+       if(!blob.size)throw new Error('ملف الصوت فارغ');
+       if(active){
+         objectUrl=URL.createObjectURL(new Blob([blob],{type:'audio/mpeg'}));
+         audio.src=objectUrl;
+         audio.load();
+         setError('');
+       }
+     })
+     .catch(e=>{if(active)setError(`تعذر تجهيز الصوت: ${e instanceof Error?e.message:String(e)}`);});
+   return ()=>{
+     active=false;
+     audio.pause();
+     audio.removeAttribute('src');
+     audio.load();
+     if(objectUrl)URL.revokeObjectURL(objectUrl);
+   };
+ },[src]);
  const play=()=>{
    const audio=audioRef.current;
    if(!audio)return;
    setError('');
    audio.pause();
    audio.currentTime=0;
-   void audio.play().then(()=>setPlaying(true)).catch(()=>{setPlaying(false);setError('المتصفح لم يستطع تشغيل الملف الصوتي.');});
+   void audio.play().then(()=>setPlaying(true)).catch(e=>{setPlaying(false);setError(`المتصفح لم يستطع تشغيل الملف: ${e instanceof Error?e.message:'فشل التشغيل'}`);});
  };
  const stop=()=>{
    const audio=audioRef.current;
@@ -44,17 +75,10 @@ function AdminAudioPreview({src}:{src:string}){
    setPlaying(false);
  };
  return <span className="action-row" title="اختبار الصوت من الخادم">
-   <audio
-     ref={audioRef}
-     src={src}
-     preload="metadata"
-     onEnded={()=>setPlaying(false)}
-     onError={()=>{setPlaying(false);setError('فشل تحميل ملف الصوت من الخادم.');}}
-   />
-   <button type="button" onClick={play}>{playing?'▶ يعمل':'🔊 استماع'}</button>
+   <audio ref={audioRef} preload="auto" onEnded={()=>setPlaying(false)} onError={()=>{setPlaying(false);setError('وصل الملف لكن المتصفح فشل في فكّه.');}} />
+   <button type="button" onClick={play} disabled={!!error&&error.startsWith('جاري')}>{playing?'▶ يعمل':'🔊 استماع'}</button>
    <button type="button" onClick={stop}>إيقاف</button>
    {error&&<small className="text-exam">{error}</small>}<AudioDiagnostics src={src} />
  </span>;
 }
-
 function QuestionEditor({initial,close,saved}:{initial:Question;close:()=>void;saved:()=>void}){const [q,setQ]=useState<Question>(initial);const [busy,setBusy]=useState(false);const set=(patch:Partial<Question>)=>setQ(x=>({...x,...patch}));async function save(){setBusy(true);try{const options=q.options.map(x=>x.trim());if(!q.text.trim())throw new Error('نص السؤال مطلوب.');if(options.length<2||options.some(x=>!x))throw new Error('يجب تعبئة جميع الاختيارات.');if(q.correctAnswerIndex<0||q.correctAnswerIndex>=options.length)throw new Error('الإجابة الصحيحة غير صالحة.');const imageUrl=q.imageUrl?.trim()||null;if(q.category==='Ishara'&&!resolveQuestionImageUrl(imageUrl))throw new Error('سؤال الإشارة يجب أن يرتبط بصورة من مكتبة الصور الحالية.');if(imageUrl&&!resolveQuestionImageUrl(imageUrl)&&q.category!=='Ser')throw new Error('مسار الصورة غير معتمد في مكتبة الصور الحالية.');const payload={category:q.category,text:q.text.trim(),options,correctAnswerIndex:q.correctAnswerIndex,explanation:q.explanation?.trim()||null,imageUrl,diagramType:q.diagramType||null,diagramUrl:q.diagramUrl?.trim()||null,diagramTitle:q.diagramTitle?.trim()||null,diagramDescription:q.diagramDescription?.trim()||null};if(q.id)await api.admin.updateQuestion(q.id,payload);else await api.admin.createQuestion(payload);saved()}catch(e){alert(e instanceof Error?e.message:'تعذر حفظ السؤال')}finally{setBusy(false)}}const preview=resolveQuestionImageUrl(q.imageUrl);return <div className="modal-backdrop" onClick={close}><div className="editor-modal" onClick={e=>e.stopPropagation()}><button className="modal-close" onClick={close} aria-label="إغلاق">×</button><h2>محرر السؤال</h2><div className="form-grid"><select value={q.category} onChange={e=>set({category:e.target.value as QuestionCategory})}><option value="Ser">قواعد السير</option><option value="Ishara">الإشارات</option><option value="Mechanic">الميكانيك</option></select><textarea value={q.text} onChange={e=>set({text:e.target.value})} placeholder="نص السؤال" rows={3}/>{q.options.map((o,i)=><input key={i} value={o} onChange={e=>set({options:q.options.map((x,j)=>j===i?e.target.value:x)})} placeholder={`الإجابة ${i+1}`}/>)}<label>رقم الإجابة الصحيحة<input type="number" min={0} max={3} value={q.correctAnswerIndex} onChange={e=>set({correctAnswerIndex:Number(e.target.value)})}/></label><textarea value={q.explanation||''} onChange={e=>set({explanation:e.target.value})} placeholder="شرح الإجابة" rows={3}/><input value={q.imageUrl||''} onChange={e=>set({imageUrl:e.target.value})} placeholder="مثال: /signs/sign_55.webp" dir="ltr"/>{preview?<div className="admin-image-preview"><OptimizedImage src={q.imageUrl||''} alt="معاينة صورة السؤال" priority sizes="220px"/></div>:<p className="text-muted text-xs">لا توجد معاينة لصورة معتمدة حالياً.</p>}<div className="diagram-fields"><select value={q.diagramType||''} onChange={e=>set({diagramType:(e.target.value||null) as any})}><option value="">بدون Diagram</option><option value="svg">SVG</option><option value="image">صورة</option><option value="interactive">تفاعلي</option></select><input value={q.diagramUrl||''} onChange={e=>set({diagramUrl:e.target.value})} placeholder="رابط التوضيح"/><input value={q.diagramTitle||''} onChange={e=>set({diagramTitle:e.target.value})} placeholder="عنوان التوضيح"/><textarea value={q.diagramDescription||''} onChange={e=>set({diagramDescription:e.target.value})} placeholder="وصف التوضيح" rows={2}/></div><button onClick={save} disabled={busy} className="primary-cta">{busy?'جارٍ التحقق والحفظ...':'حفظ السؤال'}</button></div></div></div>}
