@@ -28,7 +28,6 @@ import './student-name-plate.css';
 import './practical-info.css';
 import './interaction-polish-v1.css';
 import './content-protection.css';
-import './voice-reading.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
