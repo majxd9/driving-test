@@ -183,7 +183,13 @@ export default function Study() {
               <small>اكتب رقم السؤال من 1 إلى {questions.length}</small>
             </div>
           )}
-          {q && (
+        </div>
+      </header>
+
+      <div className="study-premium-progress"><span style={{ width: `${progress}%` }} /></div>
+
+      <div className="study-audio-strip">
+        {q && (
             <div className="study-question-audio-header">
               <audio
                 ref={audioRef}
@@ -238,10 +244,7 @@ export default function Study() {
               {audioError && <small className="audio-error">{audioError}</small>}<AudioDiagnostics src={currentAudioUrl} questionId={q.id} />
             </div>
           )}
-        </div>
-      </header>
-
-      <div className="study-premium-progress"><span style={{ width: `${progress}%` }} /></div>
+      </div>
 
       <main className="study-premium-stage">
         <section className="study-premium-card">
