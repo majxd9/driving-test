@@ -122,3 +122,35 @@ Piper الحالي مشروع محلي سريع لـTTS، لكن ترخيص voic
 ComfyUI هو المزود المحلي للصور لأنه يوفر Queue/API/workflow architecture محلية. لا تستخدم `127.0.0.1` أو `localhost` من Render للوصول إلى ComfyUI الموجود على جهازك؛ هذه العناوين تشير إلى بيئة Render نفسها. النموذج نفسه ليس جزءاً من المشروع؛ يجب تثبيته على الجهاز المشغل لخدمة ComfyUI ومراعاة ترخيصه.
 
 إشارات المرور الرسمية لا يعاد رسمها كبديل عن الأصل الرسمي. Prompt الصورة يطلب سياق الطريق أو الموقف فقط ويمنع إعادة اختراع رمز رسمي.
+
+
+## Eden AI (اختياري)
+
+يمكن تشغيل Eden AI كطبقة موحّدة لمولدات الصوت والصورة، مع مزود أساسي ومزودين احتياطيين. الاستدعاءات تتم من الخادم فقط، ولا يوضع المفتاح في الواجهة أو المستودع.
+
+الصوت:
+
+QUESTION_AUDIO_PROVIDER=edenai
+EDENAI_API_KEY=<your-eden-ai-key>
+EDENAI_AUDIO_PROVIDER=elevenlabs
+EDENAI_AUDIO_FALLBACK_PROVIDERS=google
+EDENAI_AUDIO_LANGUAGE=ar
+EDENAI_AUDIO_OPTION=MALE
+
+الصورة:
+
+QUESTION_IMAGE_PROVIDER=edenai
+EDENAI_API_KEY=<your-eden-ai-key>
+EDENAI_IMAGE_PROVIDER=<primary-provider>
+EDENAI_IMAGE_FALLBACK_PROVIDERS=<fallback-provider-1>,<fallback-provider-2>
+
+مثال البنية:
+المزود الأساسي → fallback 1 → fallback 2
+
+Eden AI يستخدم `providers` للمزود الأساسي و`fallback_providers` للمزودين الاحتياطيين. المنصة تدعم سلسلة fallback في الاستدعاءات المتزامنة، لكن توثيق Eden AI يوضح أن fallback_providers غير متاح على endpoints غير المتزامنة؛ لذلك هذا المشروع يستخدم استدعاء Eden المتزامن داخل الـworker الخلفي، وليس داخل طلب الطالب.
+
+عند تفعيل Eden AI لا يتغير مسار الطالب: الـBulk Generation ينشئ Jobs فقط، وAiGenerationWorker ينفذ الطلب ويحفظ الناتج في نفس QuestionAudios / QuestionAiImages الحاليين.
+
+فحص مزود الصور من لوحة الإدارة يتحقق من الوصول إلى Eden AI فقط ولا ينفذ توليداً مدفوعاً. يجب التأكد من أسماء المزودين المتاحة فعلياً في حساب Eden AI قبل وضعها في متغيرات البيئة.
+
+المسار الحالي لا يزيل Hugging Face أو ElevenLabs أو ComfyUI. إبقِ الإعدادات القديمة كما هي، ولا تبدّل إلى `edenai` إلا بعد وضع `EDENAI_API_KEY` وباقي الإعدادات المطلوبة.
