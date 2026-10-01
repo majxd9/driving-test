@@ -30,10 +30,10 @@ QUESTION_IMAGE_PROVIDER=none
 
 QUESTION_IMAGE_PROVIDER=huggingface
 QUESTION_IMAGE_HF_TOKEN=<your-hugging-face-token>
-QUESTION_IMAGE_HF_PROVIDER=nscale
+QUESTION_IMAGE_HF_PROVIDER=fal-ai
 QUESTION_IMAGE_HF_MODEL=black-forest-labs/FLUX.1-schnell
 
-يحتاج الـtoken إلى صلاحية Inference Providers. التوليد يعيد الصورة كبيانات مباشرة إلى الـWorker ثم تُحفظ في QuestionAiImages؛ لا يتم حفظ الـtoken في المستودع. يمكن أن توجد حصة مجانية محدودة في Hugging Face بحسب الحساب، لكن الاستخدام قد يتطلب رصيداً مدفوعاً عند نفاد الحصة المجانية. 
+يحتاج الـtoken إلى صلاحية Inference Providers. بالنسبة لـFLUX.1-schnell يستخدم مسار Fal مع المعرّف provider-specific model التالي: fal-ai/flux/schnell. الاستجابة تكون JSON تحتوي رابط الصورة؛ الخادم ينزّل الصورة ثم يحفظها في QuestionAiImages. لا يتم حفظ الـtoken في المستودع. 
 
 المزود المحلي المدعوم هو ComfyUI:
 
