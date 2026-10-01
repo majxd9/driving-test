@@ -349,6 +349,8 @@ public sealed class AiGenerationWorker : BackgroundService
         // Provider/auth/request failures must not consume the local monthly
         // generation allowance because no usable image/audio was produced.
         return message.Contains("quota_exceeded", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("HTTP 402", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("depleted your monthly included credits", StringComparison.OrdinalIgnoreCase)
             || message.Contains("HTTP 400", StringComparison.OrdinalIgnoreCase)
             || message.Contains("HTTP 401", StringComparison.OrdinalIgnoreCase)
             || message.Contains("HTTP 403", StringComparison.OrdinalIgnoreCase)
