@@ -14,8 +14,9 @@ export default function AdminDashboard(){
  const navigate=useNavigate();const [tab,setTab]=useState<Tab>('overview');const [students,setStudents]=useState<Student[]>([]);const [questions,setQuestions]=useState<Question[]>([]);const [analytics,setAnalytics]=useState<Analytics|null>(null);const [loading,setLoading]=useState(true);const [showStudent,setShowStudent]=useState(false);
  const [aiStatus,setAiStatus]=useState<import('../../types').AiGenerationOverview|null>(null);
  const reload=async(tabToLoad:Tab=tab)=>{setLoading(true);try{if(tabToLoad==='overview')setAnalytics(await api.admin.analytics());if(tabToLoad==='students')setStudents(await api.admin.listStudents());if(tabToLoad==='questions')setQuestions(await api.admin.listQuestions());if(tabToLoad==='ai')setAiStatus(await api.admin.aiGenerationStatus())}finally{setLoading(false)}};
+ const reloadAiStatus=async()=>{try{setAiStatus(await api.admin.aiGenerationStatus())}catch{}};
  useEffect(()=>{void reload(tab)},[tab]);
- return <div className="min-h-screen bg-paper"><header className="admin-header"><div className="flex items-center gap-3"><button onClick={()=>navigate('/app')} className="icon-button" aria-label="العودة">→</button><div><b>لوحة الإدارة</b><p>إدارة الحسابات، الأسئلة ومؤشرات الأداء</p></div></div><button onClick={()=>void reload()} className="top-link" aria-label="تحديث القسم الحالي">تحديث ↻</button></header><main className="max-w-7xl mx-auto px-4 md:px-6 py-6"><nav className="admin-tabs" aria-label="أقسام الإدارة">{tabs.map(([k,l])=><button key={k} onClick={()=>setTab(k)} className={tab===k?'active':''} aria-current={tab===k?'page':undefined}>{l}</button>)}</nav>{loading?<div className="py-20 text-center text-muted">جارِ تحميل القسم...</div>:<>{tab==='overview'&&<Overview analytics={analytics}/>} {tab==='students'&&<Students students={students} reload={()=>reload('students')} showForm={showStudent} setShowForm={setShowStudent}/>} {tab==='questions'&&<Questions questions={questions} reload={()=>reload('questions')}/>} {tab==='ai'&&<AiGenerationPanel status={aiStatus} reload={()=>reload('ai')}/>}</>}</main></div>;
+ return <div className="min-h-screen bg-paper"><header className="admin-header"><div className="flex items-center gap-3"><button onClick={()=>navigate('/app')} className="icon-button" aria-label="العودة">→</button><div><b>لوحة الإدارة</b><p>إدارة الحسابات، الأسئلة ومؤشرات الأداء</p></div></div><button onClick={()=>void reload()} className="top-link" aria-label="تحديث القسم الحالي">تحديث ↻</button></header><main className="max-w-7xl mx-auto px-4 md:px-6 py-6"><nav className="admin-tabs" aria-label="أقسام الإدارة">{tabs.map(([k,l])=><button key={k} onClick={()=>setTab(k)} className={tab===k?'active':''} aria-current={tab===k?'page':undefined}>{l}</button>)}</nav>{loading?<div className="py-20 text-center text-muted">جارِ تحميل القسم...</div>:<>{tab==='overview'&&<Overview analytics={analytics}/>} {tab==='students'&&<Students students={students} reload={()=>reload('students')} showForm={showStudent} setShowForm={setShowStudent}/>} {tab==='questions'&&<Questions questions={questions} reload={()=>reload('questions')}/>} {tab==='ai'&&<AiGenerationPanel status={aiStatus} reloadAiStatus={reloadAiStatus}/>}</>}</main></div>;
 }
 
 function Overview({analytics}:{analytics:Analytics|null}){if(!analytics)return <div className="admin-card text-muted">لا توجد بيانات إحصائية حالياً.</div>;const max=Math.max(...Object.values(analytics.questions.byCategory),1);return <section className="space-y-5"><div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">{[['الطلاب',analytics.students.total,''],['النشطون',analytics.students.active,'brand'],['الأسئلة',analytics.questions.total,'signs'],['نسبة النجاح',`${analytics.exams.passRate}%`,'exam']].map(([l,v,c])=><div className="stat-card" key={l as string}><p>{l}</p><strong className={c==='brand'?'text-brand':c==='signs'?'text-signs':c==='exam'?'text-exam':''}>{v}</strong></div>)}</div><div className="grid lg:grid-cols-2 gap-5"><div className="admin-card"><div className="card-title"><div><p>توزيع بنك الأسئلة</p><b>حسب القسم</b></div></div><div className="bars">{Object.entries(analytics.questions.byCategory).map(([k,v])=><div className="bar-row" key={k}><span>{k==='Ser'?'قواعد السير':k==='Ishara'?'الإشارات':'الميكانيك'}</span><div><i style={{width:`${(v/max)*100}%`}}/></div><b>{v}</b></div>)}</div></div><div className="admin-card"><div className="card-title"><div><p>الاختبارات</p><b>ملخص الأداء</b></div></div><div className="mini-metrics"><div><strong>{analytics.exams.total}</strong><span>اختبار مكتمل</span></div><div><strong>{analytics.exams.averageScore}</strong><span>متوسط الإجابات</span></div><div><strong>{analytics.auth.successful}</strong><span>دخول ناجح</span></div><div><strong>{analytics.auth.failed}</strong><span>محاولة فاشلة</span></div></div></div></div><div className="admin-card"><div className="card-title"><div><p>أكثر الأسئلة نشاطاً</p><b>مؤشر دقة الإجابة</b></div></div><div className="table-wrap"><table><thead><tr><th>السؤال</th><th>المحاولات</th><th>الدقة</th></tr></thead><tbody>{analytics.topQuestions.slice(0,8).map(q=><tr key={q.questionId}><td>{q.text}</td><td>{q.attempts}</td><td><span className="accuracy-pill">{q.accuracy}%</span></td></tr>)}</tbody></table></div></div></section>}
@@ -49,60 +50,129 @@ function Questions({questions,reload}:{questions:Question[];reload:()=>void}){
  </section>;
 }
 
-function AiGenerationPanel({status,reload}:{status:import('../../types').AiGenerationOverview|null;reload:()=>void}){
+function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types').AiGenerationOverview|null;reloadAiStatus:()=>Promise<void>}){
  const [busy,setBusy]=useState('');
  const [providerTest,setProviderTest]=useState<import('../../types').ImageProviderTestResult|null>(null);
- const run=async(kind:'audio'|'image'|'all'|'resume'|'retry-audio'|'retry-image'|'retry-all')=>{
+ const [lastAction,setLastAction]=useState<{label:string;result:import('../../types').AiGenerationEnqueueResult}|null>(null);
+
+ const run=async(kind:'audio'|'image'|'resume'|'retry-audio'|'retry-image')=>{
   setBusy(kind);
   try{
-   if(kind==='audio')await api.admin.enqueueAllAudio(false,false);
-   if(kind==='image')await api.admin.enqueueAllImages(false,false);
-   if(kind==='all')await api.admin.enqueueAllAi(false,false);
-   if(kind==='resume')await api.admin.resumeAiGeneration();
-   if(kind==='retry-audio')await api.admin.enqueueAllAudio(true,false);
-   if(kind==='retry-image')await api.admin.enqueueAllImages(true,false);
-   if(kind==='retry-all')await api.admin.enqueueAllAi(true,false);
-   await reload();
-  }catch(e){alert(e instanceof Error?e.message:'تعذر إدارة طابور AI')}finally{setBusy('')}
+   let result:import('../../types').AiGenerationEnqueueResult|null=null;
+   if(kind==='audio') result=await api.admin.enqueueAllAudio(false,false);
+   if(kind==='image') result=await api.admin.enqueueAllImages(false,false);
+   if(kind==='resume'){await api.admin.resumeAiGeneration();}
+   if(kind==='retry-audio') result=await api.admin.enqueueAllAudio(true,false);
+   if(kind==='retry-image') result=await api.admin.enqueueAllImages(true,false);
+   if(result){
+    const labels={audio:'إضافة الأصوات الناقصة',image:'إضافة صور AI الناقصة','retry-audio':'إعادة طابور الأصوات الفاشلة','retry-image':'إعادة طابور صور AI الفاشلة'} as const;
+    setLastAction({label:labels[kind as keyof typeof labels],result});
+   }
+   await reloadAiStatus();
+  }catch(e){
+   alert(e instanceof Error?e.message:'تعذر تنفيذ العملية.');
+  }finally{setBusy('')}
  };
+
  const testImageProvider=async()=>{
   setBusy('test-image');
-  try{const result=await api.admin.testImageProvider();setProviderTest(result);await reload()}
-  catch(e){setProviderTest({provider:status?.imageProvider??'none',state:'error',message:e instanceof Error?e.message:'تعذر اختبار مولد الصور.',endpoint:''})}
-  finally{setBusy('')}
+  try{
+   const result=await api.admin.testImageProvider();
+   setProviderTest(result);
+   await reloadAiStatus();
+  }catch(e){
+   setProviderTest({provider:status?.imageProvider??'none',state:'error',message:e instanceof Error?e.message:'تعذر اختبار مزود الصور.',endpoint:''});
+  }finally{setBusy('')}
  };
- const card=(title:string,data:import('../../types').AiGenerationCounts)=><div className="stat-card"><p>{title}</p><strong>{data.completed}/{data.completed+data.missing+data.pending+data.processing+data.failed}</strong><small className="block text-muted mt-1">مفقود {data.missing} · معلّق {data.pending} · تنفيذ {data.processing} · فشل {data.failed}</small></div>;
- const providerLabel=(value:string)=>value==='comfyui'?'ComfyUI':value==='none'?'غير مفعّل':value;
+
+ const card=(title:string,data:import('../../types').AiGenerationCounts)=><div className="stat-card"><p>{title}</p><strong>{data.completed}</strong><small className="block text-muted mt-1">مكتمل · مفقود {data.missing} · بالطابور {data.pending} · قيد التنفيذ {data.processing} · فشل {data.failed}</small>{data.lastError&&<small className="block text-exam mt-2 leading-relaxed">آخر خطأ: {data.lastError}</small>}</div>;
+ const providerLabel=(value:string)=>value==='comfyui'?'ComfyUI':value==='huggingface'?'Hugging Face':value==='none'?'غير مفعّل':value;
+ const providerEnabled=status?.imageProvider && status.imageProvider!=='none';
  const testClass=providerTest?.state==='connected'?'on':providerTest?.state==='disabled'||providerTest?.state==='unconfigured'?'off':'warn';
  const quotaPercent=status?Math.min(100,(status.quota.used/Math.max(status.quota.limit,1))*100):0;
+
  return <section className="ai-generation-console space-y-5">
   <div className="admin-card ai-console-hero">
-   <div className="card-title"><div><p>AI GENERATION CENTER</p><b>مركز توليد المحتوى</b></div><span className={'status '+(status?.imageProvider==='comfyui'?'on':'off')}>الصور: {providerLabel(status?.imageProvider??'none')}</span></div>
-   <p className="text-muted text-sm leading-relaxed">التوليد يعمل في الخلفية عبر طابور دائم محفوظ في PostgreSQL. لا ينتظر الطالب التوليد ولا يبدأ أي توليد من صفحات التدريب أو الاختبار.</p>
-   <div className="ai-console-grid">
-    <div className="ai-console-card"><span>الصوت</span><b>{providerLabel(status?.audioProvider??'')}</b><small>المحرك المسؤول عن ملفات الأسئلة الصوتية.</small></div>
-    <div className="ai-console-card"><span>الصور</span><b>{providerLabel(status?.imageProvider??'none')}</b><small>{status?.imageProvider==='none'?'يجب تفعيل مزود صور قابل للوصول من Render.':'اختبر الاتصال قبل تشغيل التوليد الجماعي.'}</small></div>
-    <div className="ai-console-card"><span>الحد الشهري</span><b>{status?.quota.used??0} / {status?.quota.limit??0}</b><small>متبقٍ {status?.quota.remaining??0} محاولة توليد</small><div className="ai-quota-bar"><i style={{width:quotaPercent+'%'}}/></div></div>
+   <div className="card-title">
+    <div><p>AI GENERATION CENTER</p><b>مركز توليد المحتوى</b></div>
+    <span className={'status '+(providerEnabled?'on':'off')}>مزود الصور: {providerLabel(status?.imageProvider??'none')}</span>
    </div>
-   <div className="action-row mt-4 ai-console-actions">
-    <button type="button" className="primary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void run('audio')}}>{busy==='audio'?'جارٍ إضافة المهام…':'إكمال جميع الأصوات'}</button>
-    <button type="button" className="primary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void run('image')}}>{busy==='image'?'جارٍ إضافة المهام…':'إكمال جميع صور AI'}</button>
-    <button type="button" className="secondary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void run('all')}}>{busy==='all'?'جارٍ التنفيذ…':'تشغيل الكل'}</button>
-    <button type="button" className="secondary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void run('resume')}}>{busy==='resume'?'جارٍ الاستئناف…':'استئناف التوليد'}</button>
+   <p className="text-muted text-sm leading-relaxed">كل عملية تضيف مهاماً إلى طابور محفوظ في PostgreSQL، ثم ينفذها الخادم في الخلفية. صفحات التدريب والاختبار لا تبدأ التوليد بنفسها.</p>
+
+   <div className="grid md:grid-cols-2 gap-4 mt-5">
+    <div className="ai-console-card">
+     <span>توليد الصوت</span>
+     <b>{providerLabel(status?.audioProvider??'')}</b>
+     <small>يضيف فقط الأسئلة التي لا تملك صوتاً مطابقاً للمحتوى الحالي.</small>
+     <button type="button" className="primary-cta mt-auto" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void run('audio')}}>{busy==='audio'?'جارٍ إضافة المهام…':'إضافة الأصوات الناقصة للطابور'}</button>
+    </div>
+    <div className="ai-console-card">
+     <span>توليد صور AI</span>
+     <b>{providerLabel(status?.imageProvider??'none')}</b>
+     <small>يضيف فقط الأسئلة التي يحددها النظام لتوليد صورة AI، ولا يعيد الصور المكتملة تلقائياً.</small>
+     <button type="button" className="primary-cta mt-auto" disabled={busy!==''||!providerEnabled} onClick={(e)=>{e.preventDefault();void run('image')}}>{busy==='image'?'جارٍ إضافة المهام…':'إضافة صور AI الناقصة للطابور'}</button>
+    </div>
    </div>
+
+   <div className="ai-console-card mt-4">
+    <span>المهام المتوقفة</span>
+    <b>{status?.audio.pending??0} صوت · {status?.image.pending??0} صورة</b>
+    <small>يُستخدم هذا الزر لإعادة المهام العالقة وإعادة ملء الناقص عند الحاجة.</small>
+    <button type="button" className="secondary-cta mt-2" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void run('resume')}}>{busy==='resume'?'جارٍ الاستئناف…':'استئناف المهام'}</button>
+   </div>
+
+   {lastAction&&<div className="ai-provider-message ok mt-4">
+    <b>{lastAction.label}</b> — أُنشئت {lastAction.result.created}، أُعيدت {lastAction.result.requeued}، تم تجاوز {lastAction.result.skipped}، وأعيدت فاشلة {lastAction.result.failedRetried}.
+   </div>}
   </div>
 
   <div className="admin-card ai-provider-card">
-   <div className="card-title"><div><p>IMAGE PROVIDER</p><b>فحص مولد الصور</b></div><span className={'status '+testClass}>{providerTest?.state==='connected'?'متصل':providerTest?.state==='disabled'?'غير مفعّل':providerTest?.state==='unconfigured'?'غير مضبوط':providerTest?'غير متاح':'لم يتم الفحص'}</span></div>
-   <div className="ai-provider-row"><div><small>المزود الحالي</small><strong>{providerLabel(status?.imageProvider??'none')}</strong></div><div><small>العنوان</small><code>{providerTest?.endpoint || 'يُقرأ من إعداد QUESTION_IMAGE_COMFYUI_URL'}</code></div><button type="button" className="secondary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void testImageProvider()}}>{busy==='test-image'?'جارٍ الفحص…':'اختبار الاتصال'}</button></div>
+   <div className="card-title">
+    <div><p>IMAGE PROVIDER</p><b>فحص إعداد مزود الصور</b></div>
+    <span className={'status '+testClass}>{providerTest?.state==='connected'?'إعدادات متاحة':providerTest?.state==='disabled'?'غير مفعّل':providerTest?.state==='unconfigured'?'غير مضبوط':providerTest?'تعذر التحقق':'لم يتم الفحص'}</span>
+   </div>
+   <div className="ai-provider-row">
+    <div><small>المزود الحالي</small><strong>{providerLabel(status?.imageProvider??'none')}</strong></div>
+    <div><small>نقطة الخدمة</small><code>{providerTest?.endpoint || (status?.imageProvider==='huggingface'?'Hugging Face Router':'ComfyUI')}</code></div>
+    <button type="button" className="secondary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void testImageProvider()}}>{busy==='test-image'?'جارٍ الفحص…':'اختبار إعداد المزود'}</button>
+   </div>
    {providerTest&&<div className={'ai-provider-message '+(providerTest.state==='connected'?'ok':'problem')}>{providerTest.message}</div>}
-   <p className="text-muted text-xs leading-relaxed mt-3">مهم للإنتاج: 127.0.0.1 وlocalhost يشيران إلى الخادم نفسه. إذا كان ComfyUI على جهازك الشخصي فلن يستطيع Render الوصول إليه؛ يجب وضع ComfyUI على خدمة يمكن للـbackend الوصول إليها أو استخدام مزود صور سحابي مضبوط في الخادم.</p>
+   <p className="text-muted text-xs leading-relaxed mt-3">اختبار الإعداد لا يعني أن توليد الصورة نجح فعلياً؛ عند تنفيذ مهمة حقيقية يظهر سبب الفشل في حالة المهمة. لا تعتمد هذه الشاشة على عداد خارجي من Hugging Face.</p>
   </div>
 
-  {status&&<>
-   <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">{card('الصوت',status.audio)}{card('صور AI',status.image)}<div className="stat-card"><p>المزود الصوتي</p><strong className="text-brand">{providerLabel(status.audioProvider)}</strong></div><div className="stat-card"><p>مزود الصور</p><strong className="text-signs">{providerLabel(status.imageProvider)}</strong></div></div>
-   <div className="admin-card"><div className="card-title"><div><p>التحكم بالطابور</p><b>الإعادة تتم للمهمات المطلوبة فقط</b></div></div><div className="mini-metrics"><div><strong>{status.audio.completed}</strong><span>صوت مكتمل</span></div><div><strong>{status.audio.remaining}</strong><span>صوت متبقٍ</span></div><div><strong>{status.image.completed}</strong><span>صورة مكتملة</span></div><div><strong>{status.image.remaining}</strong><span>صورة متبقية</span></div></div><div className="action-row mt-4"><button type="button" className="secondary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void run('retry-audio')}}>{busy==='retry-audio'?'جارٍ…':'إعادة فشل الصوت'}</button><button type="button" className="secondary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void run('retry-image')}}>{busy==='retry-image'?'جارٍ…':'إعادة فشل الصور'}</button><button type="button" className="secondary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void run('retry-all')}}>{busy==='retry-all'?'جارٍ…':'إعادة فشل الكل'}</button></div></div>
-  </>}
+  <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
+   {card('الأصوات',status?.audio??{missing:0,pending:0,processing:0,completed:0,failed:0,remaining:0})}
+   {card('صور AI',status?.image??{missing:0,pending:0,processing:0,completed:0,failed:0,remaining:0})}
+  </div>
+
+  <div className="admin-card">
+   <div className="card-title">
+    <div><p>عداد التوليد</p><b>{status?.quota.used??0} / {status?.quota.limit??0}</b></div>
+    <span className="status warn">حد حماية محلي</span>
+   </div>
+   <p className="text-muted text-sm leading-relaxed">هذا عداد داخلي لعدد عمليات التوليد الفعلية التي نفذها الخادم خلال الشهر، مع حد حماية محلي. ليس رصيد Hugging Face المجاني ولا يعبّر عن رصيد حسابك هناك.</p>
+   <div className="ai-quota-bar mt-3"><i style={{width:quotaPercent+'%'}}/></div>
+   <div className="mini-metrics mt-4">
+    <div><strong>{status?.quota.used??0}</strong><span>تم تنفيذه هذا الشهر</span></div>
+    <div><strong>{status?.quota.remaining??0}</strong><span>متبقٍ ضمن حد الحماية</span></div>
+    <div><strong>{status?.image.completed??0}</strong><span>صور AI مكتملة</span></div>
+    <div><strong>{status?.audio.completed??0}</strong><span>أصوات مكتملة</span></div>
+   </div>
+  </div>
+
+  {(status?.audio.lastError||status?.image.lastError)&&<div className="admin-card">
+   <div className="card-title"><div><p>آخر أخطاء التوليد</p><b>السبب الحقيقي يظهر هنا</b></div></div>
+   {status.audio.lastError&&<div className="ai-provider-message problem">الصوت: {status.audio.lastError}</div>}
+   {status.image.lastError&&<div className="ai-provider-message problem">الصورة: {status.image.lastError}</div>}
+  </div>}
+
+  {status&&<div className="admin-card">
+   <div className="card-title"><div><p>إعادة المحاولة</p><b>للمهام التي وصلت إلى حالة فشل</b></div></div>
+   <div className="action-row">
+    <button type="button" className="secondary-cta" disabled={busy!==''||status.audio.failed===0} onClick={(e)=>{e.preventDefault();void run('retry-audio')}}>{busy==='retry-audio'?'جارٍ…':'إعادة طابور الأصوات الفاشلة'}</button>
+    <button type="button" className="secondary-cta" disabled={busy!==''||status.image.failed===0||!providerEnabled} onClick={(e)=>{e.preventDefault();void run('retry-image')}}>{busy==='retry-image'?'جارٍ…':'إعادة طابور صور AI الفاشلة'}</button>
+   </div>
+  </div>}
  </section>;
 }
 function AdminAudioPreview({src}:{src:string}){
