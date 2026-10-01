@@ -10,7 +10,7 @@ import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
-import { createQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { createQuestionAudioPrompt, playQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -337,11 +337,7 @@ export default function Study() {
             }
             setAudioPlaying(false);
 
-            const disabledPrompt = createQuestionAudioPrompt('question-audio-disabled');
-            if (disabledPrompt) {
-              disabledPrompt.currentTime = 0;
-              void disabledPrompt.play().catch(() => undefined);
-            }
+            void playQuestionAudioPrompt('question-audio-disabled').catch(() => undefined);
           }}
           aria-label="إيقاف الصوت"
           title="إيقاف الصوت"
@@ -366,11 +362,7 @@ export default function Study() {
 
             if (!shouldPlayActivationPrompt) return;
 
-            const prompt = promptAudioRef.current;
-            if (!prompt) return;
-
-            prompt.currentTime = 0;
-            void prompt.play().catch(() => undefined);
+            void playQuestionAudioPrompt('question-audio-enabled').catch(() => undefined);
           }}
           onError={() => {
             setAudioPlaying(false);
