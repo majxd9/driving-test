@@ -61,7 +61,7 @@ public sealed class AiGenerationJobService
         (_configuration["QUESTION_IMAGE_PROVIDER"] ?? "none").Trim().ToLowerInvariant();
 
     public bool IsImageProviderEnabled =>
-        ImageProvider is "huggingface" or "comfyui";
+        ImageProvider is "huggingface" or "comfyui" or "edenai";
 
     public string ImageExecutionProvider
     {
