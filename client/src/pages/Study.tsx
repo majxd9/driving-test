@@ -34,7 +34,9 @@ export default function Study() {
   const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const promptAudioRef = useRef<HTMLAudioElement | null>(null);
-  const activationPromptPendingRef = useRef(false);
+  const entryPromptAudioRef = useRef<HTMLAudioElement | null>(null);
+  const entryPromptPlayedRef = useRef(false);
+    const activationPromptPendingRef = useRef(false);
   const activationPromptQuestionRef = useRef<string | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
@@ -78,13 +80,28 @@ export default function Study() {
   }, [index]);
 
   useEffect(() => {
-    const prompt = createQuestionAudioPrompt();
+    const prompt = createQuestionAudioPrompt('question-audio-enabled');
+    const entryPrompt = createQuestionAudioPrompt('question-audio-first-entry');
+
     promptAudioRef.current = prompt;
+    entryPromptAudioRef.current = entryPrompt;
+
     prompt?.load();
+    entryPrompt?.load();
+
+    if (!entryPromptPlayedRef.current && entryPrompt) {
+      entryPromptPlayedRef.current = true;
+      entryPrompt.currentTime = 0;
+      void entryPrompt.play().catch(() => {
+        // Mobile browsers may block autoplay; the on-screen prompt remains visible.
+      });
+    }
 
     return () => {
       prompt?.pause();
+      entryPrompt?.pause();
       promptAudioRef.current = null;
+      entryPromptAudioRef.current = null;
     };
   }, []);
 
