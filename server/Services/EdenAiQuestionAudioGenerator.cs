@@ -110,8 +110,8 @@ public sealed class EdenAiQuestionAudioGenerator : IQuestionAudioGenerator
                 $"Eden AI أعاد رابط صوت غير قابل للتنزيل: HTTP {(int)audioResponse.StatusCode} — {Truncate(error)}");
         }
 
-        var bytes = await audioResponse.Content.ReadAsByteArrayAsync(timeout.Token);
-        if (bytes.Length == 0)
+        var audioBytes = await audioResponse.Content.ReadAsByteArrayAsync(timeout.Token);
+        if (audioBytes.Length == 0)
             throw new InvalidOperationException("Eden AI أعاد ملف صوتي فارغاً.");
 
         var contentType =
@@ -123,7 +123,7 @@ public sealed class EdenAiQuestionAudioGenerator : IQuestionAudioGenerator
             primaryProvider,
             fallbackProviders.Count);
 
-        return new GeneratedAudioResult(bytes, contentType);
+        return new GeneratedAudioResult(audioBytes, contentType);
     }
 
     private string GetRequiredProvider(string key)
