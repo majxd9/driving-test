@@ -38,10 +38,14 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
             : rawModel;
 
         // The old hf-inference route is not the reliable route for this image model.
-        // Nscale is a currently documented text-to-image Inference Provider for FLUX.1-schnell.
+        // Use fal-ai as the default provider for FLUX.1-schnell. Hugging Face
+        // documents FLUX.1-schnell on fal-ai and supports automatic provider
+        // selection; the currently configured nscale route may reject this
+        // model for the account/route even though nscale supports text-to-image.
         var provider = string.IsNullOrWhiteSpace(rawProvider) ||
-                       string.Equals(rawProvider, "hf-inference", StringComparison.OrdinalIgnoreCase)
-            ? "nscale"
+                       string.Equals(rawProvider, "hf-inference", StringComparison.OrdinalIgnoreCase) ||
+                       string.Equals(rawProvider, "nscale", StringComparison.OrdinalIgnoreCase)
+            ? "fal-ai"
             : rawProvider;
 
         return (model, provider);
