@@ -125,11 +125,47 @@ public sealed class AiGenerationAdminController : ControllerBase
                         $"https://router.huggingface.co/{hfProvider}/models/{model}"));
                 }
 
+                using var modelJson = System.Text.Json.JsonDocument.Parse(
+                    await response.Content.ReadAsStringAsync(timeout.Token));
+
+                if (!modelJson.RootElement.TryGetProperty(
+                        "inferenceProviderMapping",
+                        out var mappings) ||
+                    mappings.ValueKind != System.Text.Json.JsonValueKind.Object ||
+                    !mappings.TryGetProperty(hfProvider, out var mapping) ||
+                    mapping.ValueKind != System.Text.Json.JsonValueKind.Object)
+                {
+                    return Ok(new ImageProviderTestResult(
+                        provider,
+                        "unsupported",
+                        $"الموديل {model} متاح على Hugging Face، لكن لا توجد له خريطة تنفيذ فعالة عبر {hfProvider}.",
+                        $"https://huggingface.co/{model}"));
+                }
+
+                var mappingStatus = mapping.TryGetProperty("status", out var mappingStatusElement)
+                    ? mappingStatusElement.GetString()
+                    : null;
+                var providerModel = mapping.TryGetProperty("providerId", out var providerModelElement)
+                    ? providerModelElement.GetString()
+                    : null;
+
+                if (!string.Equals(mappingStatus, "live", StringComparison.OrdinalIgnoreCase) ||
+                    string.IsNullOrWhiteSpace(providerModel))
+                {
+                    return Ok(new ImageProviderTestResult(
+                        provider,
+                        "error",
+                        $"خريطة {hfProvider} للموديل {model} ليست جاهزة للتنفيذ (الحالة: {mappingStatus ?? "غير معروفة"}).",
+                        $"https://huggingface.co/{model}"));
+                }
+
+                var route = $"https://router.huggingface.co/{hfProvider}/{EncodePath(providerModel)}?_subdomain=queue";
+
                 return Ok(new ImageProviderTestResult(
                     provider,
                     "connected",
-                    "التوكن والنموذج متاحان. هذا الفحص لا ينفّذ توليد صورة فعلياً؛ نتيجة التوليد الفعلية تظهر في حالة المهمة.",
-                    $"https://router.huggingface.co/{hfProvider}/models/{model}"));
+                    $"التوكن والموديل وخريطة {hfProvider} متاحة. نقطة التنفيذ الفعلية تستخدم طابور Fal؛ هذا الفحص لا ينفّذ توليد صورة مدفوعة.",
+                    route));
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
@@ -214,6 +250,12 @@ public sealed class AiGenerationAdminController : ControllerBase
         string State,
         string Message,
         string Endpoint);
+
+    private static string EncodePath(string value) =>
+        string.Join(
+            "/",
+            value.Split('/', StringSplitOptions.RemoveEmptyEntries)
+                .Select(Uri.EscapeDataString));
 
     private static string Truncate(string value) =>
         value.Length > 600 ? value[..600] : value;
