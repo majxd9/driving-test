@@ -104,3 +104,7 @@
  .ai-gallery-actions{width:100%}
  .ai-gallery-actions .secondary-cta{width:100%}
 }
+
+
+.study-premium-ai-unavailable{min-height:220px;display:grid;place-items:center;align-content:center;gap:8px;padding:24px;text-align:center;border:1px dashed rgba(255,255,255,.12);border-radius:18px;color:#f2f5f5;background:rgba(255,255,255,.025)}
+.study-premium-ai-unavailable small{font-size:12px;line-height:1.7;color:#9ba7ad;max-width:420px}
