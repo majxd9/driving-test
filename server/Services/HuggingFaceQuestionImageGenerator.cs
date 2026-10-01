@@ -130,11 +130,40 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
                 HttpCompletionOption.ResponseHeadersRead,
                 timeout.Token);
 
-            var responseText = await response.Content.ReadAsStringAsync(timeout.Token);
-
             if (!response.IsSuccessStatusCode)
+            {
+                var errorText = await response.Content.ReadAsStringAsync(timeout.Token);
                 throw new HttpRequestException(
-                    $"Hugging Face رفض توليد الصورة: HTTP {(int)response.StatusCode} — {TryReadError(responseText)}");
+                    $"Hugging Face رفض توليد الصورة: HTTP {(int)response.StatusCode} — {TryReadError(errorText)}");
+            }
+
+            var responseContentType =
+                response.Content.Headers.ContentType?.MediaType?.Trim();
+
+            // Some Hugging Face text-to-image routes return image bytes directly.
+            // Keep that path alongside the existing provider-specific JSON response.
+            if (!string.IsNullOrWhiteSpace(responseContentType) &&
+                responseContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            {
+                var directBytes = await response.Content.ReadAsByteArrayAsync(timeout.Token);
+
+                if (!LooksLikeImage(directBytes, out var directContentType))
+                    throw new InvalidOperationException(
+                        $"Hugging Face/Fal أعلن أن الاستجابة صورة لكنها لا تحتوي بيانات صورة صالحة. {TryReadError(directBytes)}");
+
+                _logger.LogInformation(
+                    "Hugging Face Fal image generation completed with direct image response: provider={Provider}, model={Model}, providerModel={ProviderModel}, bytes={Bytes}, contentType={ContentType}, elapsedMs={ElapsedMs}",
+                    provider,
+                    model,
+                    providerModel,
+                    directBytes.Length,
+                    directContentType,
+                    Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+
+                return new GeneratedImageResult(directBytes, directContentType);
+            }
+
+            var responseText = await response.Content.ReadAsStringAsync(timeout.Token);
 
             string imageUrl;
             string? providerContentType = null;
