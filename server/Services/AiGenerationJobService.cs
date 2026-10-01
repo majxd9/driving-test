@@ -216,6 +216,18 @@ public sealed class AiGenerationJobService
             failedRetried);
     }
 
+    public async Task ResumePendingAsync(CancellationToken cancellationToken)
+    {
+        await _db.Database.ExecuteSqlRawAsync("""
+            UPDATE "AiGenerationJobs"
+            SET "NextAttemptAt" = NOW(),
+                "LockedUntil" = NULL,
+                "UpdatedAt" = NOW()
+            WHERE "Status" = 0;
+            """,
+            cancellationToken);
+    }
+
     public async Task ResetStaleProcessingAsync(CancellationToken cancellationToken)
     {
         await _db.Database.ExecuteSqlRawAsync("""
