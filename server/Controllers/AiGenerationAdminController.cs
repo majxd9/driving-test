@@ -125,131 +125,16 @@ public sealed class AiGenerationAdminController : ControllerBase
                         $"https://router.huggingface.co/{hfProvider}/models/{model}"));
                 }
 
-                using var modelJson = System.Text.Json.JsonDocument.Parse(
-                    await response.Content.ReadAsStringAsync(timeout.Token));
-
-                if (!modelJson.RootElement.TryGetProperty(
-                        "inferenceProviderMapping",
-                        out var mappings) ||
-                    mappings.ValueKind != System.Text.Json.JsonValueKind.Object ||
-                    !mappings.TryGetProperty(hfProvider, out var mapping) ||
-                    mapping.ValueKind != System.Text.Json.JsonValueKind.Object)
-                {
-                    return Ok(new ImageProviderTestResult(
-                        provider,
-                        "unsupported",
-                        $"الموديل {model} متاح على Hugging Face، لكن لا توجد له خريطة تنفيذ فعالة عبر {hfProvider}.",
-                        $"https://huggingface.co/{model}"));
-                }
-
-                var mappingStatus = mapping.TryGetProperty("status", out var mappingStatusElement)
-                    ? mappingStatusElement.GetString()
-                    : null;
-                var providerModel = mapping.TryGetProperty("providerId", out var providerModelElement)
-                    ? providerModelElement.GetString()
-                    : null;
-
-                if (!string.Equals(mappingStatus, "live", StringComparison.OrdinalIgnoreCase) ||
-                    string.IsNullOrWhiteSpace(providerModel))
-                {
-                    return Ok(new ImageProviderTestResult(
-                        provider,
-                        "error",
-                        $"خريطة {hfProvider} للموديل {model} ليست جاهزة للتنفيذ (الحالة: {mappingStatus ?? "غير معروفة"}).",
-                        $"https://huggingface.co/{model}"));
-                }
-
-                var route = $"https://router.huggingface.co/{hfProvider}/{EncodePath(providerModel)}?_subdomain=queue";
+                var route = $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}?_subdomain=queue";
 
                 return Ok(new ImageProviderTestResult(
                     provider,
                     "connected",
-                    $"التوكن والموديل وخريطة {hfProvider} متاحة. نقطة التنفيذ الفعلية تستخدم طابور Fal؛ هذا الفحص لا ينفّذ توليد صورة مدفوعة.",
+                    $"التوكن والموديل متاحان، ومسار {hfProvider} مضبوط. فحص الإعداد لا ينفّذ توليد صورة فعلية.",
                     route));
             }
-            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-            {
-                return Ok(new ImageProviderTestResult(
-                    provider,
-                    "timeout",
-                    "انتهت مهلة الوصول إلى Hugging Face.",
-                    $"https://router.huggingface.co/{hfProvider}/models/{model}"));
-            }
-            catch (Exception ex)
-            {
-                return Ok(new ImageProviderTestResult(
-                    provider,
-                    "unreachable",
-                    $"تعذر الوصول إلى Hugging Face: {Truncate(ex.Message)}",
-                    $"https://router.huggingface.co/{hfProvider}/models/{model}"));
-            }
-        }
-
-        if (provider != "comfyui")
-            return Ok(new ImageProviderTestResult(provider, "unsupported", "مزود الصور مضبوط على قيمة غير مدعومة حالياً.", endpoint));
-
-        if (string.IsNullOrWhiteSpace(endpoint))
-            return Ok(new ImageProviderTestResult(provider, "unconfigured", "لم يتم ضبط عنوان ComfyUI.", endpoint));
-
-        try
-        {
-            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeout.CancelAfter(TimeSpan.FromSeconds(6));
-
-            var client = _httpClientFactory.CreateClient("ComfyUI");
-            using var response = await client.GetAsync("/system_stats", timeout.Token);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var details = await response.Content.ReadAsStringAsync(timeout.Token);
-                return Ok(new ImageProviderTestResult(
-                    provider,
-                    "error",
-                    $"ComfyUI متاح لكنه أعاد HTTP {(int)response.StatusCode}. {Truncate(details)}",
-                    endpoint));
-            }
-
-            return Ok(new ImageProviderTestResult(
-                provider,
-                "connected",
-                "اتصال ComfyUI ناجح والخدمة تستجيب بشكل طبيعي.",
-                endpoint));
-        }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            return Ok(new ImageProviderTestResult(
-                provider,
-                "timeout",
-                "انتهت مهلة الاتصال بـ ComfyUI. إذا كان العنوان 127.0.0.1 أو localhost داخل Render فلن يشير إلى جهازك المحلي.",
-                endpoint));
-        }
-        catch (Exception ex)
-        {
-            return Ok(new ImageProviderTestResult(
-                provider,
-                "unreachable",
-                $"تعذر الوصول إلى ComfyUI: {Truncate(ex.Message)}",
-                endpoint));
         }
     }
-
-    [HttpPost("jobs/{id:long}/retry")]
-    public async Task<IActionResult> Retry(
-        long id,
-        CancellationToken cancellationToken) =>
-        await _jobs.RetryJobAsync(id, cancellationToken)
-            ? NoContent()
-            : NotFound(new { message = "المهمة غير موجودة." });
-
-    public sealed record BulkGenerationRequest(
-        bool RetryFailed = false,
-        bool RegenerateCompleted = false);
-
-    public sealed record ImageProviderTestResult(
-        string Provider,
-        string State,
-        string Message,
-        string Endpoint);
 
     private static string EncodePath(string value) =>
         string.Join(
