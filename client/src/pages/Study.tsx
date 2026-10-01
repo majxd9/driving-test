@@ -35,7 +35,8 @@ export default function Study() {
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
-  const [audioError, setAudioError] = useState<string | null>(null);\n  const [audioPrompt, setAudioPrompt] = useState(true);
+  const [audioError, setAudioError] = useState<string | null>(null);
+  const [audioPrompt, setAudioPrompt] = useState(true);
 
   useEffect(() => {
     if (!category) return;
