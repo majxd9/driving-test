@@ -30,6 +30,14 @@ public sealed record AiGenerationEnqueueResult(
     int Skipped,
     int FailedRetried);
 
+public sealed record CompletedAiImageItem(
+    int QuestionId,
+    string QuestionText,
+    string Category,
+    string ImageUrl,
+    string ContentHash,
+    DateTime CreatedAt);
+
 public sealed class AiGenerationJobService
 {
     private readonly AppDbContext _db;
@@ -438,7 +446,7 @@ public sealed class AiGenerationJobService
         }
     }
 
-    public async Task<IReadOnlyList<AiGenerationAdminController.CompletedAiImageItem>> GetCompletedAiImagesAsync(
+    public async Task<IReadOnlyList<CompletedAiImageItem>> GetCompletedAiImagesAsync(
         int limit,
         CancellationToken cancellationToken)
     {
@@ -454,7 +462,7 @@ public sealed class AiGenerationJobService
             .Take(Math.Clamp(limit * 3, limit, 180))
             .ToListAsync(cancellationToken);
 
-        var result = new List<AiGenerationAdminController.CompletedAiImageItem>(limit);
+        var result = new List<CompletedAiImageItem>(limit);
 
         foreach (var image in images)
         {
@@ -465,7 +473,7 @@ public sealed class AiGenerationJobService
             if (!string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal))
                 continue;
 
-            result.Add(new AiGenerationAdminController.CompletedAiImageItem(
+            result.Add(new CompletedAiImageItem(
                 question.Id,
                 question.Text,
                 question.Category.ToString(),
