@@ -25,6 +25,8 @@ public static class QuestionAudioTextBuilder
 
     public static string GetLegacyHash(Question question) => Hash(Build(question));
 
+    public static string HashText(string text) => Hash(text);
+
     // Hash used by the pre-queue Admin audio generator.
     public static string GetPreviousAdminHash(Question question)
     {
