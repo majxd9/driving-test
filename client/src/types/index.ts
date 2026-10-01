@@ -115,6 +115,7 @@ export interface AiGenerationCounts {
   completed: number;
   failed: number;
   remaining: number;
+  lastError?: string | null;
 }
 
 export interface AiGenerationQuota {
