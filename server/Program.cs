@@ -226,7 +226,12 @@ using (var schemaScope = app.Services.CreateScope())
                 FOREIGN KEY ("QuestionId") REFERENCES "Questions" ("Id") ON DELETE CASCADE
         );
 
-        CREATE UNIQUE INDEX IF NOT EXISTS "IX_AiGenerationJobs_QuestionId_JobType_ContentHash"
+        -- Safe schema upgrade for databases created before queue locking was added.
+        -- The worker reads/writes this column on every queue cycle.
+        ALTER TABLE "AiGenerationJobs"
+            ADD COLUMN IF NOT EXISTS "LockedUntil" timestamp with time zone NULL;
+
+                CREATE UNIQUE INDEX IF NOT EXISTS "IX_AiGenerationJobs_QuestionId_JobType_ContentHash"
             ON "AiGenerationJobs" ("QuestionId", "JobType", "ContentHash");
 
         CREATE INDEX IF NOT EXISTS "IX_AiGenerationJobs_Status_NextAttemptAt_Priority_CreatedAt"
