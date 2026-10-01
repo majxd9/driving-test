@@ -22,13 +22,15 @@ public class QuestionsController : ControllerBase
     private const string ElevenLabsVoiceId = "0IwoSbTUTTn6egOMrnel";
     private const string AudioPromptFirstEntryKey = "question-audio-first-entry";
     private const string AudioPromptEnabledKey = "question-audio-enabled";
+    private const string AudioPromptDisabledKey = "question-audio-disabled";
 
     // هذان النصان يُرسلان إلى نفس صوت ElevenLabs المستخدم للأسئلة،
     // وبالتالي يُولّدان تلقائياً مع بقية أصوات المحتوى.
     private static readonly (string Key, string Text)[] AudioPromptDefinitions =
     {
         (AudioPromptFirstEntryKey, "إذا بدك تشغيل الصوت، اضغط زر التشغيل."),
-        (AudioPromptEnabledKey, "الصوت سيبقى شغال حتى تضغط إيقاف.")
+        (AudioPromptEnabledKey, "الصوت سيبقى شغال حتى تضغط إيقاف."),
+        (AudioPromptDisabledKey, "الصوت متوقف.")
     };
     private readonly AppDbContext _db;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -473,7 +475,8 @@ public class QuestionsController : ControllerBase
             generated,
             total = AudioPromptDefinitions.Length,
             firstEntryKey = AudioPromptFirstEntryKey,
-            enabledKey = AudioPromptEnabledKey
+            enabledKey = AudioPromptEnabledKey,
+            disabledKey = AudioPromptDisabledKey
         });
     }
 
