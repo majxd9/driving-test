@@ -73,6 +73,7 @@ public sealed class AiGenerationAdminController : ControllerBase
         CancellationToken cancellationToken)
     {
         await _jobs.ResetStaleProcessingAsync(cancellationToken);
+        await _jobs.ResumePendingAsync(cancellationToken);
         await _jobs.EnqueueMissingAsync(cancellationToken);
         return Ok(await _jobs.GetOverviewAsync(cancellationToken));
     }
