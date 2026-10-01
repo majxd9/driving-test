@@ -9,17 +9,29 @@ public static class QuestionImagePromptBuilder
     private static readonly string[] VisualTerms =
     {
         "تقاطع","دوار","دوّار","تجاوز","انزلاق","فرامل","مكبح","ضباب","ليل","نهار","إضاءة","ضوء",
-        "مصابيح","طريق","مسار","مركبة","سيارة","مشاة","نفق","سرعة","وقوف","ركن","منعطف","منحدر",
-        "صعود","هبوط","حارة","خطر","حادث","إطار","عجلة","محرك","بطارية","زيت","راديتر","تبريد",
-        "مقود","مرايا","إشارة","علامة"
+        "مصابيح","مشاة","نفق","وقوف","ركن","منعطف","منحدر","صعود","هبوط","حارة","حادث",
+        "إطار","عجلة","محرك","بطارية","زيت","راديتر","تبريد","مقود","مرايا","إشارة","علامة",
+        "مسافة أمان","مسافة التوقف","أفضلية","أولوية","طريق زلق","طريق رطب","مفترق","ممر مشاة",
+        "إشارة ضوئية","إشارة مرور","ضوء خلفي","ضوء أمامي","ضوء ضباب","غماز","رباعي"
     };
 
     public static bool ShouldGenerate(Question question)
     {
-        if (question.Category == QuestionCategory.Ishara) return true;
+        if (question.Category == QuestionCategory.Ishara)
+            return true;
+
         if (question.Category == QuestionCategory.Mechanic)
-            return !string.IsNullOrWhiteSpace(question.ImageUrl) || ContainsVisualTerm(question.Text);
-        return ContainsVisualTerm(question.Text) || question.DiagramType is not null || !string.IsNullOrWhiteSpace(question.DiagramUrl);
+        {
+            return !string.IsNullOrWhiteSpace(question.ImageUrl) ||
+                   ContainsVisualTerm(question.Text);
+        }
+
+        // For traffic-rule questions, only generate an AI image when the wording
+        // describes a concrete visual situation. Generic mentions of "car", "road",
+        // or "traffic" are intentionally not enough.
+        return ContainsVisualTerm(question.Text) ||
+               question.DiagramType is not null ||
+               !string.IsNullOrWhiteSpace(question.DiagramUrl);
     }
 
     public static int GetPriority(Question question)
@@ -37,66 +49,56 @@ public static class QuestionImagePromptBuilder
     {
         var categoryText = question.Category switch
         {
-            QuestionCategory.Ishara => "a realistic road situation involving the traffic sign or traffic rule",
-            QuestionCategory.Mechanic => "a realistic vehicle mechanical inspection or maintenance situation",
-            _ => "a realistic road-traffic situation that visually explains the driving rule"
+            QuestionCategory.Ishara => "a real-world traffic-sign scene",
+            QuestionCategory.Mechanic => "a close, physically accurate vehicle-mechanics scene",
+            _ => "a specific road-traffic situation"
         };
 
         var questionText = question.Text?.Trim() ?? string.Empty;
         var cue = VisualCue(questionText);
-        var options = question.Options
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Select((x, i) => $"{i + 1}. {x.Trim()}")
-            .ToArray();
 
+        // Keep the image model focused on the tested situation rather than dumping
+        // every answer choice into the prompt. This reduces generic "car on a road"
+        // generations and avoids accidentally drawing the correct option as a cue.
         var positive = new StringBuilder()
-            .Append("Create ONE coherent, highly specific educational scene for a Syrian driving-theory question. ")
-            .Append("Do not make a generic stock image and do not simply illustrate isolated nouns from the question. ")
-            .Append("First understand the meaning of the entire question, identify the exact traffic or mechanical situation being tested, ")
-            .Append("then invent the most natural visual scene that would let a student immediately recognize that situation. ")
-            .Append("The scene itself must communicate the important relationships: road layout, vehicle positions, direction of travel, ")
-            .Append("lane or path, relevant road users, weather, lighting, distance, and the specific event or condition described by the question. ")
-            .Append("Use realistic Syrian-style road context where appropriate, with believable cars, road markings and surroundings. ")
-            .Append("Show the decisive visual context clearly in the composition instead of hiding it in the background. ")
+            .Append("Create ONE highly specific educational image for a Syrian driving-theory question. ")
+            .Append("The image must depict the exact physical situation described by the question, not a generic car, generic road, stock traffic photo, or decorative scene. ")
+            .Append("Use the question meaning as the primary source of truth. ")
+            .Append("Show the essential geometry and relationships that make this situation recognizable: road layout, lanes, vehicle positions, direction of travel, ")
+            .Append("relevant road users, weather, visibility, lighting, and distances. ")
+            .Append("Do not invent an unrelated event just because the question contains a general word such as car, road, driver, or traffic. ")
+            .Append("If the question is asking what a driver should do, depict the situation BEFORE the action rather than illustrating an answer action. ")
+            .Append("If the question asks about a component, depict the component itself and its real position on the vehicle. ")
             .Append("Question category: ").Append(categoryText).Append(". ")
             .Append("Question: ").Append(questionText).Append(". ");
 
-        if (options.Length > 0)
-        {
-            positive
-                .Append("Possible answers are supplied only as semantic context so you can understand what the question is testing: ")
-                .Append(string.Join(" | ", options))
-                .Append(". Do NOT depict, highlight, label, or visually select any answer. ");
-        }
-
         if (!string.IsNullOrWhiteSpace(cue))
-            positive.Append("Relevant visual cues suggested by the text: ").Append(cue).Append(". ");
+            positive.Append("Visual scene anchors: ").Append(cue).Append(". ");
 
         if (question.Category == QuestionCategory.Ishara)
         {
             positive
-                .Append("If the question concerns a traffic sign, place the relevant sign naturally where a driver would encounter it, ")
-                .Append("with enough surrounding road context to explain its meaning. Do not invent a different sign or alter the official sign design. ");
+                .Append("For a traffic-sign question, show the exact relevant official sign in a believable roadside position, ")
+                .Append("with enough road context to make the sign's role clear. Never replace it with a random sign. ");
         }
 
         if (question.Category == QuestionCategory.Mechanic)
         {
             positive
-                .Append("If the question concerns a mechanical part, show the correct physical component in its real location on the vehicle, ")
-                .Append("with a useful camera angle and enough surrounding components to make the part understandable. ");
+                .Append("For a mechanics question, use a useful close-up or cutaway-style composition that clearly shows the requested component, ")
+                .Append("its neighboring parts, and its real location. Do not use a generic exterior car photo. ");
         }
 
         positive
-            .Append("Use a realistic photographic educational style, natural perspective, physically plausible vehicles and lighting, ")
-            .Append("clear subject separation, and a composition suitable for a driving-learning app. ")
-            .Append("The image should explain the situation visually without needing written explanation. ")
-            .Append("No answer-specific highlighting, no text, no labels, no numbers, no check marks, no arrows, no circles, no UI, no watermark. ");
+            .Append("Realistic photographic educational style, natural perspective, plausible vehicles and road geometry, strong subject clarity. ")
+            .Append("ABSOLUTELY NO WRITTEN LANGUAGE inside the image: no Arabic, no English, no words, no captions, no labels, no letters, no numbers. ")
+            .Append("No UI, watermark, logo, arrows, circles, check marks, X marks, answer highlighting, or decorative text. ");
 
         const string negative =
-            "generic stock photo, random cars driving, unrelated traffic scene, vague road scene, isolated car without context, " +
-            "correct answer, wrong answer, highlighted choice, answer selection, checkmark, X mark, arrow, circle around a choice, " +
-            "answer text, labels, captions, letters, numbers, UI, quiz interface, invented traffic sign symbol, altered traffic sign, " +
-            "watermark, logo, distorted vehicle, deformed wheels, duplicate cars, impossible road geometry, unrealistic perspective";
+            "generic car, generic road, stock traffic photo, random driving scene, unrelated cars, isolated car, decorative vehicle render, " +
+            "incorrect road layout, wrong traffic sign, invented sign, altered sign symbol, answer action, correct answer cue, highlighted choice, " +
+            "text, Arabic writing, English writing, words, captions, labels, letters, numbers, road text, logo, watermark, UI, quiz interface, " +
+            "arrow, circle, checkmark, X mark, distorted vehicle, deformed wheels, duplicate cars, impossible geometry, unrealistic perspective";
 
         return (positive.ToString(), negative);
     }
@@ -105,20 +107,42 @@ public static class QuestionImagePromptBuilder
     {
         var mappings = new (string,string)[]
         {
-            ("ضباب","foggy weather"),("ليل","night driving"),("نفق","tunnel entrance or tunnel driving"),
-            ("تقاطع","road intersection"),("دوار","roundabout"),("تجاوز","overtaking situation"),
-            ("انزلاق","vehicle losing traction on the road"),("فرامل","braking action and brake system"),
-            ("إضاءة","vehicle lighting system"),("ضوء","vehicle lights"),("مشاة","pedestrian crossing context"),
-            ("إطار","tire and wheel"),("بطارية","car battery"),("زيت","engine oil service"),
-            ("راديتر","cooling radiator"),("سرعة","speed and road context"),("وقوف","parked or stopped vehicle"),
-            ("منحدر","sloped road"),("صعود","uphill road"),("هبوط","downhill road")
+            ("ضباب","foggy weather with low visibility"),
+            ("ليل","night driving with visible vehicle lights"),
+            ("نفق","tunnel entrance or tunnel driving"),
+            ("تقاطع","road intersection with visible lanes"),
+            ("مفترق","road junction with visible lanes"),
+            ("دوار","roundabout with clear circulating lanes"),
+            ("تجاوز","overtaking on a clearly marked road"),
+            ("انزلاق","loss of tire traction on the road"),
+            ("طريق زلق","wet/slippery road surface"),
+            ("فرامل","braking situation"),
+            ("مسافة التوقف","stopping-distance context with safe spacing"),
+            ("مسافة أمان","safe following distance"),
+            ("إضاءة","vehicle lighting conditions"),
+            ("ضوء ضباب","front/rear fog light situation"),
+            ("غماز","turn signal situation at a junction"),
+            ("رباعي","hazard warning lights"),
+            ("مشاة","pedestrian crossing context"),
+            ("إطار","tire and wheel close-up"),
+            ("بطارية","car battery compartment"),
+            ("زيت","engine oil inspection/service"),
+            ("راديتر","cooling radiator and coolant system"),
+            ("محرك","engine compartment"),
+            ("منعطف","road bend with visible curvature"),
+            ("منحدر","sloped road"),
+            ("صعود","uphill road"),
+            ("هبوط","downhill road"),
+            ("ركن","parking manoeuvre context"),
+            ("وقوف","stopped/parked vehicle context"),
+            ("مرايا","vehicle mirror and surrounding visibility")
         };
 
         return string.Join(", ", mappings
             .Where(x => text.Contains(x.Item1, StringComparison.OrdinalIgnoreCase))
             .Select(x => x.Item2)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(6));
+            .Take(7));
     }
 
     private static bool ContainsVisualTerm(string? text) =>
