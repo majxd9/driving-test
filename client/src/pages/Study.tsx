@@ -11,7 +11,6 @@ import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
 import { createQuestionAudioPrompt, playQuestionAudioPrompt } from '../utils/questionAudioPrompts';
-import { speakArabicFallback, stopArabicFallback } from '../utils/speechFeedback';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -318,11 +317,7 @@ export default function Study() {
               audio.currentTime = 0;
             }
             setAudioPlaying(false);
-            stopArabicFallback();
-
-            void playQuestionAudioPrompt('question-audio-disabled').catch(() => {
-              speakArabicFallback('تم إيقاف القراءة الصوتية.');
-            });
+            void playQuestionAudioPrompt('question-audio-disabled');
           }}
           aria-label="إيقاف الصوت"
           title="إيقاف الصوت"
@@ -347,9 +342,7 @@ export default function Study() {
 
             if (!shouldPlayActivationPrompt) return;
 
-            void playQuestionAudioPrompt('question-audio-enabled').catch(() => {
-              speakArabicFallback('تم تشغيل القراءة الصوتية. سيستمر الصوت تلقائياً مع الأسئلة حتى تضغط زر الإيقاف.');
-            });
+            void playQuestionAudioPrompt('question-audio-enabled');
           }}
           onError={() => {
             setAudioPlaying(false);
