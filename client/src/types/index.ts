@@ -148,3 +148,12 @@ export interface AiGenerationEnqueueResult {
   skipped: number;
   failedRetried: number;
 }
+
+export interface CompletedAiImageItem {
+  questionId: number;
+  questionText: string;
+  category: string;
+  imageUrl: string;
+  contentHash: string;
+  createdAt: string;
+}
