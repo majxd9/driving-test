@@ -108,7 +108,8 @@ public sealed class AiGenerationWorker : BackgroundService
                     return;
                 }
 
-                if (!await quota.TryConsumeAsync(cancellationToken))
+                if (!quota.IsUnlimited(AiGenerationJobType.Audio) &&
+                    !await quota.TryConsumeAsync(cancellationToken))
                 {
                     await ReleaseJobAsync(
                         db,
@@ -119,7 +120,7 @@ public sealed class AiGenerationWorker : BackgroundService
                     return;
                 }
 
-                quotaConsumed = true;
+                quotaConsumed = !quota.IsUnlimited(AiGenerationJobType.Audio);
 
                 var generator = scope.ServiceProvider
                     .GetRequiredService<IQuestionAudioGenerator>();
@@ -178,7 +179,8 @@ public sealed class AiGenerationWorker : BackgroundService
                     return;
                 }
 
-                if (!await quota.TryConsumeAsync(cancellationToken))
+                if (!quota.IsUnlimited(AiGenerationJobType.AiImage) &&
+                    !await quota.TryConsumeAsync(cancellationToken))
                 {
                     await ReleaseJobAsync(
                         db,
@@ -189,7 +191,7 @@ public sealed class AiGenerationWorker : BackgroundService
                     return;
                 }
 
-                quotaConsumed = true;
+                quotaConsumed = !quota.IsUnlimited(AiGenerationJobType.AiImage);
 
                 _logger.LogInformation(
                     "Starting AI image generation. Job {JobId}, Question {QuestionId}, Attempt {Attempt}.",
