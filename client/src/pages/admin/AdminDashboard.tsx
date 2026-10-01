@@ -104,13 +104,14 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  const providerLabel=(value:string)=>{
   if(value==='comfyui')return 'ComfyUI';
   if(value==='huggingface')return 'Hugging Face';
+  if(value==='edenai')return 'Eden AI';
   if(value==='fal-ai')return 'fal-ai';
   if(value==='none')return 'غير مفعّل';
   return value;
  };
 
  const effectiveImageProvider=status?.imageExecutionProvider || status?.imageProvider || 'none';
- const providerEnabled=status?.imageProvider==='huggingface'||status?.imageProvider==='comfyui';
+ const providerEnabled=status?.imageProvider==='huggingface'||status?.imageProvider==='comfyui'||status?.imageProvider==='edenai';
  const testClass=providerTest?.state==='connected'?'on':providerTest?.state==='disabled'||providerTest?.state==='unconfigured'?'off':'warn';
  const quotaPercent=status?Math.min(100,(status.quota.used/Math.max(status.quota.limit,1))*100):0;
  const audioQuotaExhausted=Boolean(status?.audio.lastError?.toLowerCase().includes('quota_exceeded'));
@@ -167,14 +168,14 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
      <span>توليد الصوت</span>
      <b>{providerLabel(status?.audioProvider??'')}</b>
      <small>لا يتم استبدال الأصوات الموجودة؛ يضاف فقط الناقص.</small>
-     {audioQuotaExhausted&&<div className="ai-provider-message problem mt-2">انتهى الحد المجاني المتاح في ElevenLabs حالياً، لذلك تم إيقاف توليد الصوت حتى تتوفر حصة جديدة.</div>}
+     {audioQuotaExhausted&&<div className="ai-provider-message problem mt-2">وصل مزود الصوت إلى حد الاستخدام أو رفض الطلب حالياً، لذلك تم إيقاف توليد الصوت حتى تتم معالجة السبب.</div>}
      <button type="button" className="primary-cta mt-auto" disabled={busy!==''||audioQuotaExhausted} onClick={(e)=>{e.preventDefault();void run('audio')}}>{busy==='audio'?'جارٍ إضافة المهام…':audioQuotaExhausted?'الحد المجاني منتهٍ':'إضافة الأصوات الناقصة للطابور'}</button>
     </div>
     <div className="ai-console-card">
      <span>توليد صور AI</span>
      <b>{providerLabel(status?.imageProvider??'none')}{status?.imageProvider!==effectiveImageProvider&&effectiveImageProvider!=='none'?' → '+providerLabel(effectiveImageProvider):''}</b>
      <small>المهام تنتظر التنفيذ في PostgreSQL، والصور المكتملة تبقى محفوظة.</small>
-     {imageQuotaExhausted&&<div className="ai-provider-message problem mt-2">انتهى الحد المجاني المضمّن في Hugging Face حالياً. لن تُرسل طلبات توليد صور جديدة حتى تتوفر حصة جديدة.</div>}
+     {imageQuotaExhausted&&<div className="ai-provider-message problem mt-2">وصل مزود الصور إلى حد الاستخدام أو رفض الطلب حالياً. لن تُرسل طلبات جديدة حتى تتوفر حصة أو تتم معالجة السبب.</div>}
      <button type="button" className="primary-cta mt-auto" disabled={busy!==''||!providerEnabled||imageQuotaExhausted} onClick={(e)=>{e.preventDefault();void run('image')}}>{busy==='image'?'جارٍ إضافة المهام…':imageQuotaExhausted?'الحد المجاني منتهٍ':'إضافة صور AI الناقصة للطابور'}</button>
     </div>
    </div>
@@ -226,11 +227,11 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
    </div>
    <div className="ai-provider-row">
     <div><small>المسار الفعلي</small><strong>{providerLabel(status?.imageProvider??'none')}{status?.imageProvider!==effectiveImageProvider&&effectiveImageProvider!=='none'?' → '+providerLabel(effectiveImageProvider):''}</strong></div>
-    <div><small>نقطة التنفيذ</small><code>{providerTest?.endpoint || (effectiveImageProvider==='fal-ai'?'Hugging Face Fal queue':'Hugging Face Router')}</code></div>
+    <div><small>نقطة التنفيذ</small><code>{providerTest?.endpoint || (effectiveImageProvider==='fal-ai'?'Hugging Face Fal queue':effectiveImageProvider==='edenai'?'Eden AI API':'Hugging Face Router')}</code></div>
     <button type="button" className="secondary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void testImageProvider()}}>{busy==='test-image'?'جارٍ الفحص…':'فحص الإعداد'}</button>
    </div>
    {providerTest&&<div className={'ai-provider-message '+(providerTest.state==='connected'?'ok':'problem')}>{providerTest.message}</div>}
-   <p className="text-muted text-xs leading-relaxed mt-3">هذا الفحص يتحقق من التوكن وأن الموديل مدرج فعلياً ضمن text-to-image لدى المزود الحالي. لا ينفّذ توليد صورة كاملة.</p>
+   <p className="text-muted text-xs leading-relaxed mt-3">هذا الفحص يتحقق من إعداد المزود الحالي من دون تنفيذ توليد صورة كاملة.</p>
   </div>
 
   <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
