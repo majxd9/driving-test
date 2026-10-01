@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DrivingTestApi.Controllers;
 
+public sealed record BulkGenerationRequest(bool RetryFailed = false, bool RegenerateCompleted = false);
+
 [ApiController]
 [Route("api/admin/ai-generation")]
 [Authorize(Roles = "Admin")]
