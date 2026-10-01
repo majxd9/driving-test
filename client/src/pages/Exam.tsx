@@ -279,10 +279,6 @@ export default function Exam() {
               type="button"
               className="question-audio-nav__audio stop"
               onClick={() => {
-
-                prompt?.pause();
-                if (prompt) prompt.currentTime = 0;
-
                 const audio = audioRef.current;
                 if (audio) {
                   audio.pause();
@@ -291,12 +287,6 @@ export default function Exam() {
 
                 setAudioPlaying(false);
                 setAudioError(null);
-                if (disabledPrompt) {
-                  disabledPrompt.currentTime = 0;
-                  void disabledPrompt.play().catch(() => {
-                  });
-                } else {
-                }
               }}
               aria-label="إيقاف الصوت"
               title="إيقاف الصوت"
