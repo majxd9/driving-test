@@ -67,7 +67,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
   const timer=window.setInterval(()=>{
    void reloadAiStatus();
    void reloadGallery();
-  },5000);
+  },8000);
   return ()=>window.clearInterval(timer);
  },[]);
 
@@ -110,7 +110,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  };
 
  const effectiveImageProvider=status?.imageExecutionProvider || status?.imageProvider || 'none';
- const providerEnabled=status?.imageProvider && status.imageProvider!=='none';
+ const providerEnabled=status?.imageProvider==='huggingface'||status?.imageProvider==='comfyui';
  const testClass=providerTest?.state==='connected'?'on':providerTest?.state==='disabled'||providerTest?.state==='unconfigured'?'off':'warn';
  const quotaPercent=status?Math.min(100,(status.quota.used/Math.max(status.quota.limit,1))*100):0;
  const audioQuotaExhausted=Boolean(status?.audio.lastError?.toLowerCase().includes('quota_exceeded'));
