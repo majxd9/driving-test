@@ -51,36 +51,58 @@ function Questions({questions,reload}:{questions:Question[];reload:()=>void}){
 
 function AiGenerationPanel({status,reload}:{status:import('../../types').AiGenerationOverview|null;reload:()=>void}){
  const [busy,setBusy]=useState('');
- const run=async(kind:'audio'|'image'|'all'|'resume',retry=false)=>{
+ const [providerTest,setProviderTest]=useState<import('../../types').ImageProviderTestResult|null>(null);
+ const run=async(kind:'audio'|'image'|'all'|'resume'|'retry-audio'|'retry-image'|'retry-all')=>{
   setBusy(kind);
   try{
-   if(kind==='audio')await api.admin.enqueueAllAudio(retry,false);
-   if(kind==='image')await api.admin.enqueueAllImages(retry,false);
-   if(kind==='all')await api.admin.enqueueAllAi(retry,false);
+   if(kind==='audio')await api.admin.enqueueAllAudio(false,false);
+   if(kind==='image')await api.admin.enqueueAllImages(false,false);
+   if(kind==='all')await api.admin.enqueueAllAi(false,false);
    if(kind==='resume')await api.admin.resumeAiGeneration();
+   if(kind==='retry-audio')await api.admin.enqueueAllAudio(true,false);
+   if(kind==='retry-image')await api.admin.enqueueAllImages(true,false);
+   if(kind==='retry-all')await api.admin.enqueueAllAi(true,false);
    await reload();
   }catch(e){alert(e instanceof Error?e.message:'تعذر إدارة طابور AI')}finally{setBusy('')}
  };
+ const testImageProvider=async()=>{
+  setBusy('test-image');
+  try{const result=await api.admin.testImageProvider();setProviderTest(result);await reload()}
+  catch(e){setProviderTest({provider:status?.imageProvider??'none',state:'error',message:e instanceof Error?e.message:'تعذر اختبار مولد الصور.',endpoint:''})}
+  finally{setBusy('')}
+ };
  const card=(title:string,data:import('../../types').AiGenerationCounts)=><div className="stat-card"><p>{title}</p><strong>{data.completed}/{data.completed+data.missing+data.pending+data.processing+data.failed}</strong><small className="block text-muted mt-1">مفقود {data.missing} · معلّق {data.pending} · تنفيذ {data.processing} · فشل {data.failed}</small></div>;
- return <section className="space-y-5">
-  <div className="admin-card"><div className="card-title"><div><p>AI GENERATION</p><b>التوليد الخلفي الدائم</b></div></div>
-   <p className="text-muted text-sm leading-relaxed">الطالب لا ينتظر أي توليد. الأدمن يضيف المهمة، والخادم يحفظ حالتها في PostgreSQL ويكملها بعد إعادة التشغيل.</p>
-   <div className="action-row mt-4">
-    <button className="primary-cta" disabled={busy!==''} onClick={()=>void run('audio')}>{busy==='audio'?'جارٍ الإضافة…':'إكمال جميع الأصوات'}</button>
-    <button className="primary-cta" disabled={busy!==''} onClick={()=>void run('image')}>{busy==='image'?'جارٍ الإضافة…':'إكمال جميع صور AI'}</button>
-    <button className="secondary-cta" disabled={busy!==''} onClick={()=>void run('all')}>تشغيل الكل</button>
-    <button className="secondary-cta" disabled={busy!==''} onClick={()=>void run('resume')}>استئناف التوليد</button>
-    <button className="secondary-cta" disabled={busy!==''} onClick={()=>void run('audio',true)}>إعادة المحاولة للفاشل</button>
+ const providerLabel=(value:string)=>value==='comfyui'?'ComfyUI':value==='none'?'غير مفعّل':value;
+ const testClass=providerTest?.state==='connected'?'on':providerTest?.state==='disabled'||providerTest?.state==='unconfigured'?'off':'warn';
+ const quotaPercent=status?Math.min(100,(status.quota.used/Math.max(status.quota.limit,1))*100):0;
+ return <section className="ai-generation-console space-y-5">
+  <div className="admin-card ai-console-hero">
+   <div className="card-title"><div><p>AI GENERATION CENTER</p><b>مركز توليد المحتوى</b></div><span className={'status '+(status?.imageProvider==='comfyui'?'on':'off')}>الصور: {providerLabel(status?.imageProvider??'none')}</span></div>
+   <p className="text-muted text-sm leading-relaxed">التوليد يعمل في الخلفية عبر طابور دائم محفوظ في PostgreSQL. لا ينتظر الطالب التوليد ولا يبدأ أي توليد من صفحات التدريب أو الاختبار.</p>
+   <div className="ai-console-grid">
+    <div className="ai-console-card"><span>الصوت</span><b>{providerLabel(status?.audioProvider??'')}</b><small>المحرك المسؤول عن ملفات الأسئلة الصوتية.</small></div>
+    <div className="ai-console-card"><span>الصور</span><b>{providerLabel(status?.imageProvider??'none')}</b><small>{status?.imageProvider==='none'?'يجب تفعيل مزود صور قابل للوصول من Render.':'اختبر الاتصال قبل تشغيل التوليد الجماعي.'}</small></div>
+    <div className="ai-console-card"><span>الحد الشهري</span><b>{status?.quota.used??0} / {status?.quota.limit??0}</b><small>متبقٍ {status?.quota.remaining??0} محاولة توليد</small><div className="ai-quota-bar"><i style={{width:quotaPercent+'%'}}/></div></div>
+   </div>
+   <div className="action-row mt-4 ai-console-actions">
+    <button className="primary-cta" disabled={busy!==''} onClick={()=>void run('audio')}>{busy==='audio'?'جارٍ إضافة المهام…':'إكمال جميع الأصوات'}</button>
+    <button className="primary-cta" disabled={busy!==''} onClick={()=>void run('image')}>{busy==='image'?'جارٍ إضافة المهام…':'إكمال جميع صور AI'}</button>
+    <button className="secondary-cta" disabled={busy!==''} onClick={()=>void run('all')}>{busy==='all'?'جارٍ التنفيذ…':'تشغيل الكل'}</button>
+    <button className="secondary-cta" disabled={busy!==''} onClick={()=>void run('resume')}>{busy==='resume'?'جارٍ الاستئناف…':'استئناف التوليد'}</button>
    </div>
   </div>
-  {status&&<><div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-   {card('الصوت',status.audio)} {card('صور AI',status.image)}
-   <div className="stat-card"><p>مزود الصوت</p><strong className="text-brand">{status.audioProvider}</strong></div>
-   <div className="stat-card"><p>مزود الصور</p><strong className="text-signs">{status.imageProvider}</strong></div>
+
+  <div className="admin-card ai-provider-card">
+   <div className="card-title"><div><p>IMAGE PROVIDER</p><b>فحص مولد الصور</b></div><span className={'status '+testClass}>{providerTest?.state==='connected'?'متصل':providerTest?.state==='disabled'?'غير مفعّل':providerTest?.state==='unconfigured'?'غير مضبوط':providerTest?'غير متاح':'لم يتم الفحص'}</span></div>
+   <div className="ai-provider-row"><div><small>المزود الحالي</small><strong>{providerLabel(status?.imageProvider??'none')}</strong></div><div><small>العنوان</small><code>{providerTest?.endpoint || 'يُقرأ من إعداد QUESTION_IMAGE_COMFYUI_URL'}</code></div><button className="secondary-cta" disabled={busy!==''} onClick={()=>void testImageProvider()}>{busy==='test-image'?'جارٍ الفحص…':'اختبار الاتصال'}</button></div>
+   {providerTest&&<div className={'ai-provider-message '+(providerTest.state==='connected'?'ok':'problem')}>{providerTest.message}</div>}
+   <p className="text-muted text-xs leading-relaxed mt-3">مهم للإنتاج: 127.0.0.1 وlocalhost يشيران إلى الخادم نفسه. إذا كان ComfyUI على جهازك الشخصي فلن يستطيع Render الوصول إليه؛ يجب وضع ComfyUI على خدمة يمكن للـbackend الوصول إليها أو استخدام مزود صور سحابي مضبوط في الخادم.</p>
   </div>
-  <div className="admin-card"><div className="card-title"><div><p>الحالة</p><b>الملفات الجاهزة لا تعاد توليدها تلقائياً</b></div></div>
-   <div className="mini-metrics"><div><strong>{status.audio.completed}</strong><span>صوت مكتمل</span></div><div><strong>{status.audio.remaining}</strong><span>صوت متبقٍ</span></div><div><strong>{status.image.completed}</strong><span>صورة AI مكتملة</span></div><div><strong>{status.image.remaining}</strong><span>صورة AI متبقية</span></div></div>
-  </div></>}
+
+  {status&&<>
+   <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">{card('الصوت',status.audio)}{card('صور AI',status.image)}<div className="stat-card"><p>المزود الصوتي</p><strong className="text-brand">{providerLabel(status.audioProvider)}</strong></div><div className="stat-card"><p>مزود الصور</p><strong className="text-signs">{providerLabel(status.imageProvider)}</strong></div></div>
+   <div className="admin-card"><div className="card-title"><div><p>التحكم بالطابور</p><b>الإعادة تتم للمهمات المطلوبة فقط</b></div></div><div className="mini-metrics"><div><strong>{status.audio.completed}</strong><span>صوت مكتمل</span></div><div><strong>{status.audio.remaining}</strong><span>صوت متبقٍ</span></div><div><strong>{status.image.completed}</strong><span>صورة مكتملة</span></div><div><strong>{status.image.remaining}</strong><span>صورة متبقية</span></div></div><div className="action-row mt-4"><button className="secondary-cta" disabled={busy!==''} onClick={()=>void run('retry-audio')}>{busy==='retry-audio'?'جارٍ…':'إعادة فشل الصوت'}</button><button className="secondary-cta" disabled={busy!==''} onClick={()=>void run('retry-image')}>{busy==='retry-image'?'جارٍ…':'إعادة فشل الصور'}</button><button className="secondary-cta" disabled={busy!==''} onClick={()=>void run('retry-all')}>{busy==='retry-all'?'جارٍ…':'إعادة فشل الكل'}</button></div></div>
+  </>}
  </section>;
 }
 function AdminAudioPreview({src}:{src:string}){
