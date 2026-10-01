@@ -27,11 +27,18 @@ public sealed class AiGenerationWorker : BackgroundService
     {
         await Task.Yield();
 
-        var scanEvery = TimeSpan.FromSeconds(
-            _configuration.GetValue("AI_QUEUE_SCAN_SECONDS", 30));
+        var scanSeconds = Math.Clamp(
+            _configuration.GetValue("AI_QUEUE_SCAN_SECONDS", 30),
+            5,
+            3600);
 
-        var pollEvery = TimeSpan.FromSeconds(
-            _configuration.GetValue("AI_QUEUE_POLL_SECONDS", 3));
+        var pollSeconds = Math.Clamp(
+            _configuration.GetValue("AI_QUEUE_POLL_SECONDS", 3),
+            1,
+            60);
+
+        var scanEvery = TimeSpan.FromSeconds(scanSeconds);
+        var pollEvery = TimeSpan.FromSeconds(pollSeconds);
 
         var nextScan = DateTime.UtcNow;
 
