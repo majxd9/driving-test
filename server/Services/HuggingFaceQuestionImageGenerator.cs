@@ -400,12 +400,10 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
         return false;
     }
 
-    private static string TryReadError(byte[] bytes)
+    private static string TryReadError(string text)
     {
         try
         {
-            var text = System.Text.Encoding.UTF8.GetString(bytes);
-
             if (string.IsNullOrWhiteSpace(text))
                 return string.Empty;
 
@@ -419,7 +417,9 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
                 if (document.RootElement.ValueKind == JsonValueKind.Object &&
                     document.RootElement.TryGetProperty("error", out var error))
                 {
-                    return error.GetString() ?? text;
+                    return error.ValueKind == JsonValueKind.String
+                        ? error.GetString() ?? text
+                        : error.ToString();
                 }
             }
             catch
@@ -434,4 +434,7 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
             return string.Empty;
         }
     }
+
+    private static string TryReadError(byte[] bytes) =>
+        TryReadError(System.Text.Encoding.UTF8.GetString(bytes));
 }
