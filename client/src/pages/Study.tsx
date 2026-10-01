@@ -336,6 +336,12 @@ export default function Study() {
               audio.currentTime = 0;
             }
             setAudioPlaying(false);
+
+            const disabledPrompt = createQuestionAudioPrompt('question-audio-disabled');
+            if (disabledPrompt) {
+              disabledPrompt.currentTime = 0;
+              void disabledPrompt.play().catch(() => undefined);
+            }
           }}
           aria-label="إيقاف الصوت"
           title="إيقاف الصوت"
