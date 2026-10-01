@@ -28,9 +28,9 @@ public class QuestionsController : ControllerBase
     // وبالتالي يُولّدان تلقائياً مع بقية أصوات المحتوى.
     private static readonly (string Key, string Text)[] AudioPromptDefinitions =
     {
-        (AudioPromptFirstEntryKey, "إذا بدك تشغيل الصوت، اضغط زر التشغيل."),
-        (AudioPromptEnabledKey, "الصوت سيبقى شغال حتى تضغط إيقاف."),
-        (AudioPromptDisabledKey, "الصوت متوقف.")
+        (AudioPromptFirstEntryKey, "لتشغيل القراءة الصوتية للأسئلة، اضغط زر التشغيل."),
+        (AudioPromptEnabledKey, "تم تشغيل القراءة الصوتية. سيستمر الصوت تلقائياً مع الأسئلة حتى تضغط زر الإيقاف."),
+        (AudioPromptDisabledKey, "تم إيقاف القراءة الصوتية.")
     };
     private readonly AppDbContext _db;
     private readonly IHttpClientFactory _httpClientFactory;
