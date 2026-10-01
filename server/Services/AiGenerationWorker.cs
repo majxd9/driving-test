@@ -112,8 +112,8 @@ public sealed class AiGenerationWorker : BackgroundService
                         db,
                         claimed.Id,
                         "تم بلوغ الحد الشهري لتوليد AI؛ ستُستأنف المهمة تلقائياً في بداية الشهر القادم.",
-                        quota.NextMonthStartUtc,
-                        cancellationToken);
+                        cancellationToken,
+                        quota.NextMonthStartUtc);
                     return;
                 }
 
@@ -306,8 +306,8 @@ public sealed class AiGenerationWorker : BackgroundService
         AppDbContext db,
         long id,
         string note,
-        DateTime? nextAttemptAt = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken,
+        DateTime? nextAttemptAt = null)
     {
         var job = await db.AiGenerationJobs
             .SingleAsync(x => x.Id == id, cancellationToken);
