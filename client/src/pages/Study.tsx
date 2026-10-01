@@ -10,6 +10,7 @@ import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
+import { speakArabic, stopArabicSpeech } from '../utils/speechFeedback';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -37,6 +38,12 @@ export default function Study() {
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [audioPrompt, setAudioPrompt] = useState(true);
+
+  useEffect(() => {
+    if (audioPrompt) speakArabic('إذا بدك تشغيل الصوت، اضغط زر التشغيل');
+  }, [audioPrompt]);
+
+  useEffect(() => () => stopArabicSpeech(), []);
 
   useEffect(() => {
     if (!category) return;
@@ -244,6 +251,7 @@ export default function Study() {
           disabled={!currentAudioUrl}
           onClick={() => {
             setAudioPrompt(false);
+            speakArabic('الصوت سيبقى شغال حتى تضغط إيقاف');
             setAudioError(null);
             setAudioEnabled(true);
             const audio = audioRef.current;
