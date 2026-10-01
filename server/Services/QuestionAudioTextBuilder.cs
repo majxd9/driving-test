@@ -25,6 +25,24 @@ public static class QuestionAudioTextBuilder
 
     public static string GetLegacyHash(Question question) => Hash(Build(question));
 
+    // Hash used by the pre-queue Admin audio generator.
+    public static string GetPreviousAdminHash(Question question)
+    {
+        var builder = new StringBuilder();
+        builder.Append("السؤال: ").Append(question.Text.Trim());
+
+        var letters = new[] { "أ", "ب", "ج", "د", "هـ", "و" };
+        for (var i = 0; i < question.Options.Count; i++)
+        {
+            builder.Append(". الإجابة ")
+                .Append(i < letters.Length ? letters[i] : (i + 1).ToString())
+                .Append(": ")
+                .Append(question.Options[i].Trim());
+        }
+
+        return Hash(builder.ToString());
+    }
+
     private static string PrepareTtsText(string? value)
     {
         if (string.IsNullOrWhiteSpace(value)) return string.Empty;
