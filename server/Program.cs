@@ -147,8 +147,14 @@ builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
         ? sp.GetRequiredService<LocalQuestionAudioGenerator>()
         : sp.GetRequiredService<ElevenLabsQuestionAudioGenerator>());
 builder.Services.AddScoped<ComfyUiQuestionImageGenerator>();
+builder.Services.AddScoped<HuggingFaceQuestionImageGenerator>();
 builder.Services.AddScoped<IQuestionImageGenerator>(sp =>
-    sp.GetRequiredService<ComfyUiQuestionImageGenerator>());
+    string.Equals(
+        builder.Configuration["QUESTION_IMAGE_PROVIDER"] ?? "none",
+        "huggingface",
+        StringComparison.OrdinalIgnoreCase)
+        ? sp.GetRequiredService<HuggingFaceQuestionImageGenerator>()
+        : sp.GetRequiredService<ComfyUiQuestionImageGenerator>());
 builder.Services.AddHostedService<AiGenerationWorker>();
 builder.Services.AddCors(options => options.AddPolicy("Frontend", policy => policy.WithOrigins(frontendOrigin).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 builder.Services.AddControllers();
@@ -168,6 +174,10 @@ builder.Services.AddHttpClient("ComfyUI", client =>
     client.BaseAddress = new Uri(
         builder.Configuration["QUESTION_IMAGE_COMFYUI_URL"] ?? "http://127.0.0.1:8188");
     client.Timeout = TimeSpan.FromSeconds(60);
+});
+builder.Services.AddHttpClient("HuggingFaceImage", client =>
+{
+    client.Timeout = TimeSpan.FromMinutes(15);
 });
 builder.Services.AddEndpointsApiExplorer();
 
