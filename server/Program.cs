@@ -140,6 +140,7 @@ builder.Services.AddScoped<AiGenerationJobService>();
 builder.Services.AddScoped<ElevenLabsQuestionAudioGenerator>();
 builder.Services.AddScoped<EdenAiQuestionAudioGenerator>();
 builder.Services.AddScoped<LocalQuestionAudioGenerator>();
+builder.Services.AddScoped<FallbackQuestionAudioGenerator>();
 builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
 {
     var provider = (builder.Configuration["QUESTION_AUDIO_PROVIDER"] ?? "elevenlabs").Trim();
@@ -150,20 +151,26 @@ builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
     if (string.Equals(provider, "edenai", StringComparison.OrdinalIgnoreCase))
         return sp.GetRequiredService<EdenAiQuestionAudioGenerator>();
 
+    if (string.Equals(provider, "elevenlabs", StringComparison.OrdinalIgnoreCase) &&
+        HasEdenFallbackConfiguration(builder.Configuration, "EDENAI_AUDIO_PROVIDER"))
+        return sp.GetRequiredService<FallbackQuestionAudioGenerator>();
+
     return sp.GetRequiredService<ElevenLabsQuestionAudioGenerator>();
 });
 builder.Services.AddScoped<ComfyUiQuestionImageGenerator>();
 builder.Services.AddScoped<HuggingFaceQuestionImageGenerator>();
 builder.Services.AddScoped<EdenAiQuestionImageGenerator>();
+builder.Services.AddScoped<FallbackQuestionImageGenerator>();
 builder.Services.AddScoped<IQuestionImageGenerator>(sp =>
 {
     var provider = (builder.Configuration["QUESTION_IMAGE_PROVIDER"] ?? "none").Trim();
 
-    if (string.Equals(provider, "huggingface", StringComparison.OrdinalIgnoreCase))
-        return sp.GetRequiredService<HuggingFaceQuestionImageGenerator>();
-
     if (string.Equals(provider, "edenai", StringComparison.OrdinalIgnoreCase))
         return sp.GetRequiredService<EdenAiQuestionImageGenerator>();
+
+    if (string.Equals(provider, "huggingface", StringComparison.OrdinalIgnoreCase) &&
+        HasEdenFallbackConfiguration(builder.Configuration, "EDENAI_IMAGE_PROVIDER"))
+        return sp.GetRequiredService<FallbackQuestionImageGenerator>();
 
     return sp.GetRequiredService<ComfyUiQuestionImageGenerator>();
 });
@@ -197,6 +204,12 @@ builder.Services.AddHttpClient("EdenAI", client =>
     client.Timeout = TimeSpan.FromMinutes(20);
 });
 builder.Services.AddEndpointsApiExplorer();
+
+static bool HasEdenFallbackConfiguration(IConfiguration configuration, string providerKey)
+{
+    return !string.IsNullOrWhiteSpace(configuration["EDENAI_API_KEY"]) &&
+           !string.IsNullOrWhiteSpace(configuration[providerKey]);
+}
 
 var app = builder.Build();
 
