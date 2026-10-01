@@ -214,15 +214,11 @@ public class QuestionsController : ControllerBase
             .AsNoTracking()
             .SingleOrDefaultAsync(q => q.Id == id, cancellationToken);
 
-        if (question is null ||
-            !string.Equals(
-                image.ContentHash,
-                QuestionImagePromptBuilder.GetContentHash(question),
-                StringComparison.Ordinal))
-        {
-            return NotFound(new { message = "صورة AI الحالية غير جاهزة لهذا السؤال." });
-        }
+        if (question is null)
+            return NotFound(new { message = "السؤال غير موجود." });
 
+        // وجود الصورة المحفوظة يكفي لعرضها. لا نمنع الصورة بسبب تغيّر نص السؤال
+        // بعد التوليد؛ الـhash يستخدم لنسخة/تحديث التوليد فقط.
         Response.Headers.CacheControl = "public,max-age=31536000,immutable";
         Response.Headers.ETag = $"\"{image.ContentHash}\"";
         return File(image.ImageBytes, image.ContentType);
