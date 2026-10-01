@@ -342,11 +342,18 @@ public sealed class AiGenerationWorker : BackgroundService
     {
         var message = exception.ToString();
 
+        // Provider/auth/request failures must not consume the local monthly
+        // generation allowance because no usable image/audio was produced.
         return message.Contains("quota_exceeded", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("HTTP 400", StringComparison.OrdinalIgnoreCase)
             || message.Contains("HTTP 401", StringComparison.OrdinalIgnoreCase)
             || message.Contains("HTTP 403", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("HTTP 422", StringComparison.OrdinalIgnoreCase)
             || message.Contains("sufficient permissions", StringComparison.OrdinalIgnoreCase)
-            || message.Contains("permission_required", StringComparison.OrdinalIgnoreCase);
+            || message.Contains("permission_required", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("لم يُرجع صورة فعلية", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("ليست ملف صورة صالحاً", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("ملف صورة فارغ", StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task CompleteJobAsync(
