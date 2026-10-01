@@ -163,6 +163,13 @@ using (var schemaScope = app.Services.CreateScope())
             CONSTRAINT "FK_QuestionAudios_Questions_QuestionId"
                 FOREIGN KEY ("QuestionId") REFERENCES "Questions" ("Id") ON DELETE CASCADE
         );
+        CREATE TABLE IF NOT EXISTS "SystemAudios" (
+            "Key" text NOT NULL,
+            "AudioBytes" bytea NOT NULL,
+            "ContentHash" text NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "PK_SystemAudios" PRIMARY KEY ("Key")
+        );
         """);
 }
 
