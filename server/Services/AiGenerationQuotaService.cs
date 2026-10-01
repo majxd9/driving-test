@@ -1,3 +1,4 @@
+using DrivingTestApi.Models;
 using DrivingTestApi.Data;
 using Microsoft.EntityFrameworkCore;
 
