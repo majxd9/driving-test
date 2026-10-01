@@ -103,7 +103,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                     provider,
                     "unconfigured",
                     "يجب ضبط QUESTION_IMAGE_HF_TOKEN.",
-                    $"https://router.huggingface.co/{hfProvider}/models/{model}"));
+                    $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}"));
             }
 
             try
@@ -132,7 +132,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                         provider,
                         "error",
                         $"فشل التحقق من Hugging Face: HTTP {(int)response.StatusCode}. {Truncate(details)}",
-                        $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}?_subdomain=queue"));
+                        $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}"));
                 }
 
                 using var catalogJson = JsonDocument.Parse(details);
@@ -167,7 +167,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                     provider,
                     "error",
                     "انتهت مهلة فحص Hugging Face قبل اكتمال التحقق.",
-                    $"https://router.huggingface.co/{hfProvider}/models/{model}"));
+                    $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}"));
             }
             catch (Exception ex)
             {
@@ -175,7 +175,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                     provider,
                     "error",
                     $"تعذر فحص Hugging Face: {ex.Message}",
-                    $"https://router.huggingface.co/{hfProvider}/models/{model}"));
+                    $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}"));
             }
         }
 
