@@ -1,3 +1,4 @@
+using System.Text.Json;
 using DrivingTestApi.Models;
 using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -107,30 +108,53 @@ public sealed class AiGenerationAdminController : ControllerBase
                 timeout.CancelAfter(TimeSpan.FromSeconds(6));
 
                 using var client = _httpClientFactory.CreateClient("HuggingFaceImage");
-                using var request = new HttpRequestMessage(
-                    HttpMethod.Get,
-                    $"https://huggingface.co/api/models/{Uri.EscapeDataString(model).Replace("%2F", "/")}");
+
+                // Validate the model against Hugging Face's authoritative provider filter.
+                // This avoids relying on the optional inferenceProviderMapping field,
+                // which may be missing even when Fal currently serves the model.
+                var catalogUrl =
+                    $"https://huggingface.co/api/models?inference_provider={Uri.EscapeDataString(hfProvider)}&pipeline_tag=text-to-image&search={Uri.EscapeDataString(model)}&limit=20";
+
+                using var request = new HttpRequestMessage(HttpMethod.Get, catalogUrl);
                 request.Headers.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
                 using var response = await client.SendAsync(request, timeout.Token);
 
+                var details = await response.Content.ReadAsStringAsync(timeout.Token);
                 if (!response.IsSuccessStatusCode)
                 {
-                    var details = await response.Content.ReadAsStringAsync(timeout.Token);
                     return Ok(new ImageProviderTestResult(
                         provider,
                         "error",
-                        $"فشل التحقق من توكن Hugging Face أو النموذج: HTTP {(int)response.StatusCode}. {Truncate(details)}",
-                        $"https://router.huggingface.co/{hfProvider}/models/{model}"));
+                        $"فشل التحقق من Hugging Face: HTTP {(int)response.StatusCode}. {Truncate(details)}",
+                        $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}?_subdomain=queue"));
                 }
 
+                using var catalogJson = JsonDocument.Parse(details);
+                var modelFound = catalogJson.RootElement.ValueKind == JsonValueKind.Array &&
+                    catalogJson.RootElement.EnumerateArray().Any(item =>
+                        item.TryGetProperty("id", out var idElement) &&
+                        string.Equals(
+                            idElement.GetString(),
+                            model,
+                            StringComparison.OrdinalIgnoreCase));
+
                 var route = $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}?_subdomain=queue";
+
+                if (!modelFound)
+                {
+                    return Ok(new ImageProviderTestResult(
+                        provider,
+                        "error",
+                        $"الموديل {model} لم يظهر ضمن موديلات text-to-image المتاحة عبر {hfProvider} حالياً.",
+                        route));
+                }
 
                 return Ok(new ImageProviderTestResult(
                     provider,
                     "connected",
-                    $"التوكن والموديل متاحان، ومسار {hfProvider} مضبوط. فحص الإعداد لا ينفّذ توليد صورة فعلية.",
+                    $"الموديل {model} مُدرج حالياً ضمن موديلات text-to-image عبر {hfProvider}. مسار الطابور جاهز للتوليد.",
                     route));
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
