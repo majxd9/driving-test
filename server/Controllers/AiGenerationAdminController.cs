@@ -145,7 +145,6 @@ public sealed class AiGenerationAdminController : ControllerBase
                             model,
                             StringComparison.OrdinalIgnoreCase));
 
-                var route = route;
 
                 if (!modelFound)
                 {
