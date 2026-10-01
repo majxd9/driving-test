@@ -38,6 +38,7 @@ export default function Exam() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const promptAudioRef = useRef<HTMLAudioElement | null>(null);
   const entryPromptAudioRef = useRef<HTMLAudioElement | null>(null);
+  const disabledPromptAudioRef = useRef<HTMLAudioElement | null>(null);
   const entryPromptPlayedRef = useRef(false);
     const activationPromptPendingRef = useRef(false);
   const activationPromptQuestionRef = useRef<string | null>(null);
@@ -128,12 +129,15 @@ export default function Exam() {
   useEffect(() => {
     const prompt = createQuestionAudioPrompt('question-audio-enabled');
     const entryPrompt = createQuestionAudioPrompt('question-audio-first-entry');
+    const disabledPrompt = createQuestionAudioPrompt('question-audio-disabled');
 
     promptAudioRef.current = prompt;
     entryPromptAudioRef.current = entryPrompt;
+    disabledPromptAudioRef.current = disabledPrompt;
 
     prompt?.load();
     entryPrompt?.load();
+    disabledPrompt?.load();
 
     if (!entryPromptPlayedRef.current && entryPrompt) {
       entryPromptPlayedRef.current = true;
@@ -147,8 +151,10 @@ export default function Exam() {
     return () => {
       prompt?.pause();
       entryPrompt?.pause();
+      disabledPrompt?.pause();
       promptAudioRef.current = null;
       entryPromptAudioRef.current = null;
+      disabledPromptAudioRef.current = null;
     };
   }, []);
 
@@ -321,7 +327,15 @@ export default function Exam() {
 
                 setAudioPlaying(false);
                 setAudioError(null);
-                speakArabicFallback('الصوت متوقف');
+                const disabledPrompt = disabledPromptAudioRef.current;
+                if (disabledPrompt) {
+                  disabledPrompt.currentTime = 0;
+                  void disabledPrompt.play().catch(() => {
+                    speakArabicFallback('الصوت متوقف');
+                  });
+                } else {
+                  speakArabicFallback('الصوت متوقف');
+                }
               }}
               aria-label="إيقاف الصوت"
               title="إيقاف الصوت"
