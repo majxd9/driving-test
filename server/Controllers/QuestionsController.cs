@@ -144,7 +144,8 @@ public class QuestionsController : ControllerBase
             q.DiagramUrl,
             q.DiagramTitle,
             q.DiagramDescription,
-            q.AudioUrl
+            q.AudioUrl,
+            q.AiImageUrl
         )).ToList());
     }
 
