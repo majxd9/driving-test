@@ -351,14 +351,21 @@ export default function Study() {
               )}
               {q.aiImageUrl && (
                 <div className="study-premium-image ai-secondary">
-                  <OptimizedImage
-                    src={resolveApiUrl(q.aiImageUrl)}
-                    alt="شرح بصري تعليمي AI"
-                    sizes="(max-width:700px) 96vw, 760px"
-                    className="study-premium-image-el"
-                    objectFit="contain"
-                    priority
-                  />
+                  {q.aiImageGenerationStatus === 'Failed' ? (
+                    <div className="study-premium-ai-unavailable" role="status">
+                      صورة AI غير متاحة حالياً
+                      <small>تعذر توليدها بسبب انتهاء رصيد التوليد المجاني.</small>
+                    </div>
+                  ) : (
+                    <OptimizedImage
+                      src={resolveApiUrl(q.aiImageUrl!)}
+                      alt="شرح بصري تعليمي AI"
+                      sizes="(max-width:700px) 96vw, 760px"
+                      className="study-premium-image-el"
+                      objectFit="contain"
+                      priority
+                    />
+                  )}
                 </div>
               )}
             </div>
