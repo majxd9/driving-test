@@ -13,6 +13,8 @@ public sealed class AiGenerationQuotaService
 {
     private readonly AppDbContext _db;
     private readonly IConfiguration _configuration;
+    private static readonly SemaphoreSlim SchemaGate = new(1, 1);
+    private static bool _schemaReady;
 
     public AiGenerationQuotaService(
         AppDbContext db,
@@ -55,6 +57,7 @@ public sealed class AiGenerationQuotaService
     public async Task<AiGenerationQuota> GetQuotaAsync(
         CancellationToken cancellationToken)
     {
+        await EnsureSchemaAsync(cancellationToken);
         var monthStart = CurrentMonthStartUtc;
 
         var used = await _db.Database
@@ -78,6 +81,7 @@ public sealed class AiGenerationQuotaService
     public async Task<bool> TryConsumeAsync(
         CancellationToken cancellationToken)
     {
+        await EnsureSchemaAsync(cancellationToken);
         var monthStart = CurrentMonthStartUtc;
 
         await _db.Database.ExecuteSqlInterpolatedAsync($"""
@@ -94,5 +98,31 @@ public sealed class AiGenerationQuotaService
             """, cancellationToken);
 
         return updated == 1;
+    }
+
+    private async Task EnsureSchemaAsync(CancellationToken cancellationToken)
+    {
+        if (_schemaReady)
+            return;
+
+        await SchemaGate.WaitAsync(cancellationToken);
+        try
+        {
+            if (_schemaReady)
+                return;
+
+            await _db.Database.ExecuteSqlRawAsync("""
+                CREATE TABLE IF NOT EXISTS "AiGenerationUsage" (
+                    "MonthStart" timestamp with time zone NOT NULL PRIMARY KEY,
+                    "GeneratedCount" integer NOT NULL
+                );
+                """, cancellationToken);
+
+            _schemaReady = true;
+        }
+        finally
+        {
+            SchemaGate.Release();
+        }
     }
 }
