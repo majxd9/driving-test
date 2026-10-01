@@ -76,6 +76,7 @@ public sealed class AiGenerationWorker : BackgroundService
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var quota = new AiGenerationQuotaService(db, _configuration);
 
         try
         {
@@ -101,6 +102,17 @@ public sealed class AiGenerationWorker : BackgroundService
                         db,
                         claimed.Id,
                         "تم تجاهل الناتج لأن محتوى السؤال تغيّر قبل اكتمال المهمة.",
+                        cancellationToken);
+                    return;
+                }
+
+                if (!await quota.TryConsumeAsync(cancellationToken))
+                {
+                    await ReleaseJobAsync(
+                        db,
+                        claimed.Id,
+                        "تم بلوغ الحد الشهري لتوليد AI؛ ستُستأنف المهمة تلقائياً في بداية الشهر القادم.",
+                        quota.NextMonthStartUtc,
                         cancellationToken);
                     return;
                 }
@@ -158,6 +170,17 @@ public sealed class AiGenerationWorker : BackgroundService
                         db,
                         claimed.Id,
                         "تم تجاهل الناتج لأن محتوى السؤال تغيّر قبل اكتمال المهمة.",
+                        cancellationToken);
+                    return;
+                }
+
+                if (!await quota.TryConsumeAsync(cancellationToken))
+                {
+                    await ReleaseJobAsync(
+                        db,
+                        claimed.Id,
+                        "تم بلوغ الحد الشهري لتوليد AI؛ ستُستأنف المهمة تلقائياً في بداية الشهر القادم.",
+                        quota.NextMonthStartUtc,
                         cancellationToken);
                     return;
                 }
@@ -283,14 +306,15 @@ public sealed class AiGenerationWorker : BackgroundService
         AppDbContext db,
         long id,
         string note,
-        CancellationToken cancellationToken)
+        DateTime? nextAttemptAt = null,
+        CancellationToken cancellationToken = default)
     {
         var job = await db.AiGenerationJobs
             .SingleAsync(x => x.Id == id, cancellationToken);
 
         job.Status = AiGenerationJobStatus.Pending;
         job.LastError = note;
-        job.NextAttemptAt = DateTime.UtcNow.AddMinutes(5);
+        job.NextAttemptAt = nextAttemptAt ?? DateTime.UtcNow.AddMinutes(5);
         job.LockedUntil = null;
         job.UpdatedAt = DateTime.UtcNow;
 
