@@ -5,6 +5,7 @@ import { QuestionCategory } from '../types';
 import SiteGuide from '../components/SiteGuide';
 import SpiritDriveScene from '../components/SpiritDriveScene';
 import SpiritNitro from '../components/SpiritNitro';
+import { playQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 
 const Icon = ({type}:{type:'rules'|'signs'|'mechanic'|'arrow'}) => {
  const common={width:24,height:24,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.9,strokeLinecap:'round' as const,strokeLinejoin:'round' as const};
@@ -17,6 +18,13 @@ const Icon = ({type}:{type:'rules'|'signs'|'mechanic'|'arrow'}) => {
 const preloadStudy = () => { void import('./Study'); };
 const preloadModels = () => { void import('./Models'); };
 const preloadPractical = () => { void import('./PracticalInfo'); };
+
+const openStudy = (path: string) => {
+  void window.setTimeout(() => {
+    void playQuestionAudioPrompt('question-audio-first-entry').catch(() => undefined);
+  }, 500);
+  navigate(path);
+};
 
 const categories:{key:QuestionCategory;title:string;subtitle:string;path:string;icon:'rules'|'signs'|'mechanic'}[]=[
   {key:'Ser',title:'قواعد السير',subtitle:'الأولوية، السرعة، التقاطعات وقواعد القيادة',path:'/study/Ser',icon:'rules'},
@@ -45,14 +53,14 @@ export default function Home(){
   <main className="max-w-6xl mx-auto px-5 pb-12">
    <section className="home-hero">
     <SpiritDriveScene large variant="front" className="home-spirit-scene" />
-    <div className="home-hero-copy"><div className="home-greeting"><span className="student-name-plate" aria-label="اسم الطالب"><span className="student-name-kicker">هويّتك على الطريق</span><span className="student-name-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.8 15 6l3.7.8.8 3.7L21 13.5l-1.5 3.1-3.7.8L13 19.6 12 21l-1-1.4-2.8-2.2-3.7-.8L3 13.5l1.5-3-0.8-3.7L7.4 6 10 3.8 12 3z"></path><circle cx="12" cy="11.2" r="2.7"></circle><path d="M7.9 17.3c.9-2 2.3-3 4.1-3s3.2 1 4.1 3"></path></svg></span><span className="student-name-copy"><small>سائق</small><strong>{firstName || 'طالبنا'}</strong></span><span className="student-name-road" aria-hidden="true"><i></i><i></i><i></i></span><span className="student-name-glow" aria-hidden="true"></span></span></div><h1>تدرّب جيداً، راجع أخطاءك، وادخل الاختبار بثقة.</h1><p>اختر القسم الذي تريد مراجعته أو انتقل مباشرة إلى محاكاة اختبار الرخصة. الأسئلة والصور والنتائج مرتبة لتكون المراجعة أسرع وأوضح.</p><div className="flex flex-wrap gap-3 mt-6"><button onClick={()=>navigate('/study/Ser')} className="primary-cta">ابدأ التدريب <Icon type="arrow"/></button><SiteGuide/></div></div>
+    <div className="home-hero-copy"><div className="home-greeting"><span className="student-name-plate" aria-label="اسم الطالب"><span className="student-name-kicker">هويّتك على الطريق</span><span className="student-name-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.8 15 6l3.7.8.8 3.7L21 13.5l-1.5 3.1-3.7.8L13 19.6 12 21l-1-1.4-2.8-2.2-3.7-.8L3 13.5l1.5-3-0.8-3.7L7.4 6 10 3.8 12 3z"></path><circle cx="12" cy="11.2" r="2.7"></circle><path d="M7.9 17.3c.9-2 2.3-3 4.1-3s3.2 1 4.1 3"></path></svg></span><span className="student-name-copy"><small>سائق</small><strong>{firstName || 'طالبنا'}</strong></span><span className="student-name-road" aria-hidden="true"><i></i><i></i><i></i></span><span className="student-name-glow" aria-hidden="true"></span></span></div><h1>تدرّب جيداً، راجع أخطاءك، وادخل الاختبار بثقة.</h1><p>اختر القسم الذي تريد مراجعته أو انتقل مباشرة إلى محاكاة اختبار الرخصة. الأسئلة والصور والنتائج مرتبة لتكون المراجعة أسرع وأوضح.</p><div className="flex flex-wrap gap-3 mt-6"><button onClick={()=>openStudy('/study/Ser')} className="primary-cta">ابدأ التدريب <Icon type="arrow"/></button><SiteGuide/></div></div>
     <div className="home-score">
       <div className="home-score-copy"><span>إجمالي بنك الأسئلة</span><small>سؤال متاح للتدريب</small></div>
       <div className="home-score-main"><strong>{total??'—'}</strong><SpiritNitro /></div>
     </div>
    </section>
    <section className="mt-10"><div className="section-heading"><div><p className="eyebrow">مركز التدريب</p><h2>اختر ما تريد مراجعته</h2></div><span className="section-hint">ابدأ من أي قسم، ويمكنك العودة وتغيير القسم لاحقاً.</span></div>
-    <div className="grid md:grid-cols-3 gap-4 mt-4">{categories.map(c=><button key={c.key} onPointerEnter={preloadStudy} onFocus={preloadStudy} onClick={()=>navigate(c.path)} className={`category-card ${c.key==='Ser'?'brand':c.key==='Ishara'?'signs':'mek'}`}><div className="category-icon"><Icon type={c.icon}/></div><div className="flex-1 text-right"><h3>{c.title}</h3><p>{c.subtitle}</p></div><span className="arrow"><Icon type="arrow"/></span></button>)}</div>
+    <div className="grid md:grid-cols-3 gap-4 mt-4">{categories.map(c=><button key={c.key} onPointerEnter={preloadStudy} onFocus={preloadStudy} onClick={()=>openStudy(c.path)} className={`category-card ${c.key==='Ser'?'brand':c.key==='Ishara'?'signs':'mek'}`}><div className="category-icon"><Icon type={c.icon}/></div><div className="flex-1 text-right"><h3>{c.title}</h3><p>{c.subtitle}</p></div><span className="arrow"><Icon type="arrow"/></span></button>)}</div>
    </section>
    <button type="button" className="home-practical-card" onPointerEnter={preloadPractical} onFocus={preloadPractical} onClick={()=>navigate('/practical-info')}>
     <span className="home-practical-icon" aria-hidden="true">
