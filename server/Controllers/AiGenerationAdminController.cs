@@ -92,6 +92,62 @@ public sealed class AiGenerationAdminController : ControllerBase
         if (provider == "none")
             return Ok(new ImageProviderTestResult(provider, "disabled", "مولد الصور غير مفعّل حالياً. فعّل QUESTION_IMAGE_PROVIDER أولاً.", endpoint));
 
+        if (provider == "edenai")
+        {
+            var token = (_configuration["EDENAI_API_KEY"] ?? string.Empty).Trim();
+            const string route = "https://api.edenai.run/v3/info/";
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "unconfigured",
+                    "يجب ضبط EDENAI_API_KEY.",
+                    route));
+            }
+
+            try
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(TimeSpan.FromSeconds(6));
+
+                using var client = _httpClientFactory.CreateClient("EdenAI");
+                using var request = new HttpRequestMessage(HttpMethod.Get, "v3/info/");
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                using var response = await client.SendAsync(request, timeout.Token);
+                var details = await response.Content.ReadAsStringAsync(timeout.Token);
+
+                return response.IsSuccessStatusCode
+                    ? Ok(new ImageProviderTestResult(
+                        provider,
+                        "connected",
+                        "تم التحقق من مفتاح Eden AI والوصول إلى كتالوج المنصة بنجاح. لا يتم تنفيذ توليد صورة ضمن هذا الفحص.",
+                        route))
+                    : Ok(new ImageProviderTestResult(
+                        provider,
+                        "error",
+                        $"فشل التحقق من Eden AI: HTTP {(int)response.StatusCode}. {Truncate(details)}",
+                        route));
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "error",
+                    "انتهت مهلة فحص Eden AI قبل اكتمال التحقق.",
+                    route));
+            }
+            catch (Exception ex)
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "error",
+                    $"تعذر فحص Eden AI: {ex.Message}",
+                    route));
+            }
+        }
+
         if (provider == "huggingface")
         {
             var token = (_configuration["QUESTION_IMAGE_HF_TOKEN"] ?? string.Empty).Trim();
