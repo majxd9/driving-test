@@ -218,13 +218,6 @@ public class AdminController : ControllerBase
             .OrderBy(q => q.Id)
             .ToListAsync();
 
-        var ids = questions.Select(q => q.Id).ToArray();
-        var audioRows = await _db.QuestionAudios
-            .AsNoTracking()
-            .Where(x => ids.Contains(x.QuestionId) && x.AudioBytes.Length > 0)
-            .Select(x => new { x.QuestionId, x.ContentHash })
-            .ToListAsync();
-
         await _generationJobs.AttachAdminStateAsync(
             questions,
             HttpContext.RequestAborted);
