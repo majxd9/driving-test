@@ -36,6 +36,7 @@ export default function Study() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const promptAudioRef = useRef<HTMLAudioElement | null>(null);
   const entryPromptAudioRef = useRef<HTMLAudioElement | null>(null);
+  const disabledPromptAudioRef = useRef<HTMLAudioElement | null>(null);
   const entryPromptPlayedRef = useRef(false);
     const activationPromptPendingRef = useRef(false);
   const activationPromptQuestionRef = useRef<string | null>(null);
@@ -83,12 +84,15 @@ export default function Study() {
   useEffect(() => {
     const prompt = createQuestionAudioPrompt('question-audio-enabled');
     const entryPrompt = createQuestionAudioPrompt('question-audio-first-entry');
+    const disabledPrompt = createQuestionAudioPrompt('question-audio-disabled');
 
     promptAudioRef.current = prompt;
     entryPromptAudioRef.current = entryPrompt;
+    disabledPromptAudioRef.current = disabledPrompt;
 
     prompt?.load();
     entryPrompt?.load();
+    disabledPrompt?.load();
 
     if (!entryPromptPlayedRef.current && entryPrompt) {
       entryPromptPlayedRef.current = true;
@@ -102,8 +106,10 @@ export default function Study() {
     return () => {
       prompt?.pause();
       entryPrompt?.pause();
+      disabledPrompt?.pause();
       promptAudioRef.current = null;
       entryPromptAudioRef.current = null;
+      disabledPromptAudioRef.current = null;
     };
   }, []);
 
