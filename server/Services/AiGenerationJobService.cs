@@ -4,7 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DrivingTestApi.Services;
 
-public sealed record AiGenerationCounts(int Missing,int Pending,int Processing,int Completed,int Failed)
+public sealed record AiGenerationCounts(
+    int Missing,
+    int Pending,
+    int Processing,
+    int Completed,
+    int Failed,
+    string? LastError = null)
 {
     public int Remaining => Missing + Pending + Processing;
 }
@@ -654,12 +660,22 @@ public sealed class AiGenerationJobService
             }
         }
 
+        var lastError = jobs
+            .Where(x =>
+                x.JobType == type &&
+                x.Status == AiGenerationJobStatus.Failed &&
+                !string.IsNullOrWhiteSpace(x.LastError))
+            .OrderByDescending(x => x.UpdatedAt)
+            .Select(x => x.LastError)
+            .FirstOrDefault();
+
         return new AiGenerationCounts(
             missing,
             pending,
             processing,
             completed,
-            failed);
+            failed,
+            lastError);
     }
 
     private enum EnsureResult
