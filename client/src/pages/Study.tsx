@@ -11,6 +11,7 @@ import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
 import { createQuestionAudioPrompt, playQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { speakArabicFallback, stopArabicFallback } from '../utils/speechFeedback';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -57,16 +58,26 @@ export default function Study() {
     if (!entryPromptPlayedRef.current && entryPrompt) {
       entryPromptPlayedRef.current = true;
       entryPrompt.currentTime = 0;
-      window.setTimeout(() => {
-        void entryPrompt.play().catch(() => {
-          // Autoplay may be blocked on mobile; the visual prompt remains available.
+      const timer = window.setTimeout(() => {
+        void playQuestionAudioPrompt('question-audio-first-entry').catch(() => {
+          speakArabicFallback('لتشغيل القراءة الصوتية للأسئلة، اضغط زر التشغيل.');
         });
       }, 450);
+
+      return () => {
+        window.clearTimeout(timer);
+        prompt?.pause();
+        entryPrompt?.pause();
+        stopArabicFallback();
+        promptAudioRef.current = null;
+        entryPromptAudioRef.current = null;
+      };
     }
 
     return () => {
       prompt?.pause();
       entryPrompt?.pause();
+      stopArabicFallback();
       promptAudioRef.current = null;
       entryPromptAudioRef.current = null;
     };
@@ -336,8 +347,11 @@ export default function Study() {
               audio.currentTime = 0;
             }
             setAudioPlaying(false);
+            stopArabicFallback();
 
-            void playQuestionAudioPrompt('question-audio-disabled').catch(() => undefined);
+            void playQuestionAudioPrompt('question-audio-disabled').catch(() => {
+              speakArabicFallback('تم إيقاف القراءة الصوتية.');
+            });
           }}
           aria-label="إيقاف الصوت"
           title="إيقاف الصوت"
@@ -362,7 +376,9 @@ export default function Study() {
 
             if (!shouldPlayActivationPrompt) return;
 
-            void playQuestionAudioPrompt('question-audio-enabled').catch(() => undefined);
+            void playQuestionAudioPrompt('question-audio-enabled').catch(() => {
+              speakArabicFallback('تم تشغيل القراءة الصوتية. سيستمر الصوت تلقائياً مع الأسئلة حتى تضغط زر الإيقاف.');
+            });
           }}
           onError={() => {
             setAudioPlaying(false);
