@@ -470,10 +470,6 @@ public sealed class AiGenerationJobService
             if (!questionById.TryGetValue(image.QuestionId, out var question))
                 continue;
 
-            var currentHash = QuestionImagePromptBuilder.GetContentHash(question);
-            if (!string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal))
-                continue;
-
             result.Add(new CompletedAiImageItem(
                 question.Id,
                 question.Text,
