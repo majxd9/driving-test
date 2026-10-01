@@ -390,9 +390,53 @@ public class QuestionsController : ControllerBase
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync(cancellationToken);
+                var providerStatus = string.Empty;
+                var providerMessage = string.Empty;
+
+                try
+                {
+                    using var document = JsonDocument.Parse(error);
+                    var root = document.RootElement;
+
+                    if (root.TryGetProperty("detail", out var detail))
+                    {
+                        if (detail.ValueKind == JsonValueKind.Object)
+                        {
+                            providerStatus = detail.TryGetProperty("status", out var status)
+                                ? status.GetString() ?? string.Empty
+                                : string.Empty;
+                            providerMessage = detail.TryGetProperty("message", out var detailMessage)
+                                ? detailMessage.GetString() ?? string.Empty
+                                : string.Empty;
+                        }
+                        else
+                        {
+                            providerMessage = detail.GetString() ?? string.Empty;
+                        }
+                    }
+
+                    if (string.IsNullOrWhiteSpace(providerStatus) &&
+                        root.TryGetProperty("status", out var topStatus))
+                        providerStatus = topStatus.GetString() ?? string.Empty;
+
+                    if (string.IsNullOrWhiteSpace(providerMessage) &&
+                        root.TryGetProperty("message", out var topMessage))
+                        providerMessage = topMessage.GetString() ?? string.Empty;
+                }
+                catch (JsonException)
+                {
+                    // Keep the raw provider response below when it is not JSON.
+                }
+
+                var message = string.IsNullOrWhiteSpace(providerMessage)
+                    ? $"تعذر توليد رسالة الصوت من ElevenLabs: {definition.Key}"
+                    : $"رسالة الصوت {definition.Key} — ElevenLabs: {providerStatus} — {providerMessage}";
+
                 return StatusCode((int)response.StatusCode, new
                 {
-                    message = $"تعذر توليد رسالة الصوت من ElevenLabs: {definition.Key}",
+                    message,
+                    providerStatus,
+                    providerMessage,
                     details = error
                 });
             }
