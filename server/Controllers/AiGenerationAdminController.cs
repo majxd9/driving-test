@@ -20,7 +20,7 @@ public sealed class AiGenerationAdminController : ControllerBase
         IConfiguration configuration)
     {
         _jobs = jobs;
-        _httpClientFactory = httpClientFactory;
+        _httpClientFactory = httpClientClientFactory;
         _configuration = configuration;
     }
 
@@ -133,7 +133,29 @@ public sealed class AiGenerationAdminController : ControllerBase
                     $"التوكن والموديل متاحان، ومسار {hfProvider} مضبوط. فحص الإعداد لا ينفّذ توليد صورة فعلية.",
                     route));
             }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "error",
+                    "انتهت مهلة فحص Hugging Face قبل اكتمال التحقق.",
+                    $"https://router.huggingface.co/{hfProvider}/models/{model}"));
+            }
+            catch (Exception ex)
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "error",
+                    $"تعذر فحص Hugging Face: {ex.Message}",
+                    $"https://router.huggingface.co/{hfProvider}/models/{model}"));
+            }
         }
+
+        return Ok(new ImageProviderTestResult(
+            provider,
+            "unsupported",
+            $"مزود الصور '{provider}' غير مدعوم.",
+            endpoint));
     }
 
     private static string EncodePath(string value) =>
