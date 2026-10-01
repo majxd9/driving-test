@@ -75,6 +75,19 @@ public sealed class AiGenerationQuotaService
             monthStart);
     }
 
+    public async Task ReleaseAsync(CancellationToken cancellationToken)
+    {
+        await EnsureSchemaAsync(cancellationToken);
+        var monthStart = CurrentMonthStartUtc;
+
+        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE "AiGenerationUsage"
+            SET "GeneratedCount" = GREATEST("GeneratedCount" - 1, 0)
+            WHERE "MonthStart" = {monthStart}
+              AND "GeneratedCount" > 0;
+            """, cancellationToken);
+    }
+
     // Consumes one monthly generation slot immediately before an actual
     // ElevenLabs/Piper/ComfyUI generation call. The SQL update is atomic,
     // so multiple workers cannot exceed the configured monthly limit.
