@@ -94,6 +94,37 @@ public sealed class AiGenerationJobService
             .OrderBy(q => q.Id)
             .ToListAsync(cancellationToken);
 
+        var hashes = questions.ToDictionary(
+            q => q.Id,
+            q => jobType == AiGenerationJobType.Audio
+                ? QuestionAudioTextBuilder.GetCurrentHash(q)
+                : QuestionImagePromptBuilder.GetContentHash(q));
+
+        var questionIds = questions.Select(q => q.Id).ToArray();
+
+        var existingJobs = await _db.AiGenerationJobs
+            .Where(x => questionIds.Contains(x.QuestionId) && x.JobType == jobType)
+            .ToListAsync(cancellationToken);
+
+        var jobsByKey = existingJobs.ToDictionary(
+            x => $"{x.QuestionId}:{x.ContentHash}",
+            x => x,
+            StringComparer.Ordinal);
+
+        var audioByQuestion = jobType == AiGenerationJobType.Audio
+            ? await _db.QuestionAudios
+                .AsNoTracking()
+                .Where(x => questionIds.Contains(x.QuestionId) && x.AudioBytes.Length > 0)
+                .ToDictionaryAsync(x => x.QuestionId, cancellationToken)
+            : new Dictionary<int, QuestionAudio>();
+
+        var imageByQuestion = jobType == AiGenerationJobType.AiImage
+            ? await _db.QuestionAiImages
+                .AsNoTracking()
+                .Where(x => questionIds.Contains(x.QuestionId) && x.ImageBytes.Length > 0)
+                .ToDictionaryAsync(x => x.QuestionId, cancellationToken)
+            : new Dictionary<int, QuestionAiImage>();
+
         var created = 0;
         var requeued = 0;
         var skipped = 0;
@@ -108,28 +139,64 @@ public sealed class AiGenerationJobService
                 continue;
             }
 
-            var result = await EnsureJobAsync(
-                question,
-                jobType,
-                forceCompleted,
-                retryFailed,
-                cancellationToken);
+            var hash = hashes[question.Id];
+            var key = $"{question.Id}:{hash}";
 
-            switch (result)
+            if (jobsByKey.TryGetValue(key, out var existing))
             {
-                case EnsureResult.Created:
-                    created++;
-                    break;
-                case EnsureResult.Requeued:
-                    requeued++;
-                    break;
-                case EnsureResult.FailedRetried:
-                    failedRetried++;
-                    break;
-                default:
-                    skipped++;
-                    break;
+                if (forceCompleted ||
+                    (retryFailed && existing.Status == AiGenerationJobStatus.Failed))
+                {
+                    existing.Status = AiGenerationJobStatus.Pending;
+                    existing.Attempts = 0;
+                    existing.LastError = null;
+                    existing.NextAttemptAt = DateTime.UtcNow;
+                    existing.LockedUntil = null;
+                    existing.StartedAt = null;
+                    existing.CompletedAt = null;
+                    existing.UpdatedAt = DateTime.UtcNow;
+
+                    if (forceCompleted) requeued++;
+                    else failedRetried++;
+
+                    continue;
+                }
+
+                skipped++;
+                continue;
             }
+
+            var mediaExists = jobType == AiGenerationJobType.Audio
+                ? audioByQuestion.TryGetValue(question.Id, out var audio) &&
+                  (audio.ContentHash == hash ||
+                   audio.ContentHash == QuestionAudioTextBuilder.GetLegacyHash(question))
+                : imageByQuestion.TryGetValue(question.Id, out var image) &&
+                  image.ContentHash == hash;
+
+            if (mediaExists)
+            {
+                skipped++;
+                continue;
+            }
+
+            var job = new AiGenerationJob
+            {
+                QuestionId = question.Id,
+                JobType = jobType,
+                Status = AiGenerationJobStatus.Pending,
+                Attempts = 0,
+                ContentHash = hash,
+                Priority = jobType == AiGenerationJobType.AiImage
+                    ? QuestionImagePromptBuilder.GetPriority(question)
+                    : 90,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                NextAttemptAt = DateTime.UtcNow
+            };
+
+            _db.AiGenerationJobs.Add(job);
+            jobsByKey[key] = job;
+            created++;
         }
 
         await _db.SaveChangesAsync(cancellationToken);
