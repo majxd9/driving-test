@@ -116,6 +116,7 @@ export interface AiGenerationCounts {
   failed: number;
   remaining: number;
   lastError?: string | null;
+  lastErrorAt?: string | null;
 }
 
 export interface AiGenerationQuota {
@@ -128,6 +129,7 @@ export interface AiGenerationQuota {
 export interface AiGenerationOverview {
   audioProvider: string;
   imageProvider: string;
+  imageExecutionProvider: string;
   audio: AiGenerationCounts;
   image: AiGenerationCounts;
   quota: AiGenerationQuota;
