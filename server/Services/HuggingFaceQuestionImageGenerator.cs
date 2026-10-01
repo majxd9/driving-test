@@ -28,7 +28,7 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
                 "لم يتم ضبط QUESTION_IMAGE_HF_TOKEN.");
 
         var model = (_configuration["QUESTION_IMAGE_HF_MODEL"]
-            ?? "stabilityai/stable-diffusion-3-medium-diffusers").Trim();
+            ?? "Qwen/Qwen-Image").Trim();
 
         if (string.IsNullOrWhiteSpace(model))
             throw new InvalidOperationException(
