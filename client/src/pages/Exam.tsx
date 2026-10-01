@@ -117,26 +117,6 @@ export default function Exam() {
     });
   }, [navigate, modelId]);
 
-  useEffect(() => {
-
-
-    prompt?.load();
-    entryPrompt?.load();
-    disabledPrompt?.load();
-
-      entryPrompt.currentTime = 0;
-      void entryPrompt.play().catch(() => {
-        // Use browser speech only until the AI-generated prompt exists.
-      });
-    }
-
-    return () => {
-      prompt?.pause();
-      entryPrompt?.pause();
-      disabledPrompt?.pause();
-    };
-  }, []);
-
   const currentAudioPath = questions[current]?.audioUrl ?? null;
   const currentAudioUrl = currentAudioPath ? resolveApiUrl(currentAudioPath) : null;
   const nextAudioPath = questions[current + 1]?.audioUrl ?? null;
