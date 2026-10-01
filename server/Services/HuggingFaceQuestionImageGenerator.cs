@@ -28,17 +28,17 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
                 "لم يتم ضبط QUESTION_IMAGE_HF_TOKEN.");
 
         var model = (_configuration["QUESTION_IMAGE_HF_MODEL"]
-            ?? "Qwen/Qwen-Image").Trim();
+            ?? "black-forest-labs/FLUX.1-schnell").Trim();
 
         if (string.IsNullOrWhiteSpace(model))
             throw new InvalidOperationException(
                 "لم يتم ضبط QUESTION_IMAGE_HF_MODEL.");
 
         var provider = (_configuration["QUESTION_IMAGE_HF_PROVIDER"]
-            ?? "hf-inference").Trim().Trim('/');
+            ?? "nscale").Trim().Trim('/');
 
         if (string.IsNullOrWhiteSpace(provider))
-            provider = "hf-inference";
+            provider = "nscale";
 
         var modelPath = string.Join(
             "/",
@@ -49,6 +49,14 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
             $"https://router.huggingface.co/{provider}/models/{modelPath}";
 
         var (positive, negative) = QuestionImagePromptBuilder.Build(question);
+        var steps = _configuration.GetValue("QUESTION_IMAGE_STEPS", 4);
+        var guidance = _configuration.GetValue("QUESTION_IMAGE_CFG", 0.0);
+
+        if (string.Equals(model, "black-forest-labs/FLUX.1-schnell", StringComparison.OrdinalIgnoreCase))
+        {
+            steps = Math.Clamp(steps, 1, 4);
+            guidance = 0.0;
+        }
 
         var payload = new
         {
@@ -58,8 +66,8 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
                 negative_prompt = negative,
                 width = _configuration.GetValue("QUESTION_IMAGE_WIDTH", 768),
                 height = _configuration.GetValue("QUESTION_IMAGE_HEIGHT", 512),
-                num_inference_steps = _configuration.GetValue("QUESTION_IMAGE_STEPS", 24),
-                guidance_scale = _configuration.GetValue("QUESTION_IMAGE_CFG", 7.0)
+                num_inference_steps = steps,
+                guidance_scale = guidance
             }
         };
 
