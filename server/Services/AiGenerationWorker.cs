@@ -43,6 +43,7 @@ public sealed class AiGenerationWorker : BackgroundService
                 var jobs = scope.ServiceProvider.GetRequiredService<AiGenerationJobService>();
 
                 await jobs.ResetStaleProcessingAsync(stoppingToken);
+                await jobs.PrepareImageQueueForCurrentProviderAsync(stoppingToken);
 
                 if (DateTime.UtcNow >= nextScan)
                 {
