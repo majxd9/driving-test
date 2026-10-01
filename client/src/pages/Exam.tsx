@@ -34,6 +34,7 @@ export default function Exam() {
   const answersRef = useRef<Record<number, number>>({});
   const loadSequenceRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
@@ -165,6 +166,24 @@ export default function Exam() {
 
 
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !audioEnabled || !audioReady || !currentAudioUrl) return;
+
+    if (!audio.paused) return;
+
+    audio.currentTime = 0;
+    void audio.play()
+      .then(() => {
+        setAudioPlaying(true);
+        setAudioError(null);
+      })
+      .catch(() => {
+        setAudioPlaying(false);
+        setAudioError('اضغط زر التشغيل لاستئناف الصوت.');
+      });
+  }, [audioEnabled, audioReady, currentAudioUrl]);
+
   const goToQuestion = useCallback((nextIndex:number) => {
     setCurrent(currentIndex => {
       if (nextIndex === currentIndex || nextIndex < 0 || nextIndex >= questions.length) return currentIndex;
@@ -241,6 +260,7 @@ export default function Exam() {
               className={"question-audio-nav__audio play " + (audioPlaying ? "playing" : "")}
               disabled={!currentAudioUrl || !audioReady}
               onClick={() => {
+                setAudioEnabled(true);
                 setAudioError(null);
                 const audio = audioRef.current;
                 if (audio && audioReady) {
@@ -259,14 +279,14 @@ export default function Exam() {
               type="button"
               className="question-audio-nav__audio stop"
               onClick={() => {
+                setAudioEnabled(false);
+                setAudioError(null);
                 const audio = audioRef.current;
                 if (audio) {
                   audio.pause();
                   audio.currentTime = 0;
                 }
-
                 setAudioPlaying(false);
-                setAudioError(null);
               }}
               aria-label="إيقاف الصوت"
               title="إيقاف الصوت"
