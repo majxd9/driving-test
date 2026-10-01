@@ -144,7 +144,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                             model,
                             StringComparison.OrdinalIgnoreCase));
 
-                var route = $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}?_subdomain=queue";
+                var route = $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}";
 
                 if (!modelFound)
                 {
@@ -158,7 +158,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                 return Ok(new ImageProviderTestResult(
                     provider,
                     "connected",
-                    $"الموديل {model} مُدرج حالياً ضمن موديلات text-to-image عبر {hfProvider}. مسار الطابور جاهز للتوليد.",
+                    $"الموديل {model} مُدرج حالياً ضمن موديلات text-to-image عبر {hfProvider}. نقطة التنفيذ جاهزة للتوليد.",
                     route));
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
