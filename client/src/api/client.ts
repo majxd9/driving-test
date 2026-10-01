@@ -97,6 +97,9 @@ export const api = {
         { method:'POST', body:JSON.stringify({ force }) }),
     aiGenerationStatus: () =>
       request<import('../types').AiGenerationOverview>('/api/admin/ai-generation/status'),
+    completedAiImages: (limit = 24) =>
+      request<import('../types').CompletedAiImageItem[]>(
+        `/api/admin/ai-generation/completed-images?limit=${limit}`),
     enqueueAllAudio: (retryFailed = false, regenerateCompleted = false) =>
       request<import('../types').AiGenerationEnqueueResult>(
         '/api/admin/ai-generation/audio',
