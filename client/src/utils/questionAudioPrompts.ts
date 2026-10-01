@@ -2,7 +2,8 @@ import { resolveApiUrl } from '../api/client';
 
 export type QuestionAudioPromptKey =
   | 'question-audio-first-entry'
-  | 'question-audio-enabled';
+  | 'question-audio-enabled'
+  | 'question-audio-disabled';
 
 export function createQuestionAudioPrompt(
   key: QuestionAudioPromptKey
