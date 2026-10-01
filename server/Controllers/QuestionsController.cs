@@ -224,7 +224,7 @@ public class QuestionsController : ControllerBase
         }
 
         Response.Headers.CacheControl = "public,max-age=31536000,immutable";
-        Response.Headers.ETag = $""{image.ContentHash}"";
+        Response.Headers.ETag = $"\"{image.ContentHash}\"";
         return File(image.ImageBytes, image.ContentType);
     }
 
@@ -330,7 +330,7 @@ public class QuestionsController : ControllerBase
 
         foreach (var definition in AudioPromptDefinitions)
         {
-            var hash = GetContentHash(definition.Text);
+            var hash = QuestionAudioTextBuilder.HashText(definition.Text);
             var existing = await _db.SystemAudios
                 .SingleOrDefaultAsync(x => x.Key == definition.Key, cancellationToken);
 
