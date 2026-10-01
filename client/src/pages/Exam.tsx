@@ -7,6 +7,7 @@ import OptimizedImage from '../components/OptimizedImage';
 import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
 import { createQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { speakArabicFallback, stopArabicFallback } from '../utils/speechFeedback';
 
 const DURATION = 15 * 60;
 const OPTION_NUMBERS = ['١', '٢', '٣', '٤', '٥', '٦'];
@@ -138,7 +139,8 @@ export default function Exam() {
       entryPromptPlayedRef.current = true;
       entryPrompt.currentTime = 0;
       void entryPrompt.play().catch(() => {
-        // Mobile browsers may block autoplay; the on-screen prompt remains visible.
+        // Use browser speech only until the AI-generated prompt exists.
+        speakArabicFallback('إذا بدك تشغيل الصوت، اضغط زر التشغيل');
       });
     }
 
@@ -156,6 +158,7 @@ export default function Exam() {
   const nextAudioUrl = nextAudioPath ? resolveApiUrl(nextAudioPath) : null;
 
   useEffect(() => {
+    stopArabicFallback();
     activationPromptPendingRef.current = false;
     activationPromptQuestionRef.current = null;
 
@@ -337,7 +340,8 @@ export default function Exam() {
 
           prompt.currentTime = 0;
           void prompt.play().catch(() => {
-            // The AI-generated prompt is optional until its file is added.
+            // Use browser speech only until the AI-generated prompt exists.
+            speakArabicFallback('الصوت سيبقى شغال حتى تضغط إيقاف');
           });
         }}
               onError={() => {
