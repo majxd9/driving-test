@@ -303,7 +303,10 @@ public sealed class AiGenerationWorker : BackgroundService
             job.Status = AiGenerationJobStatus.Failed;
             job.NextAttemptAt = null;
 
-            var resumeAt = DateTime.UtcNow.AddMinutes(15);
+            // Do not keep hammering a provider that has rejected the request.
+            // Leave pending jobs paused until the admin explicitly resumes them
+            // after fixing quota, permissions, provider, or model configuration.
+            var resumeAt = DateTime.UtcNow.AddDays(3650);
             await db.Database.ExecuteSqlInterpolatedAsync($"""
                 UPDATE "AiGenerationJobs"
                 SET "NextAttemptAt" = {resumeAt},
