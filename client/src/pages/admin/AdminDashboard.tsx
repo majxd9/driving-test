@@ -114,10 +114,13 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  const testClass=providerTest?.state==='connected'?'on':providerTest?.state==='disabled'||providerTest?.state==='unconfigured'?'off':'warn';
  const quotaPercent=status?Math.min(100,(status.quota.used/Math.max(status.quota.limit,1))*100):0;
  const audioQuotaExhausted=Boolean(status?.audio.lastError?.toLowerCase().includes('quota_exceeded'));
+ const imageQuotaExhausted=Boolean(status?.image.lastError?.toLowerCase().includes('http 402')||status?.image.lastError?.toLowerCase().includes('depleted your monthly included credits'));
 
  const stateText=(title:'audio'|'image',data:import('../../types').AiGenerationCounts)=>{
   if(title==='audio' && data.lastError?.toLowerCase().includes('quota_exceeded'))
    return 'متوقف حالياً: انتهى الحد المجاني في ElevenLabs.';
+  if(title==='image' && (data.lastError?.toLowerCase().includes('http 402') || data.lastError?.toLowerCase().includes('depleted your monthly included credits')))
+   return 'متوقف حالياً: انتهى الحد المجاني المضمّن في Hugging Face.';
   if(data.processing>0)
    return title==='image'
     ? `جارٍ التوليد فعلياً عبر ${providerLabel(effectiveImageProvider)} الآن.`
@@ -171,7 +174,8 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
      <span>توليد صور AI</span>
      <b>Hugging Face → {providerLabel(effectiveImageProvider)}</b>
      <small>المهام تنتظر التنفيذ في PostgreSQL، والصور المكتملة تبقى محفوظة.</small>
-     <button type="button" className="primary-cta mt-auto" disabled={busy!==''||!providerEnabled} onClick={(e)=>{e.preventDefault();void run('image')}}>{busy==='image'?'جارٍ إضافة المهام…':'إضافة صور AI الناقصة للطابور'}</button>
+     {imageQuotaExhausted&&<div className="ai-provider-message problem mt-2">انتهى الحد المجاني المضمّن في Hugging Face حالياً. لن تُرسل طلبات توليد صور جديدة حتى تتوفر حصة جديدة.</div>}
+     <button type="button" className="primary-cta mt-auto" disabled={busy!==''||!providerEnabled||imageQuotaExhausted} onClick={(e)=>{e.preventDefault();void run('image')}}>{busy==='image'?'جارٍ إضافة المهام…':imageQuotaExhausted?'الحد المجاني منتهٍ':'إضافة صور AI الناقصة للطابور'}</button>
     </div>
    </div>
 
@@ -263,7 +267,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
    <div className="card-title"><div><p>إعادة المحاولة</p><b>تستخدم فقط بعد معالجة سبب الفشل</b></div></div>
    <div className="action-row">
     <button type="button" className="secondary-cta" disabled={busy!==''||status.audio.failed===0||audioQuotaExhausted} onClick={(e)=>{e.preventDefault();void run('retry-audio')}}>{busy==='retry-audio'?'جارٍ…':'إعادة طابور الأصوات الفاشلة'}</button>
-    <button type="button" className="secondary-cta" disabled={busy!==''||status.image.failed===0||!providerEnabled} onClick={(e)=>{e.preventDefault();void run('retry-image')}}>{busy==='retry-image'?'جارٍ…':'إعادة طابور صور AI الفاشلة'}</button>
+    <button type="button" className="secondary-cta" disabled={busy!==''||status.image.failed===0||!providerEnabled||imageQuotaExhausted} onClick={(e)=>{e.preventDefault();void run('retry-image')}}>{busy==='retry-image'?'جارٍ…':'إعادة طابور صور AI الفاشلة'}</button>
    </div>
   </div>}
  </section>;
