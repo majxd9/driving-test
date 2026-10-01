@@ -20,6 +20,16 @@ namespace DrivingTestApi.Controllers;
 public class QuestionsController : ControllerBase
 {
     private const string ElevenLabsVoiceId = "kkRCiWf4hNt6FiXgdXnk";
+    private const string AudioPromptFirstEntryKey = "question-audio-first-entry";
+    private const string AudioPromptEnabledKey = "question-audio-enabled";
+
+    // هذان النصان يُرسلان إلى نفس صوت ElevenLabs المستخدم للأسئلة،
+    // وبالتالي يُولّدان تلقائياً مع بقية أصوات المحتوى.
+    private static readonly (string Key, string Text)[] AudioPromptDefinitions =
+    {
+        (AudioPromptFirstEntryKey, "إذا بدك تشغيل الصوت، اضغط زر التشغيل."),
+        (AudioPromptEnabledKey, "الصوت سيبقى شغال حتى تضغط إيقاف.")
+    };
     private readonly AppDbContext _db;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
@@ -131,6 +141,26 @@ public class QuestionsController : ControllerBase
             q.DiagramDescription,
             q.AudioUrl
         )).ToList());
+    }
+
+    [HttpGet("audio-prompt/{key}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAudioPrompt(string key, CancellationToken cancellationToken)
+    {
+        var prompt = await _db.SystemAudios
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Key == key, cancellationToken);
+
+        if (prompt is null || prompt.AudioBytes.Length == 0)
+            return NotFound(new { message = "ملف رسالة الصوت غير موجود." });
+
+        Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+        Response.Headers.ETag = $"\"{prompt.ContentHash}\"";
+        Response.Headers["Content-Disposition"] = "inline";
+        Response.Headers["X-Audio-Bytes"] = prompt.AudioBytes.LongLength.ToString();
+        Response.Headers["X-Audio-Format"] = "mp3";
+
+        return File(prompt.AudioBytes, "audio/mpeg", enableRangeProcessing: false);
     }
 
     [HttpGet("{id:int}/audio-debug")]
@@ -309,6 +339,99 @@ public class QuestionsController : ControllerBase
         string AudioUrl,
         bool Generated,
         string ContentHash);
+
+    [HttpPost("/api/admin/questions/generate-audio-prompts")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GenerateAudioPrompts(CancellationToken cancellationToken)
+    {
+        var apiKey = _configuration["ELEVENLABS_API_KEY"];
+        if (string.IsNullOrWhiteSpace(apiKey))
+            return Problem("لم يتم ضبط ELEVENLABS_API_KEY على الخادم.");
+
+        var client = _httpClientFactory.CreateClient("ElevenLabs");
+        var generated = 0;
+
+        foreach (var definition in AudioPromptDefinitions)
+        {
+            var hash = GetContentHash(definition.Text);
+            var existing = await _db.SystemAudios
+                .SingleOrDefaultAsync(x => x.Key == definition.Key, cancellationToken);
+
+            if (existing is not null &&
+                existing.ContentHash == hash &&
+                existing.AudioBytes.Length > 0)
+            {
+                continue;
+            }
+
+            using var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                $"v1/text-to-speech/{ElevenLabsVoiceId}?output_format=mp3_44100_128");
+
+            request.Headers.TryAddWithoutValidation("xi-api-key", apiKey);
+            request.Content = JsonContent.Create(new
+            {
+                text = definition.Text,
+                model_id = "eleven_multilingual_v2",
+                voice_settings = new
+                {
+                    stability = 0.55,
+                    similarity_boost = 0.8,
+                    style = 0.1,
+                    use_speaker_boost = true
+                }
+            });
+
+            using var response = await client.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync(cancellationToken);
+                return StatusCode((int)response.StatusCode, new
+                {
+                    message = $"تعذر توليد رسالة الصوت من ElevenLabs: {definition.Key}",
+                    details = error
+                });
+            }
+
+            var audioBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+            if (audioBytes.Length == 0)
+                return Problem($"تمت استجابة ElevenLabs بدون ملف صوتي للرسالة: {definition.Key}.");
+
+            if (existing is null)
+            {
+                _db.SystemAudios.Add(new SystemAudio
+                {
+                    Key = definition.Key,
+                    AudioBytes = audioBytes,
+                    ContentHash = hash,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+            else
+            {
+                existing.AudioBytes = audioBytes;
+                existing.ContentHash = hash;
+                existing.CreatedAt = DateTime.UtcNow;
+            }
+
+            generated++;
+        }
+
+        if (generated > 0)
+            await _db.SaveChangesAsync(cancellationToken);
+
+        return Ok(new
+        {
+            generated,
+            total = AudioPromptDefinitions.Length,
+            firstEntryKey = AudioPromptFirstEntryKey,
+            enabledKey = AudioPromptEnabledKey
+        });
+    }
 
     [HttpPost("/api/admin/questions/{id:int}/generate-audio")]
     [Authorize(Roles = "Admin")]
