@@ -113,6 +113,10 @@ export const api = {
       request<import('../types').AiGenerationOverview>(
         '/api/admin/ai-generation/resume',
         { method:'POST' }),
+    testImageProvider: () =>
+      request<import('../types').ImageProviderTestResult>(
+        '/api/admin/ai-generation/test-image-provider',
+        { method:'POST' }),
     retryAiJob: (jobId:number) =>
       request<void>(`/api/admin/ai-generation/jobs/${jobId}/retry`, { method:'POST' }),
     generateQuestionAudioPrompts: () => request<{ generated: number; total: number; firstEntryKey: string; enabledKey: string; disabledKey: string }>('/api/admin/questions/generate-audio-prompts', { method: 'POST' }),
