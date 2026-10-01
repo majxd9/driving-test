@@ -334,8 +334,7 @@ public sealed class AiGenerationJobService
         {
             var audio = audios.FirstOrDefault(x => x.QuestionId == question.Id);
             if (audio is not null &&
-                (audio.ContentHash == QuestionAudioTextBuilder.GetCurrentHash(question) ||
-                 audio.ContentHash == QuestionAudioTextBuilder.GetLegacyHash(question)))
+                IsMatchingAudioHash(audio.ContentHash, question))
             {
                 question.AudioUrl =
                     $"/api/questions/{question.Id}/audio-play?v={audio.ContentHash}";
@@ -488,9 +487,7 @@ public sealed class AiGenerationJobService
 
         return audio is not null &&
                audio.AudioBytes.Length > 0 &&
-               (audio.ContentHash == QuestionAudioTextBuilder.GetCurrentHash(question) ||
-                audio.ContentHash == QuestionAudioTextBuilder.GetLegacyHash(question) ||
-                     audio.ContentHash == QuestionAudioTextBuilder.GetPreviousAdminHash(question));
+               IsMatchingAudioHash(audio.ContentHash, question);
     }
 
     private async Task<bool> HasMatchingImageAsync(
@@ -517,8 +514,7 @@ public sealed class AiGenerationJobService
         var audioHash = QuestionAudioTextBuilder.GetCurrentHash(question);
         var audio = audios.FirstOrDefault(x => x.QuestionId == question.Id);
         var audioReady = audio is not null &&
-                         (audio.ContentHash == audioHash ||
-                          audio.ContentHash == QuestionAudioTextBuilder.GetLegacyHash(question));
+                         IsMatchingAudioHash(audio.ContentHash, question);
 
         question.AudioUrl = audioReady
             ? $"/api/questions/{question.Id}/audio-play?v={audio!.ContentHash}"
@@ -567,6 +563,13 @@ public sealed class AiGenerationJobService
             .FirstOrDefault();
 
         return job is null ? "Missing" : job.Status.ToString();
+    }
+
+    private static bool IsMatchingAudioHash(string contentHash, Question question)
+    {
+        return contentHash == QuestionAudioTextBuilder.GetCurrentHash(question) ||
+               contentHash == QuestionAudioTextBuilder.GetLegacyHash(question) ||
+               contentHash == QuestionAudioTextBuilder.GetPreviousAdminHash(question);
     }
 
     private static AiGenerationCounts CountStatuses(
