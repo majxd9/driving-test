@@ -10,8 +10,6 @@ import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
-import { createQuestionAudioPrompt } from '../utils/questionAudioPrompts';
-import { speakArabicFallback, stopArabicFallback } from '../utils/speechFeedback';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -34,17 +32,9 @@ export default function Study() {
   const [jumpValue, setJumpValue] = useState('1');
   const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const promptAudioRef = useRef<HTMLAudioElement | null>(null);
-  const entryPromptAudioRef = useRef<HTMLAudioElement | null>(null);
-  const disabledPromptAudioRef = useRef<HTMLAudioElement | null>(null);
-  const entryPromptPlayedRef = useRef(false);
-    const activationPromptPendingRef = useRef(false);
-  const activationPromptQuestionRef = useRef<string | null>(null);
-  const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
-  const [audioPrompt, setAudioPrompt] = useState(true);
 
   useEffect(() => {
     if (!category) return;
@@ -82,24 +72,15 @@ export default function Study() {
   }, [index]);
 
   useEffect(() => {
-    const prompt = createQuestionAudioPrompt('question-audio-enabled');
-    const entryPrompt = createQuestionAudioPrompt('question-audio-first-entry');
-    const disabledPrompt = createQuestionAudioPrompt('question-audio-disabled');
 
-    promptAudioRef.current = prompt;
-    entryPromptAudioRef.current = entryPrompt;
-    disabledPromptAudioRef.current = disabledPrompt;
 
     prompt?.load();
     entryPrompt?.load();
     disabledPrompt?.load();
 
-    if (!entryPromptPlayedRef.current && entryPrompt) {
-      entryPromptPlayedRef.current = true;
       entryPrompt.currentTime = 0;
       void entryPrompt.play().catch(() => {
         // Use browser speech only until the AI-generated prompt exists.
-        speakArabicFallback('إذا بدك تشغيل الصوت، اضغط زر التشغيل');
       });
     }
 
@@ -107,9 +88,6 @@ export default function Study() {
       prompt?.pause();
       entryPrompt?.pause();
       disabledPrompt?.pause();
-      promptAudioRef.current = null;
-      entryPromptAudioRef.current = null;
-      disabledPromptAudioRef.current = null;
     };
   }, []);
 
@@ -119,9 +97,6 @@ export default function Study() {
   const nextAudioUrl = nextAudioPath ? resolveApiUrl(nextAudioPath) : null;
 
   useEffect(() => {
-    stopArabicFallback();
-    activationPromptPendingRef.current = false;
-    activationPromptQuestionRef.current = null;
 
     const audio = audioRef.current;
     if (!audio) return;
@@ -162,20 +137,6 @@ export default function Study() {
     };
   }, [currentAudioUrl, nextAudioUrl]);
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !audioEnabled || !audioReady) return;
-
-    if (!audio.paused) return;
-
-    audio.currentTime = 0;
-    void audio.play()
-      .then(() => setAudioPlaying(true))
-      .catch(() => {
-        setAudioPlaying(false);
-        setAudioError('المتصفح رفض التشغيل التلقائي للصوت. اضغط «صوت» مرة واحدة.');
-      });
-  }, [audioEnabled, audioReady, currentAudioUrl]);
 
 
   useEffect(() => {
@@ -287,14 +248,10 @@ export default function Study() {
       <div className="question-audio-nav study-top" role="group" aria-label="التحكم بالصوت">
         <button
           type="button"
-          className={`question-audio-nav__audio play ${audioEnabled && audioPlaying ? 'playing' : ''}`}
-          disabled={!currentAudioUrl}
+          className={"question-audio-nav__audio play " + (audioPlaying ? "playing" : "")}
+          disabled={!currentAudioUrl || !audioReady}
           onClick={() => {
-            setAudioPrompt(false);
             setAudioError(null);
-            activationPromptPendingRef.current = true;
-            activationPromptQuestionRef.current = currentAudioUrl;
-            setAudioEnabled(true);
             const audio = audioRef.current;
             if (audio && audioReady) {
               audio.currentTime = 0;
@@ -312,13 +269,7 @@ export default function Study() {
           type="button"
           className="question-audio-nav__audio stop"
           onClick={() => {
-            setAudioEnabled(false);
-            setAudioPrompt(false);
-            stopArabicFallback();
-            activationPromptPendingRef.current = false;
-            activationPromptQuestionRef.current = null;
 
-            const prompt = promptAudioRef.current;
             prompt?.pause();
             if (prompt) prompt.currentTime = 0;
 
@@ -330,40 +281,20 @@ export default function Study() {
 
             setAudioPlaying(false);
             setAudioError(null);
-            speakArabicFallback('الصوت متوقف');
           }}
           aria-label="إيقاف الصوت"
           title="إيقاف الصوت"
         >
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="m4 4 16 16"/></svg>
         </button>
-        <div className={`question-audio-nav__status ${audioPrompt ? 'prompt' : audioError ? 'error' : audioEnabled ? 'ready' : 'off'}`}>
-          {audioPrompt ? 'إذا بدك تشغيل الصوت، اضغط زر التشغيل' : audioError ? audioError : audioEnabled ? 'الصوت سيبقى شغال حتى تضغط إيقاف' : 'الصوت متوقف'}
+        <div className={"question-audio-nav__status " + (audioError ? "error" : audioPlaying ? "ready" : "prompt")}>
+          {audioError ? audioError : audioPlaying ? "الصوت يعمل" : audioReady ? "اضغط زر التشغيل للاستماع" : "جارٍ تجهيز الصوت…"}
+        </div>
         </div>
         <audio
           ref={audioRef}
           preload="auto"
-          onEnded={() => {
-          setAudioPlaying(false);
-
-          const shouldPlayActivationPrompt =
-            activationPromptPendingRef.current &&
-            activationPromptQuestionRef.current === currentAudioUrl;
-
-          activationPromptPendingRef.current = false;
-          activationPromptQuestionRef.current = null;
-
-          if (!shouldPlayActivationPrompt) return;
-
-          const prompt = promptAudioRef.current;
-          if (!prompt) return;
-
-          prompt.currentTime = 0;
-          void prompt.play().catch(() => {
-            // Use browser speech only until the AI-generated prompt exists.
-            speakArabicFallback('الصوت سيبقى شغال حتى تضغط إيقاف');
-          });
-        }}
+          onEnded={() => setAudioPlaying(false)}
           onError={() => {
             setAudioPlaying(false);
             setAudioError('تعذر تشغيل ملف الصوت على هذا الجهاز.');
