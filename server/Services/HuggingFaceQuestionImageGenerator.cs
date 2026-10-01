@@ -164,11 +164,26 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
                 baseUrl += "/fal-ai";
             }
 
-            var modelPath = responseUri.AbsolutePath;
+            var modelPath = responseUri.AbsolutePath.TrimEnd('/');
+            if (responseUri.Host.Equals(
+                    "router.huggingface.co",
+                    StringComparison.OrdinalIgnoreCase) &&
+                modelPath.StartsWith("/fal-ai/", StringComparison.OrdinalIgnoreCase))
+            {
+                modelPath = modelPath["/fal-ai".Length..];
+            }
+
             var queueQuery = initialUri.Query;
 
             var statusUrl = $"{baseUrl}{modelPath}/status{queueQuery}";
             var resultUrl = $"{baseUrl}{modelPath}{queueQuery}";
+
+            _logger.LogInformation(
+                "Hugging Face Fal queue URLs: requestId={RequestId}, responseUrl={ResponseUrl}, statusUrl={StatusUrl}, resultUrl={ResultUrl}",
+                requestId,
+                responseUrl,
+                statusUrl,
+                resultUrl);
 
             var timeoutSeconds = Math.Clamp(
                 _configuration.GetValue("QUESTION_IMAGE_QUEUE_TIMEOUT_SECONDS", 300),
@@ -293,63 +308,24 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
         }
     }
 
-    private static async Task<string> ResolveProviderModelAsync(
+    private static Task<string> ResolveProviderModelAsync(
         HttpClient client,
         string token,
         string model,
         string provider,
         CancellationToken cancellationToken)
     {
-        var modelUrl =
-            $"https://huggingface.co/api/models/{EncodePath(model)}?expand=inferenceProviderMapping";
-
-        using var request = new HttpRequestMessage(HttpMethod.Get, modelUrl);
-        request.Headers.Authorization =
-            new AuthenticationHeaderValue("Bearer", token);
-
-        using var response = await client.SendAsync(request, cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new HttpRequestException(
-                $"تعذر قراءة خريطة مزود Hugging Face للموديل: HTTP {(int)response.StatusCode} — {TryReadError(body)}");
-        }
-
-        using var json = JsonDocument.Parse(body);
-
-        if (!json.RootElement.TryGetProperty(
-                "inferenceProviderMapping",
-                out var mappings) ||
-            mappings.ValueKind != JsonValueKind.Object ||
-            !mappings.TryGetProperty(provider, out var providerMapping) ||
-            providerMapping.ValueKind != JsonValueKind.Object)
+        // Hugging Face's official Fal text-to-image integration accepts the
+        // Hub model id directly. The provider-specific mapping is optional
+        // metadata and can be absent from the model-info response even when
+        // the provider is serving the model.
+        if (!string.Equals(provider, "fal-ai", StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
-                $"الموديل {model} لا يملك خريطة فعالة للمزود {provider} على Hugging Face.");
+                $"مزود الصور غير مدعوم: {provider}.");
         }
 
-        var mappingStatus = providerMapping.TryGetProperty("status", out var status)
-            ? status.GetString()
-            : null;
-
-        if (!string.Equals(mappingStatus, "live", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException(
-                $"خريطة المزود {provider} للموديل {model} ليست بحالة live حالياً (الحالة: {mappingStatus ?? "غير معروفة"}).");
-        }
-
-        var providerId = providerMapping.TryGetProperty("providerId", out var providerIdElement)
-            ? providerIdElement.GetString()
-            : null;
-
-        if (string.IsNullOrWhiteSpace(providerId))
-        {
-            throw new InvalidOperationException(
-                $"لم تُرجع Hugging Face providerId صالحاً للموديل {model} عبر {provider}.");
-        }
-
-        return providerId;
+        return Task.FromResult(model);
     }
 
     private static string EncodePath(string value) =>
