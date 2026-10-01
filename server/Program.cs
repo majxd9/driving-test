@@ -138,23 +138,35 @@ builder.Services.AddHostedService<AuthLogWriter>();
 builder.Services.AddHostedService<StartupMaintenanceService>();
 builder.Services.AddScoped<AiGenerationJobService>();
 builder.Services.AddScoped<ElevenLabsQuestionAudioGenerator>();
+builder.Services.AddScoped<EdenAiQuestionAudioGenerator>();
 builder.Services.AddScoped<LocalQuestionAudioGenerator>();
 builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
-    string.Equals(
-        builder.Configuration["QUESTION_AUDIO_PROVIDER"] ?? "elevenlabs",
-        "local",
-        StringComparison.OrdinalIgnoreCase)
-        ? sp.GetRequiredService<LocalQuestionAudioGenerator>()
-        : sp.GetRequiredService<ElevenLabsQuestionAudioGenerator>());
+{
+    var provider = (builder.Configuration["QUESTION_AUDIO_PROVIDER"] ?? "elevenlabs").Trim();
+
+    if (string.Equals(provider, "local", StringComparison.OrdinalIgnoreCase))
+        return sp.GetRequiredService<LocalQuestionAudioGenerator>();
+
+    if (string.Equals(provider, "edenai", StringComparison.OrdinalIgnoreCase))
+        return sp.GetRequiredService<EdenAiQuestionAudioGenerator>();
+
+    return sp.GetRequiredService<ElevenLabsQuestionAudioGenerator>();
+});
 builder.Services.AddScoped<ComfyUiQuestionImageGenerator>();
 builder.Services.AddScoped<HuggingFaceQuestionImageGenerator>();
+builder.Services.AddScoped<EdenAiQuestionImageGenerator>();
 builder.Services.AddScoped<IQuestionImageGenerator>(sp =>
-    string.Equals(
-        builder.Configuration["QUESTION_IMAGE_PROVIDER"] ?? "none",
-        "huggingface",
-        StringComparison.OrdinalIgnoreCase)
-        ? sp.GetRequiredService<HuggingFaceQuestionImageGenerator>()
-        : sp.GetRequiredService<ComfyUiQuestionImageGenerator>());
+{
+    var provider = (builder.Configuration["QUESTION_IMAGE_PROVIDER"] ?? "none").Trim();
+
+    if (string.Equals(provider, "huggingface", StringComparison.OrdinalIgnoreCase))
+        return sp.GetRequiredService<HuggingFaceQuestionImageGenerator>();
+
+    if (string.Equals(provider, "edenai", StringComparison.OrdinalIgnoreCase))
+        return sp.GetRequiredService<EdenAiQuestionImageGenerator>();
+
+    return sp.GetRequiredService<ComfyUiQuestionImageGenerator>();
+});
 builder.Services.AddHostedService<AiGenerationWorker>();
 builder.Services.AddCors(options => options.AddPolicy("Frontend", policy => policy.WithOrigins(frontendOrigin).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 builder.Services.AddControllers();
@@ -178,6 +190,11 @@ builder.Services.AddHttpClient("ComfyUI", client =>
 builder.Services.AddHttpClient("HuggingFaceImage", client =>
 {
     client.Timeout = TimeSpan.FromMinutes(15);
+});
+builder.Services.AddHttpClient("EdenAI", client =>
+{
+    client.BaseAddress = new Uri("https://api.edenai.run/");
+    client.Timeout = TimeSpan.FromMinutes(20);
 });
 builder.Services.AddEndpointsApiExplorer();
 
