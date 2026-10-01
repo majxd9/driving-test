@@ -436,13 +436,15 @@ public sealed class AiGenerationJobService
             }
 
             var image = images.FirstOrDefault(x => x.QuestionId == question.Id);
+            var imageHash = QuestionImagePromptBuilder.GetContentHash(question);
 
-            // إذا كانت الصورة محفوظة فعلياً، اعرضها حتى لو تغيّر نص السؤال بعد توليدها.
-            // الـhash يستخدم للتتبّع والتوليد الجديد، وليس لمنع عرض صورة موجودة.
-            if (image is not null)
+            // لا نعرض صورة قديمة بعد تغيير قواعد التوليد؛ يجب أن تطابق
+            // الصورة نسخة الـhash الحالية حتى لا يظهر للطالب مشهد عام أو غير متعلق بالسؤال.
+            if (image is not null &&
+                image.ContentHash == imageHash)
             {
                 question.AiImageUrl =
-                    $"/api/questions/{question.Id}/ai-image?v={image.ContentHash}";
+                    $"/api/questions/{question.Id}/ai-image?v={imageHash}";
             }
         }
     }
