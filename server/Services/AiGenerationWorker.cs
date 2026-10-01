@@ -180,8 +180,8 @@ public sealed class AiGenerationWorker : BackgroundService
                         db,
                         claimed.Id,
                         "تم بلوغ الحد الشهري لتوليد AI؛ ستُستأنف المهمة تلقائياً في بداية الشهر القادم.",
-                        quota.NextMonthStartUtc,
-                        cancellationToken);
+                        cancellationToken,
+                        quota.NextMonthStartUtc);
                     return;
                 }
 
