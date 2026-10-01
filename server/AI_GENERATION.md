@@ -30,8 +30,8 @@ QUESTION_IMAGE_PROVIDER=none
 
 QUESTION_IMAGE_PROVIDER=huggingface
 QUESTION_IMAGE_HF_TOKEN=<your-hugging-face-token>
-QUESTION_IMAGE_HF_PROVIDER=hf-inference
-QUESTION_IMAGE_HF_MODEL=Qwen/Qwen-Image
+QUESTION_IMAGE_HF_PROVIDER=nscale
+QUESTION_IMAGE_HF_MODEL=black-forest-labs/FLUX.1-schnell
 
 يحتاج الـtoken إلى صلاحية Inference Providers. التوليد يعيد الصورة كبيانات مباشرة إلى الـWorker ثم تُحفظ في QuestionAiImages؛ لا يتم حفظ الـtoken في المستودع. يمكن أن توجد حصة مجانية محدودة في Hugging Face بحسب الحساب، لكن الاستخدام قد يتطلب رصيداً مدفوعاً عند نفاد الحصة المجانية. 
 
@@ -46,8 +46,8 @@ QUESTION_IMAGE_NEGATIVE_NODE_ID=7
 QUESTION_IMAGE_NEGATIVE_FIELD=text
 QUESTION_IMAGE_WIDTH=768
 QUESTION_IMAGE_HEIGHT=512
-QUESTION_IMAGE_STEPS=24
-QUESTION_IMAGE_CFG=7
+QUESTION_IMAGE_STEPS=4
+QUESTION_IMAGE_CFG=0
 QUESTION_IMAGE_TIMEOUT_SECONDS=1800
 QUESTION_IMAGE_POLL_MS=2000
 
