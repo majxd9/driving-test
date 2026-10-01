@@ -8,6 +8,8 @@ namespace DrivingTestApi.Controllers;
 
 public sealed record BulkGenerationRequest(bool RetryFailed = false, bool RegenerateCompleted = false);
 
+public sealed record ImageProviderTestResult(string Provider, string State, string Message, string Endpoint);
+
 [ApiController]
 [Route("api/admin/ai-generation")]
 [Authorize(Roles = "Admin")]
