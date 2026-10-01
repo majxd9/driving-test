@@ -19,7 +19,7 @@ namespace DrivingTestApi.Controllers;
 [Authorize]
 public class QuestionsController : ControllerBase
 {
-    private const string ElevenLabsVoiceId = "0IwoSbTUTTn6egOMrnel";
+    private const string ElevenLabsVoiceId = "mbMMm5Ft0vNUPsMKAZFu";
     private const string AudioPromptFirstEntryKey = "question-audio-first-entry";
     private const string AudioPromptEnabledKey = "question-audio-enabled";
     private const string AudioPromptDisabledKey = "question-audio-disabled";
