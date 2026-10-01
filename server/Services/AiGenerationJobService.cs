@@ -10,7 +10,8 @@ public sealed record AiGenerationCounts(
     int Processing,
     int Completed,
     int Failed,
-    string? LastError = null)
+    string? LastError = null,
+    DateTime? LastErrorAt = null)
 {
     public int Remaining => Missing + Pending + Processing;
 }
@@ -18,6 +19,7 @@ public sealed record AiGenerationCounts(
 public sealed record AiGenerationOverview(
     string AudioProvider,
     string ImageProvider,
+    string ImageExecutionProvider,
     AiGenerationCounts Audio,
     AiGenerationCounts Image,
     AiGenerationQuota Quota);
@@ -47,6 +49,19 @@ public sealed class AiGenerationJobService
 
     public bool IsImageProviderEnabled =>
         ImageProvider != "none" && !string.IsNullOrWhiteSpace(ImageProvider);
+
+    public string ImageExecutionProvider
+    {
+        get
+        {
+            if (!string.Equals(ImageProvider, "huggingface", StringComparison.OrdinalIgnoreCase))
+                return ImageProvider;
+
+            return HuggingFaceQuestionImageGenerator
+                .ResolveConfiguration(_configuration)
+                .Provider;
+        }
+    }
 
     public async Task EnsureQuestionJobsAsync(
         Question question,
@@ -224,6 +239,22 @@ public sealed class AiGenerationJobService
                 "LockedUntil" = NULL,
                 "UpdatedAt" = NOW()
             WHERE "Status" = 0;
+
+            UPDATE "AiGenerationJobs"
+            SET "Status" = 0,
+                "Attempts" = 0,
+                "LastError" = NULL,
+                "NextAttemptAt" = NOW(),
+                "LockedUntil" = NULL,
+                "StartedAt" = NULL,
+                "CompletedAt" = NULL,
+                "UpdatedAt" = NOW()
+            WHERE "Status" = 3
+              AND "JobType" = 1
+              AND (
+                    "LastError" ILIKE '%Model not supported by provider nscale%'
+                    OR "LastError" ILIKE '%Hugging Face رفض توليد الصورة%'
+                  );
             """,
             cancellationToken);
     }
@@ -290,6 +321,7 @@ public sealed class AiGenerationJobService
         return new AiGenerationOverview(
             AudioProvider,
             ImageProvider,
+            ImageExecutionProvider,
             CountStatuses(
                 questions,
                 AiGenerationJobType.Audio,
@@ -672,13 +704,12 @@ public sealed class AiGenerationJobService
             }
         }
 
-        var lastError = jobs
+        var lastErrorJob = jobs
             .Where(x =>
                 x.JobType == type &&
                 x.Status == AiGenerationJobStatus.Failed &&
                 !string.IsNullOrWhiteSpace(x.LastError))
             .OrderByDescending(x => x.UpdatedAt)
-            .Select(x => x.LastError)
             .FirstOrDefault();
 
         return new AiGenerationCounts(
@@ -687,7 +718,8 @@ public sealed class AiGenerationJobService
             processing,
             completed,
             failed,
-            lastError);
+            lastErrorJob?.LastError,
+            lastErrorJob?.UpdatedAt);
     }
 
     private enum EnsureResult
