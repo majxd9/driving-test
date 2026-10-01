@@ -18,6 +18,31 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
         _configuration = configuration;
     }
 
+    public static (string Model, string Provider) ResolveConfiguration(IConfiguration configuration)
+    {
+        var rawModel = (configuration["QUESTION_IMAGE_HF_MODEL"] ?? string.Empty).Trim();
+        var rawProvider = (configuration["QUESTION_IMAGE_HF_PROVIDER"] ?? string.Empty).Trim().Trim('/');
+
+        // Keep compatibility with the older Render settings so no manual env-var change is required.
+        var legacyModel = string.Equals(
+            rawModel,
+            "stabilityai/stable-diffusion-3-medium-diffusers",
+            StringComparison.OrdinalIgnoreCase);
+
+        var model = string.IsNullOrWhiteSpace(rawModel) || legacyModel
+            ? "black-forest-labs/FLUX.1-schnell"
+            : rawModel;
+
+        // The old hf-inference route is not the reliable route for this image model.
+        // Nscale is a currently documented text-to-image Inference Provider for FLUX.1-schnell.
+        var provider = string.IsNullOrWhiteSpace(rawProvider) ||
+                       string.Equals(rawProvider, "hf-inference", StringComparison.OrdinalIgnoreCase)
+            ? "nscale"
+            : rawProvider;
+
+        return (model, provider);
+    }
+
     public async Task<GeneratedImageResult> GenerateAsync(
         Question question,
         CancellationToken cancellationToken)
@@ -27,18 +52,7 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
             throw new InvalidOperationException(
                 "لم يتم ضبط QUESTION_IMAGE_HF_TOKEN.");
 
-        var model = (_configuration["QUESTION_IMAGE_HF_MODEL"]
-            ?? "black-forest-labs/FLUX.1-schnell").Trim();
-
-        if (string.IsNullOrWhiteSpace(model))
-            throw new InvalidOperationException(
-                "لم يتم ضبط QUESTION_IMAGE_HF_MODEL.");
-
-        var provider = (_configuration["QUESTION_IMAGE_HF_PROVIDER"]
-            ?? "nscale").Trim().Trim('/');
-
-        if (string.IsNullOrWhiteSpace(provider))
-            provider = "nscale";
+        var (model, provider) = ResolveConfiguration(_configuration);
 
         var modelPath = string.Join(
             "/",
