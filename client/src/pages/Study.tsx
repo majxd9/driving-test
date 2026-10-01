@@ -10,6 +10,7 @@ import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
+import { speakArabicFallback, stopArabicFallback } from '../utils/speechFeedback';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -36,6 +37,19 @@ export default function Study() {
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
+  const audioPromptShownRef = useRef(false);
+
+  useEffect(() => {
+    if (audioPromptShownRef.current) return;
+    audioPromptShownRef.current = true;
+    const timer = window.setTimeout(() => {
+      speakArabicFallback('إذا بدك تشغيل الصوت، اضغط زر التشغيل');
+    }, 450);
+    return () => {
+      window.clearTimeout(timer);
+      stopArabicFallback();
+    };
+  }, []);
 
   useEffect(() => {
     if (!category) return;
@@ -126,8 +140,16 @@ export default function Study() {
 
     if (!audio.paused) return;
 
-    audio.currentTime = 0;
-    void audio.play()
+    void getQuestionAudioSource(currentAudioUrl)
+      .then(source => {
+        if (audio.src !== source) {
+          audio.src = source;
+          audio.preload = 'auto';
+          audio.load();
+        }
+        audio.currentTime = 0;
+        return audio.play();
+      })
       .then(() => {
         setAudioPlaying(true);
         setAudioError(null);
@@ -248,17 +270,24 @@ export default function Study() {
         <button
           type="button"
           className={"question-audio-nav__audio play " + (audioPlaying ? "playing" : "")}
-          disabled={!currentAudioUrl || !audioReady}
+          disabled={!currentAudioUrl}
           onClick={() => {
             setAudioEnabled(true);
             setAudioError(null);
             const audio = audioRef.current;
-            if (audio && audioReady) {
-              audio.currentTime = 0;
-              void audio.play()
-                .then(() => setAudioPlaying(true))
-                .catch(() => setAudioError('اضغط زر السماعة لبدء الصوت.'));
-            }
+            if (!audio || !currentAudioUrl) return;
+            void getQuestionAudioSource(currentAudioUrl)
+              .then(source => {
+                if (audio.src !== source) {
+                  audio.src = source;
+                  audio.preload = 'auto';
+                  audio.load();
+                }
+                audio.currentTime = 0;
+                return audio.play();
+              })
+              .then(() => setAudioPlaying(true))
+              .catch(error => setAudioError(error instanceof Error ? error.message : 'تعذر تشغيل الصوت.'));
           }}
           aria-label="تشغيل الصوت"
           title="تشغيل الصوت"
@@ -271,6 +300,7 @@ export default function Study() {
           onClick={() => {
             setAudioEnabled(false);
             setAudioError(null);
+            stopArabicFallback();
             const audio = audioRef.current;
             if (audio) {
               audio.pause();
