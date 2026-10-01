@@ -169,7 +169,8 @@ public sealed class AiGenerationJobService
             var mediaExists = jobType == AiGenerationJobType.Audio
                 ? audioByQuestion.TryGetValue(question.Id, out var audio) &&
                   (audio.ContentHash == hash ||
-                   audio.ContentHash == QuestionAudioTextBuilder.GetLegacyHash(question))
+                   (audio.ContentHash == QuestionAudioTextBuilder.GetLegacyHash(question) ||
+                   audio.ContentHash == QuestionAudioTextBuilder.GetPreviousAdminHash(question)))
                 : imageByQuestion.TryGetValue(question.Id, out var image) &&
                   image.ContentHash == hash;
 
@@ -488,7 +489,8 @@ public sealed class AiGenerationJobService
         return audio is not null &&
                audio.AudioBytes.Length > 0 &&
                (audio.ContentHash == QuestionAudioTextBuilder.GetCurrentHash(question) ||
-                audio.ContentHash == QuestionAudioTextBuilder.GetLegacyHash(question));
+                audio.ContentHash == QuestionAudioTextBuilder.GetLegacyHash(question) ||
+                     audio.ContentHash == QuestionAudioTextBuilder.GetPreviousAdminHash(question));
     }
 
     private async Task<bool> HasMatchingImageAsync(
