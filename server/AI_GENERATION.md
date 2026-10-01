@@ -26,6 +26,15 @@ Piper يجب تشغيله كخدمة مستقلة تبقى عاملة أثناء
 
 QUESTION_IMAGE_PROVIDER=none
 
+مزود Render السحابي المدعوم هو Hugging Face Inference Providers. هذا هو الخيار المناسب عندما يكون الـAPI على Render ولا توجد خدمة ComfyUI عامة يمكن الوصول إليها:
+
+QUESTION_IMAGE_PROVIDER=huggingface
+QUESTION_IMAGE_HF_TOKEN=<your-hugging-face-token>
+QUESTION_IMAGE_HF_PROVIDER=hf-inference
+QUESTION_IMAGE_HF_MODEL=stabilityai/stable-diffusion-3-medium-diffusers
+
+يحتاج الـtoken إلى صلاحية Inference Providers. التوليد يعيد الصورة كبيانات مباشرة إلى الـWorker ثم تُحفظ في QuestionAiImages؛ لا يتم حفظ الـtoken في المستودع. يمكن أن توجد حصة مجانية محدودة في Hugging Face بحسب الحساب، لكن الاستخدام قد يتطلب رصيداً مدفوعاً عند نفاد الحصة المجانية. 
+
 المزود المحلي المدعوم هو ComfyUI:
 
 QUESTION_IMAGE_PROVIDER=comfyui
@@ -110,6 +119,6 @@ Piper الحالي مشروع محلي سريع لـTTS، لكن ترخيص voic
 
 ## ComfyUI
 
-ComfyUI هو المزود المحلي للصور لأنه يوفر Queue/API/workflow architecture محلية. النموذج نفسه ليس جزءاً من المشروع؛ يجب تثبيته على الجهاز المشغل لخدمة ComfyUI ومراعاة ترخيصه.
+ComfyUI هو المزود المحلي للصور لأنه يوفر Queue/API/workflow architecture محلية. لا تستخدم `127.0.0.1` أو `localhost` من Render للوصول إلى ComfyUI الموجود على جهازك؛ هذه العناوين تشير إلى بيئة Render نفسها. النموذج نفسه ليس جزءاً من المشروع؛ يجب تثبيته على الجهاز المشغل لخدمة ComfyUI ومراعاة ترخيصه.
 
 إشارات المرور الرسمية لا يعاد رسمها كبديل عن الأصل الرسمي. Prompt الصورة يطلب سياق الطريق أو الموقف فقط ويمنع إعادة اختراع رمز رسمي.
