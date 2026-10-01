@@ -13,7 +13,8 @@ public sealed record AiGenerationOverview(
     string AudioProvider,
     string ImageProvider,
     AiGenerationCounts Audio,
-    AiGenerationCounts Image);
+    AiGenerationCounts Image,
+    AiGenerationQuota Quota);
 
 public sealed record AiGenerationEnqueueResult(
     int Created,
@@ -265,6 +266,9 @@ public sealed class AiGenerationJobService
             .Where(x => x.ImageBytes.Length > 0)
             .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
 
+        var quota = await new AiGenerationQuotaService(_db, _configuration)
+            .GetQuotaAsync(cancellationToken);
+
         return new AiGenerationOverview(
             AudioProvider,
             ImageProvider,
@@ -279,7 +283,8 @@ public sealed class AiGenerationJobService
                 AiGenerationJobType.AiImage,
                 jobs,
                 null,
-                images));
+                images),
+            quota);
     }
 
     public async Task AttachAdminStateAsync(
