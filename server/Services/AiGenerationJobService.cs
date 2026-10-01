@@ -438,6 +438,48 @@ public sealed class AiGenerationJobService
         }
     }
 
+    public async Task<IReadOnlyList<AiGenerationAdminController.CompletedAiImageItem>> GetCompletedAiImagesAsync(
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        var questions = await _db.Questions
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var questionById = questions.ToDictionary(q => q.Id);
+        var images = await _db.QuestionAiImages
+            .AsNoTracking()
+            .Where(x => x.ImageBytes.Length > 0)
+            .OrderByDescending(x => x.CreatedAt)
+            .Take(Math.Clamp(limit * 3, limit, 180))
+            .ToListAsync(cancellationToken);
+
+        var result = new List<AiGenerationAdminController.CompletedAiImageItem>(limit);
+
+        foreach (var image in images)
+        {
+            if (!questionById.TryGetValue(image.QuestionId, out var question))
+                continue;
+
+            var currentHash = QuestionImagePromptBuilder.GetContentHash(question);
+            if (!string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal))
+                continue;
+
+            result.Add(new AiGenerationAdminController.CompletedAiImageItem(
+                question.Id,
+                question.Text,
+                question.Category.ToString(),
+                $"/api/questions/{question.Id}/ai-image?v={image.ContentHash}",
+                image.ContentHash,
+                image.CreatedAt));
+
+            if (result.Count >= limit)
+                break;
+        }
+
+        return result;
+    }
+
     public async Task<AiGenerationJob?> ClaimNextJobAsync(
         CancellationToken cancellationToken)
     {
