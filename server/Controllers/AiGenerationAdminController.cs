@@ -86,6 +86,65 @@ public sealed class AiGenerationAdminController : ControllerBase
         if (provider == "none")
             return Ok(new ImageProviderTestResult(provider, "disabled", "مولد الصور غير مفعّل حالياً. فعّل QUESTION_IMAGE_PROVIDER أولاً.", endpoint));
 
+        if (provider == "huggingface")
+        {
+            var token = (_configuration["QUESTION_IMAGE_HF_TOKEN"] ?? string.Empty).Trim();
+            var model = (_configuration["QUESTION_IMAGE_HF_MODEL"] ?? string.Empty).Trim();
+            var hfProvider = (_configuration["QUESTION_IMAGE_HF_PROVIDER"] ?? "hf-inference").Trim();
+
+            if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(model))
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "unconfigured",
+                    "يجب ضبط QUESTION_IMAGE_HF_TOKEN وQUESTION_IMAGE_HF_MODEL.",
+                    $"https://router.huggingface.co/{hfProvider}/models/{model}"));
+            }
+
+            try
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(TimeSpan.FromSeconds(6));
+
+                using var client = _httpClientFactory.CreateClient("HuggingFaceImage");
+                using var response = await client.GetAsync(
+                    $"https://huggingface.co/api/models/{Uri.EscapeDataString(model).Replace("%2F", "/")}",
+                    timeout.Token);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var details = await response.Content.ReadAsStringAsync(timeout.Token);
+                    return Ok(new ImageProviderTestResult(
+                        provider,
+                        "error",
+                        $"نموذج Hugging Face غير متاح أو تعذر الوصول إليه: HTTP {(int)response.StatusCode}. {Truncate(details)}",
+                        $"https://router.huggingface.co/{hfProvider}/models/{model}"));
+                }
+
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "connected",
+                    "إعداد Hugging Face موجود والنموذج متاح. لم يتم تنفيذ توليد فعلي حتى لا يُستهلك من الحصة.",
+                    $"https://router.huggingface.co/{hfProvider}/models/{model}"));
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "timeout",
+                    "انتهت مهلة الوصول إلى Hugging Face.",
+                    $"https://router.huggingface.co/{hfProvider}/models/{model}"));
+            }
+            catch (Exception ex)
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "unreachable",
+                    $"تعذر الوصول إلى Hugging Face: {Truncate(ex.Message)}",
+                    $"https://router.huggingface.co/{hfProvider}/models/{model}"));
+            }
+        }
+
         if (provider != "comfyui")
             return Ok(new ImageProviderTestResult(provider, "unsupported", "مزود الصور مضبوط على قيمة غير مدعومة حالياً.", endpoint));
 
