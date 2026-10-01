@@ -55,113 +55,212 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
         Question question,
         CancellationToken cancellationToken)
     {
-        var token = _configuration["QUESTION_IMAGE_HF_TOKEN"];
+        var token = (_configuration["QUESTION_IMAGE_HF_TOKEN"] ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(token))
             throw new InvalidOperationException(
                 "لم يتم ضبط QUESTION_IMAGE_HF_TOKEN.");
 
         var (model, provider) = ResolveConfiguration(_configuration);
 
-        var modelPath = string.Join(
-            "/",
-            model.Split('/', StringSplitOptions.RemoveEmptyEntries)
-                .Select(Uri.EscapeDataString));
-
-        var endpoint =
-            $"https://router.huggingface.co/{provider}/models/{modelPath}";
-
-        var (positive, negative) = QuestionImagePromptBuilder.Build(question);
-        var steps = _configuration.GetValue("QUESTION_IMAGE_STEPS", 4);
-        var guidance = _configuration.GetValue("QUESTION_IMAGE_CFG", 0.0);
-
-        if (string.Equals(model, "black-forest-labs/FLUX.1-schnell", StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(provider, "fal-ai", StringComparison.OrdinalIgnoreCase))
         {
-            steps = Math.Clamp(steps, 1, 4);
-            guidance = 0.0;
+            throw new InvalidOperationException(
+                $"مزود Hugging Face الحالي غير مدعوم في مولد الصور الجديد: {provider}.");
         }
 
+        var client = _httpClientFactory.CreateClient("HuggingFaceImage");
+        var providerModel = await ResolveProviderModelAsync(
+            client,
+            token,
+            model,
+            provider,
+            cancellationToken);
+
+        var encodedProviderModel = EncodePath(providerModel);
+        var endpoint =
+            $"https://router.huggingface.co/{provider}/{encodedProviderModel}?_subdomain=queue";
+
+        var (positive, _) = QuestionImagePromptBuilder.Build(question);
+        var steps = Math.Clamp(
+            _configuration.GetValue("QUESTION_IMAGE_STEPS", 4),
+            1,
+            4);
         var width = _configuration.GetValue("QUESTION_IMAGE_WIDTH", 768);
         var height = _configuration.GetValue("QUESTION_IMAGE_HEIGHT", 512);
 
-        // FLUX.1-schnell on Nscale is distilled for a 4-step generation.
-        // Keep the request minimal for maximum provider compatibility: some
-        // providers/models do not accept negative prompts or guidance_scale.
-        object parameters = string.Equals(
-            model,
-            "black-forest-labs/FLUX.1-schnell",
-            StringComparison.OrdinalIgnoreCase)
-            ? new
-            {
-                width,
-                height,
-                num_inference_steps = steps
-            }
-            : new
-            {
-                negative_prompt = negative,
-                width,
-                height,
-                num_inference_steps = steps,
-                guidance_scale = guidance
-            };
-
+        // Hugging Face's Fal adapter flattens text-to-image parameters into
+        // Fal's request shape: prompt + image parameters at the top level.
         var payload = new
         {
-            inputs = positive,
-            parameters
+            prompt = positive,
+            width,
+            height,
+            num_inference_steps = steps
         };
-
-        var client = _httpClientFactory.CreateClient("HuggingFaceImage");
-        using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
-        {
-            Content = JsonContent.Create(payload)
-        };
-
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("image/*"));
-        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
 
         var started = Stopwatch.GetTimestamp();
 
         try
         {
+            using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
+            {
+                Content = JsonContent.Create(payload)
+            };
+            request.Headers.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+            request.Headers.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
             using var response = await client.SendAsync(
                 request,
                 HttpCompletionOption.ResponseHeadersRead,
                 cancellationToken);
 
-            var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-            var contentType = response.Content.Headers.ContentType?.MediaType?.Trim();
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
 
             _logger.LogInformation(
-                "Hugging Face image generation response: provider={Provider}, model={Model}, status={StatusCode}, contentType={ContentType}, bytes={Bytes}, elapsedMs={ElapsedMs}",
+                "Hugging Face Fal image queue response: provider={Provider}, model={Model}, providerModel={ProviderModel}, status={StatusCode}, elapsedMs={ElapsedMs}",
                 provider,
                 model,
+                providerModel,
                 (int)response.StatusCode,
-                contentType ?? "<none>",
-                bytes.Length,
                 Stopwatch.GetElapsedTime(started).TotalMilliseconds);
 
             if (!response.IsSuccessStatusCode)
             {
-                var details = TryReadError(bytes);
                 throw new HttpRequestException(
-                    $"Hugging Face رفض توليد الصورة: HTTP {(int)response.StatusCode}" +
-                    (string.IsNullOrWhiteSpace(details) ? "." : $" — {details}"));
+                    $"Hugging Face رفض توليد الصورة: HTTP {(int)response.StatusCode} — {TryReadError(body)}");
             }
 
-            if (bytes.Length == 0)
-                throw new InvalidOperationException(
-                    "Hugging Face أعاد ملف صورة فارغاً.");
+            using var queueJson = JsonDocument.Parse(body);
+            var root = queueJson.RootElement;
 
-            if (!LooksLikeImage(bytes, out var detectedContentType))
+            if (!root.TryGetProperty("request_id", out var requestIdElement))
+                throw new InvalidOperationException(
+                    "Hugging Face/Fal لم يُرجع request_id صالحاً لطلب الصورة.");
+
+            var requestId = requestIdElement.GetString();
+            var responseUrl = root.TryGetProperty("response_url", out var responseUrlElement)
+                ? responseUrlElement.GetString()
+                : null;
+            var status = root.TryGetProperty("status", out var statusElement)
+                ? statusElement.GetString() ?? "IN_QUEUE"
+                : "IN_QUEUE";
+
+            if (string.IsNullOrWhiteSpace(requestId) ||
+                string.IsNullOrWhiteSpace(responseUrl))
             {
-                var details = TryReadError(bytes);
-
                 throw new InvalidOperationException(
-                    "Hugging Face أعاد استجابة ناجحة لكنها ليست ملف صورة صالحاً." +
-                    (string.IsNullOrWhiteSpace(details) ? string.Empty : $" {details}"));
+                    "Hugging Face/Fal أعاد استجابة طابور غير مكتملة لطلب الصورة.");
             }
+
+            var initialUri = new Uri(endpoint);
+            var responseUri = new Uri(responseUrl);
+            var baseUrl = $"{responseUri.Scheme}://{responseUri.Host}";
+            if (responseUri.Host.Equals(
+                "router.huggingface.co",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                baseUrl += "/fal-ai";
+            }
+
+            var modelPath = responseUri.AbsolutePath;
+            var queueQuery = initialUri.Query;
+
+            var statusUrl = $"{baseUrl}{modelPath}/status{queueQuery}";
+            var resultUrl = $"{baseUrl}{modelPath}{queueQuery}";
+
+            var timeoutSeconds = Math.Clamp(
+                _configuration.GetValue("QUESTION_IMAGE_QUEUE_TIMEOUT_SECONDS", 300),
+                30,
+                900);
+            var deadline = DateTime.UtcNow.AddSeconds(timeoutSeconds);
+
+            while (!string.Equals(status, "COMPLETED", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.Equals(status, "FAILED", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(status, "ERROR", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(status, "CANCELED", StringComparison.OrdinalIgnoreCase))
+                {
+                    var failureBody = await client.GetStringAsync(statusUrl, cancellationToken);
+                    throw new InvalidOperationException(
+                        $"Fal فشل في توليد الصورة: {TryReadError(failureBody)}");
+                }
+
+                if (DateTime.UtcNow >= deadline)
+                {
+                    throw new TimeoutException(
+                        $"انتهت مهلة انتظار Fal لتوليد الصورة بعد {timeoutSeconds} ثانية. request_id={requestId}");
+                }
+
+                await Task.Delay(
+                    TimeSpan.FromMilliseconds(700),
+                    cancellationToken);
+
+                using var statusResponse = await client.GetAsync(
+                    statusUrl,
+                    cancellationToken);
+                var statusBody = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
+
+                if (!statusResponse.IsSuccessStatusCode)
+                {
+                    throw new HttpRequestException(
+                        $"Fal تعذر عليه فحص حالة طلب الصورة: HTTP {(int)statusResponse.StatusCode} — {TryReadError(statusBody)}");
+                }
+
+                using var statusJson = JsonDocument.Parse(statusBody);
+                status = statusJson.RootElement.TryGetProperty("status", out var currentStatus)
+                    ? currentStatus.GetString() ?? status
+                    : status;
+            }
+
+            using var resultResponse = await client.GetAsync(
+                resultUrl,
+                cancellationToken);
+            var resultBody = await resultResponse.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!resultResponse.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(
+                    $"Fal أكمل الطلب لكنه فشل في جلب النتيجة: HTTP {(int)resultResponse.StatusCode} — {TryReadError(resultBody)}");
+            }
+
+            using var resultJson = JsonDocument.Parse(resultBody);
+            var images = resultJson.RootElement.TryGetProperty("images", out var imagesElement)
+                ? imagesElement
+                : default;
+
+            if (images.ValueKind != JsonValueKind.Array || images.GetArrayLength() == 0)
+                throw new InvalidOperationException(
+                    "Fal أكمل التوليد لكنه لم يُرجع صورة داخل النتيجة.");
+
+            var imageUrl = images[0].TryGetProperty("url", out var imageUrlElement)
+                ? imageUrlElement.GetString()
+                : null;
+
+            if (string.IsNullOrWhiteSpace(imageUrl))
+                throw new InvalidOperationException(
+                    "Fal أكمل التوليد لكنه لم يُرجع رابط صورة صالحاً.");
+
+            using var imageResponse = await client.GetAsync(
+                imageUrl,
+                cancellationToken);
+            var imageBytes = await imageResponse.Content.ReadAsByteArrayAsync(cancellationToken);
+
+            if (!imageResponse.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(
+                    $"تعذر تحميل الصورة الناتجة من Fal: HTTP {(int)imageResponse.StatusCode}");
+            }
+
+            if (!LooksLikeImage(imageBytes, out var detectedContentType))
+            {
+                throw new InvalidOperationException(
+                    "Fal أعاد نتيجة ناجحة لكن الملف النهائي ليس صورة صالحة.");
+            }
+
+            var contentType =
+                imageResponse.Content.Headers.ContentType?.MediaType?.Trim();
 
             if (string.IsNullOrWhiteSpace(contentType) ||
                 !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
@@ -169,19 +268,95 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
                 contentType = detectedContentType;
             }
 
-            return new GeneratedImageResult(bytes, contentType);
+            _logger.LogInformation(
+                "Hugging Face Fal image generation completed: provider={Provider}, model={Model}, providerModel={ProviderModel}, requestId={RequestId}, bytes={Bytes}, contentType={ContentType}, elapsedMs={ElapsedMs}",
+                provider,
+                model,
+                providerModel,
+                requestId,
+                imageBytes.Length,
+                contentType,
+                Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+
+            return new GeneratedImageResult(imageBytes, contentType);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(
                 ex,
-                "Hugging Face image generation failed: provider={Provider}, model={Model}, elapsedMs={ElapsedMs}",
+                "Hugging Face Fal image generation failed: provider={Provider}, model={Model}, providerModel={ProviderModel}, elapsedMs={ElapsedMs}",
                 provider,
                 model,
+                providerModel,
                 Stopwatch.GetElapsedTime(started).TotalMilliseconds);
             throw;
         }
     }
+
+    private static async Task<string> ResolveProviderModelAsync(
+        HttpClient client,
+        string token,
+        string model,
+        string provider,
+        CancellationToken cancellationToken)
+    {
+        var modelUrl =
+            $"https://huggingface.co/api/models/{EncodePath(model)}?expand=inferenceProviderMapping";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, modelUrl);
+        request.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", token);
+
+        using var response = await client.SendAsync(request, cancellationToken);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException(
+                $"تعذر قراءة خريطة مزود Hugging Face للموديل: HTTP {(int)response.StatusCode} — {TryReadError(body)}");
+        }
+
+        using var json = JsonDocument.Parse(body);
+
+        if (!json.RootElement.TryGetProperty(
+                "inferenceProviderMapping",
+                out var mappings) ||
+            mappings.ValueKind != JsonValueKind.Object ||
+            !mappings.TryGetProperty(provider, out var providerMapping) ||
+            providerMapping.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidOperationException(
+                $"الموديل {model} لا يملك خريطة فعالة للمزود {provider} على Hugging Face.");
+        }
+
+        var mappingStatus = providerMapping.TryGetProperty("status", out var status)
+            ? status.GetString()
+            : null;
+
+        if (!string.Equals(mappingStatus, "live", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"خريطة المزود {provider} للموديل {model} ليست بحالة live حالياً (الحالة: {mappingStatus ?? "غير معروفة"}).");
+        }
+
+        var providerId = providerMapping.TryGetProperty("providerId", out var providerIdElement)
+            ? providerIdElement.GetString()
+            : null;
+
+        if (string.IsNullOrWhiteSpace(providerId))
+        {
+            throw new InvalidOperationException(
+                $"لم تُرجع Hugging Face providerId صالحاً للموديل {model} عبر {provider}.");
+        }
+
+        return providerId;
+    }
+
+    private static string EncodePath(string value) =>
+        string.Join(
+            "/",
+            value.Split('/', StringSplitOptions.RemoveEmptyEntries)
+                .Select(Uri.EscapeDataString));
 
     private static bool LooksLikeImage(byte[] bytes, out string contentType)
     {
