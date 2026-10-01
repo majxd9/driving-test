@@ -188,4 +188,23 @@ public sealed class AiGenerationAdminController : ControllerBase
 
     private static string Truncate(string value) =>
         value.Length > 600 ? value[..600] : value;
+    [HttpGet("completed-images")]
+    public async Task<ActionResult<IReadOnlyList<CompletedAiImageItem>>> CompletedImages(
+        [FromQuery] int limit = 24,
+        CancellationToken cancellationToken = default)
+    {
+        limit = Math.Clamp(limit, 1, 60);
+
+        var rows = await _jobs.GetCompletedAiImagesAsync(limit, cancellationToken);
+        return Ok(rows);
+    }
+
+    public sealed record CompletedAiImageItem(
+        int QuestionId,
+        string QuestionText,
+        string Category,
+        string ImageUrl,
+        string ContentHash,
+        DateTime CreatedAt);
+
 }
