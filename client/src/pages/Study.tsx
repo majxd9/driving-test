@@ -35,51 +35,22 @@ export default function Study() {
   const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const promptAudioRef = useRef<HTMLAudioElement | null>(null);
-  const entryPromptAudioRef = useRef<HTMLAudioElement | null>(null);
-  const entryPromptPlayedRef = useRef(false);
   const activationPromptPendingRef = useRef(false);
   const activationPromptQuestionRef = useRef<string | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
-  const audioPromptShownRef = useRef(false);
 
   useEffect(() => {
     const prompt = createQuestionAudioPrompt('question-audio-enabled');
-    const entryPrompt = createQuestionAudioPrompt('question-audio-first-entry');
 
     promptAudioRef.current = prompt;
-    entryPromptAudioRef.current = entryPrompt;
-
     prompt?.load();
-    entryPrompt?.load();
-
-    if (!entryPromptPlayedRef.current && entryPrompt) {
-      entryPromptPlayedRef.current = true;
-      entryPrompt.currentTime = 0;
-      const timer = window.setTimeout(() => {
-        void playQuestionAudioPrompt('question-audio-first-entry').catch(() => {
-          speakArabicFallback('لتشغيل القراءة الصوتية للأسئلة، اضغط زر التشغيل.');
-        });
-      }, 450);
-
-      return () => {
-        window.clearTimeout(timer);
-        prompt?.pause();
-        entryPrompt?.pause();
-        stopArabicFallback();
-        promptAudioRef.current = null;
-        entryPromptAudioRef.current = null;
-      };
-    }
 
     return () => {
       prompt?.pause();
-      entryPrompt?.pause();
-      stopArabicFallback();
       promptAudioRef.current = null;
-      entryPromptAudioRef.current = null;
     };
   }, []);
 
