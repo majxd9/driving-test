@@ -89,15 +89,14 @@ public sealed class AiGenerationAdminController : ControllerBase
         if (provider == "huggingface")
         {
             var token = (_configuration["QUESTION_IMAGE_HF_TOKEN"] ?? string.Empty).Trim();
-            var model = (_configuration["QUESTION_IMAGE_HF_MODEL"] ?? string.Empty).Trim();
-            var hfProvider = (_configuration["QUESTION_IMAGE_HF_PROVIDER"] ?? "hf-inference").Trim();
+            var (model, hfProvider) = HuggingFaceQuestionImageGenerator.ResolveConfiguration(_configuration);
 
-            if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(model))
+            if (string.IsNullOrWhiteSpace(token))
             {
                 return Ok(new ImageProviderTestResult(
                     provider,
                     "unconfigured",
-                    "يجب ضبط QUESTION_IMAGE_HF_TOKEN وQUESTION_IMAGE_HF_MODEL.",
+                    "يجب ضبط QUESTION_IMAGE_HF_TOKEN.",
                     $"https://router.huggingface.co/{hfProvider}/models/{model}"));
             }
 
