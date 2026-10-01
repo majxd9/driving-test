@@ -54,3 +54,31 @@
     padding-top: 10px;
   }
 }
+
+/* AI generation console */
+.ai-generation-console{direction:rtl}
+.ai-console-hero,.ai-provider-card{overflow:hidden}
+.ai-console-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}
+.ai-console-card{min-height:112px;padding:16px;border:1px solid rgba(255,255,255,.07);border-radius:18px;background:rgba(255,255,255,.025);display:flex;flex-direction:column;gap:7px}
+.ai-console-card span,.ai-provider-row small{font-size:11px;color:rgba(230,241,239,.58);font-weight:800}
+.ai-console-card b{font-size:18px}
+.ai-console-card small{font-size:11px;line-height:1.6;color:rgba(230,241,239,.6)}
+.ai-quota-bar{height:6px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:auto}
+.ai-quota-bar i{display:block;height:100%;border-radius:999px;background:#2dd4bf;transition:width .3s ease}
+.ai-console-actions{flex-wrap:wrap}
+.ai-provider-row{display:grid;grid-template-columns:minmax(110px,.5fr) minmax(240px,1fr) auto;gap:14px;align-items:end}
+.ai-provider-row>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.ai-provider-row code{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:rgba(230,241,239,.72);direction:ltr;text-align:left}
+.ai-provider-message{margin-top:12px;padding:11px 13px;border-radius:13px;font-size:12px;line-height:1.65}
+.ai-provider-message.ok{background:rgba(45,212,191,.09);border:1px solid rgba(45,212,191,.2);color:#9bf5e3}
+.ai-provider-message.problem{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.16);color:#ffbeb8}
+.status.warn{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.24);color:#ffd38a}
+@media(max-width:900px){
+  .ai-console-grid{grid-template-columns:1fr}
+  .ai-provider-row{grid-template-columns:1fr}
+  .ai-provider-row .secondary-cta{width:100%}
+}
+@media(max-width:600px){
+  .ai-console-actions{display:grid;grid-template-columns:1fr}
+  .ai-console-actions button{width:100%}
+}
