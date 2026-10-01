@@ -77,6 +77,7 @@ public sealed class AiGenerationWorker : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var quota = new AiGenerationQuotaService(db, _configuration);
+        var quotaConsumed = false;
 
         try
         {
@@ -116,6 +117,8 @@ public sealed class AiGenerationWorker : BackgroundService
                         quota.NextMonthStartUtc);
                     return;
                 }
+
+                quotaConsumed = true;
 
                 var generator = scope.ServiceProvider
                     .GetRequiredService<IQuestionAudioGenerator>();
@@ -185,6 +188,8 @@ public sealed class AiGenerationWorker : BackgroundService
                     return;
                 }
 
+                quotaConsumed = true;
+
                 var generator = scope.ServiceProvider
                     .GetRequiredService<IQuestionImageGenerator>();
 
@@ -235,14 +240,33 @@ public sealed class AiGenerationWorker : BackgroundService
         }
         catch (Exception ex)
         {
-            await FailOrRetryAsync(claimed, ex, cancellationToken);
+            var providerConfigurationFailure = IsProviderConfigurationFailure(ex);
+
+            if (quotaConsumed && providerConfigurationFailure)
+            {
+                try
+                {
+                    await quota.ReleaseAsync(cancellationToken);
+                }
+                catch (Exception releaseError)
+                {
+                    _logger.LogError(releaseError, "Failed to release local AI quota after provider rejection.");
+                }
+            }
+
+            await FailOrRetryAsync(
+                claimed,
+                ex,
+                cancellationToken,
+                providerConfigurationFailure);
         }
     }
 
     private async Task FailOrRetryAsync(
         AiGenerationJob claimed,
         Exception exception,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool nonRetryableProviderFailure)
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -261,7 +285,21 @@ public sealed class AiGenerationWorker : BackgroundService
         job.UpdatedAt = DateTime.UtcNow;
         job.CompletedAt = null;
 
-        if (job.Attempts >= _configuration.GetValue("AI_MAX_ATTEMPTS", 3))
+        if (nonRetryableProviderFailure)
+        {
+            job.Status = AiGenerationJobStatus.Failed;
+            job.NextAttemptAt = null;
+
+            var resumeAt = DateTime.UtcNow.AddMinutes(15);
+            await db.Database.ExecuteSqlInterpolatedAsync($"""
+                UPDATE "AiGenerationJobs"
+                SET "NextAttemptAt" = {resumeAt},
+                    "UpdatedAt" = NOW()
+                WHERE "Status" = 0
+                  AND "JobType" = {(int)job.JobType};
+                """, cancellationToken);
+        }
+        else if (job.Attempts >= _configuration.GetValue("AI_MAX_ATTEMPTS", 3))
         {
             job.Status = AiGenerationJobStatus.Failed;
             job.NextAttemptAt = null;
@@ -281,6 +319,17 @@ public sealed class AiGenerationWorker : BackgroundService
             "AI generation failed. Job {JobId}, attempt {Attempt}.",
             job.Id,
             job.Attempts);
+    }
+
+    private static bool IsProviderConfigurationFailure(Exception exception)
+    {
+        var message = exception.ToString();
+
+        return message.Contains("quota_exceeded", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("HTTP 401", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("HTTP 403", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("sufficient permissions", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("permission_required", StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task CompleteJobAsync(
