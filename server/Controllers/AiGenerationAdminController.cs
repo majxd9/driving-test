@@ -21,7 +21,7 @@ public sealed class AiGenerationAdminController : ControllerBase
         IConfiguration configuration)
     {
         _jobs = jobs;
-        _httpClientFactory = httpClientClientFactory;
+        _httpClientFactory = httpClientFactory;
         _configuration = configuration;
     }
 
