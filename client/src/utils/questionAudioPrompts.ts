@@ -1,12 +1,17 @@
-export const QUESTION_AUDIO_PROMPTS = {
-  // Generate this file with the same Arabic AI voice used for the question audio.
-  enabled: '/audio/prompts/question-audio-enabled.mp3',
-} as const;
+import { resolveApiUrl } from '../api/client';
 
-export function createQuestionAudioPrompt(): HTMLAudioElement | null {
+export type QuestionAudioPromptKey =
+  | 'question-audio-first-entry'
+  | 'question-audio-enabled';
+
+export function createQuestionAudioPrompt(
+  key: QuestionAudioPromptKey
+): HTMLAudioElement | null {
   if (typeof window === 'undefined') return null;
 
-  const audio = new Audio(QUESTION_AUDIO_PROMPTS.enabled);
+  const audio = new Audio(
+    resolveApiUrl(`/api/questions/audio-prompt/${key}`)
+  );
   audio.preload = 'auto';
   return audio;
 }
