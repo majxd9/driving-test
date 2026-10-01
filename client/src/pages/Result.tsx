@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import OptimizedImage from '../components/OptimizedImage';
+import { resolveApiUrl } from '../api/client';
 import DiagramRenderer from '../components/DiagramRenderer';
 
 type ReviewItem = {
@@ -14,6 +15,7 @@ type ReviewItem = {
     diagramUrl?: string | null;
     diagramTitle?: string | null;
     diagramDescription?: string | null;
+    aiImageUrl?: string | null;
   };
   chosen: number | null;
 };
@@ -65,7 +67,20 @@ function ReviewCard({ item, index, mode }: { item: ReviewItem; index: number; mo
   const chosenText = item.chosen === null ? 'لم يتم اختيار إجابة' : item.question.options[item.chosen];
   return <article className={`review-card ${mode}`}>
     <div className="review-head"><span className="review-badge">#{index}</span><span className="review-status">{mode === 'wrong' ? 'إجابة خاطئة' : mode === 'correct' ? 'إجابة صحيحة ✓' : 'بدون إجابة'}</span></div>
-    {item.question.imageUrl && <div className="review-image"><OptimizedImage src={item.question.imageUrl} alt={`صورة السؤال ${item.question.id}`} sizes="160px" /></div>}
+    {(item.question.imageUrl || item.question.aiImageUrl) && (
+      <div className="review-images">
+        {item.question.imageUrl && (
+          <div className="review-image">
+            <OptimizedImage src={item.question.imageUrl} alt={`صورة السؤال ${item.question.id}`} sizes="160px" />
+          </div>
+        )}
+        {item.question.aiImageUrl && (
+          <div className="review-image ai-secondary">
+            <OptimizedImage src={resolveApiUrl(item.question.aiImageUrl)} alt="شرح بصري تعليمي AI" sizes="160px" />
+          </div>
+        )}
+      </div>
+    )}
     <h3>{item.question.text}</h3>
     <div className="review-answer"><span>إجابتك</span><b>{chosenText}</b></div>
     {mode !== 'correct' && <div className="review-answer correct"><span>الإجابة الصحيحة</span><b>{correctText}</b></div>}
