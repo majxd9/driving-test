@@ -107,9 +107,13 @@ public sealed class AiGenerationAdminController : ControllerBase
                 timeout.CancelAfter(TimeSpan.FromSeconds(6));
 
                 using var client = _httpClientFactory.CreateClient("HuggingFaceImage");
-                using var response = await client.GetAsync(
-                    $"https://huggingface.co/api/models/{Uri.EscapeDataString(model).Replace("%2F", "/")}",
-                    timeout.Token);
+                using var request = new HttpRequestMessage(
+                    HttpMethod.Get,
+                    $"https://huggingface.co/api/models/{Uri.EscapeDataString(model).Replace("%2F", "/")}");
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                using var response = await client.SendAsync(request, timeout.Token);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -117,14 +121,14 @@ public sealed class AiGenerationAdminController : ControllerBase
                     return Ok(new ImageProviderTestResult(
                         provider,
                         "error",
-                        $"نموذج Hugging Face غير متاح أو تعذر الوصول إليه: HTTP {(int)response.StatusCode}. {Truncate(details)}",
+                        $"فشل التحقق من توكن Hugging Face أو النموذج: HTTP {(int)response.StatusCode}. {Truncate(details)}",
                         $"https://router.huggingface.co/{hfProvider}/models/{model}"));
                 }
 
                 return Ok(new ImageProviderTestResult(
                     provider,
                     "connected",
-                    "إعداد Hugging Face موجود والنموذج متاح. لم يتم تنفيذ توليد فعلي حتى لا يُستهلك من الحصة.",
+                    "التوكن والنموذج متاحان. هذا الفحص لا ينفّذ توليد صورة فعلياً؛ نتيجة التوليد الفعلية تظهر في حالة المهمة.",
                     $"https://router.huggingface.co/{hfProvider}/models/{model}"));
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
