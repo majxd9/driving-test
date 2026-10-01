@@ -61,7 +61,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
    let result:import('../../types').AiGenerationEnqueueResult|null=null;
    if(kind==='audio') result=await api.admin.enqueueAllAudio(false,false);
    if(kind==='image') result=await api.admin.enqueueAllImages(false,false);
-   if(kind==='resume'){await api.admin.resumeAiGeneration();}
+   if(kind==='resume') await api.admin.resumeAiGeneration();
    if(kind==='retry-audio') result=await api.admin.enqueueAllAudio(true,false);
    if(kind==='retry-image') result=await api.admin.enqueueAllImages(true,false);
    if(result){
@@ -85,31 +85,74 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
   }finally{setBusy('')}
  };
 
- const card=(title:string,data:import('../../types').AiGenerationCounts)=><div className="stat-card"><p>{title}</p><strong>{data.completed}</strong><small className="block text-muted mt-1">مكتمل · مفقود {data.missing} · بالطابور {data.pending} · قيد التنفيذ {data.processing} · فشل {data.failed}</small>{data.lastError&&<small className="block text-exam mt-2 leading-relaxed">آخر خطأ: {data.lastError}</small>}</div>;
- const providerLabel=(value:string)=>value==='comfyui'?'ComfyUI':value==='huggingface'?'Hugging Face':value==='none'?'غير مفعّل':value;
+ const providerLabel=(value:string)=>{
+  if(value==='comfyui')return 'ComfyUI';
+  if(value==='huggingface')return 'Hugging Face';
+  if(value==='fal-ai')return 'fal-ai';
+  if(value==='none')return 'غير مفعّل';
+  return value;
+ };
+
+ const effectiveImageProvider=status?.imageExecutionProvider || status?.imageProvider || 'none';
  const providerEnabled=status?.imageProvider && status.imageProvider!=='none';
  const testClass=providerTest?.state==='connected'?'on':providerTest?.state==='disabled'||providerTest?.state==='unconfigured'?'off':'warn';
  const quotaPercent=status?Math.min(100,(status.quota.used/Math.max(status.quota.limit,1))*100):0;
+
+ const stateText=(title:'audio'|'image',data:import('../../types').AiGenerationCounts)=>{
+  if(title==='audio' && data.lastError?.toLowerCase().includes('quota_exceeded'))
+   return 'متوقف حالياً: ElevenLabs رفض التوليد لأن الحصة المتبقية غير كافية.';
+  if(data.processing>0)
+   return title==='image'
+    ? `جارٍ التوليد فعلياً عبر ${providerLabel(effectiveImageProvider)} الآن.`
+    : 'جارٍ التوليد فعلياً الآن.';
+  if(data.pending>0)
+   return title==='image'
+    ? `بإنتظار التنفيذ عبر ${providerLabel(effectiveImageProvider)}.`
+    : 'بانتظار التنفيذ في الطابور.';
+  if(data.failed>0)
+   return `هناك ${data.failed} مهمة فشلت وتحتاج إعادة المحاولة بعد معالجة السبب.`;
+  if(data.missing>0)
+   return `هناك ${data.missing} مهمة ناقصة ولم تدخل الطابور بعد.`;
+  return 'لا توجد مهام معلقة حالياً.';
+ };
+
+ const errorTime=(value?:string|null)=>value
+  ? new Date(value).toLocaleString('ar-SY')
+  : '';
+
+ const imageLegacyProviderError=Boolean(
+  status?.image.lastError?.toLowerCase().includes('nscale') &&
+  effectiveImageProvider==='fal-ai'
+ );
+
+ const card=(title:string,data:import('../../types').AiGenerationCounts)=>(
+  <div className="stat-card">
+   <p>{title}</p>
+   <strong>{data.completed}</strong>
+   <small className="block text-muted mt-1">مكتمل · مفقود {data.missing} · بالطابور {data.pending} · قيد التنفيذ {data.processing} · فشل {data.failed}</small>
+   <small className="block text-muted mt-2 leading-relaxed"><b>الحالة الحالية:</b> {stateText(title==='صور AI'?'image':'audio',data)}</small>
+  </div>
+ );
 
  return <section className="ai-generation-console space-y-5">
   <div className="admin-card ai-console-hero">
    <div className="card-title">
     <div><p>AI GENERATION CENTER</p><b>مركز توليد المحتوى</b></div>
-    <span className={'status '+(providerEnabled?'on':'off')}>مزود الصور: {providerLabel(status?.imageProvider??'none')}</span>
+    <span className={'status '+(providerEnabled?'on':'off')}>الصور: Hugging Face → {providerLabel(effectiveImageProvider)}</span>
    </div>
-   <p className="text-muted text-sm leading-relaxed">كل عملية تضيف مهاماً إلى طابور محفوظ في PostgreSQL، ثم ينفذها الخادم في الخلفية. صفحات التدريب والاختبار لا تبدأ التوليد بنفسها.</p>
+   <p className="text-muted text-sm leading-relaxed">التوليد يتم بالخادم في الخلفية. التدريب والاختبار لا يشغلان التوليد تلقائياً. حالة الطابور الظاهرة هنا هي الحالة الفعلية للمهام.</p>
 
    <div className="grid md:grid-cols-2 gap-4 mt-5">
     <div className="ai-console-card">
      <span>توليد الصوت</span>
      <b>{providerLabel(status?.audioProvider??'')}</b>
-     <small>يضيف فقط الأسئلة التي لا تملك صوتاً مطابقاً للمحتوى الحالي.</small>
+     <small>لا يتم استبدال الأصوات الموجودة؛ يضاف فقط الناقص.</small>
      <button type="button" className="primary-cta mt-auto" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void run('audio')}}>{busy==='audio'?'جارٍ إضافة المهام…':'إضافة الأصوات الناقصة للطابور'}</button>
     </div>
     <div className="ai-console-card">
      <span>توليد صور AI</span>
-     <b>{providerLabel(status?.imageProvider??'none')}</b>
-     <small>يضيف فقط الأسئلة التي يحددها النظام لتوليد صورة AI، ولا يعيد الصور المكتملة تلقائياً.</small>
+     <b>Hugging Face → {providerLabel(effectiveImageProvider)}</b>
+     <small>المهام تنتظر التنفيذ في PostgreSQL، والصور المكتملة تبقى محفوظة.</small>
      <button type="button" className="primary-cta mt-auto" disabled={busy!==''||!providerEnabled} onClick={(e)=>{e.preventDefault();void run('image')}}>{busy==='image'?'جارٍ إضافة المهام…':'إضافة صور AI الناقصة للطابور'}</button>
     </div>
    </div>
@@ -117,7 +160,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
    <div className="ai-console-card mt-4">
     <span>المهام المتوقفة</span>
     <b>{status?.audio.pending??0} صوت · {status?.image.pending??0} صورة</b>
-    <small>يُستخدم هذا الزر لإعادة المهام العالقة وإعادة ملء الناقص عند الحاجة.</small>
+    <small>الاستئناف يطلق المهام المعلقة، ويعيد أيضاً فشل صور AI المرتبط برفض المزود السابق.</small>
     <button type="button" className="secondary-cta mt-2" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void run('resume')}}>{busy==='resume'?'جارٍ الاستئناف…':'استئناف المهام'}</button>
    </div>
 
@@ -128,16 +171,16 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
 
   <div className="admin-card ai-provider-card">
    <div className="card-title">
-    <div><p>IMAGE PROVIDER</p><b>فحص إعداد مزود الصور</b></div>
-    <span className={'status '+testClass}>{providerTest?.state==='connected'?'إعدادات متاحة':providerTest?.state==='disabled'?'غير مفعّل':providerTest?.state==='unconfigured'?'غير مضبوط':providerTest?'تعذر التحقق':'لم يتم الفحص'}</span>
+    <div><p>IMAGE PROVIDER</p><b>حالة مزود صور AI</b></div>
+    <span className={'status '+testClass}>{providerTest?.state==='connected'?'الإعداد صالح':providerTest?.state==='disabled'?'غير مفعّل':providerTest?.state==='unconfigured'?'غير مضبوط':providerTest?'تعذر التحقق':'لم يتم الفحص'}</span>
    </div>
    <div className="ai-provider-row">
-    <div><small>المزود الحالي</small><strong>{providerLabel(status?.imageProvider??'none')}</strong></div>
-    <div><small>نقطة الخدمة</small><code>{providerTest?.endpoint || (status?.imageProvider==='huggingface'?'Hugging Face Router':'ComfyUI')}</code></div>
-    <button type="button" className="secondary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void testImageProvider()}}>{busy==='test-image'?'جارٍ الفحص…':'اختبار إعداد المزود'}</button>
+    <div><small>المسار الفعلي</small><strong>Hugging Face → {providerLabel(effectiveImageProvider)}</strong></div>
+    <div><small>نقطة التنفيذ</small><code>{providerTest?.endpoint || (effectiveImageProvider==='fal-ai'?'Hugging Face Fal queue':'Hugging Face Router')}</code></div>
+    <button type="button" className="secondary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void testImageProvider()}}>{busy==='test-image'?'جارٍ الفحص…':'فحص الإعداد'}</button>
    </div>
    {providerTest&&<div className={'ai-provider-message '+(providerTest.state==='connected'?'ok':'problem')}>{providerTest.message}</div>}
-   <p className="text-muted text-xs leading-relaxed mt-3">اختبار الإعداد لا يعني أن توليد الصورة نجح فعلياً؛ عند تنفيذ مهمة حقيقية يظهر سبب الفشل في حالة المهمة. لا تعتمد هذه الشاشة على عداد خارجي من Hugging Face.</p>
+   <p className="text-muted text-xs leading-relaxed mt-3">هذا الفحص يتحقق من التوكن والنموذج وخريطة المزود، وليس من توليد صورة كاملة. التوليد الحقيقي يظهر في حالة المهام.</p>
   </div>
 
   <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
@@ -150,24 +193,28 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
     <div><p>عداد التوليد</p><b>{status?.quota.used??0} / {status?.quota.limit??0}</b></div>
     <span className="status warn">حد حماية محلي</span>
    </div>
-   <p className="text-muted text-sm leading-relaxed">هذا عداد داخلي لعدد عمليات التوليد الفعلية التي نفذها الخادم خلال الشهر، مع حد حماية محلي. ليس رصيد Hugging Face المجاني ولا يعبّر عن رصيد حسابك هناك.</p>
+   <p className="text-muted text-sm leading-relaxed">عداد داخلي للحماية فقط. لا يساوي رصيد Hugging Face أو ElevenLabs.</p>
    <div className="ai-quota-bar mt-3"><i style={{width:quotaPercent+'%'}}/></div>
    <div className="mini-metrics mt-4">
-    <div><strong>{status?.quota.used??0}</strong><span>تم تنفيذه هذا الشهر</span></div>
-    <div><strong>{status?.quota.remaining??0}</strong><span>متبقٍ ضمن حد الحماية</span></div>
+    <div><strong>{status?.quota.used??0}</strong><span>عمليات التوليد الفعلية</span></div>
+    <div><strong>{status?.quota.remaining??0}</strong><span>متبقٍ ضمن الحماية</span></div>
     <div><strong>{status?.image.completed??0}</strong><span>صور AI مكتملة</span></div>
     <div><strong>{status?.audio.completed??0}</strong><span>أصوات مكتملة</span></div>
    </div>
   </div>
 
   {(status?.audio.lastError||status?.image.lastError)&&<div className="admin-card">
-   <div className="card-title"><div><p>آخر أخطاء التوليد</p><b>السبب الحقيقي يظهر هنا</b></div></div>
-   {status.audio.lastError&&<div className="ai-provider-message problem">الصوت: {status.audio.lastError}</div>}
-   {status.image.lastError&&<div className="ai-provider-message problem">الصورة: {status.image.lastError}</div>}
+   <div className="card-title"><div><p>سجل آخر فشل</p><b>هذا سجل تاريخي، وليس بالضرورة حالة المهمة الحالية</b></div></div>
+   {status.audio.lastError&&<div className="ai-provider-message problem">الصوت: {status.audio.lastError}{status.audio.lastErrorAt&&<small className="block mt-1">وقت الفشل: {errorTime(status.audio.lastErrorAt)}</small>}</div>}
+   {status.image.lastError&&<div className="ai-provider-message problem">
+    <b>الصورة: </b>{status.image.lastError}
+    {imageLegacyProviderError&&<small className="block mt-2">هذا الخطأ مسجّل من المحاولة السابقة على nscale. المسار الحالي هو fal-ai، لذلك لا نعتبر هذا السجل دليلاً على فشل Fal الحالي.</small>}
+    {status.image.lastErrorAt&&<small className="block mt-1">وقت الفشل: {errorTime(status.image.lastErrorAt)}</small>}
+   </div>}
   </div>}
 
   {status&&<div className="admin-card">
-   <div className="card-title"><div><p>إعادة المحاولة</p><b>للمهام التي وصلت إلى حالة فشل</b></div></div>
+   <div className="card-title"><div><p>إعادة المحاولة</p><b>تستخدم فقط بعد معالجة سبب الفشل</b></div></div>
    <div className="action-row">
     <button type="button" className="secondary-cta" disabled={busy!==''||status.audio.failed===0} onClick={(e)=>{e.preventDefault();void run('retry-audio')}}>{busy==='retry-audio'?'جارٍ…':'إعادة طابور الأصوات الفاشلة'}</button>
     <button type="button" className="secondary-cta" disabled={busy!==''||status.image.failed===0||!providerEnabled} onClick={(e)=>{e.preventDefault();void run('retry-image')}}>{busy==='retry-image'?'جارٍ…':'إعادة طابور صور AI الفاشلة'}</button>
