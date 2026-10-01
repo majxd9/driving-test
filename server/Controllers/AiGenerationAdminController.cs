@@ -199,12 +199,4 @@ public sealed class AiGenerationAdminController : ControllerBase
         return Ok(rows);
     }
 
-    public sealed record CompletedAiImageItem(
-        int QuestionId,
-        string QuestionText,
-        string Category,
-        string ImageUrl,
-        string ContentHash,
-        DateTime CreatedAt);
-
 }
