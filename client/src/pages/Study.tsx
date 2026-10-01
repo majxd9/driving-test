@@ -216,6 +216,7 @@ export default function Study() {
 
   const chosen = answers[q.id];
   const showImage = Boolean(q.imageUrl && (chosen !== undefined || shouldShowQuestionImageBeforeAnswer(q)));
+  const showAiImage = Boolean(q.aiImageUrl);
   const answered = Object.keys(answers).length;
   const correct = questions.filter(x => answers[x.id] === x.correctAnswerIndex).length;
   const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0;
@@ -378,16 +379,32 @@ export default function Study() {
             <span>{chosen === undefined ? 'اختر إجابة' : 'تمت الإجابة'}</span>
           </div>
 
-          {q.imageUrl && showImage ? (
-            <div className="study-premium-image">
-              <OptimizedImage
-                src={q.imageUrl}
-                alt={`صورة السؤال ${q.id}`}
-                sizes="(max-width: 700px) 96vw, 760px"
-                className="study-premium-image-el"
-                objectFit="contain"
-                priority
-              />
+          {(q.imageUrl && showImage) || showAiImage ? (
+            <div className="study-premium-images">
+              {q.imageUrl && showImage && (
+                <div className="study-premium-image">
+                  <OptimizedImage
+                    src={q.imageUrl}
+                    alt={`الصورة الأصلية للسؤال ${q.id}`}
+                    sizes="(max-width:700px) 96vw, 760px"
+                    className="study-premium-image-el"
+                    objectFit="contain"
+                    priority
+                  />
+                </div>
+              )}
+              {q.aiImageUrl && (
+                <div className="study-premium-image ai-secondary">
+                  <OptimizedImage
+                    src={resolveApiUrl(q.aiImageUrl)}
+                    alt="شرح بصري تعليمي AI"
+                    sizes="(max-width:700px) 96vw, 760px"
+                    className="study-premium-image-el"
+                    objectFit="contain"
+                    priority
+                  />
+                </div>
+              )}
             </div>
           ) : (
             <div className="study-premium-no-image" aria-hidden="true" />

@@ -13,6 +13,9 @@ export interface Question {
   diagramTitle?: string | null;
   diagramDescription?: string | null;
   audioUrl?: string | null;
+  aiImageUrl?: string | null;
+  audioGenerationStatus?: string | null;
+  aiImageGenerationStatus?: string | null;
 }
 
 export interface LoginResponse {
@@ -57,6 +60,7 @@ export interface ExamQuestion {
   diagramTitle?: string | null;
   diagramDescription?: string | null;
   audioUrl?: string | null;
+  aiImageUrl?: string | null;
 }
 
 export interface ExamReviewQuestion {
@@ -71,6 +75,7 @@ export interface ExamReviewQuestion {
   diagramUrl?: string | null;
   diagramTitle?: string | null;
   diagramDescription?: string | null;
+  aiImageUrl?: string | null;
 }
 
 export interface ExamSubmission {
@@ -101,4 +106,27 @@ export interface Analytics {
   exams: { total: number; passed: number; passRate: number; averageScore: number };
   auth: { totalAttempts: number; successful: number; failed: number };
   topQuestions: { questionId: number; category: QuestionCategory; text: string; attempts: number; correct: number; accuracy: number }[];
+}
+
+export interface AiGenerationCounts {
+  missing: number;
+  pending: number;
+  processing: number;
+  completed: number;
+  failed: number;
+  remaining: number;
+}
+
+export interface AiGenerationOverview {
+  audioProvider: string;
+  imageProvider: string;
+  audio: AiGenerationCounts;
+  image: AiGenerationCounts;
+}
+
+export interface AiGenerationEnqueueResult {
+  created: number;
+  requeued: number;
+  skipped: number;
+  failedRetried: number;
 }

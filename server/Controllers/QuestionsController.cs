@@ -35,22 +35,25 @@ public class QuestionsController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly AiGenerationJobService _generationJobs;
 
     public QuestionsController(
         AppDbContext db,
         IHttpClientFactory httpClientFactory,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        AiGenerationJobService generationJobs)
     {
         _db = db;
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
+        _generationJobs = generationJobs;
     }
 
     [HttpGet]
     public async Task<ActionResult<List<Question>>> GetByCategory([FromQuery] QuestionCategory category)
     {
         var questions = await QuestionBankCache.GetCategoryAsync(_db, category);
-        await AttachAudioUrlsAsync(questions);
+        await _generationJobs.AttachStudentMediaUrlsAsync(questions, HttpContext.RequestAborted);
 
         Response.Headers.CacheControl = "private,max-age=60,stale-while-revalidate=30";
         return Ok(DeduplicateQuestions(questions));
@@ -128,7 +131,7 @@ public class QuestionsController : ControllerBase
             picked.AddRange(categoryPicked);
         }
 
-        await AttachAudioUrlsAsync(picked);
+        await _generationJobs.AttachStudentMediaUrlsAsync(picked, HttpContext.RequestAborted);
 
         return Ok(picked.Select(q => new ExamQuestionResponse(
             q.Id,
@@ -141,7 +144,8 @@ public class QuestionsController : ControllerBase
             q.DiagramUrl,
             q.DiagramTitle,
             q.DiagramDescription,
-            q.AudioUrl
+            q.AudioUrl,
+            q.AiImageUrl
         )).ToList());
     }
 
@@ -172,11 +176,56 @@ public class QuestionsController : ControllerBase
         var audio = await _db.QuestionAudios.AsNoTracking().SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
         if (audio is null) return NotFound(new { message = "لا يوجد سجل صوت لهذا السؤال." });
         var question = await _db.Questions.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
-        var currentHash = question is null ? null : GetContentHash(BuildAudioText(question));
+        var currentHash = question is null ? null : QuestionAudioTextBuilder.GetCurrentHash(question);
+        var legacyHash = question is null ? null : QuestionAudioTextBuilder.GetLegacyHash(question);
         var bytes = audio.AudioBytes ?? Array.Empty<byte>();
         var firstBytes = bytes.Take(16).Select(b => b.ToString("X2")).ToArray();
         var looksLikeMp3 = bytes.Length >= 3 && ((bytes[0] == 0x49 && bytes[1] == 0x44 && bytes[2] == 0x33) || (bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0));
-        return Ok(new { questionId = id, bytes = bytes.Length, firstBytes, looksLikeMp3, storedHash = audio.ContentHash, currentHash, hashMatches = currentHash is not null && string.Equals(currentHash, audio.ContentHash, StringComparison.Ordinal), contentType = "audio/mpeg" });
+        return Ok(new
+        {
+            questionId = id,
+            bytes = bytes.Length,
+            firstBytes,
+            looksLikeMp3,
+            storedHash = audio.ContentHash,
+            currentHash,
+            legacyHash,
+            hashMatches = currentHash is not null &&
+                          (string.Equals(currentHash, audio.ContentHash, StringComparison.Ordinal) ||
+                           string.Equals(legacyHash, audio.ContentHash, StringComparison.Ordinal)),
+            contentType = "audio/mpeg"
+        });
+    }
+
+    [HttpGet("{id:int}/ai-image")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAiImage(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var image = await _db.QuestionAiImages
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
+
+        if (image is null || image.ImageBytes.Length == 0)
+            return NotFound(new { message = "صورة AI غير موجودة لهذا السؤال." });
+
+        var question = await _db.Questions
+            .AsNoTracking()
+            .SingleOrDefaultAsync(q => q.Id == id, cancellationToken);
+
+        if (question is null ||
+            !string.Equals(
+                image.ContentHash,
+                QuestionImagePromptBuilder.GetContentHash(question),
+                StringComparison.Ordinal))
+        {
+            return NotFound(new { message = "صورة AI الحالية غير جاهزة لهذا السؤال." });
+        }
+
+        Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+        Response.Headers.ETag = $"\"{image.ContentHash}\"";
+        return File(image.ImageBytes, image.ContentType);
     }
 
     [HttpGet("{id:int}/audio")]
@@ -260,87 +309,13 @@ public class QuestionsController : ControllerBase
         }
     }
 
-    private static string PrepareTtsText(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
-
-        var text = Regex.Replace(
-            value.Normalize(NormalizationForm.FormC),
-            @"\s+",
-            " ").Trim();
-
-        // تشكيل موجّه للنطق للكلمات الشائعة في نصوص رخصتي. لا نغيّر بقية
-        // الجملة بشكل آلي لأن التشكيل الكامل يحتاج مُشكِّلاً لغوياً سياقياً.
-        var marks = new (string Word, string Marked)[]
-        {
-            ("السؤال", "السُّؤَال"),
-            ("الإجابة", "الإِجَابَة"),
-            ("الخيار", "الخِيَار"),
-            ("رقم", "رَقْم"),
-            ("على", "عَلَى"),
-            ("إلى", "إِلَى"),
-            ("في", "فِي"),
-            ("من", "مِنْ"),
-            ("ما", "مَا"),
-            ("هل", "هَلْ"),
-            ("عند", "عِنْدَ"),
-            ("عليك", "عَلَيْكَ"),
-            ("هذه", "هَذِهِ"),
-            ("التي", "الَّتِي"),
-            ("الذي", "الَّذِي")
-        };
-
-        foreach (var (word, marked) in marks)
-        {
-            text = Regex.Replace(
-                text,
-                $@"(?<![\u0600-\u06FF]){Regex.Escape(word)}(?![\u0600-\u06FF])",
-                marked);
-        }
-
-        return text;
-    }
-
-    private static string ArabicNumber(int number)
-    {
-        var western = number.ToString(CultureInfo.InvariantCulture);
-        return western.Replace('0', '٠')
-            .Replace('1', '١')
-            .Replace('2', '٢')
-            .Replace('3', '٣')
-            .Replace('4', '٤')
-            .Replace('5', '٥')
-            .Replace('6', '٦')
-            .Replace('7', '٧')
-            .Replace('8', '٨')
-            .Replace('9', '٩');
-    }
-
-    private static string BuildAudioText(Question question)
-    {
-        var builder = new StringBuilder();
-        builder.Append("السُّؤَالُ: ").Append(PrepareTtsText(question.Text));
-
-        for (var i = 0; i < question.Options.Count; i++)
-        {
-            builder.Append(". الخِيَارُ رَقْمُ ").Append(ArabicNumber(i + 1))
-                   .Append(": ").Append(PrepareTtsText(question.Options[i]));
-        }
-
-        return builder.ToString();
-    }
-
-    private static string GetContentHash(string text)
-    {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(text));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
-    }
-
     public sealed record GenerateAudioResponse(
         int QuestionId,
-        string AudioUrl,
+        string? AudioUrl,
         bool Generated,
-        string ContentHash);
+        string ContentHash,
+        long JobId,
+        string Status);
 
     [HttpPost("/api/admin/questions/generate-audio-prompts")]
     [Authorize(Roles = "Admin")]
@@ -355,7 +330,7 @@ public class QuestionsController : ControllerBase
 
         foreach (var definition in AudioPromptDefinitions)
         {
-            var hash = GetContentHash(definition.Text);
+            var hash = QuestionAudioTextBuilder.HashText(definition.Text);
             var existing = await _db.SystemAudios
                 .SingleOrDefaultAsync(x => x.Key == definition.Key, cancellationToken);
 
@@ -482,7 +457,10 @@ public class QuestionsController : ControllerBase
 
     [HttpPost("/api/admin/questions/{id:int}/generate-audio")]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<GenerateAudioResponse>> GenerateAudio(int id, CancellationToken cancellationToken)
+    public async Task<ActionResult<GenerateAudioResponse>> GenerateAudio(
+        int id,
+        [FromBody] ForceGenerationRequest? request,
+        CancellationToken cancellationToken)
     {
         var question = await _db.Questions
             .AsNoTracking()
@@ -491,128 +469,79 @@ public class QuestionsController : ControllerBase
         if (question is null)
             return NotFound(new { message = "السؤال غير موجود." });
 
-        var text = BuildAudioText(question);
-        var hash = GetContentHash(text);
-
-        var existing = await _db.QuestionAudios
-            .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
-
-        if (existing is not null && existing.ContentHash == hash && existing.AudioBytes.Length > 0)
-        {
-            return Ok(new GenerateAudioResponse(
-                id,
-                $"/api/questions/{id}/audio-play?v={hash}",
-                false,
-                hash));
-        }
-
-        var apiKey = _configuration["ELEVENLABS_API_KEY"];
-        if (string.IsNullOrWhiteSpace(apiKey))
-            return Problem("لم يتم ضبط ELEVENLABS_API_KEY على الخادم.");
-
-        var client = _httpClientFactory.CreateClient("ElevenLabs");
-        using var request = new HttpRequestMessage(
-            HttpMethod.Post,
-            $"v1/text-to-speech/{ElevenLabsVoiceId}?output_format=mp3_44100_128");
-
-        request.Headers.TryAddWithoutValidation("xi-api-key", apiKey);
-        request.Content = JsonContent.Create(new
-        {
-            text,
-            model_id = "eleven_multilingual_v2",
-            voice_settings = new
-            {
-                stability = 0.55,
-                similarity_boost = 0.8,
-                style = 0.1,
-                use_speaker_boost = true
-            }
-        });
-
-        using var response = await client.SendAsync(
-            request,
-            HttpCompletionOption.ResponseHeadersRead,
+        await _generationJobs.EnsureQuestionJobsAsync(
+            question,
+            force: request?.Force ?? false,
             cancellationToken);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            var error = await response.Content.ReadAsStringAsync(cancellationToken);
-            var providerStatus = string.Empty;
-            var providerMessage = string.Empty;
+        var hash = QuestionAudioTextBuilder.GetCurrentHash(question);
+        var job = await _db.AiGenerationJobs
+            .AsNoTracking()
+            .SingleAsync(
+                x => x.QuestionId == id &&
+                     x.JobType == AiGenerationJobType.Audio &&
+                     x.ContentHash == hash,
+                cancellationToken);
 
-            try
-            {
-                using var document = JsonDocument.Parse(error);
-                var root = document.RootElement;
+        var audio = await _db.QuestionAudios
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
 
-                if (root.TryGetProperty("detail", out var detail))
-                {
-                    if (detail.ValueKind == JsonValueKind.Object)
-                    {
-                        providerStatus = detail.TryGetProperty("status", out var status)
-                            ? status.GetString() ?? string.Empty
-                            : string.Empty;
-                        providerMessage = detail.TryGetProperty("message", out var detailMessage)
-                            ? detailMessage.GetString() ?? string.Empty
-                            : string.Empty;
-                    }
-                    else
-                    {
-                        providerMessage = detail.GetString() ?? string.Empty;
-                    }
-                }
-
-                if (string.IsNullOrWhiteSpace(providerStatus) &&
-                    root.TryGetProperty("status", out var topStatus))
-                    providerStatus = topStatus.GetString() ?? string.Empty;
-
-                if (string.IsNullOrWhiteSpace(providerMessage) &&
-                    root.TryGetProperty("message", out var topMessage))
-                    providerMessage = topMessage.GetString() ?? string.Empty;
-            }
-            catch (JsonException)
-            {
-                // Keep the raw provider response below when it is not JSON.
-            }
-
-            var message = string.IsNullOrWhiteSpace(providerMessage)
-                ? "تعذر توليد الصوت من ElevenLabs."
-                : $"ElevenLabs: {providerStatus} — {providerMessage}";
-
-            return StatusCode(
-                (int)response.StatusCode,
-                new { message, providerStatus, providerMessage, details = error });
-        }
-
-        var audioBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-        if (audioBytes.Length == 0)
-            return Problem("تمت استجابة ElevenLabs بدون ملف صوتي.");
-
-        if (existing is null)
-        {
-            _db.QuestionAudios.Add(new QuestionAudio
-            {
-                QuestionId = id,
-                AudioBytes = audioBytes,
-                ContentHash = hash,
-                CreatedAt = DateTime.UtcNow
-            });
-        }
-        else
-        {
-            existing.AudioBytes = audioBytes;
-            existing.ContentHash = hash;
-            existing.CreatedAt = DateTime.UtcNow;
-        }
-
-        await _db.SaveChangesAsync(cancellationToken);
+        var ready = audio is not null &&
+                    (audio.ContentHash == hash ||
+                     audio.ContentHash == QuestionAudioTextBuilder.GetLegacyHash(question));
 
         return Ok(new GenerateAudioResponse(
             id,
-            $"/api/questions/{id}/audio-play?v={hash}",
-            true,
-            hash));
+            ready ? $"/api/questions/{id}/audio-play?v={audio!.ContentHash}" : null,
+            false,
+            hash,
+            job.Id,
+            job.Status.ToString()));
     }
+
+    [HttpPost("/api/admin/questions/{id:int}/generate-image")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GenerateImage(
+        int id,
+        [FromBody] ForceGenerationRequest? request,
+        CancellationToken cancellationToken)
+    {
+        var question = await _db.Questions
+            .AsNoTracking()
+            .SingleOrDefaultAsync(q => q.Id == id, cancellationToken);
+
+        if (question is null)
+            return NotFound(new { message = "السؤال غير موجود." });
+
+        if (!QuestionImagePromptBuilder.ShouldGenerate(question))
+            return BadRequest(new { message = "هذا السؤال لا يحتاج صورة AI حسب قاعدة توليد الصور الحالية." });
+
+        await _generationJobs.EnsureQuestionJobsAsync(
+            question,
+            force: request?.Force ?? false,
+            cancellationToken);
+
+        var hash = QuestionImagePromptBuilder.GetContentHash(question);
+        var job = await _db.AiGenerationJobs
+            .AsNoTracking()
+            .SingleAsync(
+                x => x.QuestionId == id &&
+                     x.JobType == AiGenerationJobType.AiImage &&
+                     x.ContentHash == hash,
+                cancellationToken);
+
+        return Ok(new
+        {
+            questionId = id,
+            generated = false,
+            contentHash = hash,
+            jobId = job.Id,
+            status = job.Status.ToString()
+        });
+    }
+
+    public sealed record ForceGenerationRequest(bool Force = false);
 
     private static string CategoryName(QuestionCategory category) => category switch
     {

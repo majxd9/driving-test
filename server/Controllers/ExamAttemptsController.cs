@@ -14,8 +14,15 @@ namespace DrivingTestApi.Controllers;
 public class ExamAttemptsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly AiGenerationJobService _generationJobs;
 
-    public ExamAttemptsController(AppDbContext db) => _db = db;
+    public ExamAttemptsController(
+        AppDbContext db,
+        AiGenerationJobService generationJobs)
+    {
+        _db = db;
+        _generationJobs = generationJobs;
+    }
 
     [HttpPost]
     public async Task<ActionResult<ExamAttemptResponse>> Submit(SubmitExamAttemptRequest request)
@@ -78,6 +85,10 @@ public class ExamAttemptsController : ControllerBase
         _db.ExamAttempts.Add(attempt);
         await _db.SaveChangesAsync();
 
+        await _generationJobs.AttachStudentMediaUrlsAsync(
+            examQuestions,
+            HttpContext.RequestAborted);
+
         var reviewQuestions = examQuestions
             .Select(question => new ExamReviewQuestionResponse(
                 question.Id,
@@ -90,7 +101,8 @@ public class ExamAttemptsController : ControllerBase
                 question.DiagramType,
                 question.DiagramUrl,
                 question.DiagramTitle,
-                question.DiagramDescription))
+                question.DiagramDescription,
+                question.AiImageUrl))
             .ToList();
 
         return Ok(new ExamSubmissionResponse(

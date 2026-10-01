@@ -32,4 +32,13 @@ public class Question
     // Filled from the separate persistent AI-audio store; not a database column.
     [NotMapped]
     public string? AudioUrl { get; set; }
+
+    [NotMapped]
+    public string? AiImageUrl { get; set; }
+
+    [NotMapped]
+    public string? AudioGenerationStatus { get; set; }
+
+    [NotMapped]
+    public string? AiImageGenerationStatus { get; set; }
 }

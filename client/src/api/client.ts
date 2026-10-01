@@ -87,7 +87,34 @@ export const api = {
     createQuestion: (data: Omit<import('../types').Question, 'id'>) => request<import('../types').Question>('/api/admin/questions', { method: 'POST', body: JSON.stringify(data) }),
     updateQuestion: (id: number, data: Omit<import('../types').Question, 'id'>) => request<import('../types').Question>(`/api/admin/questions/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     deleteQuestion: (id: number) => request<void>(`/api/admin/questions/${id}`, { method: 'DELETE' }),
-    generateQuestionAudio: (id: number) => request<{ questionId: number; audioUrl: string; generated: boolean; contentHash: string }>(`/api/admin/questions/${id}/generate-audio`, { method: 'POST' }),
+    generateQuestionAudio: (id: number, force = false) =>
+      request<{ questionId:number; audioUrl?:string|null; generated:boolean; contentHash:string; jobId:number; status:string }>(
+        `/api/admin/questions/${id}/generate-audio`,
+        { method:'POST', body:JSON.stringify({ force }) }),
+    generateQuestionImage: (id: number, force = false) =>
+      request<{ questionId:number; generated:boolean; contentHash:string; jobId:number; status:string }>(
+        `/api/admin/questions/${id}/generate-image`,
+        { method:'POST', body:JSON.stringify({ force }) }),
+    aiGenerationStatus: () =>
+      request<import('../types').AiGenerationOverview>('/api/admin/ai-generation/status'),
+    enqueueAllAudio: (retryFailed = false, regenerateCompleted = false) =>
+      request<import('../types').AiGenerationEnqueueResult>(
+        '/api/admin/ai-generation/audio',
+        { method:'POST', body:JSON.stringify({ retryFailed, regenerateCompleted }) }),
+    enqueueAllImages: (retryFailed = false, regenerateCompleted = false) =>
+      request<import('../types').AiGenerationEnqueueResult>(
+        '/api/admin/ai-generation/image',
+        { method:'POST', body:JSON.stringify({ retryFailed, regenerateCompleted }) }),
+    enqueueAllAi: (retryFailed = false, regenerateCompleted = false) =>
+      request<unknown>(
+        '/api/admin/ai-generation/all',
+        { method:'POST', body:JSON.stringify({ retryFailed, regenerateCompleted }) }),
+    resumeAiGeneration: () =>
+      request<import('../types').AiGenerationOverview>(
+        '/api/admin/ai-generation/resume',
+        { method:'POST' }),
+    retryAiJob: (jobId:number) =>
+      request<void>(`/api/admin/ai-generation/jobs/${jobId}/retry`, { method:'POST' }),
     generateQuestionAudioPrompts: () => request<{ generated: number; total: number; firstEntryKey: string; enabledKey: string; disabledKey: string }>('/api/admin/questions/generate-audio-prompts', { method: 'POST' }),
     getQuestionAudioStatus: (id: number) => request<{
       questionId: number;

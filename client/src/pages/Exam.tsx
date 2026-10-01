@@ -107,6 +107,7 @@ export default function Exam() {
         correctAnswerIndex: question.correctAnswerIndex,
         explanation: question.explanation,
         imageUrl: question.imageUrl,
+        aiImageUrl: question.aiImageUrl,
         diagramType: question.diagramType,
         diagramUrl: question.diagramUrl,
         diagramTitle: question.diagramTitle,
@@ -245,7 +246,7 @@ export default function Exam() {
 
   const q=questions[current]; const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
   const selectedAnswer = answers[q.id];
-  // لا صورة ولا شرح أثناء الاختبار؛ كلاهما للمراجعة بعد إنهاء الاختبار فقط.
+  // الصورة الأصلية تبقى خاضعة لسياسة الإخفاء الحالية، وصورة AI تعرض فقط إذا كانت مولدة مسبقاً.
   return <div className="exam-page-v2" dir="rtl">
     <header className="exam-topbar-v2">
       <button onClick={()=>navigate('/models')} className="exam-back-v2" aria-label="العودة"><UiIcon name="back"/></button>
@@ -279,6 +280,18 @@ export default function Exam() {
       <div className={`exam-timer-v2 ${seconds<=60?'urgent':''}`} aria-label={`الوقت المتبقي ${mm}:${ss}`}>{mm}:{ss}</div>
     </header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
+    {q.aiImageUrl && (
+      <div className="ai-question-image-card" aria-label="شرح بصري تعليمي">
+        <OptimizedImage
+          src={resolveApiUrl(q.aiImageUrl)}
+          alt="شرح بصري تعليمي للسؤال"
+          className="ai-question-image"
+          objectFit="contain"
+          sizes="(max-width:700px) 92vw, 760px"
+          priority
+        />
+      </div>
+    )}
 
     <main className="exam-stage-v2"><section className="exam-card-v2">
       <div className="question-audio-nav exam-inside" role="group" aria-label="التحكم بالصوت">

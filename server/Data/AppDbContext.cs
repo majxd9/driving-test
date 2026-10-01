@@ -17,6 +17,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ExamResult> ExamResults => Set<ExamResult>();
     public DbSet<QuestionAudio> QuestionAudios => Set<QuestionAudio>();
     public DbSet<SystemAudio> SystemAudios => Set<SystemAudio>();
+    public DbSet<AiGenerationJob> AiGenerationJobs => Set<AiGenerationJob>();
+    public DbSet<QuestionAiImage> QuestionAiImages => Set<QuestionAiImage>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -41,6 +43,28 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<SystemAudio>()
             .HasKey(x => x.Key);
+
+        builder.Entity<AiGenerationJob>()
+            .HasIndex(x => new { x.QuestionId, x.JobType, x.ContentHash })
+            .IsUnique();
+
+        builder.Entity<AiGenerationJob>()
+            .HasIndex(x => new { x.Status, x.NextAttemptAt, x.Priority, x.CreatedAt });
+
+        builder.Entity<AiGenerationJob>()
+            .HasOne<Question>()
+            .WithMany()
+            .HasForeignKey(x => x.QuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<QuestionAiImage>()
+            .HasKey(x => x.QuestionId);
+
+        builder.Entity<QuestionAiImage>()
+            .HasOne<Question>()
+            .WithOne()
+            .HasForeignKey<QuestionAiImage>(x => x.QuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<QuestionAudio>()
             .HasOne<Question>()

@@ -18,13 +18,16 @@ public class AdminController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly AppDbContext _db;
+    private readonly AiGenerationJobService _generationJobs;
 
-public AdminController(
-    UserManager<ApplicationUser> userManager,
-    AppDbContext db)
+    public AdminController(
+        UserManager<ApplicationUser> userManager,
+        AppDbContext db,
+        AiGenerationJobService generationJobs)
     {
         _userManager = userManager;
         _db = db;
+        _generationJobs = generationJobs;
     }
 
     [HttpGet("students")]
@@ -215,21 +218,9 @@ public AdminController(
             .OrderBy(q => q.Id)
             .ToListAsync();
 
-        var ids = questions.Select(q => q.Id).ToArray();
-        var audioRows = await _db.QuestionAudios
-            .AsNoTracking()
-            .Where(x => ids.Contains(x.QuestionId) && x.AudioBytes.Length > 0)
-            .Select(x => new { x.QuestionId, x.ContentHash })
-            .ToListAsync();
-
-        foreach (var audio in audioRows)
-        {
-            var question = questions.FirstOrDefault(q => q.Id == audio.QuestionId);
-            if (question is null) continue;
-
-            // الملف الموجود يجب أن يبقى قابلاً للاستماع حتى لو تغيّر نص السؤال لاحقاً.
-            question.AudioUrl = $"/api/questions/{question.Id}/audio?v={audio.ContentHash}";
-        }
+        await _generationJobs.AttachAdminStateAsync(
+            questions,
+            HttpContext.RequestAborted);
 
         return Ok(questions);
     }
@@ -261,6 +252,9 @@ public AdminController(
         _db.Questions.Add(q);
 
         await _db.SaveChangesAsync();
+        await _generationJobs.EnsureQuestionJobsAsync(
+            q,
+            cancellationToken: HttpContext.RequestAborted);
         QuestionCountCache.ApplyChanges(added: 1, deleted: 0);
         QuestionBankCache.Invalidate();
 
@@ -303,6 +297,9 @@ public AdminController(
             request.DiagramDescription;
 
         await _db.SaveChangesAsync();
+        await _generationJobs.EnsureQuestionJobsAsync(
+            q,
+            cancellationToken: HttpContext.RequestAborted);
         QuestionBankCache.Invalidate();
 
         return Ok(q);
@@ -486,7 +483,8 @@ public AdminController(
             .AsNoTracking()
             .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
 
-        var currentHash = GetAudioContentHash(question);
+        var currentHash = QuestionAudioTextBuilder.GetCurrentHash(question);
+        var legacyHash = QuestionAudioTextBuilder.GetLegacyHash(question);
         var hasBytes = audio is not null && audio.AudioBytes.Length > 0;
         var hashMatches = hasBytes && string.Equals(currentHash, audio!.ContentHash, StringComparison.Ordinal);
 
@@ -497,33 +495,15 @@ public AdminController(
             bytes = audio?.AudioBytes.Length ?? 0,
             currentHash,
             storedHash = audio?.ContentHash,
-            hashMatches,
-            playable = hasBytes,
+            hashMatches = hasBytes &&
+                          (string.Equals(currentHash, audio?.ContentHash, StringComparison.Ordinal) ||
+                           string.Equals(legacyHash, audio?.ContentHash, StringComparison.Ordinal)),
+            legacyHash,
+            playable = hasBytes &&
+                       (string.Equals(currentHash, audio?.ContentHash, StringComparison.Ordinal) ||
+                        string.Equals(legacyHash, audio?.ContentHash, StringComparison.Ordinal)),
             audioUrl = hasBytes ? $"/api/questions/{id}/audio-play?v={audio!.ContentHash}" : null
         });
-    }
-
-    private static string BuildAudioText(Question question)
-    {
-        var builder = new StringBuilder();
-        builder.Append("السؤال: ").Append(question.Text.Trim());
-
-        var letters = new[] { "أ", "ب", "ج", "د", "هـ", "و" };
-        for (var i = 0; i < question.Options.Count; i++)
-        {
-            builder.Append(". الإجابة ")
-                .Append(i < letters.Length ? letters[i] : (i + 1).ToString())
-                .Append(": ")
-                .Append(question.Options[i].Trim());
-        }
-
-        return builder.ToString();
-    }
-
-    private static string GetAudioContentHash(Question question)
-    {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(BuildAudioText(question)));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 
     private static Question FromRequest(
