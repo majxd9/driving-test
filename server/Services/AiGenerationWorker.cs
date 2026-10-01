@@ -190,12 +190,25 @@ public sealed class AiGenerationWorker : BackgroundService
 
                 quotaConsumed = true;
 
+                _logger.LogInformation(
+                    "Starting AI image generation. Job {JobId}, Question {QuestionId}, Attempt {Attempt}.",
+                    claimed.Id,
+                    question.Id,
+                    claimed.Attempts);
+
                 var generator = scope.ServiceProvider
                     .GetRequiredService<IQuestionImageGenerator>();
 
                 var result = await generator.GenerateAsync(
                     question,
                     cancellationToken);
+
+                _logger.LogInformation(
+                    "AI image generation provider returned successfully. Job {JobId}, Question {QuestionId}, Bytes {Bytes}, ContentType {ContentType}.",
+                    claimed.Id,
+                    question.Id,
+                    result.Bytes.Length,
+                    result.ContentType);
 
                 var image = await db.QuestionAiImages
                     .SingleOrDefaultAsync(
@@ -316,9 +329,13 @@ public sealed class AiGenerationWorker : BackgroundService
 
         _logger.LogWarning(
             exception,
-            "AI generation failed. Job {JobId}, attempt {Attempt}.",
+            "AI generation failed. Job {JobId}, Question {QuestionId}, Type {JobType}, attempt {Attempt}, status {Status}, nextAttemptAt {NextAttemptAt}.",
             job.Id,
-            job.Attempts);
+            job.QuestionId,
+            job.JobType,
+            job.Attempts,
+            job.Status,
+            job.NextAttemptAt);
     }
 
     private static bool IsProviderConfigurationFailure(Exception exception)
