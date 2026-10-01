@@ -436,12 +436,13 @@ public sealed class AiGenerationJobService
             }
 
             var image = images.FirstOrDefault(x => x.QuestionId == question.Id);
-            var imageHash = QuestionImagePromptBuilder.GetContentHash(question);
 
-            if (image is not null && image.ContentHash == imageHash)
+            // إذا كانت الصورة محفوظة فعلياً، اعرضها حتى لو تغيّر نص السؤال بعد توليدها.
+            // الـhash يستخدم للتتبّع والتوليد الجديد، وليس لمنع عرض صورة موجودة.
+            if (image is not null)
             {
                 question.AiImageUrl =
-                    $"/api/questions/{question.Id}/ai-image?v={imageHash}";
+                    $"/api/questions/{question.Id}/ai-image?v={image.ContentHash}";
             }
         }
     }
