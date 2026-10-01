@@ -54,6 +54,22 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  const [busy,setBusy]=useState('');
  const [providerTest,setProviderTest]=useState<import('../../types').ImageProviderTestResult|null>(null);
  const [lastAction,setLastAction]=useState<{label:string;result:import('../../types').AiGenerationEnqueueResult}|null>(null);
+ const [completedImages,setCompletedImages]=useState<import('../../types').CompletedAiImageItem[]>([]);
+ const [galleryLoading,setGalleryLoading]=useState(false);
+
+ const reloadGallery=async()=>{
+  setGalleryLoading(true);
+  try{setCompletedImages(await api.admin.completedAiImages(24))}catch{}finally{setGalleryLoading(false)}
+ };
+
+ useEffect(()=>{
+  void reloadGallery();
+  const timer=window.setInterval(()=>{
+   void reloadAiStatus();
+   void reloadGallery();
+  },5000);
+  return ()=>window.clearInterval(timer);
+ },[]);
 
  const run=async(kind:'audio'|'image'|'resume'|'retry-audio'|'retry-image')=>{
   setBusy(kind);
@@ -167,6 +183,34 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
    {lastAction&&<div className="ai-provider-message ok mt-4">
     <b>{lastAction.label}</b> — أُنشئت {lastAction.result.created}، أُعيدت {lastAction.result.requeued}، تم تجاوز {lastAction.result.skipped}، وأعيدت فاشلة {lastAction.result.failedRetried}.
    </div>}
+  </div>
+
+
+  <div className="admin-card ai-gallery-card">
+   <div className="card-title">
+    <div><p>AI IMAGE GALLERY</p><b>الصور المولدة</b></div>
+    <div className="ai-gallery-actions">
+     <span className="status on">{completedImages.length} صورة معروضة</span>
+     <button type="button" className="secondary-cta" disabled={galleryLoading} onClick={(e)=>{e.preventDefault();void reloadGallery()}}>{galleryLoading?'جارٍ التحديث…':'تحديث الصور'}</button>
+    </div>
+   </div>
+   <p className="text-muted text-sm leading-relaxed">هذه صور مكتملة ومحفوظة فعلياً. المعرض يتحدث تلقائياً أثناء عمل الطابور.</p>
+   {completedImages.length===0
+    ? <div className="ai-gallery-empty">{galleryLoading?'جارٍ تحميل الصور…':'لا توجد صور AI مكتملة حالياً.'}</div>
+    : <div className="ai-image-gallery">
+      {completedImages.map(image=><article className="ai-image-item" key={image.questionId+'-'+image.contentHash}>
+       <div className="ai-image-preview">
+        <img src={resolveApiUrl(image.imageUrl)} alt={image.questionText} loading="lazy"/>
+       </div>
+       <div className="ai-image-meta">
+        <span className="status on">مكتملة</span>
+        <small>{image.category==='Ser'?'قواعد السير':image.category==='Ishara'?'الإشارات المرورية':image.category==='Mechanic'?'الميكانيك':image.category}</small>
+        <b>سؤال #{image.questionId}</b>
+        <p>{image.questionText}</p>
+        <time dateTime={image.createdAt}>{new Date(image.createdAt).toLocaleString('ar-SY')}</time>
+       </div>
+      </article>)}
+     </div>}
   </div>
 
   <div className="admin-card ai-provider-card">
