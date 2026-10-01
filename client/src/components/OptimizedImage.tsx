@@ -31,7 +31,7 @@ export default function OptimizedImage({
   sizes,
   objectFit = 'contain',
 }: Props) {
-  const canonicalSrc = useMemo(() => resolveQuestionImageUrl(src), [src]);
+  // AI images and other API media URLs are already resolved URLs; only local question assets need the sign/mechanic resolver.\n  const canonicalSrc = useMemo(() => {\n    if (/^(https?:|data:|blob:)/i.test(src) || /^\/api\//i.test(src)) return src;\n    return resolveQuestionImageUrl(src);\n  }, [src]);
   const candidates = useMemo(() => imageCandidates(src, canonicalSrc), [src, canonicalSrc]);
   const [candidateIndex, setCandidateIndex] = useState(0);
   const [loaded, setLoaded] = useState(false);
