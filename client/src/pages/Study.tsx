@@ -71,26 +71,6 @@ export default function Study() {
     setSignalState('pending');
   }, [index]);
 
-  useEffect(() => {
-
-
-    prompt?.load();
-    entryPrompt?.load();
-    disabledPrompt?.load();
-
-      entryPrompt.currentTime = 0;
-      void entryPrompt.play().catch(() => {
-        // Use browser speech only until the AI-generated prompt exists.
-      });
-    }
-
-    return () => {
-      prompt?.pause();
-      entryPrompt?.pause();
-      disabledPrompt?.pause();
-    };
-  }, []);
-
   const currentAudioPath = questions[index]?.audioUrl ?? null;
   const currentAudioUrl = currentAudioPath ? resolveApiUrl(currentAudioPath) : null;
   const nextAudioPath = questions[index + 1]?.audioUrl ?? null;
