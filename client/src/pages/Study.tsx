@@ -273,6 +273,7 @@ export default function Study() {
           onClick={() => {
             setAudioEnabled(false);
             setAudioPrompt(false);
+            speakArabic('تم إيقاف الصوت');
             const audio = audioRef.current;
             if (!audio) return;
             audio.pause();
