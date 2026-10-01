@@ -76,27 +76,44 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
             provider,
             cancellationToken);
 
-        var encodedProviderModel = EncodePath(providerModel);
+        // Use Hugging Face’s documented Inference Providers text-to-image endpoint.
+        // The response is the generated image bytes directly; no queue/status protocol is needed.
         var endpoint =
-            $"https://router.huggingface.co/{provider}/{encodedProviderModel}?_subdomain=queue";
+            $"https://router.huggingface.co/{provider}/{EncodePath(providerModel)}";
 
         var (positive, _) = QuestionImagePromptBuilder.Build(question);
         var steps = Math.Clamp(
             _configuration.GetValue("QUESTION_IMAGE_STEPS", 4),
             1,
             4);
-        var width = _configuration.GetValue("QUESTION_IMAGE_WIDTH", 768);
-        var height = _configuration.GetValue("QUESTION_IMAGE_HEIGHT", 512);
+        var width = Math.Clamp(
+            _configuration.GetValue("QUESTION_IMAGE_WIDTH", 768),
+            256,
+            1536);
+        var height = Math.Clamp(
+            _configuration.GetValue("QUESTION_IMAGE_HEIGHT", 512),
+            256,
+            1536);
 
-        // Hugging Face's Fal adapter flattens text-to-image parameters into
-        // Fal's request shape: prompt + image parameters at the top level.
         var payload = new
         {
-            prompt = positive,
-            width,
-            height,
-            num_inference_steps = steps
+            inputs = positive,
+            parameters = new
+            {
+                num_inference_steps = steps,
+                width,
+                height
+            }
         };
+
+        var timeoutSeconds = Math.Clamp(
+            _configuration.GetValue("QUESTION_IMAGE_QUEUE_TIMEOUT_SECONDS", 300),
+            30,
+            900);
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
 
         var started = Stopwatch.GetTimestamp();
 
@@ -106,24 +123,30 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
             {
                 Content = JsonContent.Create(payload)
             };
+
             request.Headers.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
+
+            request.Headers.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("image/*"));
             request.Headers.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
 
             using var response = await client.SendAsync(
                 request,
                 HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken);
+                timeout.Token);
 
-            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            var body = await response.Content.ReadAsByteArrayAsync(timeout.Token);
 
             _logger.LogInformation(
-                "Hugging Face Fal image queue response: provider={Provider}, model={Model}, providerModel={ProviderModel}, status={StatusCode}, elapsedMs={ElapsedMs}",
+                "Hugging Face Inference image response: provider={Provider}, model={Model}, providerModel={ProviderModel}, status={StatusCode}, contentType={ContentType}, bytes={Bytes}, elapsedMs={ElapsedMs}",
                 provider,
                 model,
                 providerModel,
                 (int)response.StatusCode,
+                response.Content.Headers.ContentType?.MediaType,
+                body.Length,
                 Stopwatch.GetElapsedTime(started).TotalMilliseconds);
 
             if (!response.IsSuccessStatusCode)
@@ -132,150 +155,14 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
                     $"Hugging Face رفض توليد الصورة: HTTP {(int)response.StatusCode} — {TryReadError(body)}");
             }
 
-            using var queueJson = JsonDocument.Parse(body);
-            var root = queueJson.RootElement;
-
-            if (!root.TryGetProperty("request_id", out var requestIdElement))
-                throw new InvalidOperationException(
-                    "Hugging Face/Fal لم يُرجع request_id صالحاً لطلب الصورة.");
-
-            var requestId = requestIdElement.GetString();
-            var responseUrl = root.TryGetProperty("response_url", out var responseUrlElement)
-                ? responseUrlElement.GetString()
-                : null;
-            var status = root.TryGetProperty("status", out var statusElement)
-                ? statusElement.GetString() ?? "IN_QUEUE"
-                : "IN_QUEUE";
-
-            if (string.IsNullOrWhiteSpace(requestId) ||
-                string.IsNullOrWhiteSpace(responseUrl))
+            if (!LooksLikeImage(body, out var detectedContentType))
             {
                 throw new InvalidOperationException(
-                    "Hugging Face/Fal أعاد استجابة طابور غير مكتملة لطلب الصورة.");
-            }
-
-            var initialUri = new Uri(endpoint);
-            var responseUri = new Uri(responseUrl);
-            var baseUrl = $"{responseUri.Scheme}://{responseUri.Host}";
-            if (responseUri.Host.Equals(
-                "router.huggingface.co",
-                StringComparison.OrdinalIgnoreCase))
-            {
-                baseUrl += "/fal-ai";
-            }
-
-            var modelPath = responseUri.AbsolutePath.TrimEnd('/');
-            if (responseUri.Host.Equals(
-                    "router.huggingface.co",
-                    StringComparison.OrdinalIgnoreCase) &&
-                modelPath.StartsWith("/fal-ai/", StringComparison.OrdinalIgnoreCase))
-            {
-                modelPath = modelPath["/fal-ai".Length..];
-            }
-
-            var queueQuery = initialUri.Query;
-
-            var statusUrl = $"{baseUrl}{modelPath}/status{queueQuery}";
-            var resultUrl = $"{baseUrl}{modelPath}{queueQuery}";
-
-            _logger.LogInformation(
-                "Hugging Face Fal queue URLs: requestId={RequestId}, responseUrl={ResponseUrl}, statusUrl={StatusUrl}, resultUrl={ResultUrl}",
-                requestId,
-                responseUrl,
-                statusUrl,
-                resultUrl);
-
-            var timeoutSeconds = Math.Clamp(
-                _configuration.GetValue("QUESTION_IMAGE_QUEUE_TIMEOUT_SECONDS", 300),
-                30,
-                900);
-            var deadline = DateTime.UtcNow.AddSeconds(timeoutSeconds);
-
-            while (!string.Equals(status, "COMPLETED", StringComparison.OrdinalIgnoreCase))
-            {
-                if (string.Equals(status, "FAILED", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(status, "ERROR", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(status, "CANCELED", StringComparison.OrdinalIgnoreCase))
-                {
-                    var failureBody = await client.GetStringAsync(statusUrl, cancellationToken);
-                    throw new InvalidOperationException(
-                        $"Fal فشل في توليد الصورة: {TryReadError(failureBody)}");
-                }
-
-                if (DateTime.UtcNow >= deadline)
-                {
-                    throw new TimeoutException(
-                        $"انتهت مهلة انتظار Fal لتوليد الصورة بعد {timeoutSeconds} ثانية. request_id={requestId}");
-                }
-
-                await Task.Delay(
-                    TimeSpan.FromMilliseconds(700),
-                    cancellationToken);
-
-                using var statusResponse = await client.GetAsync(
-                    statusUrl,
-                    cancellationToken);
-                var statusBody = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-
-                if (!statusResponse.IsSuccessStatusCode)
-                {
-                    throw new HttpRequestException(
-                        $"Fal تعذر عليه فحص حالة طلب الصورة: HTTP {(int)statusResponse.StatusCode} — {TryReadError(statusBody)}");
-                }
-
-                using var statusJson = JsonDocument.Parse(statusBody);
-                status = statusJson.RootElement.TryGetProperty("status", out var currentStatus)
-                    ? currentStatus.GetString() ?? status
-                    : status;
-            }
-
-            using var resultResponse = await client.GetAsync(
-                resultUrl,
-                cancellationToken);
-            var resultBody = await resultResponse.Content.ReadAsStringAsync(cancellationToken);
-
-            if (!resultResponse.IsSuccessStatusCode)
-            {
-                throw new HttpRequestException(
-                    $"Fal أكمل الطلب لكنه فشل في جلب النتيجة: HTTP {(int)resultResponse.StatusCode} — {TryReadError(resultBody)}");
-            }
-
-            using var resultJson = JsonDocument.Parse(resultBody);
-            var images = resultJson.RootElement.TryGetProperty("images", out var imagesElement)
-                ? imagesElement
-                : default;
-
-            if (images.ValueKind != JsonValueKind.Array || images.GetArrayLength() == 0)
-                throw new InvalidOperationException(
-                    "Fal أكمل التوليد لكنه لم يُرجع صورة داخل النتيجة.");
-
-            var imageUrl = images[0].TryGetProperty("url", out var imageUrlElement)
-                ? imageUrlElement.GetString()
-                : null;
-
-            if (string.IsNullOrWhiteSpace(imageUrl))
-                throw new InvalidOperationException(
-                    "Fal أكمل التوليد لكنه لم يُرجع رابط صورة صالحاً.");
-
-            using var imageResponse = await client.GetAsync(
-                imageUrl,
-                cancellationToken);
-            var imageBytes = await imageResponse.Content.ReadAsByteArrayAsync(cancellationToken);
-
-            if (!imageResponse.IsSuccessStatusCode)
-            {
-                throw new HttpRequestException(
-                    $"تعذر تحميل الصورة الناتجة من Fal: HTTP {(int)imageResponse.StatusCode}");
-            }
-
-            if (!LooksLikeImage(imageBytes, out var detectedContentType))
-            {
-                throw new InvalidOperationException(
-                    "Fal أعاد نتيجة ناجحة لكن الملف النهائي ليس صورة صالحة.");
+                    $"Hugging Face أعاد استجابة ناجحة لكنها ليست صورة صالحة. {TryReadError(body)}");
             }
 
             var contentType =
-                imageResponse.Content.Headers.ContentType?.MediaType?.Trim();
+                response.Content.Headers.ContentType?.MediaType?.Trim();
 
             if (string.IsNullOrWhiteSpace(contentType) ||
                 !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
@@ -284,25 +171,32 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
             }
 
             _logger.LogInformation(
-                "Hugging Face Fal image generation completed: provider={Provider}, model={Model}, providerModel={ProviderModel}, requestId={RequestId}, bytes={Bytes}, contentType={ContentType}, elapsedMs={ElapsedMs}",
+                "Hugging Face image generation completed: provider={Provider}, model={Model}, providerModel={ProviderModel}, bytes={Bytes}, contentType={ContentType}, elapsedMs={ElapsedMs}",
                 provider,
                 model,
                 providerModel,
-                requestId,
-                imageBytes.Length,
+                body.Length,
                 contentType,
                 Stopwatch.GetElapsedTime(started).TotalMilliseconds);
 
-            return new GeneratedImageResult(imageBytes, contentType);
+            return new GeneratedImageResult(body, contentType);
+        }
+        catch (OperationCanceledException) when (
+            timeout.IsCancellationRequested &&
+            !cancellationToken.IsCancellationRequested)
+        {
+            throw new TimeoutException(
+                $"انتهت مهلة انتظار Hugging Face لتوليد الصورة بعد {timeoutSeconds} ثانية.");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(
                 ex,
-                "Hugging Face Fal image generation failed: provider={Provider}, model={Model}, providerModel={ProviderModel}, elapsedMs={ElapsedMs}",
+                "Hugging Face image generation failed: provider={Provider}, model={Model}, providerModel={ProviderModel}, endpoint={Endpoint}, elapsedMs={ElapsedMs}",
                 provider,
                 model,
                 providerModel,
+                endpoint,
                 Stopwatch.GetElapsedTime(started).TotalMilliseconds);
             throw;
         }
