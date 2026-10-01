@@ -96,6 +96,7 @@ public sealed class AiGenerationAdminController : ControllerBase
         {
             var token = (_configuration["QUESTION_IMAGE_HF_TOKEN"] ?? string.Empty).Trim();
             var (model, hfProvider) = HuggingFaceQuestionImageGenerator.ResolveConfiguration(_configuration);
+            var route = HuggingFaceQuestionImageGenerator.ResolveEndpoint(_configuration);
 
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -103,7 +104,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                     provider,
                     "unconfigured",
                     "يجب ضبط QUESTION_IMAGE_HF_TOKEN.",
-                    $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}"));
+                    route));
             }
 
             try
@@ -132,7 +133,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                         provider,
                         "error",
                         $"فشل التحقق من Hugging Face: HTTP {(int)response.StatusCode}. {Truncate(details)}",
-                        $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}"));
+                        route));
                 }
 
                 using var catalogJson = JsonDocument.Parse(details);
@@ -144,7 +145,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                             model,
                             StringComparison.OrdinalIgnoreCase));
 
-                var route = $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}";
+                var route = route;
 
                 if (!modelFound)
                 {
@@ -158,7 +159,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                 return Ok(new ImageProviderTestResult(
                     provider,
                     "connected",
-                    $"الموديل {model} مُدرج حالياً ضمن موديلات text-to-image عبر {hfProvider}. نقطة التنفيذ جاهزة للتوليد.",
+                    $"الموديل {model} مُدرج حالياً عبر {hfProvider}. مسار التنفيذ الفعلي يستخدم معرّف Fal الخاص بالموديل.",
                     route));
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -167,7 +168,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                     provider,
                     "error",
                     "انتهت مهلة فحص Hugging Face قبل اكتمال التحقق.",
-                    $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}"));
+                    route));
             }
             catch (Exception ex)
             {
@@ -175,7 +176,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                     provider,
                     "error",
                     $"تعذر فحص Hugging Face: {ex.Message}",
-                    $"https://router.huggingface.co/{hfProvider}/{EncodePath(model)}"));
+                    route));
             }
         }
 
@@ -185,12 +186,6 @@ public sealed class AiGenerationAdminController : ControllerBase
             $"مزود الصور '{provider}' غير مدعوم.",
             endpoint));
     }
-
-    private static string EncodePath(string value) =>
-        string.Join(
-            "/",
-            value.Split('/', StringSplitOptions.RemoveEmptyEntries)
-                .Select(Uri.EscapeDataString));
 
     private static string Truncate(string value) =>
         value.Length > 600 ? value[..600] : value;
