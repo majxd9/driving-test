@@ -11,6 +11,7 @@ import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
 import { createQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { speakArabicFallback, stopArabicFallback } from '../utils/speechFeedback';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -93,7 +94,8 @@ export default function Study() {
       entryPromptPlayedRef.current = true;
       entryPrompt.currentTime = 0;
       void entryPrompt.play().catch(() => {
-        // Mobile browsers may block autoplay; the on-screen prompt remains visible.
+        // Use browser speech only until the AI-generated prompt exists.
+        speakArabicFallback('إذا بدك تشغيل الصوت، اضغط زر التشغيل');
       });
     }
 
@@ -111,6 +113,7 @@ export default function Study() {
   const nextAudioUrl = nextAudioPath ? resolveApiUrl(nextAudioPath) : null;
 
   useEffect(() => {
+    stopArabicFallback();
     activationPromptPendingRef.current = false;
     activationPromptQuestionRef.current = null;
 
@@ -304,6 +307,7 @@ export default function Study() {
           onClick={() => {
             setAudioEnabled(false);
             setAudioPrompt(false);
+            stopArabicFallback();
             activationPromptPendingRef.current = false;
             activationPromptQuestionRef.current = null;
             const prompt = promptAudioRef.current;
@@ -344,7 +348,8 @@ export default function Study() {
 
           prompt.currentTime = 0;
           void prompt.play().catch(() => {
-            // The AI-generated prompt is optional until its file is added.
+            // Use browser speech only until the AI-generated prompt exists.
+            speakArabicFallback('الصوت سيبقى شغال حتى تضغط إيقاف');
           });
         }}
           onError={() => {
