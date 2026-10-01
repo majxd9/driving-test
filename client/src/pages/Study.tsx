@@ -32,6 +32,7 @@ export default function Study() {
   const [jumpValue, setJumpValue] = useState('1');
   const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
@@ -118,6 +119,24 @@ export default function Study() {
   }, [currentAudioUrl, nextAudioUrl]);
 
 
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !audioEnabled || !audioReady || !currentAudioUrl) return;
+
+    if (!audio.paused) return;
+
+    audio.currentTime = 0;
+    void audio.play()
+      .then(() => {
+        setAudioPlaying(true);
+        setAudioError(null);
+      })
+      .catch(() => {
+        setAudioPlaying(false);
+        setAudioError('اضغط زر التشغيل لاستئناف الصوت.');
+      });
+  }, [audioEnabled, audioReady, currentAudioUrl]);
 
   useEffect(() => {
     const nextQuestion = questions[index + 1];
@@ -231,6 +250,7 @@ export default function Study() {
           className={"question-audio-nav__audio play " + (audioPlaying ? "playing" : "")}
           disabled={!currentAudioUrl || !audioReady}
           onClick={() => {
+            setAudioEnabled(true);
             setAudioError(null);
             const audio = audioRef.current;
             if (audio && audioReady) {
@@ -249,14 +269,14 @@ export default function Study() {
           type="button"
           className="question-audio-nav__audio stop"
           onClick={() => {
+            setAudioEnabled(false);
+            setAudioError(null);
             const audio = audioRef.current;
             if (audio) {
               audio.pause();
               audio.currentTime = 0;
             }
-
             setAudioPlaying(false);
-            setAudioError(null);
           }}
           aria-label="إيقاف الصوت"
           title="إيقاف الصوت"
