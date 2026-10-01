@@ -29,6 +29,17 @@ public sealed class AiGenerationQuotaService
             1,
             _configuration.GetValue("AI_MONTHLY_GENERATION_LIMIT", 600));
 
+    public bool IsUnlimited(AiGenerationJobType jobType)
+    {
+        var provider = jobType == AiGenerationJobType.AiImage
+            ? (_configuration["QUESTION_IMAGE_PROVIDER"] ?? "none")
+            : (_configuration["QUESTION_AUDIO_PROVIDER"] ?? "elevenlabs");
+
+        return jobType == AiGenerationJobType.AiImage
+            ? string.Equals(provider, "comfyui", StringComparison.OrdinalIgnoreCase)
+            : string.Equals(provider, "local", StringComparison.OrdinalIgnoreCase);
+    }
+
     public DateTime CurrentMonthStartUtc
     {
         get
