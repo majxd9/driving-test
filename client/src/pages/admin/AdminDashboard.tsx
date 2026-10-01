@@ -127,7 +127,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
     : 'جارٍ التوليد فعلياً الآن.';
   if(data.pending>0)
    return title==='image'
-    ? `بإنتظار التنفيذ عبر ${providerLabel(effectiveImageProvider)}.`
+    ? `بانتظار التنفيذ عبر ${providerLabel(effectiveImageProvider)}.`
     : 'بانتظار التنفيذ في الطابور.';
   if(data.failed>0)
    return `هناك ${data.failed} مهمة فشلت وتحتاج إعادة المحاولة بعد معالجة السبب.`;
@@ -158,7 +158,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
   <div className="admin-card ai-console-hero">
    <div className="card-title">
     <div><p>AI GENERATION CENTER</p><b>مركز توليد المحتوى</b></div>
-    <span className={'status '+(providerEnabled?'on':'off')}>الصور: Hugging Face → {providerLabel(effectiveImageProvider)}</span>
+    <span className={'status '+(providerEnabled?'on':'off')}>الصور: {providerLabel(status?.imageProvider??'none')}{status?.imageProvider!==effectiveImageProvider&&effectiveImageProvider!=='none'?' → '+providerLabel(effectiveImageProvider):''}</span>
    </div>
    <p className="text-muted text-sm leading-relaxed">التوليد يتم بالخادم في الخلفية. التدريب والاختبار لا يشغلان التوليد تلقائياً. حالة الطابور الظاهرة هنا هي الحالة الفعلية للمهام.</p>
 
@@ -172,7 +172,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
     </div>
     <div className="ai-console-card">
      <span>توليد صور AI</span>
-     <b>Hugging Face → {providerLabel(effectiveImageProvider)}</b>
+     <b>{providerLabel(status?.imageProvider??'none')}{status?.imageProvider!==effectiveImageProvider&&effectiveImageProvider!=='none'?' → '+providerLabel(effectiveImageProvider):''}</b>
      <small>المهام تنتظر التنفيذ في PostgreSQL، والصور المكتملة تبقى محفوظة.</small>
      {imageQuotaExhausted&&<div className="ai-provider-message problem mt-2">انتهى الحد المجاني المضمّن في Hugging Face حالياً. لن تُرسل طلبات توليد صور جديدة حتى تتوفر حصة جديدة.</div>}
      <button type="button" className="primary-cta mt-auto" disabled={busy!==''||!providerEnabled||imageQuotaExhausted} onClick={(e)=>{e.preventDefault();void run('image')}}>{busy==='image'?'جارٍ إضافة المهام…':imageQuotaExhausted?'الحد المجاني منتهٍ':'إضافة صور AI الناقصة للطابور'}</button>
@@ -225,7 +225,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
     <span className={'status '+testClass}>{providerTest?.state==='connected'?'الإعداد صالح':providerTest?.state==='disabled'?'غير مفعّل':providerTest?.state==='unconfigured'?'غير مضبوط':providerTest?'تعذر التحقق':'لم يتم الفحص'}</span>
    </div>
    <div className="ai-provider-row">
-    <div><small>المسار الفعلي</small><strong>Hugging Face → {providerLabel(effectiveImageProvider)}</strong></div>
+    <div><small>المسار الفعلي</small><strong>{providerLabel(status?.imageProvider??'none')}{status?.imageProvider!==effectiveImageProvider&&effectiveImageProvider!=='none'?' → '+providerLabel(effectiveImageProvider):''}</strong></div>
     <div><small>نقطة التنفيذ</small><code>{providerTest?.endpoint || (effectiveImageProvider==='fal-ai'?'Hugging Face Fal queue':'Hugging Face Router')}</code></div>
     <button type="button" className="secondary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void testImageProvider()}}>{busy==='test-image'?'جارٍ الفحص…':'فحص الإعداد'}</button>
    </div>
