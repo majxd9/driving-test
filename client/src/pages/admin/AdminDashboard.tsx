@@ -180,7 +180,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
     <button type="button" className="secondary-cta" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void testImageProvider()}}>{busy==='test-image'?'جارٍ الفحص…':'فحص الإعداد'}</button>
    </div>
    {providerTest&&<div className={'ai-provider-message '+(providerTest.state==='connected'?'ok':'problem')}>{providerTest.message}</div>}
-   <p className="text-muted text-xs leading-relaxed mt-3">هذا الفحص يتحقق من التوكن والنموذج وخريطة المزود، وليس من توليد صورة كاملة. التوليد الحقيقي يظهر في حالة المهام.</p>
+   <p className="text-muted text-xs leading-relaxed mt-3">هذا الفحص يتحقق من التوكن وأن الموديل مدرج فعلياً ضمن text-to-image لدى المزود الحالي. لا ينفّذ توليد صورة كاملة.</p>
   </div>
 
   <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
