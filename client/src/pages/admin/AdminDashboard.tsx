@@ -113,10 +113,11 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  const providerEnabled=status?.imageProvider && status.imageProvider!=='none';
  const testClass=providerTest?.state==='connected'?'on':providerTest?.state==='disabled'||providerTest?.state==='unconfigured'?'off':'warn';
  const quotaPercent=status?Math.min(100,(status.quota.used/Math.max(status.quota.limit,1))*100):0;
+ const audioQuotaExhausted=Boolean(status?.audio.lastError?.toLowerCase().includes('quota_exceeded'));
 
  const stateText=(title:'audio'|'image',data:import('../../types').AiGenerationCounts)=>{
   if(title==='audio' && data.lastError?.toLowerCase().includes('quota_exceeded'))
-   return 'متوقف حالياً: ElevenLabs رفض التوليد لأن الحصة المتبقية غير كافية.';
+   return 'متوقف حالياً: انتهى الحد المجاني في ElevenLabs.';
   if(data.processing>0)
    return title==='image'
     ? `جارٍ التوليد فعلياً عبر ${providerLabel(effectiveImageProvider)} الآن.`
@@ -163,7 +164,8 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
      <span>توليد الصوت</span>
      <b>{providerLabel(status?.audioProvider??'')}</b>
      <small>لا يتم استبدال الأصوات الموجودة؛ يضاف فقط الناقص.</small>
-     <button type="button" className="primary-cta mt-auto" disabled={busy!==''} onClick={(e)=>{e.preventDefault();void run('audio')}}>{busy==='audio'?'جارٍ إضافة المهام…':'إضافة الأصوات الناقصة للطابور'}</button>
+     {audioQuotaExhausted&&<div className="ai-provider-message problem mt-2">انتهى الحد المجاني المتاح في ElevenLabs حالياً، لذلك تم إيقاف توليد الصوت حتى تتوفر حصة جديدة.</div>}
+     <button type="button" className="primary-cta mt-auto" disabled={busy!==''||audioQuotaExhausted} onClick={(e)=>{e.preventDefault();void run('audio')}}>{busy==='audio'?'جارٍ إضافة المهام…':audioQuotaExhausted?'الحد المجاني منتهٍ':'إضافة الأصوات الناقصة للطابور'}</button>
     </div>
     <div className="ai-console-card">
      <span>توليد صور AI</span>
@@ -260,7 +262,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
   {status&&<div className="admin-card">
    <div className="card-title"><div><p>إعادة المحاولة</p><b>تستخدم فقط بعد معالجة سبب الفشل</b></div></div>
    <div className="action-row">
-    <button type="button" className="secondary-cta" disabled={busy!==''||status.audio.failed===0} onClick={(e)=>{e.preventDefault();void run('retry-audio')}}>{busy==='retry-audio'?'جارٍ…':'إعادة طابور الأصوات الفاشلة'}</button>
+    <button type="button" className="secondary-cta" disabled={busy!==''||status.audio.failed===0||audioQuotaExhausted} onClick={(e)=>{e.preventDefault();void run('retry-audio')}}>{busy==='retry-audio'?'جارٍ…':'إعادة طابور الأصوات الفاشلة'}</button>
     <button type="button" className="secondary-cta" disabled={busy!==''||status.image.failed===0||!providerEnabled} onClick={(e)=>{e.preventDefault();void run('retry-image')}}>{busy==='retry-image'?'جارٍ…':'إعادة طابور صور AI الفاشلة'}</button>
    </div>
   </div>}
