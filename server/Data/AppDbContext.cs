@@ -16,6 +16,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ExamAttempt> ExamAttempts => Set<ExamAttempt>();
     public DbSet<ExamResult> ExamResults => Set<ExamResult>();
     public DbSet<QuestionAudio> QuestionAudios => Set<QuestionAudio>();
+    public DbSet<SystemAudio> SystemAudios => Set<SystemAudio>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -37,6 +38,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<QuestionAudio>()
             .HasKey(x => x.QuestionId);
+
+        builder.Entity<SystemAudio>()
+            .HasKey(x => x.Key);
 
         builder.Entity<QuestionAudio>()
             .HasOne<Question>()
