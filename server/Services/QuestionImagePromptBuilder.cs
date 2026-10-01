@@ -154,7 +154,7 @@ public static class QuestionImagePromptBuilder
 
     public static string GetContentHash(Question question)
     {
-        var payload = string.Join("\u001f", "ai-image-v2", question.Category, question.Text.Trim(),
+        var payload = string.Join("\u001f", "ai-image-v3-specific-situation-text-free", question.Category, question.Text.Trim(),
             string.Join("\u001e", question.Options.Select(x => x.Trim())), question.ImageUrl?.Trim() ?? string.Empty,
             question.DiagramType ?? string.Empty, question.DiagramUrl?.Trim() ?? string.Empty,
             question.DiagramTitle?.Trim() ?? string.Empty, question.DiagramDescription?.Trim() ?? string.Empty);
