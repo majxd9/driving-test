@@ -6,6 +6,7 @@ import DiagramRenderer from '../components/DiagramRenderer';
 import OptimizedImage from '../components/OptimizedImage';
 import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
+import { speakArabic, stopArabicSpeech } from '../utils/speechFeedback';
 
 const DURATION = 15 * 60;
 const OPTION_NUMBERS = ['١', '٢', '٣', '٤', '٥', '٦'];
@@ -39,6 +40,12 @@ export default function Exam() {
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [audioPrompt, setAudioPrompt] = useState(true);
+
+  useEffect(() => {
+    if (audioPrompt) speakArabic('إذا بدك تشغيل الصوت، اضغط زر التشغيل');
+  }, [audioPrompt]);
+
+  useEffect(() => () => stopArabicSpeech(), []);
 
   questionsRef.current = questions;
   answersRef.current = answers;
@@ -234,60 +241,62 @@ export default function Exam() {
     </header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
 
-    <div className="question-audio-nav exam-top" role="group" aria-label="التحكم بالصوت">
-      <button
-        type="button"
-        className={`question-audio-nav__audio play ${audioEnabled && audioPlaying ? 'playing' : ''}`}
-        disabled={!currentAudioUrl}
-        onClick={() => {
-          setAudioPrompt(false);
-          setAudioError(null);
-          setAudioEnabled(true);
-          const audio = audioRef.current;
-          if (audio && audioReady) {
-            audio.currentTime = 0;
-            void audio.play()
-              .then(() => setAudioPlaying(true))
-              .catch(() => setAudioError('اضغط زر السماعة لبدء الصوت.'));
-          }
-        }}
-        aria-label="تشغيل الصوت"
-        title="تشغيل الصوت"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6L7 10H4Zm11.2-.8a4 4 0 0 1 0 5.6M17.7 7.2a7.4 7.4 0 0 1 0 9.6"/></svg>
-      </button>
-      <button
-        type="button"
-        className="question-audio-nav__audio stop"
-        onClick={() => {
-          setAudioEnabled(false);
-          setAudioPrompt(false);
-          const audio = audioRef.current;
-          if (!audio) return;
-          audio.pause();
-          audio.currentTime = 0;
-          setAudioPlaying(false);
-          setAudioError(null);
-        }}
-        aria-label="إيقاف الصوت"
-        title="إيقاف الصوت"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="m4 4 16 16"/></svg>
-      </button>
-      <div className={`question-audio-nav__status ${audioPrompt ? 'prompt' : audioError ? 'error' : audioEnabled ? 'ready' : 'off'}`}>
-        {audioPrompt ? 'إذا بدك تشغيل الصوت، اضغط زر التشغيل' : audioError ? audioError : audioEnabled ? 'الصوت سيبقى شغال حتى تضغط إيقاف' : 'الصوت متوقف'}
-      </div>
-      <audio
-        ref={audioRef}
-        preload="auto"
-        onEnded={() => setAudioPlaying(false)}
-        onError={() => {
-          setAudioPlaying(false);
-          setAudioError('تعذر تشغيل ملف الصوت على هذا الجهاز.');
-        }}
-      />
-    </div>
     <main className="exam-stage-v2"><section className="exam-card-v2">
+      <div className="question-audio-nav exam-inside" role="group" aria-label="التحكم بالصوت">
+            <button
+              type="button"
+              className={`question-audio-nav__audio play ${audioEnabled && audioPlaying ? 'playing' : ''}`}
+              disabled={!currentAudioUrl}
+              onClick={() => {
+                setAudioPrompt(false);
+                speakArabic('الصوت سيبقى شغال حتى تضغط إيقاف');
+                setAudioError(null);
+                setAudioEnabled(true);
+                const audio = audioRef.current;
+                if (audio && audioReady) {
+                  audio.currentTime = 0;
+                  void audio.play()
+                    .then(() => setAudioPlaying(true))
+                    .catch(() => setAudioError('اضغط زر السماعة لبدء الصوت.'));
+                }
+              }}
+              aria-label="تشغيل الصوت"
+              title="تشغيل الصوت"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6L7 10H4Zm11.2-.8a4 4 0 0 1 0 5.6M17.7 7.2a7.4 7.4 0 0 1 0 9.6"/></svg>
+            </button>
+            <button
+              type="button"
+              className="question-audio-nav__audio stop"
+              onClick={() => {
+                setAudioEnabled(false);
+                setAudioPrompt(false);
+                speakArabic('تم إيقاف الصوت');
+                const audio = audioRef.current;
+                if (!audio) return;
+                audio.pause();
+                audio.currentTime = 0;
+                setAudioPlaying(false);
+                setAudioError(null);
+              }}
+              aria-label="إيقاف الصوت"
+              title="إيقاف الصوت"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="m4 4 16 16"/></svg>
+            </button>
+            <div className={`question-audio-nav__status ${audioPrompt ? 'prompt' : audioError ? 'error' : audioEnabled ? 'ready' : 'off'}`}>
+              {audioPrompt ? 'إذا بدك تشغيل الصوت، اضغط زر التشغيل' : audioError ? audioError : audioEnabled ? 'الصوت سيبقى شغال حتى تضغط إيقاف' : 'الصوت متوقف'}
+            </div>
+            <audio
+              ref={audioRef}
+              preload="auto"
+              onEnded={() => setAudioPlaying(false)}
+              onError={() => {
+                setAudioPlaying(false);
+                setAudioError('تعذر تشغيل ملف الصوت على هذا الجهاز.');
+              }}
+            />
+          </div>
       <div className="exam-scroll-v2">
         <div className="exam-image-slot-v2">{shouldShowQuestionImageBeforeAnswer(q) ? <OptimizedImage src={q.imageUrl ?? ''} alt="صورة السؤال" className="h-full w-full" priority objectFit="contain" /> : <div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
