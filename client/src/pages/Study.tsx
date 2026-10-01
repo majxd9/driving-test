@@ -310,15 +310,20 @@ export default function Study() {
             stopArabicFallback();
             activationPromptPendingRef.current = false;
             activationPromptQuestionRef.current = null;
+
             const prompt = promptAudioRef.current;
             prompt?.pause();
             if (prompt) prompt.currentTime = 0;
+
             const audio = audioRef.current;
-            if (!audio) return;
-            audio.pause();
-            audio.currentTime = 0;
+            if (audio) {
+              audio.pause();
+              audio.currentTime = 0;
+            }
+
             setAudioPlaying(false);
             setAudioError(null);
+            speakArabicFallback('الصوت متوقف');
           }}
           aria-label="إيقاف الصوت"
           title="إيقاف الصوت"
