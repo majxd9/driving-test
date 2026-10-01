@@ -19,8 +19,15 @@ export function createQuestionAudioPrompt(
     resolveApiUrl(`/api/questions/audio-prompt/${key}`)
   );
   audio.preload = 'auto';
-  audio.load();
+
+  audio.addEventListener('error', () => {
+    if (promptCache.get(key) === audio) {
+      promptCache.delete(key);
+    }
+  });
+
   promptCache.set(key, audio);
+  audio.load();
   return audio;
 }
 
@@ -35,9 +42,20 @@ export async function playQuestionAudioPrompt(
 
   try {
     await audio.play();
+    return;
   } catch {
+    // Retry with a completely fresh element. This also recovers from a cached 404/network failure.
+    if (promptCache.get(key) === audio) {
+      promptCache.delete(key);
+    }
+    audio.pause();
+    audio.removeAttribute('src');
     audio.load();
-    audio.currentTime = 0;
-    await audio.play();
   }
+
+  const retryAudio = createQuestionAudioPrompt(key);
+  if (!retryAudio) return;
+
+  retryAudio.currentTime = 0;
+  await retryAudio.play();
 }
