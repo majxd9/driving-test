@@ -117,11 +117,26 @@ export interface AiGenerationCounts {
   remaining: number;
 }
 
+export interface AiGenerationQuota {
+  limit: number;
+  used: number;
+  remaining: number;
+  monthStartUtc: string;
+}
+
 export interface AiGenerationOverview {
   audioProvider: string;
   imageProvider: string;
   audio: AiGenerationCounts;
   image: AiGenerationCounts;
+  quota: AiGenerationQuota;
+}
+
+export interface ImageProviderTestResult {
+  provider: string;
+  state: 'connected' | 'disabled' | 'unconfigured' | 'unsupported' | 'error' | 'timeout' | 'unreachable' | string;
+  message: string;
+  endpoint: string;
 }
 
 export interface AiGenerationEnqueueResult {
