@@ -43,6 +43,11 @@ public sealed class AiGenerationJobService
     private readonly AppDbContext _db;
     private readonly IConfiguration _configuration;
 
+    private readonly record struct StoredMediaState(
+        int QuestionId,
+        string ContentHash,
+        bool HasBytes);
+
     public AiGenerationJobService(AppDbContext db, IConfiguration configuration)
     {
         _db = db;
@@ -56,7 +61,7 @@ public sealed class AiGenerationJobService
         (_configuration["QUESTION_IMAGE_PROVIDER"] ?? "none").Trim().ToLowerInvariant();
 
     public bool IsImageProviderEnabled =>
-        ImageProvider != "none" && !string.IsNullOrWhiteSpace(ImageProvider);
+        ImageProvider is "huggingface" or "comfyui";
 
     public string ImageExecutionProvider
     {
@@ -145,15 +150,17 @@ public sealed class AiGenerationJobService
             ? await _db.QuestionAudios
                 .AsNoTracking()
                 .Where(x => questionIds.Contains(x.QuestionId) && x.AudioBytes.Length > 0)
+                .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
                 .ToDictionaryAsync(x => x.QuestionId, cancellationToken)
-            : new Dictionary<int, QuestionAudio>();
+            : new Dictionary<int, StoredMediaState>();
 
         var imageByQuestion = jobType == AiGenerationJobType.AiImage
             ? await _db.QuestionAiImages
                 .AsNoTracking()
                 .Where(x => questionIds.Contains(x.QuestionId) && x.ImageBytes.Length > 0)
+                .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
                 .ToDictionaryAsync(x => x.QuestionId, cancellationToken)
-            : new Dictionary<int, QuestionAiImage>();
+            : new Dictionary<int, StoredMediaState>();
 
         var created = 0;
         var requeued = 0;
@@ -198,10 +205,10 @@ public sealed class AiGenerationJobService
 
             var mediaExists = jobType == AiGenerationJobType.Audio
                 ? audioByQuestion.TryGetValue(question.Id, out var audio) &&
-                  (audio.ContentHash == hash ||
-                   (audio.ContentHash == QuestionAudioTextBuilder.GetLegacyHash(question) ||
-                   audio.ContentHash == QuestionAudioTextBuilder.GetPreviousAdminHash(question)))
+                  audio.HasBytes &&
+                  IsMatchingAudioHash(audio.ContentHash, question)
                 : imageByQuestion.TryGetValue(question.Id, out var image) &&
+                  image.HasBytes &&
                   image.ContentHash == hash;
 
             if (mediaExists)
@@ -348,11 +355,13 @@ public sealed class AiGenerationJobService
         var audios = await _db.QuestionAudios
             .AsNoTracking()
             .Where(x => x.AudioBytes.Length > 0)
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
             .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
 
         var images = await _db.QuestionAiImages
             .AsNoTracking()
             .Where(x => x.ImageBytes.Length > 0)
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
             .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
 
         var quota = await new AiGenerationQuotaService(_db, _configuration)
@@ -394,15 +403,20 @@ public sealed class AiGenerationJobService
         var audios = await _db.QuestionAudios
             .AsNoTracking()
             .Where(x => ids.Contains(x.QuestionId) && x.AudioBytes.Length > 0)
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
             .ToListAsync(cancellationToken);
 
         var images = await _db.QuestionAiImages
             .AsNoTracking()
             .Where(x => ids.Contains(x.QuestionId) && x.ImageBytes.Length > 0)
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
             .ToListAsync(cancellationToken);
 
+        var audioByQuestion = audios.ToDictionary(x => x.QuestionId);
+        var imageByQuestion = images.ToDictionary(x => x.QuestionId);
+
         foreach (var question in questions)
-            ApplyState(question, jobs, audios, images);
+            ApplyState(question, jobs, audioByQuestion, imageByQuestion);
     }
 
     public async Task AttachStudentMediaUrlsAsync(
@@ -418,33 +432,37 @@ public sealed class AiGenerationJobService
         var audios = await _db.QuestionAudios
             .AsNoTracking()
             .Where(x => ids.Contains(x.QuestionId) && x.AudioBytes.Length > 0)
-            .ToListAsync(cancellationToken);
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+            .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
 
         var images = await _db.QuestionAiImages
             .AsNoTracking()
             .Where(x => ids.Contains(x.QuestionId) && x.ImageBytes.Length > 0)
-            .ToListAsync(cancellationToken);
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+            .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
 
         foreach (var question in questions)
         {
-            var audio = audios.FirstOrDefault(x => x.QuestionId == question.Id);
-            if (audio is not null &&
+            if (audios.TryGetValue(question.Id, out var audio) &&
+                audio.HasBytes &&
                 IsMatchingAudioHash(audio.ContentHash, question))
             {
                 question.AudioUrl =
                     $"/api/questions/{question.Id}/audio-play?v={audio.ContentHash}";
             }
 
-            var image = images.FirstOrDefault(x => x.QuestionId == question.Id);
-            var imageHash = QuestionImagePromptBuilder.GetContentHash(question);
-
-            // لا نعرض صورة قديمة بعد تغيير قواعد التوليد؛ يجب أن تطابق
-            // الصورة نسخة الـhash الحالية حتى لا يظهر للطالب مشهد عام أو غير متعلق بالسؤال.
-            if (image is not null &&
-                image.ContentHash == imageHash)
+            if (images.TryGetValue(question.Id, out var image) &&
+                image.HasBytes)
             {
-                question.AiImageUrl =
-                    $"/api/questions/{question.Id}/ai-image?v={imageHash}";
+                var imageHash = QuestionImagePromptBuilder.GetContentHash(question);
+
+                // لا نعرض صورة قديمة بعد تغيير قواعد التوليد؛ يجب أن تطابق
+                // الصورة نسخة الـhash الحالية حتى لا يظهر للطالب مشهد عام أو غير متعلق بالسؤال.
+                if (image.ContentHash == imageHash)
+                {
+                    question.AiImageUrl =
+                        $"/api/questions/{question.Id}/ai-image?v={imageHash}";
+                }
             }
         }
     }
@@ -453,38 +471,35 @@ public sealed class AiGenerationJobService
         int limit,
         CancellationToken cancellationToken)
     {
-        var questions = await _db.Questions
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
+        var safeLimit = Math.Clamp(limit, 1, 60);
 
-        var questionById = questions.ToDictionary(q => q.Id);
-        var images = await _db.QuestionAiImages
-            .AsNoTracking()
-            .Where(x => x.ImageBytes.Length > 0)
-            .OrderByDescending(x => x.CreatedAt)
-            .Take(Math.Clamp(limit * 3, limit, 180))
-            .ToListAsync(cancellationToken);
-
-        var result = new List<CompletedAiImageItem>(limit);
-
-        foreach (var image in images)
-        {
-            if (!questionById.TryGetValue(image.QuestionId, out var question))
-                continue;
-
-            result.Add(new CompletedAiImageItem(
-                question.Id,
-                question.Text,
-                question.Category.ToString(),
-                $"/api/questions/{question.Id}/ai-image?v={image.ContentHash}",
+        var items = await (
+            from image in _db.QuestionAiImages.AsNoTracking()
+            join question in _db.Questions.AsNoTracking()
+                on image.QuestionId equals question.Id
+            where image.ImageBytes.Length > 0
+            orderby image.CreatedAt descending
+            select new
+            {
+                QuestionId = question.Id,
+                QuestionText = question.Text,
+                Category = question.Category,
                 image.ContentHash,
-                image.CreatedAt));
+                image.CreatedAt
+            })
+            .Take(Math.Clamp(safeLimit * 3, safeLimit, 180))
+            .ToListAsync(cancellationToken);
 
-            if (result.Count >= limit)
-                break;
-        }
-
-        return result;
+        return items
+            .Take(safeLimit)
+            .Select(item => new CompletedAiImageItem(
+                item.QuestionId,
+                item.QuestionText,
+                item.Category.ToString(),
+                $"/api/questions/{item.QuestionId}/ai-image?v={item.ContentHash}",
+                item.ContentHash,
+                item.CreatedAt))
+            .ToList();
     }
 
     public async Task<AiGenerationJob?> ClaimNextJobAsync(
@@ -529,8 +544,12 @@ public sealed class AiGenerationJobService
         job.Attempts++;
         job.UpdatedAt = now;
         job.StartedAt = now;
-        job.LockedUntil =
-            now.AddMinutes(_configuration.GetValue("AI_JOB_LOCK_MINUTES", 60));
+        var lockMinutes = Math.Clamp(
+            _configuration.GetValue("AI_JOB_LOCK_MINUTES", 60),
+            5,
+            240);
+
+        job.LockedUntil = now.AddMinutes(lockMinutes);
 
         await _db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
@@ -617,12 +636,11 @@ public sealed class AiGenerationJobService
     {
         var audio = await _db.QuestionAudios
             .AsNoTracking()
-            .SingleOrDefaultAsync(
-                x => x.QuestionId == question.Id,
-                cancellationToken);
+            .Where(x => x.QuestionId == question.Id && x.AudioBytes.Length > 0)
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+            .SingleOrDefaultAsync(cancellationToken);
 
-        return audio is not null &&
-               audio.AudioBytes.Length > 0 &&
+        return audio.HasBytes &&
                IsMatchingAudioHash(audio.ContentHash, question);
     }
 
@@ -632,28 +650,27 @@ public sealed class AiGenerationJobService
     {
         var image = await _db.QuestionAiImages
             .AsNoTracking()
-            .SingleOrDefaultAsync(
-                x => x.QuestionId == question.Id,
-                cancellationToken);
+            .Where(x => x.QuestionId == question.Id && x.ImageBytes.Length > 0)
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+            .SingleOrDefaultAsync(cancellationToken);
 
-        return image is not null &&
-               image.ImageBytes.Length > 0 &&
+        return image.HasBytes &&
                image.ContentHash == QuestionImagePromptBuilder.GetContentHash(question);
     }
 
     private void ApplyState(
         Question question,
         IReadOnlyList<AiGenerationJob> jobs,
-        IReadOnlyList<QuestionAudio> audios,
-        IReadOnlyList<QuestionAiImage> images)
+        IReadOnlyDictionary<int, StoredMediaState> audios,
+        IReadOnlyDictionary<int, StoredMediaState> images)
     {
         var audioHash = QuestionAudioTextBuilder.GetCurrentHash(question);
-        var audio = audios.FirstOrDefault(x => x.QuestionId == question.Id);
-        var audioReady = audio is not null &&
+        var audioReady = audios.TryGetValue(question.Id, out var audio) &&
+                         audio.HasBytes &&
                          IsMatchingAudioHash(audio.ContentHash, question);
 
         question.AudioUrl = audioReady
-            ? $"/api/questions/{question.Id}/audio-play?v={audio!.ContentHash}"
+            ? $"/api/questions/{question.Id}/audio-play?v={audio.ContentHash}"
             : null;
 
         question.AudioGenerationStatus = ResolveStatus(
@@ -666,8 +683,9 @@ public sealed class AiGenerationJobService
         if (QuestionImagePromptBuilder.ShouldGenerate(question))
         {
             var imageHash = QuestionImagePromptBuilder.GetContentHash(question);
-            var image = images.FirstOrDefault(x => x.QuestionId == question.Id);
-            var imageReady = image is not null && image.ContentHash == imageHash;
+            var imageReady = images.TryGetValue(question.Id, out var image) &&
+                             image.HasBytes &&
+                             image.ContentHash == imageHash;
 
             question.AiImageUrl = imageReady
                 ? $"/api/questions/{question.Id}/ai-image?v={imageHash}"
@@ -712,8 +730,8 @@ public sealed class AiGenerationJobService
         IReadOnlyList<Question> questions,
         AiGenerationJobType type,
         IReadOnlyList<AiGenerationJob> jobs,
-        IReadOnlyDictionary<int, QuestionAudio>? audios,
-        IReadOnlyDictionary<int, QuestionAiImage>? images)
+        IReadOnlyDictionary<int, StoredMediaState>? audios,
+        IReadOnlyDictionary<int, StoredMediaState>? images)
     {
         var missing = 0;
         var pending = 0;
@@ -738,16 +756,15 @@ public sealed class AiGenerationJobService
                 audios.TryGetValue(question.Id, out var audio))
             {
                 isCompleted =
-                    audio.AudioBytes.Length > 0 &&
-                    (audio.ContentHash == hash ||
-                     audio.ContentHash == QuestionAudioTextBuilder.GetLegacyHash(question));
+                    audio.HasBytes &&
+                    IsMatchingAudioHash(audio.ContentHash, question);
             }
             else if (type == AiGenerationJobType.AiImage &&
                      images is not null &&
                      images.TryGetValue(question.Id, out var image))
             {
                 isCompleted =
-                    image.ImageBytes.Length > 0 &&
+                    image.HasBytes &&
                     image.ContentHash == hash;
             }
 
@@ -774,7 +791,9 @@ public sealed class AiGenerationJobService
                     processing++;
                     break;
                 case AiGenerationJobStatus.Completed:
-                    pending++;
+                    // The job claims completion but the matching media is absent.
+                    // Treat it as missing so the admin can enqueue it again.
+                    missing++;
                     break;
                 case AiGenerationJobStatus.Failed:
                     failed++;
