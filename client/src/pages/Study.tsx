@@ -249,10 +249,6 @@ export default function Study() {
           type="button"
           className="question-audio-nav__audio stop"
           onClick={() => {
-
-            prompt?.pause();
-            if (prompt) prompt.currentTime = 0;
-
             const audio = audioRef.current;
             if (audio) {
               audio.pause();
@@ -269,7 +265,6 @@ export default function Study() {
         </button>
         <div className={"question-audio-nav__status " + (audioError ? "error" : audioPlaying ? "ready" : "prompt")}>
           {audioError ? audioError : audioPlaying ? "الصوت يعمل" : audioReady ? "اضغط زر التشغيل للاستماع" : "جارٍ تجهيز الصوت…"}
-        </div>
         </div>
         <audio
           ref={audioRef}
