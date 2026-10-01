@@ -231,6 +231,38 @@ public sealed class AiGenerationJobService
             failedRetried);
     }
 
+    public async Task PrepareImageQueueForCurrentProviderAsync(CancellationToken cancellationToken)
+    {
+        if (!string.Equals(ImageExecutionProvider, "fal-ai", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        // The old queue was created while the effective provider was nscale.
+        // Once fal-ai is active, release those image jobs immediately and migrate
+        // the legacy nscale failures without touching completed images or audio.
+        await _db.Database.ExecuteSqlRawAsync("""
+            UPDATE "AiGenerationJobs"
+            SET "Status" = 0,
+                "Attempts" = 0,
+                "LastError" = NULL,
+                "NextAttemptAt" = NOW(),
+                "LockedUntil" = NULL,
+                "StartedAt" = NULL,
+                "CompletedAt" = NULL,
+                "UpdatedAt" = NOW()
+            WHERE "JobType" = 1
+              AND "Status" = 3
+              AND "LastError" ILIKE '%Model not supported by provider nscale%';
+
+            UPDATE "AiGenerationJobs"
+            SET "NextAttemptAt" = NOW(),
+                "LockedUntil" = NULL,
+                "UpdatedAt" = NOW()
+            WHERE "JobType" = 1
+              AND "Status" = 0;
+            """,
+            cancellationToken);
+    }
+
     public async Task ResumePendingAsync(CancellationToken cancellationToken)
     {
         await _db.Database.ExecuteSqlRawAsync("""
