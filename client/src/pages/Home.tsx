@@ -29,9 +29,8 @@ export default function Home(){
  const {user,logout}=useAuth();const navigate=useNavigate();const [total,setTotal]=useState<number|null>(user?.questionCount ?? null);
 
  const openStudy = (path: string) => {
-  void window.setTimeout(() => {
-    void playQuestionAudioPrompt('question-audio-first-entry').catch(() => undefined);
-  }, 500);
+  // Start this inside the user's click so browser autoplay policies do not block it.
+  void playQuestionAudioPrompt('question-audio-first-entry').catch(() => undefined);
   navigate(path);
  };
 
