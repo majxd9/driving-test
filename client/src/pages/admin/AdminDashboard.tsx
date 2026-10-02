@@ -52,8 +52,6 @@ function Questions({questions,reload}:{questions:Question[];reload:()=>void}){
 
 function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types').AiGenerationOverview|null;reloadAiStatus:()=>Promise<void>}){
  const [busy,setBusy]=useState('');
- const [systemAudioBusy,setSystemAudioBusy]=useState(false);
- const [systemAudioMessage,setSystemAudioMessage]=useState('');
  const [providerTest,setProviderTest]=useState<import('../../types').ImageProviderTestResult|null>(null);
  const [lastAction,setLastAction]=useState<{label:string;result:import('../../types').AiGenerationEnqueueResult}|null>(null);
  const [completedImages,setCompletedImages]=useState<import('../../types').CompletedAiImageItem[]>([]);
@@ -76,21 +74,6 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
   const timer=window.setInterval(()=>{ void reloadGallery(); },8000);
   return ()=>window.clearInterval(timer);
  },[galleryOpen]);
-
- const restoreSystemAudio=async()=>{
-  setSystemAudioBusy(true);
-  setSystemAudioMessage('');
-  try{
-   const result=await api.admin.generateQuestionAudioPrompts();
-   setSystemAudioMessage(
-    result.generated===0
-     ? 'رسائل الصوت الثلاث موجودة بالفعل.'
-     : `تمت استعادة ${result.generated} من 3 رسائل صوتية.`
-   );
-  }catch(e){
-   setSystemAudioMessage(e instanceof Error?e.message:'تعذر استعادة رسائل الصوت الثلاث.');
-  }finally{setSystemAudioBusy(false)}
- };
 
  const run=async(kind:'audio'|'image'|'resume'|'retry-audio'|'retry-image')=>{
   setBusy(kind);
@@ -212,16 +195,6 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
      {imageQuotaExhausted&&<div className={'ai-provider-message '+(imageFallbackEnabled?'ok':'problem')}>{imageFallbackEnabled?'الرصيد في المسار الأساسي غير متاح حالياً؛ التحويل إلى Eden AI مفعّل تلقائياً.':'وصل مزود الصور إلى حد الاستخدام أو رفض الطلب حالياً. لن تُرسل طلبات جديدة حتى تتوفر حصة أو تتم معالجة السبب.'}</div>}
      <button type="button" className="primary-cta mt-auto" disabled={busy!==''||!providerEnabled||imageBlocked} onClick={(e)=>{e.preventDefault();void run('image')}}>{busy==='image'?'جارٍ إضافة المهام…':imageBlocked?'الحد المجاني منتهٍ':'إضافة صور AI الناقصة للطابور'}</button>
     </div>
-   </div>
-
-   <div className="ai-console-card mt-4">
-    <span>رسائل الصوت الثلاث</span>
-    <b>رسالة الدخول · التشغيل · الإيقاف</b>
-    <small>استعادة الرسائل الناقصة فقط. لا يتم استبدال الرسائل الموجودة المطابقة.</small>
-    <button type="button" className="secondary-cta mt-2" disabled={systemAudioBusy} onClick={(e)=>{e.preventDefault();void restoreSystemAudio()}}>
-     {systemAudioBusy?'جارٍ الاستعادة…':'استعادة رسائل الصوت الثلاث'}
-    </button>
-    {systemAudioMessage&&<small className="block mt-2 text-muted">{systemAudioMessage}</small>}
    </div>
 
    <div className="ai-console-card mt-4">
