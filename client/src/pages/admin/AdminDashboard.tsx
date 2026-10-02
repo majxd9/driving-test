@@ -214,14 +214,16 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
    <div className="card-title">
     <div><p>AI IMAGE GALLERY</p><b>الصور المولدة</b></div>
     <div className="ai-gallery-actions">
-     <span className="status on">{completedImages.length} صورة معروضة</span>
-     <button type="button" className="secondary-cta" disabled={galleryLoading} onClick={(e)=>{e.preventDefault();void reloadGallery()}}>{galleryLoading?'جارٍ التحديث…':'تحديث الصور'}</button>
+     {galleryOpen&&<span className="status on">{completedImages.length} صورة معروضة</span>}
+     <button type="button" className="secondary-cta" disabled={galleryLoading} onClick={(e)=>{e.preventDefault();setGalleryOpen(open=>!open)}}>{galleryOpen?'إخفاء الصور':'عرض الصور المكتملة'}</button>
+     {galleryOpen&&<button type="button" className="secondary-cta" disabled={galleryLoading} onClick={(e)=>{e.preventDefault();void reloadGallery()}}>{galleryLoading?'جارٍ التحديث…':'تحديث الصور'}</button>}
     </div>
    </div>
-   <p className="text-muted text-sm leading-relaxed">هذه صور مكتملة ومحفوظة فعلياً. المعرض يتحدث تلقائياً أثناء عمل الطابور.</p>
-   {completedImages.length===0
-    ? <div className="ai-gallery-empty">{galleryLoading?'جارٍ تحميل الصور…':'لا توجد صور AI مكتملة حالياً.'}</div>
-    : <div className="ai-image-gallery">
+   <p className="text-muted text-sm leading-relaxed">{galleryOpen?'هذه صور مكتملة ومحفوظة فعلياً. يتم تحديث المعرض تلقائياً فقط أثناء عرضه.':'المعرض لا يحمل ولا يعرض الصور تلقائياً لتخفيف وقت التحميل. اضغط «عرض الصور المكتملة» عند الحاجة.'}</p>
+   {galleryOpen&&(
+    completedImages.length===0
+     ? <div className="ai-gallery-empty">{galleryLoading?'جارٍ تحميل الصور…':'لا توجد صور AI مكتملة حالياً.'}</div>
+     : <div className="ai-image-gallery">
       {completedImages.map(image=><article className="ai-image-item" key={image.questionId+'-'+image.contentHash}>
        <div className="ai-image-preview">
         <img src={resolveApiUrl(image.imageUrl)} alt={image.questionText} loading="lazy"/>
@@ -234,7 +236,8 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
         <time dateTime={image.createdAt}>{new Date(image.createdAt).toLocaleString('ar-SY')}</time>
        </div>
       </article>)}
-     </div>}
+     </div>
+   )}
   </div>
 
   <div className="admin-card ai-provider-card">
