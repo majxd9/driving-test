@@ -5,6 +5,12 @@ export type QuestionAudioPromptKey =
   | 'question-audio-enabled'
   | 'question-audio-disabled';
 
+const promptTexts: Record<QuestionAudioPromptKey, string> = {
+  'question-audio-first-entry': 'إذا بدك تشغيل الصوت، اضغط زر التشغيل.',
+  'question-audio-enabled': 'الصوت سيبقى شغال حتى تضغط إيقاف.',
+  'question-audio-disabled': 'الصوت متوقف.',
+};
+
 const promptCache = new Map<QuestionAudioPromptKey, HTMLAudioElement>();
 
 export function createQuestionAudioPrompt(
@@ -31,11 +37,29 @@ export function createQuestionAudioPrompt(
   return audio;
 }
 
+function speakPromptFallback(key: QuestionAudioPromptKey): void {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(promptTexts[key]);
+    utterance.lang = 'ar-SY';
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+  } catch {
+    // Keep the UI functional when browser speech synthesis is unavailable.
+  }
+}
+
 export async function playQuestionAudioPrompt(
   key: QuestionAudioPromptKey
 ): Promise<void> {
   const audio = createQuestionAudioPrompt(key);
-  if (!audio) return;
+  if (!audio) {
+    speakPromptFallback(key);
+    return;
+  }
 
   audio.pause();
   audio.currentTime = 0;
@@ -44,7 +68,6 @@ export async function playQuestionAudioPrompt(
     await audio.play();
     return;
   } catch {
-    // Retry with a completely fresh element. This also recovers from a cached 404/network failure.
     if (promptCache.get(key) === audio) {
       promptCache.delete(key);
     }
@@ -54,8 +77,15 @@ export async function playQuestionAudioPrompt(
   }
 
   const retryAudio = createQuestionAudioPrompt(key);
-  if (!retryAudio) return;
+  if (retryAudio) {
+    retryAudio.currentTime = 0;
+    try {
+      await retryAudio.play();
+      return;
+    } catch {
+      // Fall through to the browser speech fallback.
+    }
+  }
 
-  retryAudio.currentTime = 0;
-  await retryAudio.play();
+  speakPromptFallback(key);
 }
