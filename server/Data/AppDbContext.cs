@@ -62,9 +62,6 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .HasKey(x => x.QuestionId);
 
         builder.Entity<QuestionAiImage>()
-            .HasKey(x => x.QuestionId);
-
-        builder.Entity<QuestionAiImage>()
             .HasOne<Question>()
             .WithOne()
             .HasForeignKey<QuestionAiImage>(x => x.QuestionId)
