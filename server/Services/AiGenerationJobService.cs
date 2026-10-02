@@ -20,6 +20,8 @@ public sealed record AiGenerationOverview(
     string AudioProvider,
     string ImageProvider,
     string ImageExecutionProvider,
+    string AudioFallbackProvider,
+    string ImageFallbackProvider,
     AiGenerationCounts Audio,
     AiGenerationCounts Image,
     AiGenerationQuota Quota);
@@ -59,6 +61,16 @@ public sealed class AiGenerationJobService
 
     public string ImageProvider =>
         (_configuration["QUESTION_IMAGE_PROVIDER"] ?? "none").Trim().ToLowerInvariant();
+
+    public string AudioFallbackProvider =>
+        HasEdenFallback("EDENAI_AUDIO_PROVIDER")
+            ? (_configuration["EDENAI_AUDIO_PROVIDER"] ?? string.Empty).Trim().ToLowerInvariant()
+            : string.Empty;
+
+    public string ImageFallbackProvider =>
+        HasEdenFallback("EDENAI_IMAGE_PROVIDER")
+            ? (_configuration["EDENAI_IMAGE_PROVIDER"] ?? string.Empty).Trim().ToLowerInvariant()
+            : string.Empty;
 
     public bool IsImageProviderEnabled =>
         ImageProvider is "huggingface" or "comfyui" or "edenai";
@@ -306,6 +318,48 @@ public sealed class AiGenerationJobService
             cancellationToken);
     }
 
+    public async Task ResumeProviderPausedJobsForFallbackAsync(CancellationToken cancellationToken)
+    {
+        if (HasEdenFallback("EDENAI_AUDIO_PROVIDER"))
+        {
+            await _db.Database.ExecuteSqlRawAsync("""
+                UPDATE "AiGenerationJobs"
+                SET "NextAttemptAt" = NOW(),
+                    "LockedUntil" = NULL,
+                    "UpdatedAt" = NOW()
+                WHERE "Status" = 0
+                  AND "JobType" = 0
+                  AND "NextAttemptAt" > NOW() + INTERVAL '1 day'
+                  AND (
+                        "LastError" ILIKE '%quota_exceeded%'
+                        OR "LastError" ILIKE '%ElevenLabs%'
+                        OR "LastError" ILIKE '%HTTP 402%'
+                        OR "LastError" ILIKE '%HTTP 429%'
+                  );
+                """, cancellationToken);
+        }
+
+        if (HasEdenFallback("EDENAI_IMAGE_PROVIDER"))
+        {
+            await _db.Database.ExecuteSqlRawAsync("""
+                UPDATE "AiGenerationJobs"
+                SET "NextAttemptAt" = NOW(),
+                    "LockedUntil" = NULL,
+                    "UpdatedAt" = NOW()
+                WHERE "Status" = 0
+                  AND "JobType" = 1
+                  AND "NextAttemptAt" > NOW() + INTERVAL '1 day'
+                  AND (
+                        "LastError" ILIKE '%Hugging Face%'
+                        OR "LastError" ILIKE '%Fal%'
+                        OR "LastError" ILIKE '%HTTP 402%'
+                        OR "LastError" ILIKE '%HTTP 429%'
+                        OR "LastError" ILIKE '%depleted your monthly included credits%'
+                  );
+                """, cancellationToken);
+        }
+    }
+
     public async Task ResetStaleProcessingAsync(CancellationToken cancellationToken)
     {
         await _db.Database.ExecuteSqlRawAsync("""
@@ -371,6 +425,8 @@ public sealed class AiGenerationJobService
             AudioProvider,
             ImageProvider,
             ImageExecutionProvider,
+            AudioFallbackProvider,
+            ImageFallbackProvider,
             CountStatuses(
                 questions,
                 AiGenerationJobType.Audio,
@@ -820,6 +876,12 @@ public sealed class AiGenerationJobService
             failed,
             lastErrorJob?.LastError,
             lastErrorJob?.UpdatedAt);
+    }
+
+    private bool HasEdenFallback(string providerKey)
+    {
+        return !string.IsNullOrWhiteSpace(_configuration["EDENAI_API_KEY"]) &&
+               !string.IsNullOrWhiteSpace(_configuration[providerKey]);
     }
 
     private enum EnsureResult
