@@ -50,7 +50,7 @@ public sealed class ElevenLabsQuestionAudioGenerator : IQuestionAudioGenerator
                 if(string.IsNullOrWhiteSpace(status)&&root.TryGetProperty("status",out var top))status=top.GetString()??string.Empty;
                 if(string.IsNullOrWhiteSpace(message)&&root.TryGetProperty("message",out var topm))message=topm.GetString()??string.Empty;
             }catch(JsonException){}
-            throw new HttpRequestException(string.IsNullOrWhiteSpace(message)?$"تعذر توليد الصوت من ElevenLabs للسؤال {question.Id}.":$"ElevenLabs: {status} — {message}");
+            throw new HttpRequestException(string.IsNullOrWhiteSpace(message)?$"تعذر توليد الصوت من ElevenLabs للنص الصوتي.":$"ElevenLabs: {status} — {message}");
         }
         var bytes=await response.Content.ReadAsByteArrayAsync(cancellationToken);
         if(bytes.Length==0)throw new InvalidOperationException("تمت استجابة ElevenLabs بدون ملف صوتي.");
