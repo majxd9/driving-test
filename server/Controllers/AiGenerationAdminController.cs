@@ -10,6 +10,8 @@ public sealed record BulkGenerationRequest(bool RetryFailed = false, bool Regene
 
 public sealed record ImageProviderTestResult(string Provider, string State, string Message, string Endpoint);
 
+public sealed record AiGenerationControlRequest(bool? AudioEnabled = null, bool? ImageEnabled = null);
+
 [ApiController]
 [Route("api/admin/ai-generation")]
 [Authorize(Roles = "Admin")]
@@ -33,6 +35,55 @@ public sealed class AiGenerationAdminController : ControllerBase
     public async Task<ActionResult<AiGenerationOverview>> Status(CancellationToken cancellationToken) =>
         Ok(await _jobs.GetOverviewAsync(cancellationToken));
 
+    [HttpGet("control")]
+    public async Task<ActionResult<AiGenerationControlState>> Control(CancellationToken cancellationToken) =>
+        Ok(await _jobs.GetControlStateAsync(cancellationToken));
+
+    [HttpPost("control/all/stop")]
+    public async Task<ActionResult<AiGenerationControlState>> StopAll(CancellationToken cancellationToken)
+    {
+        var state = await _jobs.SetControlStateAsync(false, false, cancellationToken);
+        return Ok(state);
+    }
+
+    [HttpPost("control/all/start")]
+    public async Task<ActionResult<AiGenerationControlState>> StartAll(CancellationToken cancellationToken)
+    {
+        await _jobs.CleanupInvalidImageGenerationStateAsync(cancellationToken);
+        var state = await _jobs.SetControlStateAsync(true, true, cancellationToken);
+        await _jobs.ResumePendingTypeAsync(AiGenerationJobType.Audio, cancellationToken);
+        await _jobs.ResumePendingTypeAsync(AiGenerationJobType.AiImage, cancellationToken);
+        await _jobs.EnqueueMissingAsync(cancellationToken);
+        return Ok(state);
+    }
+
+    [HttpPost("control/audio/start")]
+    public async Task<ActionResult<AiGenerationControlState>> StartAudio(CancellationToken cancellationToken)
+    {
+        var state = await _jobs.SetControlStateAsync(true, null, cancellationToken);
+        await _jobs.ResumePendingTypeAsync(AiGenerationJobType.Audio, cancellationToken);
+        await _jobs.EnqueueBulkAsync(AiGenerationJobType.Audio, false, false, cancellationToken);
+        return Ok(state);
+    }
+
+    [HttpPost("control/audio/stop")]
+    public async Task<ActionResult<AiGenerationControlState>> StopAudio(CancellationToken cancellationToken) =>
+        Ok(await _jobs.SetControlStateAsync(false, null, cancellationToken));
+
+    [HttpPost("control/image/start")]
+    public async Task<ActionResult<AiGenerationControlState>> StartImage(CancellationToken cancellationToken)
+    {
+        await _jobs.CleanupInvalidImageGenerationStateAsync(cancellationToken);
+        var state = await _jobs.SetControlStateAsync(null, true, cancellationToken);
+        await _jobs.ResumePendingTypeAsync(AiGenerationJobType.AiImage, cancellationToken);
+        await _jobs.EnqueueBulkAsync(AiGenerationJobType.AiImage, false, false, cancellationToken);
+        return Ok(state);
+    }
+
+    [HttpPost("control/image/stop")]
+    public async Task<ActionResult<AiGenerationControlState>> StopImage(CancellationToken cancellationToken) =>
+        Ok(await _jobs.SetControlStateAsync(null, false, cancellationToken));
+
     [HttpPost("audio")]
     public async Task<ActionResult<AiGenerationEnqueueResult>> Audio(
         [FromBody] BulkGenerationRequest? request,
@@ -52,6 +103,25 @@ public sealed class AiGenerationAdminController : ControllerBase
             request?.RetryFailed ?? false,
             request?.RegenerateCompleted ?? false,
             cancellationToken));
+
+    [HttpPost("retry-failed/{type}")]
+    public async Task<ActionResult<AiGenerationEnqueueResult>> RetryFailed(
+        string type,
+        CancellationToken cancellationToken)
+    {
+        var jobType = type.Trim().ToLowerInvariant() switch
+        {
+            "audio" => AiGenerationJobType.Audio,
+            "image" => AiGenerationJobType.AiImage,
+            _ => throw new ArgumentException("النوع يجب أن يكون audio أو image.")
+        };
+
+        return Ok(await _jobs.EnqueueBulkAsync(
+            jobType,
+            retryFailed: true,
+            forceCompleted: false,
+            cancellationToken));
+    }
 
     [HttpPost("all")]
     public async Task<ActionResult<object>> All(
@@ -78,8 +148,20 @@ public sealed class AiGenerationAdminController : ControllerBase
         CancellationToken cancellationToken)
     {
         await _jobs.ResetStaleProcessingAsync(cancellationToken);
-        await _jobs.ResumePendingAsync(cancellationToken);
-        await _jobs.EnqueueMissingAsync(cancellationToken);
+        var control = await _jobs.GetControlStateAsync(cancellationToken);
+
+        if (control.AudioEnabled)
+            await _jobs.ResumePendingTypeAsync(AiGenerationJobType.Audio, cancellationToken);
+
+        if (control.ImageEnabled)
+        {
+            await _jobs.ResumePendingTypeAsync(AiGenerationJobType.AiImage, cancellationToken);
+            await _jobs.CleanupInvalidImageGenerationStateAsync(cancellationToken);
+        }
+
+        if (control.AudioEnabled || control.ImageEnabled)
+            await _jobs.EnqueueMissingAsync(cancellationToken);
+
         return Ok(await _jobs.GetOverviewAsync(cancellationToken));
     }
 
