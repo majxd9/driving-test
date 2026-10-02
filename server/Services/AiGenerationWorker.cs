@@ -41,6 +41,7 @@ public sealed class AiGenerationWorker : BackgroundService
         var pollEvery = TimeSpan.FromSeconds(pollSeconds);
 
         var nextScan = DateTime.UtcNow;
+        var invalidImageStateCleaned = false;
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -48,6 +49,12 @@ public sealed class AiGenerationWorker : BackgroundService
             {
                 using var scope = _scopeFactory.CreateScope();
                 var jobs = scope.ServiceProvider.GetRequiredService<AiGenerationJobService>();
+
+                if (!invalidImageStateCleaned)
+                {
+                    await jobs.CleanupInvalidImageGenerationStateAsync(stoppingToken);
+                    invalidImageStateCleaned = true;
+                }
 
                 await jobs.ResetStaleProcessingAsync(stoppingToken);
                 await jobs.ResumeProviderPausedJobsForFallbackAsync(stoppingToken);
