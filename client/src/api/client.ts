@@ -122,7 +122,6 @@ export const api = {
         { method:'POST' }),
     retryAiJob: (jobId:number) =>
       request<void>(`/api/admin/ai-generation/jobs/${jobId}/retry`, { method:'POST' }),
-    generateQuestionAudioPrompts: () => request<{ generated: number; total: number; firstEntryKey: string; enabledKey: string; disabledKey: string }>('/api/admin/questions/generate-audio-prompts', { method: 'POST' }),
     getQuestionAudioStatus: (id: number) => request<{
       questionId: number;
       stored: boolean;
