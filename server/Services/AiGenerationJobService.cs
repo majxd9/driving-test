@@ -704,24 +704,30 @@ public sealed class AiGenerationJobService
     public async Task<AiGenerationJob?> ClaimNextJobAsync(
         CancellationToken cancellationToken)
     {
-        var sql = IsImageProviderEnabled
-            ? """
+        var control = await GetControlStateAsync(cancellationToken);
+
+        if (control.AllDisabled)
+            return null;
+
+        var sql = """
               SELECT * FROM "AiGenerationJobs"
               WHERE "Status" = 0
                 AND ("NextAttemptAt" IS NULL OR "NextAttemptAt" <= NOW())
-              ORDER BY "Priority" DESC, "CreatedAt" ASC
-              FOR UPDATE SKIP LOCKED
-              LIMIT 1
-              """
-            : """
-              SELECT * FROM "AiGenerationJobs"
-              WHERE "Status" = 0
-                AND "JobType" = 0
-                AND ("NextAttemptAt" IS NULL OR "NextAttemptAt" <= NOW())
+                AND (
+                    ("JobType" = 0 AND {0})
+                    OR
+                    ("JobType" = 1 AND {1} AND {2})
+                )
               ORDER BY "Priority" DESC, "CreatedAt" ASC
               FOR UPDATE SKIP LOCKED
               LIMIT 1
               """;
+        sql = string.Format(
+            System.Globalization.CultureInfo.InvariantCulture,
+            sql,
+            control.AudioEnabled ? "TRUE" : "FALSE",
+            control.ImageEnabled ? "TRUE" : "FALSE",
+            IsImageProviderEnabled ? "TRUE" : "FALSE");
 
         await using var transaction =
             await _db.Database.BeginTransactionAsync(cancellationToken);
