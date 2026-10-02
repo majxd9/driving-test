@@ -56,6 +56,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  const [lastAction,setLastAction]=useState<{label:string;result:import('../../types').AiGenerationEnqueueResult}|null>(null);
  const [completedImages,setCompletedImages]=useState<import('../../types').CompletedAiImageItem[]>([]);
  const [galleryLoading,setGalleryLoading]=useState(false);
+ const [galleryOpen,setGalleryOpen]=useState(false);
 
  const reloadGallery=async()=>{
   setGalleryLoading(true);
@@ -63,13 +64,16 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  };
 
  useEffect(()=>{
-  void reloadGallery();
-  const timer=window.setInterval(()=>{
-   void reloadAiStatus();
-   void reloadGallery();
-  },8000);
+  const timer=window.setInterval(()=>{ void reloadAiStatus(); },8000);
   return ()=>window.clearInterval(timer);
  },[]);
+
+ useEffect(()=>{
+  if(!galleryOpen) return;
+  void reloadGallery();
+  const timer=window.setInterval(()=>{ void reloadGallery(); },8000);
+  return ()=>window.clearInterval(timer);
+ },[galleryOpen]);
 
  const run=async(kind:'audio'|'image'|'resume'|'retry-audio'|'retry-image')=>{
   setBusy(kind);
