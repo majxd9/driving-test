@@ -169,7 +169,7 @@ public static class ScenePromptBank
             StringComparison.OrdinalIgnoreCase);
 
     private static string NormalizePath(string value) =>
-        value.Trim().Replace("\", "/").TrimStart('/');
+        value.Trim().Replace("\\", "/").TrimStart('/');
 
     private static string Normalize(string? value)
     {
