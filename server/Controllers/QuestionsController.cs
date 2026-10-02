@@ -36,17 +36,20 @@ public class QuestionsController : ControllerBase
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
     private readonly AiGenerationJobService _generationJobs;
+    private readonly FallbackQuestionAudioGenerator _fallbackAudioGenerator;
 
     public QuestionsController(
         AppDbContext db,
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
-        AiGenerationJobService generationJobs)
+        AiGenerationJobService generationJobs,
+        FallbackQuestionAudioGenerator fallbackAudioGenerator)
     {
         _db = db;
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _generationJobs = generationJobs;
+        _fallbackAudioGenerator = fallbackAudioGenerator;
     }
 
     [HttpGet]
@@ -317,11 +320,6 @@ public class QuestionsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GenerateAudioPrompts(CancellationToken cancellationToken)
     {
-        var apiKey = _configuration["ELEVENLABS_API_KEY"];
-        if (string.IsNullOrWhiteSpace(apiKey))
-            return Problem("لم يتم ضبط ELEVENLABS_API_KEY على الخادم.");
-
-        var client = _httpClientFactory.CreateClient("ElevenLabs");
         var generated = 0;
 
         foreach (var definition in AudioPromptDefinitions)
@@ -337,105 +335,48 @@ public class QuestionsController : ControllerBase
                 continue;
             }
 
-            using var request = new HttpRequestMessage(
-                HttpMethod.Post,
-                $"v1/text-to-speech/{ElevenLabsVoiceId}?output_format=mp3_44100_128");
-
-            request.Headers.TryAddWithoutValidation("xi-api-key", apiKey);
-            request.Content = JsonContent.Create(new
+            try
             {
-                text = definition.Text,
-                model_id = "eleven_multilingual_v2",
-                voice_settings = new
+                // Keep the historical ElevenLabs voice for these three original
+                // system prompts. Eden AI is only the automatic backup when the
+                // primary provider cannot generate them.
+                var result = await _fallbackAudioGenerator.GenerateTextAsync(
+                    definition.Text,
+                    ElevenLabsVoiceId,
+                    cancellationToken);
+
+                if (result.Bytes.Length == 0)
+                    return Problem($"تمت استجابة مزود الصوت بدون ملف صوتي للرسالة: {definition.Key}.");
+
+                if (existing is null)
                 {
-                    stability = 0.55,
-                    similarity_boost = 0.8,
-                    style = 0.1,
-                    use_speaker_boost = true
-                }
-            });
-
-            using var response = await client.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync(cancellationToken);
-                var providerStatus = string.Empty;
-                var providerMessage = string.Empty;
-
-                try
-                {
-                    using var document = JsonDocument.Parse(error);
-                    var root = document.RootElement;
-
-                    if (root.TryGetProperty("detail", out var detail))
+                    _db.SystemAudios.Add(new SystemAudio
                     {
-                        if (detail.ValueKind == JsonValueKind.Object)
-                        {
-                            providerStatus = detail.TryGetProperty("status", out var status)
-                                ? status.GetString() ?? string.Empty
-                                : string.Empty;
-                            providerMessage = detail.TryGetProperty("message", out var detailMessage)
-                                ? detailMessage.GetString() ?? string.Empty
-                                : string.Empty;
-                        }
-                        else
-                        {
-                            providerMessage = detail.GetString() ?? string.Empty;
-                        }
-                    }
-
-                    if (string.IsNullOrWhiteSpace(providerStatus) &&
-                        root.TryGetProperty("status", out var topStatus))
-                        providerStatus = topStatus.GetString() ?? string.Empty;
-
-                    if (string.IsNullOrWhiteSpace(providerMessage) &&
-                        root.TryGetProperty("message", out var topMessage))
-                        providerMessage = topMessage.GetString() ?? string.Empty;
+                        Key = definition.Key,
+                        AudioBytes = result.Bytes,
+                        ContentHash = hash,
+                        CreatedAt = DateTime.UtcNow
+                    });
                 }
-                catch (JsonException)
+                else
                 {
-                    // Keep the raw provider response below when it is not JSON.
+                    existing.AudioBytes = result.Bytes;
+                    existing.ContentHash = hash;
+                    existing.CreatedAt = DateTime.UtcNow;
                 }
 
-                var message = string.IsNullOrWhiteSpace(providerMessage)
-                    ? $"تعذر توليد رسالة الصوت من ElevenLabs: {definition.Key}"
-                    : $"رسالة الصوت {definition.Key} — ElevenLabs: {providerStatus} — {providerMessage}";
-
-                return StatusCode((int)response.StatusCode, new
-                {
-                    message,
-                    providerStatus,
-                    providerMessage,
-                    details = error
-                });
+                generated++;
             }
-
-            var audioBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-            if (audioBytes.Length == 0)
-                return Problem($"تمت استجابة ElevenLabs بدون ملف صوتي للرسالة: {definition.Key}.");
-
-            if (existing is null)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                _db.SystemAudios.Add(new SystemAudio
-                {
-                    Key = definition.Key,
-                    AudioBytes = audioBytes,
-                    ContentHash = hash,
-                    CreatedAt = DateTime.UtcNow
-                });
+                throw;
             }
-            else
+            catch (Exception ex)
             {
-                existing.AudioBytes = audioBytes;
-                existing.ContentHash = hash;
-                existing.CreatedAt = DateTime.UtcNow;
+                return Problem(
+                    detail: $"تعذر توليد رسالة الصوت {definition.Key}: {ex.Message}",
+                    statusCode: StatusCodes.Status502BadGateway);
             }
-
-            generated++;
         }
 
         if (generated > 0)
