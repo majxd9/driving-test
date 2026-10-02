@@ -84,8 +84,19 @@
 }
 
 
-.ai-gallery-card{overflow:hidden}
+.ai-gallery-card,.ai-review-card{overflow:hidden}
 .ai-gallery-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ai-review-stage{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);gap:20px;margin-top:18px;align-items:start}
+.ai-review-preview{min-height:420px;max-height:640px;border:1px solid rgba(127,127,127,.18);border-radius:18px;background:rgba(127,127,127,.05);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ai-review-preview img{display:block;width:100%;height:100%;max-height:640px;object-fit:contain}
+.ai-review-image-loading,.ai-review-empty{min-height:220px;display:grid;place-items:center;text-align:center;padding:30px;color:var(--muted,#777)}
+.ai-review-details{display:flex;flex-direction:column;gap:14px;padding:4px 0}
+.ai-review-details h3{margin:0;font-size:1.12rem;line-height:1.8}
+.ai-review-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.ai-review-actions button{min-height:50px}
+.ai-review-approve{background:#1f9d78}
+.ai-review-reject{display:flex;align-items:center;justify-content:center}
+
 .ai-gallery-empty{margin-top:16px;padding:28px 16px;text-align:center;border:1px dashed rgba(127,127,127,.25);border-radius:14px;color:var(--muted,#777)}
 .ai-image-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}
 .ai-image-item{min-width:0;border:1px solid rgba(127,127,127,.18);border-radius:16px;overflow:hidden;background:rgba(127,127,127,.04)}
@@ -97,7 +108,13 @@
 .ai-image-meta p{margin:0;line-height:1.55;font-size:.9rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .ai-image-meta time{font-size:.72rem;color:var(--muted,#888);direction:rtl}
 @media (max-width:900px){
+ .ai-review-stage{grid-template-columns:1fr}
+ .ai-review-preview{min-height:300px;max-height:520px}
  .ai-image-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:560px){
+ .ai-review-actions{grid-template-columns:1fr}
+ .ai-review-preview{min-height:240px;max-height:420px}
 }
 @media (max-width:560px){
  .ai-image-gallery{grid-template-columns:1fr}
