@@ -19,37 +19,15 @@ namespace DrivingTestApi.Controllers;
 [Authorize]
 public class QuestionsController : ControllerBase
 {
-    private const string ElevenLabsVoiceId = "mbMMm5Ft0vNUPsMKAZFu";
-    private const string AudioPromptFirstEntryKey = "question-audio-first-entry";
-    private const string AudioPromptEnabledKey = "question-audio-enabled";
-    private const string AudioPromptDisabledKey = "question-audio-disabled";
-
-    // هذان النصان يُرسلان إلى نفس صوت ElevenLabs المستخدم للأسئلة،
-    // وبالتالي يُولّدان تلقائياً مع بقية أصوات المحتوى.
-    private static readonly (string Key, string Text)[] AudioPromptDefinitions =
-    {
-        (AudioPromptFirstEntryKey, "إذا بدك تشغيل الصوت، اضغط زر التشغيل."),
-        (AudioPromptEnabledKey, "الصوت سيبقى شغال حتى تضغط إيقاف."),
-        (AudioPromptDisabledKey, "الصوت متوقف.")
-    };
     private readonly AppDbContext _db;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
     private readonly AiGenerationJobService _generationJobs;
-    private readonly FallbackQuestionAudioGenerator _fallbackAudioGenerator;
 
     public QuestionsController(
         AppDbContext db,
-        IHttpClientFactory httpClientFactory,
-        IConfiguration configuration,
-        AiGenerationJobService generationJobs,
-        FallbackQuestionAudioGenerator fallbackAudioGenerator)
+        AiGenerationJobService generationJobs)
     {
         _db = db;
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
         _generationJobs = generationJobs;
-        _fallbackAudioGenerator = fallbackAudioGenerator;
     }
 
     [HttpGet]
@@ -156,6 +134,9 @@ public class QuestionsController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetAudioPrompt(string key, CancellationToken cancellationToken)
     {
+        if (!SystemAudioCatalog.IsKnownKey(key))
+            return NotFound(new { message = "رسالة الصوت النظامية غير معروفة." });
+
         var prompt = await _db.SystemAudios
             .AsNoTracking()
             .SingleOrDefaultAsync(x => x.Key == key, cancellationToken);
