@@ -126,6 +126,13 @@ export interface AiGenerationQuota {
   monthStartUtc: string;
 }
 
+export interface AiGenerationControlState {
+  audioEnabled: boolean;
+  imageEnabled: boolean;
+  allEnabled: boolean;
+  allDisabled: boolean;
+}
+
 export interface AiGenerationOverview {
   audioProvider: string;
   imageProvider: string;
