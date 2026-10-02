@@ -191,20 +191,15 @@ public sealed class AiGenerationWorker : BackgroundService
             }
             else
             {
-                var imageGenerationEnabled =
-                    scope.ServiceProvider.GetRequiredService<IConfiguration>()
-                        .GetValue("AI_IMAGE_GENERATION_ENABLED", false);
-
-                if (!imageGenerationEnabled)
-                {
-                    await ReleaseJobAsync(
-                        db,
-                        claimed.Id,
-                        "تم إيقاف توليد صور AI مؤقتاً؛ لم يتم تشغيل أي توليد للصورة.",
-                        cancellationToken,
-                        DateTime.UtcNow.AddHours(24));
-                    return;
-                }
+                // Image generation is intentionally hard-disabled until the image
+                // pipeline is corrected. Environment variables must not re-enable it.
+                await ReleaseJobAsync(
+                    db,
+                    claimed.Id,
+                    "تم إيقاف توليد صور AI مؤقتاً؛ لم يتم تشغيل أي توليد للصورة.",
+                    cancellationToken,
+                    DateTime.UtcNow.AddDays(7));
+                return;
 
                 var provider =
                     scope.ServiceProvider.GetRequiredService<IConfiguration>()["QUESTION_IMAGE_PROVIDER"];
