@@ -277,14 +277,27 @@ public sealed class AiGenerationWorker : BackgroundService
 
                 quotaConsumed = !quota.IsUnlimited(AiGenerationJobType.AiImage);
 
+                var promptFromBank = ScenePromptBank.TryGet(question, out var storedScenePrompt);
+                var executionProvider = generationJobs.ImageExecutionProvider;
+
                 _logger.LogInformation(
-                    "Starting AI image generation. Job {JobId}, Question {QuestionId}, Attempt {Attempt}.",
+                    "Starting AI image generation. Job {JobId}, Question {QuestionId}, Attempt {Attempt}, ImageProvider {ImageProvider}, ExecutionProvider {ExecutionProvider}, PromptSource {PromptSource}, PromptBankEntries {PromptBankEntries}, PromptLength {PromptLength}, ContentHash {ContentHash}.",
                     claimed.Id,
                     question.Id,
-                    claimed.Attempts);
+                    claimed.Attempts,
+                    provider ?? "none",
+                    executionProvider,
+                    promptFromBank ? "ScenePromptBank" : "FallbackBuilder",
+                    ScenePromptBank.Count,
+                    promptFromBank ? storedScenePrompt.Positive.Length : 0,
+                    claimed.ContentHash);
 
                 var generator = scope.ServiceProvider
                     .GetRequiredService<IQuestionImageGenerator>();
+
+                _logger.LogInformation(
+                    "AI image generator implementation: {GeneratorType}.",
+                    generator.GetType().FullName);
 
                 var result = await generator.GenerateAsync(
                     question,
