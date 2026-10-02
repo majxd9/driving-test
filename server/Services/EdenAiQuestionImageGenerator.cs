@@ -81,14 +81,14 @@ public sealed class EdenAiQuestionImageGenerator : IQuestionImageGenerator
         {
             try
             {
-                var bytes = Convert.FromBase64String(base64);
-                if (bytes.Length > 0 && LooksLikeImage(bytes, out var embeddedContentType))
+                var embeddedBytes = Convert.FromBase64String(base64);
+                if (embeddedBytes.Length > 0 && LooksLikeImage(embeddedBytes, out var embeddedContentType))
                 {
                     _logger.LogInformation(
                         "Eden AI image generation succeeded with embedded image bytes using provider {Provider}. Bytes={Bytes}.",
                         primaryProvider,
-                        bytes.Length);
-                    return new GeneratedImageResult(bytes, embeddedContentType);
+                        embeddedBytes.Length);
+                    return new GeneratedImageResult(embeddedBytes, embeddedContentType);
                 }
             }
             catch (FormatException)
