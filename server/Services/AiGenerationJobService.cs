@@ -46,6 +46,16 @@ public sealed record CompletedAiImageItem(
     string ContentHash,
     DateTime CreatedAt);
 
+public sealed record AiImageReviewItem(
+    int QuestionId,
+    string QuestionText,
+    string Category,
+    string ImageUrl,
+    string ContentHash,
+    DateTime CreatedAt,
+    int PendingCount,
+    int ReviewedCount);
+
 public sealed class AiGenerationJobService
 {
     private readonly AppDbContext _db;
@@ -631,6 +641,11 @@ public sealed class AiGenerationJobService
             .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
             .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
 
+        var imageReviews = await _db.AiImageReviews
+            .AsNoTracking()
+            .Where(x => ids.Contains(x.QuestionId))
+            .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
+
         foreach (var question in questions)
         {
             if (audios.TryGetValue(question.Id, out var audio) &&
@@ -642,19 +657,183 @@ public sealed class AiGenerationJobService
             }
 
             if (images.TryGetValue(question.Id, out var image) &&
-                image.HasBytes)
+                image.HasBytes &&
+                imageReviews.TryGetValue(question.Id, out var review) &&
+                review.Status == AiImageReviewStatus.Approved)
             {
                 var imageHash = QuestionImagePromptBuilder.GetContentHash(question);
 
-                // لا نعرض صورة قديمة بعد تغيير قواعد التوليد؛ يجب أن تطابق
-                // الصورة نسخة الـhash الحالية حتى لا يظهر للطالب مشهد عام أو غير متعلق بالسؤال.
-                if (image.ContentHash == imageHash)
+                // A student only receives the image after explicit manual approval
+                // and only when that approved image matches the current prompt hash.
+                if (image.ContentHash == imageHash &&
+                    review.ContentHash == imageHash)
                 {
                     question.AiImageUrl =
                         $"/api/questions/{question.Id}/ai-image?v={imageHash}-{image.CreatedAt.Ticks}";
                 }
             }
         }
+    }
+
+    public async Task<AiImageReviewItem?> GetNextAiImageReviewAsync(
+        CancellationToken cancellationToken)
+    {
+        var row = await (
+            from review in _db.AiImageReviews.AsNoTracking()
+            join image in _db.QuestionAiImages.AsNoTracking()
+                on review.QuestionId equals image.QuestionId
+            join question in _db.Questions.AsNoTracking()
+                on review.QuestionId equals question.Id
+            where review.Status == AiImageReviewStatus.Pending &&
+                  image.ImageBytes.Length > 0
+            orderby review.CreatedAt, review.QuestionId
+            select new
+            {
+                QuestionId = question.Id,
+                QuestionText = question.Text,
+                Category = question.Category,
+                image.ContentHash,
+                image.CreatedAt
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (row is null)
+            return null;
+
+        var counts = await _db.AiImageReviews
+            .AsNoTracking()
+            .GroupBy(x => x.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+
+        var pending = counts.FirstOrDefault(x => x.Status == AiImageReviewStatus.Pending)?.Count ?? 0;
+        var reviewed = counts
+            .Where(x => x.Status != AiImageReviewStatus.Pending)
+            .Sum(x => x.Count);
+
+        return new AiImageReviewItem(
+            row.QuestionId,
+            row.QuestionText,
+            row.Category.ToString(),
+            $"/api/admin/ai-generation/review-image/{row.QuestionId}?v={row.ContentHash}-{row.CreatedAt.Ticks}",
+            row.ContentHash,
+            row.CreatedAt,
+            pending,
+            reviewed);
+    }
+
+    public async Task<AiImageReviewItem?> ReviewAiImageAsync(
+        int questionId,
+        bool approve,
+        CancellationToken cancellationToken)
+    {
+        var question = await _db.Questions
+            .SingleOrDefaultAsync(x => x.Id == questionId, cancellationToken);
+
+        var image = await _db.QuestionAiImages
+            .SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken);
+
+        if (question is null || image is null || image.ImageBytes.Length == 0)
+            return await GetNextAiImageReviewAsync(cancellationToken);
+
+        var currentHash = QuestionImagePromptBuilder.GetContentHash(question);
+
+        var review = await _db.AiImageReviews
+            .SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken)
+            ?? new AiImageReview
+            {
+                QuestionId = questionId,
+                ContentHash = image.ContentHash,
+                CreatedAt = image.CreatedAt
+            };
+
+        if (review.QuestionId == 0)
+            _db.AiImageReviews.Add(review);
+
+        if (approve && !string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal))
+            approve = false;
+
+        review.ContentHash = image.ContentHash;
+        review.ReviewedAt = DateTime.UtcNow;
+
+        if (approve)
+        {
+            review.Status = AiImageReviewStatus.Approved;
+        }
+        else
+        {
+            review.Status = AiImageReviewStatus.Rejected;
+            image.ImageBytes = Array.Empty<byte>();
+            image.ContentType = "image/png";
+            image.ContentHash = currentHash;
+            image.CreatedAt = DateTime.UtcNow;
+
+            var job = await _db.AiGenerationJobs
+                .SingleOrDefaultAsync(x =>
+                    x.QuestionId == questionId &&
+                    x.JobType == AiGenerationJobType.AiImage &&
+                    x.ContentHash == currentHash,
+                    cancellationToken);
+
+            if (job is null)
+            {
+                _db.AiGenerationJobs.Add(new AiGenerationJob
+                {
+                    QuestionId = questionId,
+                    JobType = AiGenerationJobType.AiImage,
+                    Status = AiGenerationJobStatus.Pending,
+                    Attempts = 0,
+                    ContentHash = currentHash,
+                    Priority = QuestionImagePromptBuilder.GetPriority(question),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    NextAttemptAt = DateTime.UtcNow
+                });
+            }
+            else
+            {
+                job.Status = AiGenerationJobStatus.Pending;
+                job.Attempts = 0;
+                job.LastError = null;
+                job.NextAttemptAt = DateTime.UtcNow;
+                job.LockedUntil = null;
+                job.StartedAt = null;
+                job.CompletedAt = null;
+                job.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return await GetNextAiImageReviewAsync(cancellationToken);
+    }
+
+    private async Task MarkImagePendingReviewAsync(
+        int questionId,
+        string contentHash,
+        DateTime createdAt,
+        CancellationToken cancellationToken)
+    {
+        var review = await _db.AiImageReviews
+            .SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken);
+
+        if (review is null)
+        {
+            _db.AiImageReviews.Add(new AiImageReview
+            {
+                QuestionId = questionId,
+                ContentHash = contentHash,
+                Status = AiImageReviewStatus.Pending,
+                CreatedAt = createdAt,
+                ReviewedAt = null
+            });
+            return;
+        }
+
+        review.ContentHash = contentHash;
+        review.Status = AiImageReviewStatus.Pending;
+        review.CreatedAt = createdAt;
+        review.ReviewedAt = null;
     }
 
     public async Task<IReadOnlyList<CompletedAiImageItem>> GetCompletedAiImagesAsync(
@@ -665,9 +844,12 @@ public sealed class AiGenerationJobService
 
         var items = await (
             from image in _db.QuestionAiImages.AsNoTracking()
+            join review in _db.AiImageReviews.AsNoTracking()
+                on image.QuestionId equals review.QuestionId
             join question in _db.Questions.AsNoTracking()
                 on image.QuestionId equals question.Id
-            where image.ImageBytes.Length > 0
+            where image.ImageBytes.Length > 0 &&
+                  review.Status == AiImageReviewStatus.Approved
             select new
             {
                 QuestionId = question.Id,
