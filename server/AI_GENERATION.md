@@ -187,3 +187,23 @@ https://generativelanguage.googleapis.com/v1beta/interactions
 
 Do not put GEMINI_API_KEY in the frontend VITE_* variables, source code, GitHub, or database.
 
+## Gemini image generation
+
+يمكن تشغيل Gemini كمزود صور مباشر داخل AI GENERATION CENTER:
+
+QUESTION_IMAGE_PROVIDER=gemini
+GEMINI_API_KEY=<your-gemini-api-key>
+GEMINI_IMAGE_MODEL=gemini-3.1-flash-image
+GEMINI_IMAGE_ASPECT_RATIO=16:9
+GEMINI_IMAGE_SIZE=1K
+GEMINI_IMAGE_TIMEOUT_SECONDS=300
+
+عند اختيار gemini يستخدم GeminiQuestionImageGenerator نفس طابور AiGenerationJobs الحالي، ويحفظ الصورة الناتجة في QuestionAiImages من دون تغيير مسار الطالب.
+
+ملف prompts الخاص بـ397 سؤالاً موجود في:
+server/Prompts/rukhsati_397_ai_scene_prompts.txt
+
+يُحمّل الخادم هذا الملف تلقائياً ويبحث عن الـprompt المطابق للسؤال والقسم ومرجع الصورة عند توفره. إذا لم يجد تطابقاً، يرجع إلى مولّد الـprompt الاحتياطي الحالي.
+
+Gemini image generation uses Google's Interactions API with gemini-3.1-flash-image. The generated output is returned as image data and stored by the existing image-generation worker.
+\n
