@@ -359,4 +359,41 @@ public sealed class AiGenerationAdminController : ControllerBase
         return Ok(rows);
     }
 
+    [HttpGet("review/next")]
+    public async Task<ActionResult<AiImageReviewItem?>> NextReview(CancellationToken cancellationToken)
+    {
+        return Ok(await _jobs.GetNextAiImageReviewAsync(cancellationToken));
+    }
+
+    [HttpGet("review-image/{id:int}")]
+    public async Task<IActionResult> ReviewImage(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var image = await _jobs.GetReviewImageAsync(id, cancellationToken);
+
+        if (image is null || image.ImageBytes.Length == 0)
+            return NotFound(new { message = "صورة المراجعة غير موجودة." });
+
+        Response.Headers.CacheControl = "private,no-store";
+        Response.Headers["X-AI-Review-Hash"] = image.ContentHash;
+        return File(image.ImageBytes, image.ContentType);
+    }
+
+    [HttpPost("review/{id:int}/approve")]
+    public async Task<ActionResult<AiImageReviewItem?>> ApproveReview(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await _jobs.ReviewAiImageAsync(id, true, cancellationToken));
+    }
+
+    [HttpPost("review/{id:int}/reject")]
+    public async Task<ActionResult<AiImageReviewItem?>> RejectReview(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await _jobs.ReviewAiImageAsync(id, false, cancellationToken));
+    }
+
 }
