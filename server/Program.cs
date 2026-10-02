@@ -287,6 +287,29 @@ using (var schemaScope = app.Services.CreateScope())
             CONSTRAINT "FK_QuestionAiImages_Questions_QuestionId"
                 FOREIGN KEY ("QuestionId") REFERENCES "Questions" ("Id") ON DELETE CASCADE
         );
+
+        CREATE TABLE IF NOT EXISTS "AiImageReviews" (
+            "QuestionId" integer NOT NULL,
+            "ContentHash" text NOT NULL,
+            "Status" integer NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL,
+            "ReviewedAt" timestamp with time zone NULL,
+            CONSTRAINT "PK_AiImageReviews" PRIMARY KEY ("QuestionId"),
+            CONSTRAINT "FK_AiImageReviews_Questions_QuestionId"
+                FOREIGN KEY ("QuestionId") REFERENCES "Questions" ("Id") ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS "IX_AiImageReviews_Status_CreatedAt"
+            ON "AiImageReviews" ("Status", "CreatedAt");
+
+        -- Existing AI images must enter manual review before they can ever be shown to students.
+        INSERT INTO "AiImageReviews" ("QuestionId", "ContentHash", "Status", "CreatedAt", "ReviewedAt")
+        SELECT "QuestionId", "ContentHash", 0, "CreatedAt", NULL
+        FROM "QuestionAiImages" q
+        WHERE NOT EXISTS (
+            SELECT 1 FROM "AiImageReviews" r
+            WHERE r."QuestionId" = q."QuestionId"
+        );
         """);
 }
 
