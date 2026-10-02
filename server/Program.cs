@@ -141,6 +141,7 @@ builder.Services.AddScoped<IGeminiService, GeminiService>();
 builder.Services.AddScoped<ElevenLabsQuestionAudioGenerator>();
 builder.Services.AddScoped<EdenAiQuestionAudioGenerator>();
 builder.Services.AddScoped<LocalQuestionAudioGenerator>();
+builder.Services.AddScoped<AzureSpeechQuestionAudioGenerator>();
 builder.Services.AddScoped<FallbackQuestionAudioGenerator>();
 builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
 {
@@ -148,6 +149,10 @@ builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
 
     if (string.Equals(provider, "local", StringComparison.OrdinalIgnoreCase))
         return sp.GetRequiredService<LocalQuestionAudioGenerator>();
+
+    if (string.Equals(provider, "azure", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(provider, "azure-speech", StringComparison.OrdinalIgnoreCase))
+        return sp.GetRequiredService<AzureSpeechQuestionAudioGenerator>();
 
     if (string.Equals(provider, "edenai", StringComparison.OrdinalIgnoreCase))
         return sp.GetRequiredService<EdenAiQuestionAudioGenerator>();
@@ -192,6 +197,11 @@ builder.Services.AddHttpClient("LocalTts", client =>
     client.BaseAddress = new Uri(
         builder.Configuration["QUESTION_AUDIO_LOCAL_URL"] ?? "http://127.0.0.1:5000");
     client.Timeout = TimeSpan.FromMinutes(10);
+});
+builder.Services.AddHttpClient("AzureSpeech", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(
+        Math.Clamp(builder.Configuration.GetValue("QUESTION_AUDIO_AZURE_TIMEOUT_SECONDS", 90), 15, 300));
 });
 builder.Services.AddHttpClient("ComfyUI", client =>
 {
