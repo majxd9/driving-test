@@ -109,7 +109,14 @@ public sealed class EdenAiQuestionAudioGenerator : IQuestionAudioGenerator
         if (TryDecodeDataUrl(audioUrl, out var inlineBytes, out var inlineContentType))
             return new GeneratedAudioResult(inlineBytes, inlineContentType);
 
-        using var audioResponse = await client.GetAsync(audioUrl, timeout.Token);
+        using var audioRequest = new HttpRequestMessage(HttpMethod.Get, audioUrl);
+        if (TryGetEdenHost(audioUrl, out _))
+            audioRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+        using var audioResponse = await client.SendAsync(
+            audioRequest,
+            HttpCompletionOption.ResponseHeadersRead,
+            timeout.Token);
         if (!audioResponse.IsSuccessStatusCode)
         {
             var error = await audioResponse.Content.ReadAsStringAsync(timeout.Token);
@@ -218,6 +225,15 @@ public sealed class EdenAiQuestionAudioGenerator : IQuestionAudioGenerator
         }
 
         return null;
+    }
+
+    private static bool TryGetEdenHost(string value, out Uri uri)
+    {
+        if (!Uri.TryCreate(value, UriKind.Absolute, out uri!))
+            return false;
+
+        return string.Equals(uri.Host, "api.edenai.run", StringComparison.OrdinalIgnoreCase)
+            || uri.Host.EndsWith(".edenai.run", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool TryDecodeDataUrl(
