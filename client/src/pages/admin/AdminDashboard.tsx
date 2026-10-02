@@ -112,16 +112,26 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
 
  const effectiveImageProvider=status?.imageExecutionProvider || status?.imageProvider || 'none';
  const providerEnabled=status?.imageProvider==='huggingface'||status?.imageProvider==='comfyui'||status?.imageProvider==='edenai';
+ const audioFallbackEnabled=Boolean(status?.audioFallbackProvider);
+ const imageFallbackEnabled=Boolean(status?.imageFallbackProvider);
  const testClass=providerTest?.state==='connected'?'on':providerTest?.state==='disabled'||providerTest?.state==='unconfigured'?'off':'warn';
  const quotaPercent=status?Math.min(100,(status.quota.used/Math.max(status.quota.limit,1))*100):0;
  const audioQuotaExhausted=Boolean(status?.audio.lastError?.toLowerCase().includes('quota_exceeded'));
  const imageQuotaExhausted=Boolean(status?.image.lastError?.toLowerCase().includes('http 402')||status?.image.lastError?.toLowerCase().includes('depleted your monthly included credits'));
+ const audioBlocked=audioQuotaExhausted&&!audioFallbackEnabled;
+ const imageBlocked=imageQuotaExhausted&&!imageFallbackEnabled;
 
  const stateText=(title:'audio'|'image',data:import('../../types').AiGenerationCounts)=>{
-  if(title==='audio' && data.lastError?.toLowerCase().includes('quota_exceeded'))
-   return 'متوقف حالياً: انتهى الحد المجاني في ElevenLabs.';
-  if(title==='image' && (data.lastError?.toLowerCase().includes('http 402') || data.lastError?.toLowerCase().includes('depleted your monthly included credits')))
-   return 'متوقف حالياً: انتهى الحد المجاني المضمّن في Hugging Face.';
+  if(title==='audio' && data.lastError?.toLowerCase().includes('quota_exceeded')){
+   return audioFallbackEnabled
+    ? `ElevenLabs وصل للحد؛ سيتم التحويل تلقائياً إلى Eden AI${status?.audioFallbackProvider?' ('+providerLabel(status.audioFallbackProvider)+')':''}.`
+    : 'متوقف حالياً: انتهى الحد المجاني في ElevenLabs.';
+  }
+  if(title==='image' && (data.lastError?.toLowerCase().includes('http 402') || data.lastError?.toLowerCase().includes('depleted your monthly included credits'))){
+   return imageFallbackEnabled
+    ? `المسار الأساسي للصور وصل للحد؛ سيتم التحويل تلقائياً إلى Eden AI${status?.imageFallbackProvider?' ('+providerLabel(status.imageFallbackProvider)+')':''}.`
+    : 'متوقف حالياً: انتهى الحد المجاني المضمّن في Hugging Face.';
+  }
   if(data.processing>0)
    return title==='image'
     ? `جارٍ التوليد فعلياً عبر ${providerLabel(effectiveImageProvider)} الآن.`
@@ -159,24 +169,27 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
   <div className="admin-card ai-console-hero">
    <div className="card-title">
     <div><p>AI GENERATION CENTER</p><b>مركز توليد المحتوى</b></div>
-    <span className={'status '+(providerEnabled?'on':'off')}>الصور: {providerLabel(status?.imageProvider??'none')}{status?.imageProvider!==effectiveImageProvider&&effectiveImageProvider!=='none'?' → '+providerLabel(effectiveImageProvider):''}</span>
+    <span className={'status '+(providerEnabled?'on':'off')}>
+      الصور: {providerLabel(status?.imageProvider??'none')}{status?.imageProvider!==effectiveImageProvider&&effectiveImageProvider!=='none'?' → '+providerLabel(effectiveImageProvider):''}{imageFallbackEnabled?' → Eden AI ('+providerLabel(status?.imageFallbackProvider??'')+')':''}
+      {audioFallbackEnabled?' · الصوت: '+providerLabel(status?.audioProvider??'')+' → Eden AI ('+providerLabel(status?.audioFallbackProvider??'')+')':''}
+    </span>
    </div>
    <p className="text-muted text-sm leading-relaxed">التوليد يتم بالخادم في الخلفية. التدريب والاختبار لا يشغلان التوليد تلقائياً. حالة الطابور الظاهرة هنا هي الحالة الفعلية للمهام.</p>
 
    <div className="grid md:grid-cols-2 gap-4 mt-5">
     <div className="ai-console-card">
      <span>توليد الصوت</span>
-     <b>{providerLabel(status?.audioProvider??'')}</b>
+     <b>{providerLabel(status?.audioProvider??'')}{audioFallbackEnabled?' → Eden AI ('+providerLabel(status?.audioFallbackProvider??'')+')':''}</b>
      <small>لا يتم استبدال الأصوات الموجودة؛ يضاف فقط الناقص.</small>
-     {audioQuotaExhausted&&<div className="ai-provider-message problem mt-2">وصل مزود الصوت إلى حد الاستخدام أو رفض الطلب حالياً، لذلك تم إيقاف توليد الصوت حتى تتم معالجة السبب.</div>}
-     <button type="button" className="primary-cta mt-auto" disabled={busy!==''||audioQuotaExhausted} onClick={(e)=>{e.preventDefault();void run('audio')}}>{busy==='audio'?'جارٍ إضافة المهام…':audioQuotaExhausted?'الحد المجاني منتهٍ':'إضافة الأصوات الناقصة للطابور'}</button>
+     {audioQuotaExhausted&&<div className={'ai-provider-message '+(audioFallbackEnabled?'ok':'problem')}>{audioFallbackEnabled?'رصيد ElevenLabs غير متاح حالياً؛ التحويل إلى Eden AI مفعّل تلقائياً.':'وصل مزود الصوت إلى حد الاستخدام، لذلك تم إيقاف توليد الصوت حتى تتم معالجة السبب.'}</div>}
+     <button type="button" className="primary-cta mt-auto" disabled={busy!==''||audioBlocked} onClick={(e)=>{e.preventDefault();void run('audio')}}>{busy==='audio'?'جارٍ إضافة المهام…':audioBlocked?'الحد المجاني منتهٍ':'إضافة الأصوات الناقصة للطابور'}</button>
     </div>
     <div className="ai-console-card">
      <span>توليد صور AI</span>
-     <b>{providerLabel(status?.imageProvider??'none')}{status?.imageProvider!==effectiveImageProvider&&effectiveImageProvider!=='none'?' → '+providerLabel(effectiveImageProvider):''}</b>
+     <b>{providerLabel(status?.imageProvider??'none')}{status?.imageProvider!==effectiveImageProvider&&effectiveImageProvider!=='none'?' → '+providerLabel(effectiveImageProvider):''}{imageFallbackEnabled?' → Eden AI ('+providerLabel(status?.imageFallbackProvider??'')+')':''}</b>
      <small>المهام تنتظر التنفيذ في PostgreSQL، والصور المكتملة تبقى محفوظة.</small>
-     {imageQuotaExhausted&&<div className="ai-provider-message problem mt-2">وصل مزود الصور إلى حد الاستخدام أو رفض الطلب حالياً. لن تُرسل طلبات جديدة حتى تتوفر حصة أو تتم معالجة السبب.</div>}
-     <button type="button" className="primary-cta mt-auto" disabled={busy!==''||!providerEnabled||imageQuotaExhausted} onClick={(e)=>{e.preventDefault();void run('image')}}>{busy==='image'?'جارٍ إضافة المهام…':imageQuotaExhausted?'الحد المجاني منتهٍ':'إضافة صور AI الناقصة للطابور'}</button>
+     {imageQuotaExhausted&&<div className={'ai-provider-message '+(imageFallbackEnabled?'ok':'problem')}>{imageFallbackEnabled?'الرصيد في المسار الأساسي غير متاح حالياً؛ التحويل إلى Eden AI مفعّل تلقائياً.':'وصل مزود الصور إلى حد الاستخدام أو رفض الطلب حالياً. لن تُرسل طلبات جديدة حتى تتوفر حصة أو تتم معالجة السبب.'}</div>}
+     <button type="button" className="primary-cta mt-auto" disabled={busy!==''||!providerEnabled||imageBlocked} onClick={(e)=>{e.preventDefault();void run('image')}}>{busy==='image'?'جارٍ إضافة المهام…':imageBlocked?'الحد المجاني منتهٍ':'إضافة صور AI الناقصة للطابور'}</button>
     </div>
    </div>
 
@@ -267,8 +280,8 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
   {status&&<div className="admin-card">
    <div className="card-title"><div><p>إعادة المحاولة</p><b>تستخدم فقط بعد معالجة سبب الفشل</b></div></div>
    <div className="action-row">
-    <button type="button" className="secondary-cta" disabled={busy!==''||status.audio.failed===0||audioQuotaExhausted} onClick={(e)=>{e.preventDefault();void run('retry-audio')}}>{busy==='retry-audio'?'جارٍ…':'إعادة طابور الأصوات الفاشلة'}</button>
-    <button type="button" className="secondary-cta" disabled={busy!==''||status.image.failed===0||!providerEnabled||imageQuotaExhausted} onClick={(e)=>{e.preventDefault();void run('retry-image')}}>{busy==='retry-image'?'جارٍ…':'إعادة طابور صور AI الفاشلة'}</button>
+    <button type="button" className="secondary-cta" disabled={busy!==''||status.audio.failed===0} onClick={(e)=>{e.preventDefault();void run('retry-audio')}}>{busy==='retry-audio'?'جارٍ…':'إعادة طابور الأصوات الفاشلة'}</button>
+    <button type="button" className="secondary-cta" disabled={busy!==''||status.image.failed===0||!providerEnabled} onClick={(e)=>{e.preventDefault();void run('retry-image')}}>{busy==='retry-image'?'جارٍ…':'إعادة طابور صور AI الفاشلة'}</button>
    </div>
   </div>}
  </section>;
