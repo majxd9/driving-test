@@ -722,6 +722,17 @@ public sealed class AiGenerationJobService
             reviewed);
     }
 
+    public async Task<QuestionAiImage?> GetReviewImageAsync(
+        int questionId,
+        CancellationToken cancellationToken)
+    {
+        return await _db.QuestionAiImages
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                x => x.QuestionId == questionId && x.ImageBytes.Length > 0,
+                cancellationToken);
+    }
+
     public async Task<AiImageReviewItem?> ReviewAiImageAsync(
         int questionId,
         bool approve,
