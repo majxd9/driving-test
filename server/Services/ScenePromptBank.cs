@@ -1,0 +1,190 @@
+using System.Text.RegularExpressions;
+using DrivingTestApi.Models;
+
+namespace DrivingTestApi.Services;
+
+public sealed record ScenePromptEntry(
+    int Index,
+    QuestionCategory Category,
+    string Question,
+    string Positive,
+    string Negative,
+    IReadOnlyList<string> References);
+
+public static class ScenePromptBank
+{
+    private static readonly Lazy<IReadOnlyList<ScenePromptEntry>> Entries = new(Load, true);
+
+    public static bool TryGet(Question question, out (string Positive, string Negative) prompt)
+    {
+        var category = question.Category;
+        var normalizedQuestion = Normalize(question.Text);
+        var questionReferences = ExtractReferences(question.ImageUrl, question.DiagramUrl);
+
+        var candidates = Entries.Value
+            .Where(x => x.Category == category && Normalize(x.Question) == normalizedQuestion)
+            .ToList();
+
+        if (candidates.Count > 1 && questionReferences.Count > 0)
+        {
+            var referenceMatches = candidates
+                .Where(x => x.References.Any(r =>
+                    questionReferences.Any(qr => PathsEqual(r, qr))))
+                .ToList();
+
+            if (referenceMatches.Count > 0)
+                candidates = referenceMatches;
+        }
+
+        if (candidates.Count == 0)
+        {
+            var idMatch = Entries.Value.FirstOrDefault(x =>
+                x.Index == question.Id &&
+                x.Category == category &&
+                Normalize(x.Question) == normalizedQuestion);
+
+            if (idMatch is not null)
+                candidates = new List<ScenePromptEntry> { idMatch };
+        }
+
+        if (candidates.Count == 0)
+        {
+            prompt = default;
+            return false;
+        }
+
+        var selected = candidates
+            .OrderBy(x => x.Index)
+            .First();
+
+        prompt = (selected.Positive.Trim(), selected.Negative.Trim());
+        return true;
+    }
+
+    private static IReadOnlyList<ScenePromptEntry> Load()
+    {
+        var path = Path.Combine(
+            AppContext.BaseDirectory,
+            "Prompts",
+            "rukhsati_397_ai_scene_prompts.txt");
+
+        if (!File.Exists(path))
+            return Array.Empty<ScenePromptEntry>();
+
+        var text = File.ReadAllText(path);
+        var headers = Regex.Matches(
+            text,
+            @"(?m)^\[(\d{3})\]\s+(.+?)\s*$",
+            RegexOptions.CultureInvariant);
+
+        var entries = new List<ScenePromptEntry>(headers.Count);
+
+        for (var i = 0; i < headers.Count; i++)
+        {
+            var match = headers[i];
+            var end = i + 1 < headers.Count ? headers[i + 1].Index : text.Length;
+            var block = text[match.Index..end];
+
+            var index = int.Parse(match.Groups[1].Value);
+            var category = ParseCategory(match.Groups[2].Value);
+
+            var questionMatch = Regex.Match(
+                block,
+                @"(?m)^السؤال:\s*(.+?)\s*$",
+                RegexOptions.CultureInvariant);
+
+            var positiveStart = block.IndexOf(
+                "PROMPT:",
+                StringComparison.Ordinal);
+
+            var negativeStart = block.IndexOf(
+                "NEGATIVE PROMPT:",
+                StringComparison.Ordinal);
+
+            if (questionMatch.Success &&
+                positiveStart >= 0 &&
+                negativeStart > positiveStart)
+            {
+                var positive = block[
+                    (positiveStart + "PROMPT:".Length)..negativeStart].Trim();
+
+                var negative = block[
+                    (negativeStart + "NEGATIVE PROMPT:".Length)..].Trim();
+
+                entries.Add(new ScenePromptEntry(
+                    index,
+                    category,
+                    questionMatch.Groups[1].Value.Trim(),
+                    positive,
+                    negative,
+                    ExtractReferencesFromBlock(block)));
+            }
+        }
+
+        return entries;
+    }
+
+    private static QuestionCategory ParseCategory(string value) =>
+        value.Trim() switch
+        {
+            "الإشارات المرورية" => QuestionCategory.Ishara,
+            "الميكانيك" => QuestionCategory.Mechanic,
+            _ => QuestionCategory.Ser
+        };
+
+    private static List<string> ExtractReferencesFromBlock(string block)
+    {
+        var refs = Regex.Matches(
+            block,
+            @"/(?:signs|mechanic)/[A-Za-z0-9._/-]+",
+            RegexOptions.CultureInvariant);
+
+        return refs
+            .Select(x => x.Value.TrimEnd('.', ',', ';', ')'))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static List<string> ExtractReferences(params string?[] values) =>
+        values
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .SelectMany(x =>
+            {
+                var matches = Regex.Matches(
+                    x!,
+                    @"/(?:signs|mechanic)/[A-Za-z0-9._/-]+",
+                    RegexOptions.CultureInvariant);
+
+                return matches.Count > 0
+                    ? matches.Select(m => m.Value)
+                    : new[] { x!.Trim() };
+            })
+            .Select(x => x.TrimEnd('.', ',', ';', ')'))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+    private static bool PathsEqual(string left, string right) =>
+        NormalizePath(left).Equals(
+            NormalizePath(right),
+            StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizePath(string value) =>
+        value.Trim().Replace("\", "/").TrimStart('/');
+
+    private static string Normalize(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return string.Empty;
+
+        var chars = value
+            .Trim()
+            .Normalize()
+            .Where(c => !char.IsPunctuation(c))
+            .ToArray();
+
+        return Regex.Replace(
+            new string(chars),
+            @"\s+",
+            " ");
+    }
+}
