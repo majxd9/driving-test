@@ -79,7 +79,7 @@ public sealed class AiGenerationJobService
             : string.Empty;
 
     public bool IsImageProviderEnabled =>
-        ImageProvider is "huggingface" or "comfyui" or "edenai";
+        ImageProvider is "huggingface" or "comfyui" or "edenai" or "gemini";
 
     public string ImageExecutionProvider
     {
