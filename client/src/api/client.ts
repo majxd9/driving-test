@@ -118,6 +118,17 @@ export const api = {
     completedAiImages: (limit = 24) =>
       request<import('../types').CompletedAiImageItem[]>(
         `/api/admin/ai-generation/completed-images?limit=${limit}`),
+    nextAiImageReview: () =>
+      request<import('../types').AiImageReviewItem|null>(
+        '/api/admin/ai-generation/review/next'),
+    approveAiImageReview: (id:number) =>
+      request<import('../types').AiImageReviewItem|null>(
+        `/api/admin/ai-generation/review/${id}/approve`,
+        { method:'POST' }),
+    rejectAiImageReview: (id:number) =>
+      request<import('../types').AiImageReviewItem|null>(
+        `/api/admin/ai-generation/review/${id}/reject`,
+        { method:'POST' }),
     enqueueAllAudio: (retryFailed = false, regenerateCompleted = false) =>
       request<import('../types').AiGenerationEnqueueResult>(
         '/api/admin/ai-generation/audio',
