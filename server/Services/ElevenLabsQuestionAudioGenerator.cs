@@ -13,14 +13,24 @@ public sealed class ElevenLabsQuestionAudioGenerator : IQuestionAudioGenerator
     public ElevenLabsQuestionAudioGenerator(IHttpClientFactory httpClientFactory,IConfiguration configuration)
     { _httpClientFactory=httpClientFactory;_configuration=configuration; }
 
-    public async Task<GeneratedAudioResult> GenerateAsync(Question question,CancellationToken cancellationToken)
+    public Task<GeneratedAudioResult> GenerateAsync(Question question,CancellationToken cancellationToken) =>
+        GenerateTextAsync(QuestionAudioTextBuilder.Build(question), VoiceId, cancellationToken);
+
+    public async Task<GeneratedAudioResult> GenerateTextAsync(
+        string text,
+        string? voiceId,
+        CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(text))
+            throw new ArgumentException("نص الصوت فارغ.", nameof(text));
+
         var apiKey=_configuration["ELEVENLABS_API_KEY"];
         if(string.IsNullOrWhiteSpace(apiKey)) throw new InvalidOperationException("لم يتم ضبط ELEVENLABS_API_KEY على الخادم.");
         var client=_httpClientFactory.CreateClient("ElevenLabs");
-        using var request=new HttpRequestMessage(HttpMethod.Post,$"v1/text-to-speech/{VoiceId}?output_format=mp3_44100_128");
+        var selectedVoiceId=string.IsNullOrWhiteSpace(voiceId) ? VoiceId : voiceId.Trim();
+        using var request=new HttpRequestMessage(HttpMethod.Post,$"v1/text-to-speech/{selectedVoiceId}?output_format=mp3_44100_128");
         request.Headers.TryAddWithoutValidation("xi-api-key",apiKey);
-        request.Content=JsonContent.Create(new{text=QuestionAudioTextBuilder.Build(question),model_id="eleven_multilingual_v2",
+        request.Content=JsonContent.Create(new{text,model_id="eleven_multilingual_v2",
             voice_settings=new{stability=0.55,similarity_boost=0.8,style=0.1,use_speaker_boost=true}});
         using var response=await client.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,cancellationToken);
         if(!response.IsSuccessStatusCode)
