@@ -106,7 +106,14 @@ public sealed class EdenAiQuestionImageGenerator : IQuestionImageGenerator
         if (TryDecodeDataUrl(imageUrl, out var inlineBytes, out var inlineContentType))
             return new GeneratedImageResult(inlineBytes, inlineContentType);
 
-        using var imageResponse = await client.GetAsync(imageUrl, timeout.Token);
+        using var imageRequest = new HttpRequestMessage(HttpMethod.Get, imageUrl);
+        if (TryGetEdenHost(imageUrl, out _))
+            imageRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+        using var imageResponse = await client.SendAsync(
+            imageRequest,
+            HttpCompletionOption.ResponseHeadersRead,
+            timeout.Token);
         if (!imageResponse.IsSuccessStatusCode)
         {
             var error = await imageResponse.Content.ReadAsStringAsync(timeout.Token);
@@ -147,6 +154,15 @@ public sealed class EdenAiQuestionImageGenerator : IQuestionImageGenerator
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Take(5)
             .ToList();
+
+    private static bool TryGetEdenHost(string value, out Uri uri)
+    {
+        if (!Uri.TryCreate(value, UriKind.Absolute, out uri!))
+            return false;
+
+        return string.Equals(uri.Host, "api.edenai.run", StringComparison.OrdinalIgnoreCase)
+            || uri.Host.EndsWith(".edenai.run", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static string? FindFirstBase64(JsonElement node)
     {
