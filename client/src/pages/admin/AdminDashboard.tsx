@@ -270,7 +270,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
     <div><p>AI CONTENT REVIEW</p><b>مراجعة الصور قبل النشر</b></div>
     <div className="ai-gallery-actions">
      <span className={`status ${reviewItem?'warn':'on'}`}>
-      {reviewItem?\`${reviewItem.pendingCount} بانتظار المراجعة\`:'لا توجد صورة جاهزة للمراجعة'}
+      {reviewItem?`${reviewItem.pendingCount} بانتظار المراجعة`:'لا توجد صورة جاهزة للمراجعة'}
      </span>
      <button type="button" className="secondary-cta" disabled={reviewLoading||reviewBusy} onClick={()=>void loadReview()}>
       {reviewLoading?'جارٍ التحديث…':'تحديث المراجعة'}
