@@ -17,19 +17,21 @@ public static class QuestionImagePromptBuilder
 
     public static bool ShouldGenerate(Question question)
     {
-        // Original educational/sign/mechanics images are authoritative and must
-        // never be replaced or supplemented by AI generation.
-        if (!string.IsNullOrWhiteSpace(question.ImageUrl) ||
-            question.DiagramType is not null ||
-            !string.IsNullOrWhiteSpace(question.DiagramUrl))
+        if (question.Category == QuestionCategory.Ishara)
+            return true;
+
+        if (question.Category == QuestionCategory.Mechanic)
         {
-            return false;
+            return !string.IsNullOrWhiteSpace(question.ImageUrl) ||
+                   ContainsVisualTerm(question.Text);
         }
 
-        // AI images are only for questions that have no original visual asset
-        // and whose wording describes a concrete visual traffic situation.
-        return question.Category == QuestionCategory.Ser &&
-               ContainsVisualTerm(question.Text);
+        // For traffic-rule questions, only generate an AI image when the wording
+        // describes a concrete visual situation. Generic mentions of "car", "road",
+        // or "traffic" are intentionally not enough.
+        return ContainsVisualTerm(question.Text) ||
+               question.DiagramType is not null ||
+               !string.IsNullOrWhiteSpace(question.DiagramUrl);
     }
 
     public static int GetPriority(Question question)
