@@ -166,3 +166,14 @@ export interface CompletedAiImageItem {
   contentHash: string;
   createdAt: string;
 }
+
+export interface AiImageReviewItem {
+  questionId: number;
+  questionText: string;
+  category: string;
+  imageUrl: string;
+  contentHash: string;
+  createdAt: string;
+  pendingCount: number;
+  reviewedCount: number;
+}
