@@ -21,6 +21,42 @@ public sealed class FallbackQuestionAudioGenerator : IQuestionAudioGenerator
         _logger = logger;
     }
 
+    public async Task<GeneratedAudioResult> GenerateTextAsync(
+        string text,
+        string? voiceId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _primary.GenerateTextAsync(text, voiceId, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception primaryError) when (CanUseEden())
+        {
+            _logger.LogWarning(
+                primaryError,
+                "Primary system audio prompt generation failed. Switching automatically to Eden AI.");
+
+            try
+            {
+                return await _eden.GenerateTextAsync(text, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception edenError)
+            {
+                throw new InvalidOperationException(
+                    $"المزود الأساسي للصوت فشل، وEden AI فشل أيضاً. الأساسي: {primaryError.Message} | Eden: {edenError.Message}",
+                    edenError);
+            }
+        }
+    }
+
     public async Task<GeneratedAudioResult> GenerateAsync(
         Question question,
         CancellationToken cancellationToken)
