@@ -19,6 +19,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<SystemAudio> SystemAudios => Set<SystemAudio>();
     public DbSet<AiGenerationJob> AiGenerationJobs => Set<AiGenerationJob>();
     public DbSet<QuestionAiImage> QuestionAiImages => Set<QuestionAiImage>();
+    public DbSet<AiImageReview> AiImageReviews => Set<AiImageReview>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -61,10 +62,25 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .HasKey(x => x.QuestionId);
 
         builder.Entity<QuestionAiImage>()
+            .HasKey(x => x.QuestionId);
+
+        builder.Entity<QuestionAiImage>()
             .HasOne<Question>()
             .WithOne()
             .HasForeignKey<QuestionAiImage>(x => x.QuestionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<AiImageReview>()
+            .HasKey(x => x.QuestionId);
+
+        builder.Entity<AiImageReview>()
+            .HasOne<Question>()
+            .WithOne()
+            .HasForeignKey<AiImageReview>(x => x.QuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<AiImageReview>()
+            .HasIndex(x => new { x.Status, x.CreatedAt });
 
         builder.Entity<QuestionAudio>()
             .HasOne<Question>()
