@@ -154,3 +154,36 @@ Eden AI يستخدم `providers` للمزود الأساسي و`fallback_provide
 فحص مزود الصور من لوحة الإدارة يتحقق من الوصول إلى Eden AI فقط ولا ينفذ توليداً مدفوعاً. يجب التأكد من أسماء المزودين المتاحة فعلياً في حساب Eden AI قبل وضعها في متغيرات البيئة.
 
 المسار الحالي لا يزيل Hugging Face أو ElevenLabs أو ComfyUI. إبقِ الإعدادات القديمة كما هي، ولا تبدّل إلى `edenai` إلا بعد وضع `EDENAI_API_KEY` وباقي الإعدادات المطلوبة.
+
+## Gemini API
+
+Gemini is connected only from the ASP.NET backend through Google's current Interactions API. The API key is never exposed to the React client and is not stored in Git.
+
+Required Render/server environment variables:
+
+GEMINI_API_KEY=<your-gemini-api-key>
+GEMINI_MODEL=gemini-3.8-flash
+
+Optional timeout:
+
+GEMINI_TIMEOUT_SECONDS=90
+
+Protected admin endpoints:
+
+GET  /api/admin/gemini/status
+POST /api/admin/gemini/generate
+
+Example request body:
+
+{
+  "prompt": "اكتب سؤالاً تجريبياً عن قواعد السير في سوريا.",
+  "systemInstruction": "أنت مساعد لإنشاء محتوى تدريبي دقيق باللغة العربية."
+}
+
+The generate endpoint is Admin-only and calls Gemini directly from the server. It is separate from the existing ElevenLabs, Hugging Face, ComfyUI, and Eden AI generation queues, so enabling Gemini does not change the current student training or exam flow.
+
+The API uses the Interactions endpoint:
+https://generativelanguage.googleapis.com/v1beta/interactions
+
+Do not put GEMINI_API_KEY in the frontend VITE_* variables, source code, GitHub, or database.
+
