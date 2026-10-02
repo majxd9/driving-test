@@ -99,6 +99,7 @@ public sealed class AiGenerationWorker : BackgroundService
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var generationJobs = scope.ServiceProvider.GetRequiredService<AiGenerationJobService>();
         var quota = new AiGenerationQuotaService(db, _configuration);
         var quotaConsumed = false;
 
@@ -115,6 +116,22 @@ public sealed class AiGenerationWorker : BackgroundService
                     claimed.Id,
                     "تم تجاهل المهمة لأن السؤال لم يعد موجوداً.",
                     cancellationToken);
+                return;
+            }
+
+            var control = await generationJobs.GetControlStateAsync(cancellationToken);
+            var generationEnabled = claimed.JobType == AiGenerationJobType.Audio
+                ? control.AudioEnabled
+                : control.ImageEnabled;
+
+            if (!generationEnabled)
+            {
+                await ReleaseJobAsync(
+                    db,
+                    claimed.Id,
+                    "تم إيقاف هذا النوع من التوليد من مركز التحكم.",
+                    cancellationToken,
+                    DateTime.UtcNow.AddDays(3650));
                 return;
             }
 
