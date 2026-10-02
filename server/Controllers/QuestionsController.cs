@@ -199,10 +199,19 @@ public class QuestionsController : ControllerBase
         if (question is null)
             return NotFound(new { message = "السؤال غير موجود." });
 
-        // وجود الصورة المحفوظة يكفي لعرضها. لا نمنع الصورة بسبب تغيّر نص السؤال
-        // بعد التوليد؛ الـhash يستخدم لنسخة/تحديث التوليد فقط.
+        var currentHash = QuestionImagePromptBuilder.GetContentHash(question);
+
+        // Never serve an image generated from an older prompt/question version.
+        if (!string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal))
+            return NotFound(new { message = "صورة AI قديمة وتحتاج إلى إعادة توليد." });
+
+        // The URL contains both the content hash and generation timestamp, so a
+        // regenerated image cannot remain trapped behind a previous immutable cache.
+        var version = $"{image.ContentHash}-{image.CreatedAt.Ticks}";
         Response.Headers.CacheControl = "public,max-age=31536000,immutable";
-        Response.Headers.ETag = $"\"{image.ContentHash}\"";
+        Response.Headers.ETag = $"\"{version}\"";
+        Response.Headers["X-AI-Image-Hash"] = image.ContentHash;
+        Response.Headers["X-AI-Image-Current-Hash"] = currentHash;
         return File(image.ImageBytes, image.ContentType);
     }
 
