@@ -130,6 +130,8 @@ export interface AiGenerationOverview {
   audioProvider: string;
   imageProvider: string;
   imageExecutionProvider: string;
+  audioFallbackProvider: string;
+  imageFallbackProvider: string;
   audio: AiGenerationCounts;
   image: AiGenerationCounts;
   quota: AiGenerationQuota;
