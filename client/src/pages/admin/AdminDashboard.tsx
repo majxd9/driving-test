@@ -58,6 +58,10 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  const [completedImages,setCompletedImages]=useState<import('../../types').CompletedAiImageItem[]>([]);
  const [galleryLoading,setGalleryLoading]=useState(false);
  const [galleryOpen,setGalleryOpen]=useState(false);
+ const [reviewItem,setReviewItem]=useState<import('../../types').AiImageReviewItem|null>(null);
+ const [reviewImageSrc,setReviewImageSrc]=useState('');
+ const [reviewLoading,setReviewLoading]=useState(false);
+ const [reviewBusy,setReviewBusy]=useState(false);
 
  const refresh=async()=>{
   await reloadAiStatus();
@@ -76,6 +80,56 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
   const timer=window.setInterval(()=>{void reloadGallery()},8000);
   return ()=>window.clearInterval(timer);
  },[galleryOpen]);
+
+ const loadReview=async()=>{
+  setReviewLoading(true);
+  try{setReviewItem(await api.admin.nextAiImageReview())}catch{setReviewItem(null)}finally{setReviewLoading(false)}
+ };
+
+ useEffect(()=>{
+  void loadReview();
+  const timer=window.setInterval(()=>{void loadReview()},8000);
+  return ()=>window.clearInterval(timer);
+ },[]);
+
+ useEffect(()=>{
+  if(!reviewItem){
+   setReviewImageSrc('');
+   return;
+  }
+  let active=true;
+  let objectUrl='';
+  setReviewImageSrc('');
+  void fetch(resolveApiUrl(reviewItem.imageUrl),{credentials:'include',cache:'no-store'})
+   .then(response=>{
+    if(!response.ok)throw new Error('تعذر تحميل صورة المراجعة.');
+    return response.blob();
+   })
+   .then(blob=>{
+    if(!active)return;
+    objectUrl=URL.createObjectURL(blob);
+    setReviewImageSrc(objectUrl);
+   })
+   .catch(()=>{if(active)setReviewImageSrc('')});
+  return ()=>{
+   active=false;
+   if(objectUrl)URL.revokeObjectURL(objectUrl);
+  };
+ },[reviewItem]);
+
+ const reviewAction=async(approve:boolean)=>{
+  if(!reviewItem||reviewBusy)return;
+  setReviewBusy(true);
+  try{
+   const next=approve
+    ? await api.admin.approveAiImageReview(reviewItem.questionId)
+    : await api.admin.rejectAiImageReview(reviewItem.questionId);
+   setReviewItem(next);
+   await reloadAiStatus();
+  }catch(e){
+   alert(e instanceof Error?e.message:'تعذر حفظ قرار المراجعة.');
+  }finally{setReviewBusy(false)}
+ };
 
  const reloadGallery=async()=>{
   setGalleryLoading(true);
@@ -209,6 +263,49 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
     </div>
     {providerTest&&<div className={'ai-provider-message '+testClass}><b>{providerTest.state}</b> — {providerTest.message}<small className="block mt-1" dir="ltr">{providerTest.endpoint}</small></div>}
    </div>
+  </div>
+
+  <div className="admin-card ai-review-card">
+   <div className="card-title">
+    <div><p>AI CONTENT REVIEW</p><b>مراجعة الصور قبل النشر</b></div>
+    <div className="ai-gallery-actions">
+     <span className={`status ${reviewItem?'warn':'on'}`}>
+      {reviewItem?\`${reviewItem.pendingCount} بانتظار المراجعة\`:'لا توجد صورة جاهزة للمراجعة'}
+     </span>
+     <button type="button" className="secondary-cta" disabled={reviewLoading||reviewBusy} onClick={()=>void loadReview()}>
+      {reviewLoading?'جارٍ التحديث…':'تحديث المراجعة'}
+     </button>
+    </div>
+   </div>
+   <p className="text-muted text-sm leading-relaxed">
+    الصورة المولدة تبقى مخفية عن الطلاب حتى تضغط «موافقة». الرفض يحذف الصورة الحالية ويعيد السؤال مباشرة إلى قائمة إعادة البناء.
+   </p>
+   {!reviewItem
+    ? <div className="ai-review-empty">{reviewLoading?'جارٍ البحث عن صورة للمراجعة…':'لا توجد صور AI جديدة جاهزة للمراجعة حالياً.'}</div>
+    : <div className="ai-review-stage">
+      <div className="ai-review-preview">
+       {reviewImageSrc
+        ? <img src={reviewImageSrc} alt={reviewItem.questionText}/>
+        : <div className="ai-review-image-loading">جارٍ تحميل الصورة…</div>}
+      </div>
+      <div className="ai-review-details">
+       <div className="flex items-center justify-between gap-3 flex-wrap">
+        <span className="status warn">بانتظار المراجعة</span>
+        <small>{reviewItem.category} · سؤال #{reviewItem.questionId}</small>
+       </div>
+       <h3>{reviewItem.questionText}</h3>
+       <p className="text-muted text-sm">تاريخ التوليد: {new Date(reviewItem.createdAt).toLocaleString('ar-SY')}</p>
+       <div className="ai-review-actions">
+        <button type="button" className="primary-cta ai-review-approve" disabled={reviewBusy||!reviewImageSrc} onClick={()=>void reviewAction(true)}>
+         {reviewBusy?'جارٍ الحفظ…':'✓ موافقة ونشر بالموقع'}
+        </button>
+        <button type="button" className="danger ai-review-reject" disabled={reviewBusy} onClick={()=>void reviewAction(false)}>
+         {reviewBusy?'جارٍ الحفظ…':'✕ رفض وحذف وإعادة البناء'}
+        </button>
+       </div>
+       <small className="text-muted">بعد القرار ينتقل النظام تلقائياً إلى الصورة التالية دون عرض أكثر من صورة في نفس الوقت.</small>
+      </div>
+     </div>}
   </div>
 
   <div className="admin-card ai-gallery-card">
