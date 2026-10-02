@@ -55,6 +55,8 @@ public sealed class StartupMaintenanceService : BackgroundService
             // The API remains available; /api/questions/count can initialize the count cache later.
             _logger.LogError(ex, "Background startup maintenance failed.");
         }
+    }
+
     private async Task EnsureSystemAudioPromptsAsync(
         AppDbContext db,
         FallbackQuestionAudioGenerator audioGenerator,
@@ -120,6 +122,5 @@ public sealed class StartupMaintenanceService : BackgroundService
                 "System audio prompts restored/generated: {Count}.",
                 changed);
         }
-    }
     }
 }
