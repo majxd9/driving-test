@@ -161,6 +161,7 @@ builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
 builder.Services.AddScoped<ComfyUiQuestionImageGenerator>();
 builder.Services.AddScoped<HuggingFaceQuestionImageGenerator>();
 builder.Services.AddScoped<EdenAiQuestionImageGenerator>();
+builder.Services.AddScoped<GeminiQuestionImageGenerator>();
 builder.Services.AddScoped<FallbackQuestionImageGenerator>();
 builder.Services.AddScoped<IQuestionImageGenerator>(sp =>
 {
@@ -168,6 +169,9 @@ builder.Services.AddScoped<IQuestionImageGenerator>(sp =>
 
     if (string.Equals(provider, "edenai", StringComparison.OrdinalIgnoreCase))
         return sp.GetRequiredService<EdenAiQuestionImageGenerator>();
+
+    if (string.Equals(provider, "gemini", StringComparison.OrdinalIgnoreCase))
+        return sp.GetRequiredService<GeminiQuestionImageGenerator>();
 
     if (string.Equals(provider, "huggingface", StringComparison.OrdinalIgnoreCase) &&
         HasEdenFallbackConfiguration(builder.Configuration, "EDENAI_IMAGE_PROVIDER"))
