@@ -97,13 +97,14 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
   if(value==='comfyui')return 'ComfyUI';
   if(value==='huggingface')return 'Hugging Face';
   if(value==='edenai')return 'Eden AI';
+  if(value==='gemini')return 'Gemini';
   if(value==='fal-ai')return 'fal-ai';
   if(value==='none')return 'غير مفعّل';
   return value;
  };
 
  const effectiveImageProvider=status?.imageExecutionProvider || status?.imageProvider || 'none';
- const providerEnabled=status?.imageProvider==='huggingface'||status?.imageProvider==='comfyui'||status?.imageProvider==='edenai';
+ const providerEnabled=status?.imageProvider==='huggingface'||status?.imageProvider==='comfyui'||status?.imageProvider==='edenai'||status?.imageProvider==='gemini';
  const imageFallbackEnabled=Boolean(status?.imageFallbackProvider);
  const audioFallbackEnabled=Boolean(status?.audioFallbackProvider);
  const testClass=providerTest?.state==='connected'?'on':providerTest?.state==='disabled'||providerTest?.state==='unconfigured'?'off':'warn';
