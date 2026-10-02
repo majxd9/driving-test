@@ -138,6 +138,15 @@ export const api = {
       request<import('../types').ImageProviderTestResult>(
         '/api/admin/ai-generation/test-image-provider',
         { method:'POST' }),
+    geminiStatus: () =>
+      request<{ configured:boolean; model:string; endpoint:string }>('/api/admin/gemini/status'),
+    geminiGenerate: (prompt:string, systemInstruction?:string, previousInteractionId?:string) =>
+      request<{ text:string; interactionId?:string|null; model:string }>(
+        '/api/admin/gemini/generate',
+        {
+          method:'POST',
+          body:JSON.stringify({ prompt, systemInstruction, previousInteractionId })
+        }),
     retryAiJob: (jobId:number) =>
       request<void>(`/api/admin/ai-generation/jobs/${jobId}/retry`, { method:'POST' }),
     getQuestionAudioStatus: (id: number) => request<{
