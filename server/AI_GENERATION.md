@@ -4,6 +4,31 @@
 
 ## الصوت
 
+المسار الموصى به للصوت التعليمي هو Azure Speech بصوت سوري نسائي رسمي:
+
+QUESTION_AUDIO_PROVIDER=azure
+AZURE_SPEECH_KEY=<your-azure-speech-key>
+AZURE_SPEECH_REGION=<your-resource-region>
+QUESTION_AUDIO_AZURE_VOICE=ar-SY-AmanyNeural
+QUESTION_AUDIO_AZURE_LOCALE=ar-SY
+QUESTION_AUDIO_AZURE_RATE=0%
+QUESTION_AUDIO_AZURE_PITCH=0%
+QUESTION_AUDIO_AZURE_OUTPUT_FORMAT=audio-24khz-96kbitrate-mono-mp3
+
+Azure Speech يوفّر حالياً الصوت ar-SY-AmanyNeural (أنثى، العربية السورية). طبقة F0 تعرض 0.5 مليون حرف Neural مجاناً شهرياً، لذلك هذا مناسب كبداية لتوليد بنك الأسئلة الحالي مع بقاء التحكم ضمن حساب Azure.
+
+المزود المحلي الموجود في المشروع يبقى متاحاً كخيار بديل:
+
+QUESTION_AUDIO_PROVIDER=local
+QUESTION_AUDIO_LOCAL_URL=http://127.0.0.1:5000
+QUESTION_AUDIO_LOCAL_VOICE=ar_JO-kareem-medium
+QUESTION_AUDIO_FFMPEG_PATH=ffmpeg
+QUESTION_AUDIO_MP3_BITRATE=128k
+
+Piper/Leva-TTS لا يدخلان في مسار الطالب مباشرة. أي محرك صوت محلي يعمل كخدمة HTTP يجب أن يبقى خلف الـqueue ويُستخدم فقط لتوليد الملفات مسبقاً؛ بعدها تُحفظ الملفات في QuestionAudios.
+
+الأصوات النظامية الأصلية الثلاثة مستقلة عن QuestionAudio Generation وتُحفظ في SystemAudios. لا تستخدم إعدادات QUESTION_AUDIO_PROVIDER لتبديلها ولا تعِد توليدها ضمن Bulk Question Audio.
+
 المزود الحالي يبقى ElevenLabs عند ضبط:
 
 QUESTION_AUDIO_PROVIDER=elevenlabs
