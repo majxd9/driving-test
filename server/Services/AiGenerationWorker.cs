@@ -50,6 +50,7 @@ public sealed class AiGenerationWorker : BackgroundService
                 var jobs = scope.ServiceProvider.GetRequiredService<AiGenerationJobService>();
 
                 await jobs.ResetStaleProcessingAsync(stoppingToken);
+                await jobs.ResumeProviderPausedJobsForFallbackAsync(stoppingToken);
                 await jobs.PrepareImageQueueForCurrentProviderAsync(stoppingToken);
 
                 if (DateTime.UtcNow >= nextScan)
@@ -136,6 +137,36 @@ public sealed class AiGenerationWorker : BackgroundService
                     question,
                     cancellationToken);
 
+                var currentQuestionAfterGeneration = await db.Questions
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(q => q.Id == question.Id, cancellationToken);
+
+                if (currentQuestionAfterGeneration is null)
+                {
+                    if (quotaConsumed)
+                        await quota.ReleaseAsync(cancellationToken);
+
+                    await CompleteJobAsync(
+                        db,
+                        claimed.Id,
+                        "تم تجاهل الناتج لأن السؤال حُذف أثناء التوليد.",
+                        cancellationToken);
+                    return;
+                }
+
+                if (QuestionAudioTextBuilder.GetCurrentHash(currentQuestionAfterGeneration) != claimed.ContentHash)
+                {
+                    if (quotaConsumed)
+                        await quota.ReleaseAsync(cancellationToken);
+
+                    await CompleteJobAsync(
+                        db,
+                        claimed.Id,
+                        "تم تجاهل الناتج لأن محتوى السؤال تغيّر أثناء التوليد ولم يتم حفظ الصوت القديم.",
+                        cancellationToken);
+                    return;
+                }
+
                 var audio = await db.QuestionAudios
                     .SingleOrDefaultAsync(
                         x => x.QuestionId == question.Id,
@@ -213,6 +244,36 @@ public sealed class AiGenerationWorker : BackgroundService
                     question,
                     cancellationToken);
 
+                var currentQuestionAfterGeneration = await db.Questions
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(q => q.Id == question.Id, cancellationToken);
+
+                if (currentQuestionAfterGeneration is null)
+                {
+                    if (quotaConsumed)
+                        await quota.ReleaseAsync(cancellationToken);
+
+                    await CompleteJobAsync(
+                        db,
+                        claimed.Id,
+                        "تم تجاهل الناتج لأن السؤال حُذف أثناء التوليد.",
+                        cancellationToken);
+                    return;
+                }
+
+                if (QuestionImagePromptBuilder.GetContentHash(currentQuestionAfterGeneration) != claimed.ContentHash)
+                {
+                    if (quotaConsumed)
+                        await quota.ReleaseAsync(cancellationToken);
+
+                    await CompleteJobAsync(
+                        db,
+                        claimed.Id,
+                        "تم تجاهل الناتج لأن محتوى السؤال تغيّر أثناء التوليد ولم يتم حفظ الصورة القديمة.",
+                        cancellationToken);
+                    return;
+                }
+
                 _logger.LogInformation(
                     "AI image generation provider returned successfully. Job {JobId}, Question {QuestionId}, Bytes {Bytes}, ContentType {ContentType}.",
                     claimed.Id,
@@ -281,7 +342,8 @@ public sealed class AiGenerationWorker : BackgroundService
                 claimed,
                 ex,
                 cancellationToken,
-                providerConfigurationFailure);
+                providerConfigurationFailure &&
+                !HasEdenFallbackConfigured(claimed.JobType));
         }
     }
 
@@ -349,6 +411,16 @@ public sealed class AiGenerationWorker : BackgroundService
             job.Attempts,
             job.Status,
             job.NextAttemptAt);
+    }
+
+    private bool HasEdenFallbackConfigured(AiGenerationJobType jobType)
+    {
+        var key = jobType == AiGenerationJobType.Audio
+            ? _configuration["EDENAI_AUDIO_PROVIDER"]
+            : _configuration["EDENAI_IMAGE_PROVIDER"];
+
+        return !string.IsNullOrWhiteSpace(_configuration["EDENAI_API_KEY"]) &&
+               !string.IsNullOrWhiteSpace(key);
     }
 
     private static bool IsProviderConfigurationFailure(Exception exception)
