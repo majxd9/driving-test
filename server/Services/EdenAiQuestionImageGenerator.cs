@@ -123,6 +123,38 @@ public sealed class EdenAiQuestionImageGenerator : IQuestionImageGenerator
             .Take(5)
             .ToList();
 
+    private static string? FindFirstBase64(JsonElement node)
+    {
+        if (node.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var name in new[] { "image", "base64", "image_base64" })
+            {
+                if (node.TryGetProperty(name, out var value) &&
+                    value.ValueKind == JsonValueKind.String &&
+                    !string.IsNullOrWhiteSpace(value.GetString()))
+                    return value.GetString();
+            }
+
+            foreach (var property in node.EnumerateObject())
+            {
+                var found = FindFirstBase64(property.Value);
+                if (!string.IsNullOrWhiteSpace(found))
+                    return found;
+            }
+        }
+        else if (node.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in node.EnumerateArray())
+            {
+                var found = FindFirstBase64(item);
+                if (!string.IsNullOrWhiteSpace(found))
+                    return found;
+            }
+        }
+
+        return null;
+    }
+
     private static string? FindFirstImageUrl(JsonElement node)
     {
         if (node.ValueKind == JsonValueKind.Object)
