@@ -15,6 +15,8 @@ public static class ScenePromptBank
 {
     private static readonly Lazy<IReadOnlyList<ScenePromptEntry>> Entries = new(Load, true);
 
+    public static int Count => Entries.Value.Count;
+
     public static bool TryGet(Question question, out (string Positive, string Negative) prompt)
     {
         var category = question.Category;
