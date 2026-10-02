@@ -42,6 +42,7 @@ public sealed class AiGenerationWorker : BackgroundService
 
         var nextScan = DateTime.UtcNow;
         var invalidImageStateCleaned = false;
+        var controlStorageReady = false;
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -49,6 +50,12 @@ public sealed class AiGenerationWorker : BackgroundService
             {
                 using var scope = _scopeFactory.CreateScope();
                 var jobs = scope.ServiceProvider.GetRequiredService<AiGenerationJobService>();
+
+                if (!controlStorageReady)
+                {
+                    await jobs.EnsureControlStorageAsync(stoppingToken);
+                    controlStorageReady = true;
+                }
 
                 if (!invalidImageStateCleaned)
                 {
