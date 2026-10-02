@@ -115,6 +115,32 @@ public sealed class AiGenerationJobService
             await _db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task CleanupInvalidImageGenerationStateAsync(CancellationToken cancellationToken)
+    {
+        // AI images are supplemental only. Questions that already have an
+        // authoritative original image/diagram must not retain AI jobs or AI media.
+        await _db.Database.ExecuteSqlRawAsync("""
+            DELETE FROM "AiGenerationJobs"
+            WHERE "JobType" = 1
+              AND "QuestionId" IN (
+                    SELECT "Id"
+                    FROM "Questions"
+                    WHERE NULLIF(TRIM(COALESCE("ImageUrl", '')), '') IS NOT NULL
+                       OR "DiagramType" IS NOT NULL
+                       OR NULLIF(TRIM(COALESCE("DiagramUrl", '')), '') IS NOT NULL
+                  );
+
+            DELETE FROM "QuestionAiImages"
+            WHERE "QuestionId" IN (
+                    SELECT "Id"
+                    FROM "Questions"
+                    WHERE NULLIF(TRIM(COALESCE("ImageUrl", '')), '') IS NOT NULL
+                       OR "DiagramType" IS NOT NULL
+                       OR NULLIF(TRIM(COALESCE("DiagramUrl", '')), '') IS NOT NULL
+                  );
+            """, cancellationToken);
+    }
+
     public async Task EnqueueMissingAsync(CancellationToken cancellationToken)
     {
         await EnqueueBulkAsync(
