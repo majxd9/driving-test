@@ -201,9 +201,19 @@ public class QuestionsController : ControllerBase
 
         var currentHash = QuestionImagePromptBuilder.GetContentHash(question);
 
-        // Never serve an image generated from an older prompt/question version.
-        if (!string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal))
-            return NotFound(new { message = "صورة AI قديمة وتحتاج إلى إعادة توليد." });
+        var review = await _db.AiImageReviews
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
+
+        // The public endpoint is the final gate: AI content is invisible until
+        // an administrator explicitly approves the exact current image version.
+        if (review is null ||
+            review.Status != AiImageReviewStatus.Approved ||
+            !string.Equals(review.ContentHash, image.ContentHash, StringComparison.Ordinal) ||
+            !string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal))
+        {
+            return NotFound(new { message = "صورة AI غير معتمدة للنشر بعد." });
+        }
 
         // The URL contains both the content hash and generation timestamp, so a
         // regenerated image cannot remain trapped behind a previous immutable cache.
