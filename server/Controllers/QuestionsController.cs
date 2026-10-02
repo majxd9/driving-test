@@ -9,8 +9,6 @@ using System.Text.RegularExpressions;
 using System.Security.Cryptography;
 using System.Text;
 using System.Net.Http.Json;
-using System.Text.Json;
-using System.Globalization;
 
 namespace DrivingTestApi.Controllers;
 
