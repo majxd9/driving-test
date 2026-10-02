@@ -22,4 +22,11 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Prompts\rukhsati_397_ai_scene_prompts.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
