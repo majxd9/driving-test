@@ -19,13 +19,6 @@ const preloadStudy = () => { void import('./Study'); };
 const preloadModels = () => { void import('./Models'); };
 const preloadPractical = () => { void import('./PracticalInfo'); };
 
-const openStudy = (path: string) => {
-  void window.setTimeout(() => {
-    void playQuestionAudioPrompt('question-audio-first-entry').catch(() => undefined);
-  }, 500);
-  navigate(path);
-};
-
 const categories:{key:QuestionCategory;title:string;subtitle:string;path:string;icon:'rules'|'signs'|'mechanic'}[]=[
   {key:'Ser',title:'قواعد السير',subtitle:'الأولوية، السرعة، التقاطعات وقواعد القيادة',path:'/study/Ser',icon:'rules'},
   {key:'Ishara',title:'الإشارات المرورية',subtitle:'تعرف على الإشارات ومعانيها قبل الاختبار',path:'/study/Ishara',icon:'signs'},
@@ -34,6 +27,13 @@ const categories:{key:QuestionCategory;title:string;subtitle:string;path:string;
 
 export default function Home(){
  const {user,logout}=useAuth();const navigate=useNavigate();const [total,setTotal]=useState<number|null>(user?.questionCount ?? null);
+
+ const openStudy = (path: string) => {
+  void window.setTimeout(() => {
+    void playQuestionAudioPrompt('question-audio-first-entry').catch(() => undefined);
+  }, 500);
+  navigate(path);
+ };
 
  useEffect(()=>{
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
