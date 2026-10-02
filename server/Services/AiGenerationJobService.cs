@@ -234,21 +234,12 @@ public sealed class AiGenerationJobService
 
     public async Task CleanupInvalidImageGenerationStateAsync(CancellationToken cancellationToken)
     {
-        // AI images are supplemental only. Questions that already have an
-        // authoritative original image/diagram must not retain AI jobs or AI media.
+        // Remove only queued AI-image jobs for questions that have an authoritative
+        // original image/diagram. Never delete already generated AI media here.
         await _db.Database.ExecuteSqlRawAsync("""
             DELETE FROM "AiGenerationJobs"
             WHERE "JobType" = 1
               AND "QuestionId" IN (
-                    SELECT "Id"
-                    FROM "Questions"
-                    WHERE NULLIF(TRIM(COALESCE("ImageUrl", '')), '') IS NOT NULL
-                       OR "DiagramType" IS NOT NULL
-                       OR NULLIF(TRIM(COALESCE("DiagramUrl", '')), '') IS NOT NULL
-                  );
-
-            DELETE FROM "QuestionAiImages"
-            WHERE "QuestionId" IN (
                     SELECT "Id"
                     FROM "Questions"
                     WHERE NULLIF(TRIM(COALESCE("ImageUrl", '')), '') IS NOT NULL
