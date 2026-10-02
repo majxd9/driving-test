@@ -137,6 +137,7 @@ builder.Services.AddSingleton<IAuthLogQueue, AuthLogQueue>();
 builder.Services.AddHostedService<AuthLogWriter>();
 builder.Services.AddHostedService<StartupMaintenanceService>();
 builder.Services.AddScoped<AiGenerationJobService>();
+builder.Services.AddScoped<IGeminiService, GeminiService>();
 builder.Services.AddScoped<ElevenLabsQuestionAudioGenerator>();
 builder.Services.AddScoped<EdenAiQuestionAudioGenerator>();
 builder.Services.AddScoped<LocalQuestionAudioGenerator>();
@@ -202,6 +203,11 @@ builder.Services.AddHttpClient("EdenAI", client =>
 {
     client.BaseAddress = new Uri("https://api.edenai.run/");
     client.Timeout = TimeSpan.FromMinutes(20);
+});
+builder.Services.AddHttpClient("Gemini", client =>
+{
+    client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+    client.Timeout = TimeSpan.FromSeconds(Math.Clamp(builder.Configuration.GetValue("GEMINI_TIMEOUT_SECONDS", 90), 15, 300));
 });
 builder.Services.AddEndpointsApiExplorer();
 
