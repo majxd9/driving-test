@@ -230,6 +230,28 @@ public sealed class AiGenerationAdminController : ControllerBase
             }
         }
 
+        if (provider == "gemini")
+        {
+            var token = (_configuration["GEMINI_API_KEY"] ?? string.Empty).Trim();
+            var model = (_configuration["GEMINI_IMAGE_MODEL"] ?? "gemini-3.1-flash-image").Trim();
+            const string route = "https://generativelanguage.googleapis.com/v1beta/interactions";
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "unconfigured",
+                    "يجب ضبط GEMINI_API_KEY.",
+                    route));
+            }
+
+            return Ok(new ImageProviderTestResult(
+                provider,
+                "connected",
+                $"تم العثور على مفتاح Gemini وإعداد مزود الصور {model}. هذا الفحص لا ينفذ توليداً مدفوعاً.",
+                route));
+        }
+
         if (provider == "huggingface")
         {
             var token = (_configuration["QUESTION_IMAGE_HF_TOKEN"] ?? string.Empty).Trim();
