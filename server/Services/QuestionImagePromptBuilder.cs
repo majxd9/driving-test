@@ -17,6 +17,9 @@ public static class QuestionImagePromptBuilder
 
     public static bool ShouldGenerate(Question question)
     {
+        if (ScenePromptBank.TryGet(question, out _))
+            return true;
+
         if (question.Category == QuestionCategory.Ishara)
             return true;
 
@@ -26,9 +29,6 @@ public static class QuestionImagePromptBuilder
                    ContainsVisualTerm(question.Text);
         }
 
-        // For traffic-rule questions, only generate an AI image when the wording
-        // describes a concrete visual situation. Generic mentions of "car", "road",
-        // or "traffic" are intentionally not enough.
         return ContainsVisualTerm(question.Text) ||
                question.DiagramType is not null ||
                !string.IsNullOrWhiteSpace(question.DiagramUrl);
@@ -47,6 +47,9 @@ public static class QuestionImagePromptBuilder
 
     public static (string Positive,string Negative) Build(Question question)
     {
+        if (ScenePromptBank.TryGet(question, out var scenePrompt))
+            return scenePrompt;
+
         var categoryText = question.Category switch
         {
             QuestionCategory.Ishara => "a real-world traffic-sign scene",
@@ -57,16 +60,12 @@ public static class QuestionImagePromptBuilder
         var questionText = question.Text?.Trim() ?? string.Empty;
         var cue = VisualCue(questionText);
 
-        // Keep the image model focused on the tested situation rather than dumping
-        // every answer choice into the prompt. This reduces generic "car on a road"
-        // generations and avoids accidentally drawing the correct option as a cue.
         var positive = new StringBuilder()
             .Append("Create ONE highly specific educational image for a Syrian driving-theory question. ")
             .Append("The image must depict the exact physical situation described by the question, not a generic car, generic road, stock traffic photo, or decorative scene. ")
             .Append("Use the question meaning as the primary source of truth. ")
             .Append("Show the essential geometry and relationships that make this situation recognizable: road layout, lanes, vehicle positions, direction of travel, ")
             .Append("relevant road users, weather, visibility, lighting, and distances. ")
-            .Append("Do not invent an unrelated event just because the question contains a general word such as car, road, driver, or traffic. ")
             .Append("If the question is asking what a driver should do, depict the situation BEFORE the action rather than illustrating an answer action. ")
             .Append("If the question asks about a component, depict the component itself and its real position on the vehicle. ")
             .Append("Question category: ").Append(categoryText).Append(". ")
@@ -76,18 +75,10 @@ public static class QuestionImagePromptBuilder
             positive.Append("Visual scene anchors: ").Append(cue).Append(". ");
 
         if (question.Category == QuestionCategory.Ishara)
-        {
-            positive
-                .Append("For a traffic-sign question, show the exact relevant official sign in a believable roadside position, ")
-                .Append("with enough road context to make the sign's role clear. Never replace it with a random sign. ");
-        }
+            positive.Append("For a traffic-sign question, show the exact relevant official sign in a believable roadside position. ");
 
         if (question.Category == QuestionCategory.Mechanic)
-        {
-            positive
-                .Append("For a mechanics question, use a useful close-up or cutaway-style composition that clearly shows the requested component, ")
-                .Append("its neighboring parts, and its real location. Do not use a generic exterior car photo. ");
-        }
+            positive.Append("For a mechanics question, use a useful close-up or cutaway-style composition that clearly shows the requested component and its real location. ");
 
         positive
             .Append("Realistic photographic educational style, natural perspective, plausible vehicles and road geometry, strong subject clarity. ")
@@ -154,10 +145,15 @@ public static class QuestionImagePromptBuilder
 
     public static string GetContentHash(Question question)
     {
-        var payload = string.Join("\u001f", "ai-image-v3-specific-situation-text-free", question.Category, question.Text.Trim(),
+        var promptVersion = ScenePromptBank.TryGet(question, out var scenePrompt)
+            ? scenePrompt.Positive + "\u001e" + scenePrompt.Negative
+            : string.Empty;
+
+        var payload = string.Join("\u001f", "ai-image-v4-prompt-bank", question.Category, question.Text.Trim(),
             string.Join("\u001e", question.Options.Select(x => x.Trim())), question.ImageUrl?.Trim() ?? string.Empty,
             question.DiagramType ?? string.Empty, question.DiagramUrl?.Trim() ?? string.Empty,
-            question.DiagramTitle?.Trim() ?? string.Empty, question.DiagramDescription?.Trim() ?? string.Empty);
+            question.DiagramTitle?.Trim() ?? string.Empty, question.DiagramDescription?.Trim() ?? string.Empty,
+            promptVersion);
 
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
     }
