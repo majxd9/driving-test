@@ -81,13 +81,12 @@ public sealed class EdenAiQuestionAudioGenerator : IQuestionAudioGenerator
                 $"Eden AI رفض توليد الصوت: HTTP {(int)response.StatusCode} — {Truncate(body)}");
 
         using var document = JsonDocument.Parse(body);
-        var audioUrl = FindFirstAudioUrl(document.RootElement);
 
-        if (string.IsNullOrWhiteSpace(audioUrl))
+        // Prefer embedded audio bytes when Eden returns them. Resource URLs can
+        // expire or return 403 before the worker downloads them.
+        var base64 = FindFirstBase64(document.RootElement);
+        if (!string.IsNullOrWhiteSpace(base64))
         {
-            var base64 = FindFirstBase64(document.RootElement);
-            if (!string.IsNullOrWhiteSpace(base64))
-            {
                 try
                 {
                     var bytes = Convert.FromBase64String(base64);
@@ -96,10 +95,14 @@ public sealed class EdenAiQuestionAudioGenerator : IQuestionAudioGenerator
                 }
                 catch (FormatException)
                 {
-                    // Fall through to the detailed error below.
+                    // Fall back to the resource URL below.
                 }
             }
+        }
 
+        var audioUrl = FindFirstAudioUrl(document.RootElement);
+        if (string.IsNullOrWhiteSpace(audioUrl))
+        {
             throw new InvalidOperationException(
                 $"Eden AI لم يُرجع ملف صوتي فعلياً. المزود الأساسي: {primaryProvider}. التفاصيل: {Truncate(body)}");
         }
