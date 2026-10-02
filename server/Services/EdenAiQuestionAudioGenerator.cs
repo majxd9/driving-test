@@ -22,8 +22,13 @@ public sealed class EdenAiQuestionAudioGenerator : IQuestionAudioGenerator
         _logger = logger;
     }
 
-    public async Task<GeneratedAudioResult> GenerateAsync(
+    public Task<GeneratedAudioResult> GenerateAsync(
         Question question,
+        CancellationToken cancellationToken) =>
+        GenerateTextAsync(QuestionAudioTextBuilder.Build(question), cancellationToken);
+
+    public async Task<GeneratedAudioResult> GenerateTextAsync(
+        string text,
         CancellationToken cancellationToken)
     {
         var apiKey = (_configuration["EDENAI_API_KEY"] ?? string.Empty).Trim();
@@ -44,7 +49,7 @@ public sealed class EdenAiQuestionAudioGenerator : IQuestionAudioGenerator
                 ? option
                 : "MALE",
             ["return_type"] = "url",
-            ["text"] = QuestionAudioTextBuilder.Build(question)
+            ["text"] = text
         };
 
         var voiceModel = (_configuration["EDENAI_AUDIO_VOICE_MODEL_" + primaryProvider.ToUpperInvariant()] ?? string.Empty).Trim();
