@@ -40,12 +40,35 @@ public sealed class StartupMaintenanceService : BackgroundService
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await QuestionCountCache.InitializeAsync(db);
 
+            _logger.LogInformation("Background startup maintenance completed.");
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // Normal shutdown.
+            return;
+        }
+        catch (Exception ex)
+        {
+            // The API remains available; /api/questions/count can initialize the count cache later.
+            _logger.LogError(ex, "Background startup maintenance failed before system-audio restoration.");
+        }
+
+        // System prompt restoration is intentionally independent from the other
+        // startup maintenance so a seed/count failure cannot prevent the three
+        // required UI audio prompts from being restored.
+        if (stoppingToken.IsCancellationRequested)
+            return;
+
+        try
+        {
+            using var scope = _services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await EnsureSystemAudioPromptsAsync(
                 db,
                 scope.ServiceProvider.GetRequiredService<FallbackQuestionAudioGenerator>(),
                 stoppingToken);
 
-            _logger.LogInformation("Background startup maintenance completed.");
+            _logger.LogInformation("System audio prompt maintenance completed.");
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
@@ -53,8 +76,7 @@ public sealed class StartupMaintenanceService : BackgroundService
         }
         catch (Exception ex)
         {
-            // The API remains available; /api/questions/count can initialize the count cache later.
-            _logger.LogError(ex, "Background startup maintenance failed.");
+            _logger.LogError(ex, "System audio prompt restoration failed.");
         }
     }
 
