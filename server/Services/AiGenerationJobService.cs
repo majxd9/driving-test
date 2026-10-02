@@ -26,6 +26,12 @@ public sealed record AiGenerationOverview(
     AiGenerationCounts Image,
     AiGenerationQuota Quota);
 
+public sealed record AiGenerationControlState(bool AudioEnabled, bool ImageEnabled)
+{
+    public bool AllEnabled => AudioEnabled && ImageEnabled;
+    public bool AllDisabled => !AudioEnabled && !ImageEnabled;
+}
+
 public sealed record AiGenerationEnqueueResult(
     int Created,
     int Requeued,
@@ -86,6 +92,117 @@ public sealed class AiGenerationJobService
                 .ResolveConfiguration(_configuration)
                 .Provider;
         }
+    }
+
+    public async Task EnsureControlStorageAsync(CancellationToken cancellationToken = default)
+    {
+        await _db.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE IF NOT EXISTS "AiGenerationControl" (
+                "Id" integer PRIMARY KEY,
+                "AudioEnabled" boolean NOT NULL,
+                "ImageEnabled" boolean NOT NULL,
+                "UpdatedAt" timestamp with time zone NOT NULL
+            );
+
+            INSERT INTO "AiGenerationControl" ("Id", "AudioEnabled", "ImageEnabled", "UpdatedAt")
+            VALUES (1, false, false, NOW())
+            ON CONFLICT ("Id") DO NOTHING;
+            """, cancellationToken);
+    }
+
+    public async Task<AiGenerationControlState> GetControlStateAsync(CancellationToken cancellationToken = default)
+    {
+        await EnsureControlStorageAsync(cancellationToken);
+
+        var row = await _db.Database
+            .SqlQueryRaw<AiGenerationControlRow>("""
+                SELECT
+                    "AudioEnabled" AS "AudioEnabled",
+                    "ImageEnabled" AS "ImageEnabled"
+                FROM "AiGenerationControl"
+                WHERE "Id" = 1
+            """)
+            .SingleAsync(cancellationToken);
+
+        return new AiGenerationControlState(row.AudioEnabled, row.ImageEnabled);
+    }
+
+    public async Task<AiGenerationControlState> SetControlStateAsync(
+        bool? audioEnabled,
+        bool? imageEnabled,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureControlStorageAsync(cancellationToken);
+
+        var current = await GetControlStateAsync(cancellationToken);
+        var audio = audioEnabled ?? current.AudioEnabled;
+        var image = imageEnabled ?? current.ImageEnabled;
+
+        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE "AiGenerationControl"
+            SET "AudioEnabled" = {audio},
+                "ImageEnabled" = {image},
+                "UpdatedAt" = NOW()
+            WHERE "Id" = 1;
+            """, cancellationToken);
+
+        if (!audio)
+        {
+            await PausePendingJobsAsync(AiGenerationJobType.Audio, cancellationToken);
+        }
+
+        if (!image)
+        {
+            await PausePendingJobsAsync(AiGenerationJobType.AiImage, cancellationToken);
+        }
+
+        return new AiGenerationControlState(audio, image);
+    }
+
+    public async Task PausePendingJobsAsync(
+        AiGenerationJobType? type,
+        CancellationToken cancellationToken = default)
+    {
+        if (type is null)
+        {
+            await _db.Database.ExecuteSqlRawAsync("""
+                UPDATE "AiGenerationJobs"
+                SET "NextAttemptAt" = NOW() + INTERVAL '3650 days',
+                    "LockedUntil" = NULL,
+                    "UpdatedAt" = NOW()
+                WHERE "Status" = 0;
+                """, cancellationToken);
+            return;
+        }
+
+        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE "AiGenerationJobs"
+            SET "NextAttemptAt" = NOW() + INTERVAL '3650 days',
+                "LockedUntil" = NULL,
+                "UpdatedAt" = NOW()
+            WHERE "Status" = 0
+              AND "JobType" = {(int)type.Value};
+            """, cancellationToken);
+    }
+
+    public async Task ResumePendingTypeAsync(
+        AiGenerationJobType type,
+        CancellationToken cancellationToken = default)
+    {
+        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE "AiGenerationJobs"
+            SET "NextAttemptAt" = NOW(),
+                "LockedUntil" = NULL,
+                "UpdatedAt" = NOW()
+            WHERE "Status" = 0
+              AND "JobType" = {(int)type};
+            """, cancellationToken);
+    }
+
+    private sealed class AiGenerationControlRow
+    {
+        public bool AudioEnabled { get; set; }
+        public bool ImageEnabled { get; set; }
     }
 
     public async Task EnsureQuestionJobsAsync(
