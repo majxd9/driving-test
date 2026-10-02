@@ -15,8 +15,25 @@ public static class QuestionImagePromptBuilder
         "إشارة ضوئية","إشارة مرور","ضوء خلفي","ضوء أمامي","ضوء ضباب","غماز","رباعي"
     };
 
+    // These specific questions had incorrect AI-generated balloon images. They are intentionally
+    // excluded from AI-image generation, and existing generated media is removed during cleanup.
+    private static readonly HashSet<string> ExcludedQuestionTexts = new(StringComparer.Ordinal)
+    {
+        "تسير ليلاً مستخدماً الضوء المنخفض وتلاحظ أن المركبات القادمة من الاتجاه المقابل تبدل بين الضوء العالي والمنخفض، ما الذي يعنيه ذلك؟",
+        "يمكن للمركبات التجاوز:",
+        "في حال ظهور مركبة من جهة معاكسة أثناء استعمالك للإضاءة العالية ليلاً عليك:",
+        "ما الذي يحدث إذا كان تأثير الفرامل على عجلتي المحور الواحد متفاوتاً بشكل كبير؟",
+        "بالإضافة إلى استعمال فرامل اليد، كيف يمكن تأمين سيارة ضد خطر التدحرج عند الوقوف على منحدر؟"
+    };
+
+    public static bool IsExcluded(Question question) =>
+        ExcludedQuestionTexts.Contains(question.Text?.Trim() ?? string.Empty);
+
     public static bool ShouldGenerate(Question question)
     {
+        if (IsExcluded(question))
+            return false;
+
         if (question.Category == QuestionCategory.Ishara)
             return true;
 
