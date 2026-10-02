@@ -97,6 +97,24 @@ export const api = {
         { method:'POST', body:JSON.stringify({ force }) }),
     aiGenerationStatus: () =>
       request<import('../types').AiGenerationOverview>('/api/admin/ai-generation/status'),
+    aiGenerationControl: () =>
+      request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control'),
+    startAllAiGeneration: () =>
+      request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/all/start', { method:'POST' }),
+    stopAllAiGeneration: () =>
+      request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/all/stop', { method:'POST' }),
+    startAudioGeneration: () =>
+      request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/audio/start', { method:'POST' }),
+    stopAudioGeneration: () =>
+      request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/audio/stop', { method:'POST' }),
+    startImageGeneration: () =>
+      request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/image/start', { method:'POST' }),
+    stopImageGeneration: () =>
+      request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/image/stop', { method:'POST' }),
+    retryFailedAi: (type:'audio'|'image') =>
+      request<import('../types').AiGenerationEnqueueResult>(
+        '/api/admin/ai-generation/retry-failed/'+type,
+        { method:'POST' }),
     completedAiImages: (limit = 24) =>
       request<import('../types').CompletedAiImageItem[]>(
         `/api/admin/ai-generation/completed-images?limit=${limit}`),
