@@ -87,16 +87,15 @@ public sealed class EdenAiQuestionAudioGenerator : IQuestionAudioGenerator
         var base64 = FindFirstBase64(document.RootElement);
         if (!string.IsNullOrWhiteSpace(base64))
         {
-                try
-                {
-                    var bytes = Convert.FromBase64String(base64);
-                    if (bytes.Length > 0)
-                        return new GeneratedAudioResult(bytes);
-                }
-                catch (FormatException)
-                {
-                    // Fall back to the resource URL below.
-                }
+            try
+            {
+                var bytes = Convert.FromBase64String(base64);
+                if (bytes.Length > 0)
+                    return new GeneratedAudioResult(bytes);
+            }
+            catch (FormatException)
+            {
+                // Fall back to the resource URL below.
             }
         }
 
