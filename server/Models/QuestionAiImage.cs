@@ -1,10 +1,17 @@
 namespace DrivingTestApi.Models;
 
-public sealed class QuestionAiImage
+public enum AiImageReviewStatus
+{
+    Pending = 0,
+    Approved = 1,
+    Rejected = 2
+}
+
+public sealed class AiImageReview
 {
     public int QuestionId { get; set; }
-    public byte[] ImageBytes { get; set; } = Array.Empty<byte>();
     public string ContentHash { get; set; } = string.Empty;
-    public string ContentType { get; set; } = "image/png";
+    public AiImageReviewStatus Status { get; set; } = AiImageReviewStatus.Pending;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? ReviewedAt { get; set; }
 }
