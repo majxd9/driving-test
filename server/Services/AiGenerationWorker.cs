@@ -345,6 +345,8 @@ public sealed class AiGenerationWorker : BackgroundService
                         x => x.QuestionId == question.Id,
                         cancellationToken);
 
+                var generatedAt = DateTime.UtcNow;
+
                 if (image is null)
                 {
                     db.QuestionAiImages.Add(new QuestionAiImage
@@ -353,7 +355,7 @@ public sealed class AiGenerationWorker : BackgroundService
                         ImageBytes = result.Bytes,
                         ContentHash = claimed.ContentHash,
                         ContentType = result.ContentType,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = generatedAt
                     });
                 }
                 else
@@ -361,8 +363,15 @@ public sealed class AiGenerationWorker : BackgroundService
                     image.ImageBytes = result.Bytes;
                     image.ContentHash = claimed.ContentHash;
                     image.ContentType = result.ContentType;
-                    image.CreatedAt = DateTime.UtcNow;
+                    image.CreatedAt = generatedAt;
                 }
+
+                // Every newly generated image is a review candidate first.
+                await generationJobs.MarkImagePendingReviewAsync(
+                    question.Id,
+                    claimed.ContentHash,
+                    generatedAt,
+                    cancellationToken);
             }
 
             var job = await db.AiGenerationJobs
