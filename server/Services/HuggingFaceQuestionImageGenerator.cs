@@ -96,10 +96,17 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
         var width = Math.Clamp(_configuration.GetValue("QUESTION_IMAGE_WIDTH", 768), 256, 1536);
         var height = Math.Clamp(_configuration.GetValue("QUESTION_IMAGE_HEIGHT", 512), 256, 1536);
 
+        // Every question gets its own deterministic seed. This prevents different
+        // queue jobs from converging on the same provider result and makes retries
+        // reproducible for the same question revision.
+        var contentHash = QuestionImagePromptBuilder.GetContentHash(question);
+        var seed = unchecked((int)Convert.ToUInt32(contentHash[..8], 16));
+
         var payload = new
         {
             prompt = positive,
             num_inference_steps = steps,
+            seed,
             image_size = new { width, height }
         };
 
