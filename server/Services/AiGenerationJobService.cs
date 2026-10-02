@@ -739,16 +739,18 @@ public sealed class AiGenerationJobService
         var currentHash = QuestionImagePromptBuilder.GetContentHash(question);
 
         var review = await _db.AiImageReviews
-            .SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken)
-            ?? new AiImageReview
+            .SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken);
+
+        if (review is null)
+        {
+            review = new AiImageReview
             {
                 QuestionId = questionId,
                 ContentHash = image.ContentHash,
                 CreatedAt = image.CreatedAt
             };
-
-        if (review.QuestionId == 0)
             _db.AiImageReviews.Add(review);
+        }
 
         if (approve && !string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal))
             approve = false;
@@ -808,7 +810,7 @@ public sealed class AiGenerationJobService
         return await GetNextAiImageReviewAsync(cancellationToken);
     }
 
-    private async Task MarkImagePendingReviewAsync(
+    public async Task MarkImagePendingReviewAsync(
         int questionId,
         string contentHash,
         DateTime createdAt,
