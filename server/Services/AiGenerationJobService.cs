@@ -651,7 +651,7 @@ public sealed class AiGenerationJobService
                 if (image.ContentHash == imageHash)
                 {
                     question.AiImageUrl =
-                        $"/api/questions/{question.Id}/ai-image?v={imageHash}";
+                        $"/api/questions/{question.Id}/ai-image?v={imageHash}-{image.CreatedAt.Ticks}";
                 }
             }
         }
@@ -668,25 +668,46 @@ public sealed class AiGenerationJobService
             join question in _db.Questions.AsNoTracking()
                 on image.QuestionId equals question.Id
             where image.ImageBytes.Length > 0
-            orderby image.CreatedAt descending
             select new
             {
                 QuestionId = question.Id,
                 QuestionText = question.Text,
                 Category = question.Category,
                 image.ContentHash,
-                image.CreatedAt
+                image.CreatedAt,
+                question.ImageUrl,
+                question.Options,
+                question.DiagramType,
+                question.DiagramUrl,
+                question.DiagramTitle,
+                question.DiagramDescription
             })
-            .Take(Math.Clamp(safeLimit * 3, safeLimit, 180))
             .ToListAsync(cancellationToken);
 
         return items
+            .Where(item =>
+            {
+                var question = new Question
+                {
+                    Id = item.QuestionId,
+                    Text = item.QuestionText,
+                    Category = item.Category,
+                    ImageUrl = item.ImageUrl,
+                    Options = item.Options,
+                    DiagramType = item.DiagramType,
+                    DiagramUrl = item.DiagramUrl,
+                    DiagramTitle = item.DiagramTitle,
+                    DiagramDescription = item.DiagramDescription
+                };
+                return item.ContentHash == QuestionImagePromptBuilder.GetContentHash(question);
+            })
+            .OrderByDescending(item => item.CreatedAt)
             .Take(safeLimit)
             .Select(item => new CompletedAiImageItem(
                 item.QuestionId,
                 item.QuestionText,
                 item.Category.ToString(),
-                $"/api/questions/{item.QuestionId}/ai-image?v={item.ContentHash}",
+                $"/api/questions/{item.QuestionId}/ai-image?v={item.ContentHash}-{item.CreatedAt.Ticks}",
                 item.ContentHash,
                 item.CreatedAt))
             .ToList();
@@ -884,7 +905,7 @@ public sealed class AiGenerationJobService
                              image.ContentHash == imageHash;
 
             question.AiImageUrl = imageReady
-                ? $"/api/questions/{question.Id}/ai-image?v={imageHash}"
+                ? $"/api/questions/{question.Id}/ai-image?v={imageHash}-{image.CreatedAt.Ticks}"
                 : null;
 
             question.AiImageGenerationStatus = ResolveStatus(
