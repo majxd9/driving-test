@@ -1,7 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace DrivingTestApi.Services;
 
@@ -140,28 +139,67 @@ public sealed class GeminiService : IGeminiService
 
     private static string ExtractOutputText(JsonElement root)
     {
+        // Interactions API returns model text in model_output steps:
+        // steps[].content[].text
+        if (root.TryGetProperty("steps", out var steps) &&
+            steps.ValueKind == JsonValueKind.Array)
+        {
+            var text = new StringBuilder();
+
+            foreach (var step in steps.EnumerateArray())
+            {
+                if (step.TryGetProperty("type", out var type) &&
+                    !string.Equals(type.GetString(), "model_output", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (!step.TryGetProperty("content", out var content) ||
+                    content.ValueKind != JsonValueKind.Array)
+                    continue;
+
+                foreach (var item in content.EnumerateArray())
+                {
+                    if (item.TryGetProperty("type", out var itemType) &&
+                        !string.Equals(itemType.GetString(), "text", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    if (item.TryGetProperty("text", out var textElement) &&
+                        textElement.ValueKind == JsonValueKind.String)
+                    {
+                        text.Append(textElement.GetString());
+                    }
+                }
+            }
+
+            var stepText = text.ToString();
+            if (!string.IsNullOrWhiteSpace(stepText))
+                return stepText;
+        }
+
+        // Keep compatibility with simplified SDK-style responses.
         if (root.TryGetProperty("output_text", out var outputTextElement) &&
             outputTextElement.ValueKind == JsonValueKind.String)
         {
             return outputTextElement.GetString() ?? string.Empty;
         }
 
-        if (!root.TryGetProperty("outputs", out var outputs) ||
-            outputs.ValueKind != JsonValueKind.Array)
-            return string.Empty;
-
-        var text = new StringBuilder();
-
-        foreach (var output in outputs.EnumerateArray())
+        if (root.TryGetProperty("outputs", out var outputs) &&
+            outputs.ValueKind == JsonValueKind.Array)
         {
-            if (output.TryGetProperty("text", out var textElement) &&
-                textElement.ValueKind == JsonValueKind.String)
+            var text = new StringBuilder();
+
+            foreach (var output in outputs.EnumerateArray())
             {
-                text.Append(textElement.GetString());
+                if (output.TryGetProperty("text", out var textElement) &&
+                    textElement.ValueKind == JsonValueKind.String)
+                {
+                    text.Append(textElement.GetString());
+                }
             }
+
+            return text.ToString();
         }
 
-        return text.ToString();
+        return string.Empty;
     }
 
     private static string ExtractApiError(string responseText)
