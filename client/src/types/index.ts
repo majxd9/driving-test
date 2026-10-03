@@ -129,6 +129,7 @@ export interface AiGenerationQuota {
 export interface AiGenerationControlState {
   audioEnabled: boolean;
   imageEnabled: boolean;
+  imageProvider: 'none' | 'gemini' | 'huggingface' | 'edenai' | 'comfyui' | string;
   allEnabled: boolean;
   allDisabled: boolean;
 }

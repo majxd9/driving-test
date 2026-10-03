@@ -11,6 +11,7 @@ public sealed record BulkGenerationRequest(bool RetryFailed = false, bool Regene
 public sealed record ImageProviderTestResult(string Provider, string State, string Message, string Endpoint);
 
 public sealed record AiGenerationControlRequest(bool? AudioEnabled = null, bool? ImageEnabled = null);
+public sealed record ImageProviderSelectionRequest(string Provider);
 
 [ApiController]
 [Route("api/admin/ai-generation")]
@@ -72,6 +73,17 @@ public sealed class AiGenerationAdminController : ControllerBase
     [HttpPost("control/audio/stop")]
     public async Task<ActionResult<AiGenerationControlState>> StopAudio(CancellationToken cancellationToken) =>
         Ok(await _jobs.SetControlStateAsync(false, null, cancellationToken));
+
+    [HttpPost("control/image/provider")]
+    public async Task<ActionResult<AiGenerationControlState>> SetImageProvider(
+        [FromBody] ImageProviderSelectionRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request is null || string.IsNullOrWhiteSpace(request.Provider))
+            return BadRequest(new { message = "يجب تحديد مزود صور." });
+
+        return Ok(await _jobs.SetImageProviderAsync(request.Provider, cancellationToken));
+    }
 
     [HttpPost("control/image/start")]
     public async Task<ActionResult<AiGenerationControlState>> StartImage(CancellationToken cancellationToken)
@@ -171,7 +183,8 @@ public sealed class AiGenerationAdminController : ControllerBase
     [HttpPost("test-image-provider")]
     public async Task<IActionResult> TestImageProvider(CancellationToken cancellationToken)
     {
-        var provider = (_configuration["QUESTION_IMAGE_PROVIDER"] ?? "none").Trim().ToLowerInvariant();
+        var control = await _jobs.GetControlStateAsync(cancellationToken);
+        var provider = control.ImageProvider;
         var endpoint = (_configuration["QUESTION_IMAGE_COMFYUI_URL"] ?? string.Empty).Trim();
 
         if (provider == "none")
@@ -360,6 +373,7 @@ public sealed class AiGenerationAdminController : ControllerBase
         if (question is null)
             return NotFound(new { message = "السؤال غير موجود." });
 
+        var control = await _jobs.GetControlStateAsync(cancellationToken);
         var (positive, _) = QuestionImagePromptBuilder.Build(question);
         var promptSource = ScenePromptBank.TryGet(question, out _)
             ? "ScenePromptBank"
@@ -374,8 +388,10 @@ public sealed class AiGenerationAdminController : ControllerBase
             questionId = question.Id,
             category = question.Category.ToString(),
             questionText = question.Text,
-            configuredProvider = _jobs.ImageProvider,
-            executionProvider = _jobs.ImageExecutionProvider,
+            configuredProvider = control.ImageProvider,
+            executionProvider = AiGenerationJobService.ResolveImageExecutionProvider(
+                control.ImageProvider,
+                _configuration),
             actualGenerator = _imageGenerator.GetType().FullName,
             promptSource,
             promptBankEntries = ScenePromptBank.Count,
