@@ -299,7 +299,6 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
    </div>
 
    <AiGenerationLab />
-   </div>
   </div>
 
   <div className="admin-card ai-review-card">
