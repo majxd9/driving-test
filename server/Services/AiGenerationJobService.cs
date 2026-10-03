@@ -54,7 +54,9 @@ public sealed record AiImageReviewItem(
     string ContentHash,
     DateTime CreatedAt,
     int PendingCount,
-    int ReviewedCount);
+    int ReviewedCount,
+    string Prompt,
+    string NegativePrompt);
 
 public sealed class AiGenerationJobService
 {
@@ -756,7 +758,9 @@ public sealed class AiGenerationJobService
                     item.Category,
                     item.ContentHash,
                     item.CreatedAt,
-                    CurrentHash = QuestionImagePromptBuilder.GetContentHash(question)
+                    CurrentHash = QuestionImagePromptBuilder.GetContentHash(question),
+                    Prompt = QuestionImagePromptBuilder.Build(question).Positive,
+                    NegativePrompt = QuestionImagePromptBuilder.Build(question).Negative
                 };
             })
             .FirstOrDefault(item =>
@@ -784,7 +788,9 @@ public sealed class AiGenerationJobService
             row.ContentHash,
             row.CreatedAt,
             pending,
-            reviewed);
+            reviewed,
+            row.Prompt,
+            row.NegativePrompt);
     }
 
     public async Task<QuestionAiImage?> GetReviewImageAsync(
