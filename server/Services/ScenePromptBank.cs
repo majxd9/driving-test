@@ -23,6 +23,22 @@ public static class ScenePromptBank
         var normalizedQuestion = Normalize(question.Text);
         var questionReferences = ExtractReferences(question.ImageUrl, question.DiagramUrl);
 
+        // The prompt bank is keyed by the question number as well as the text.
+        // Many driving questions intentionally share identical wording
+        // (for example multiple "ما معنى هذه الإشارة؟" entries). Never choose
+        // the first text match because that silently routes a question to
+        // another question's scene.
+        var idMatch = Entries.Value.FirstOrDefault(x =>
+            x.Index == question.Id &&
+            x.Category == category &&
+            Normalize(x.Question) == normalizedQuestion);
+
+        if (idMatch is not null)
+        {
+            prompt = (idMatch.Positive.Trim(), idMatch.Negative.Trim());
+            return true;
+        }
+
         var candidates = Entries.Value
             .Where(x => x.Category == category && Normalize(x.Question) == normalizedQuestion)
             .ToList();
@@ -34,33 +50,32 @@ public static class ScenePromptBank
                     questionReferences.Any(qr => PathsEqual(r, qr))))
                 .ToList();
 
-            if (referenceMatches.Count > 0)
-                candidates = referenceMatches;
+            if (referenceMatches.Count == 1)
+            {
+                var selected = referenceMatches[0];
+                prompt = (selected.Positive.Trim(), selected.Negative.Trim());
+                return true;
+            }
+
+            // More than one matching reference is still ambiguous; do not
+            // silently select the first scene.
+            if (referenceMatches.Count > 1)
+            {
+                prompt = default;
+                return false;
+            }
         }
 
-        if (candidates.Count == 0)
+        // A text-only match is safe only when it is unique.
+        if (candidates.Count == 1)
         {
-            var idMatch = Entries.Value.FirstOrDefault(x =>
-                x.Index == question.Id &&
-                x.Category == category &&
-                Normalize(x.Question) == normalizedQuestion);
-
-            if (idMatch is not null)
-                candidates = new List<ScenePromptEntry> { idMatch };
+            var selected = candidates[0];
+            prompt = (selected.Positive.Trim(), selected.Negative.Trim());
+            return true;
         }
 
-        if (candidates.Count == 0)
-        {
-            prompt = default;
-            return false;
-        }
-
-        var selected = candidates
-            .OrderBy(x => x.Index)
-            .First();
-
-        prompt = (selected.Positive.Trim(), selected.Negative.Trim());
-        return true;
+        prompt = default;
+        return false;
     }
 
     private static IReadOnlyList<ScenePromptEntry> Load()
@@ -171,7 +186,11 @@ public static class ScenePromptBank
             StringComparison.OrdinalIgnoreCase);
 
     private static string NormalizePath(string value) =>
-        value.Trim().Replace("\\", "/").TrimStart('/');
+        value
+            .Trim()
+            .TrimEnd('.', ',', ';', ')')
+            .Replace("\\", "/")
+            .TrimStart('/');
 
     private static string Normalize(string? value)
     {
