@@ -163,7 +163,7 @@ public sealed class EdenAiQuestionImageGenerator : IQuestionImageGenerator
         if (!TryGetPropertyIgnoreCase(root, provider, out var providerNode) ||
             providerNode.ValueKind != JsonValueKind.Object)
         {
-            error = "استجابة المزود المحدد غير موجودة.";
+            error = $"استجابة المزود المحدد غير موجودة. {DescribeResponseRoot(root)}";
             return false;
         }
 
@@ -230,6 +230,21 @@ public sealed class EdenAiQuestionImageGenerator : IQuestionImageGenerator
 
         error = "لم نجد صورة داخل items للمزود المحدد.";
         return false;
+    }
+
+    private static string DescribeResponseRoot(JsonElement root)
+    {
+        if (root.ValueKind != JsonValueKind.Object)
+            return $"نوع استجابة Eden AI: {root.ValueKind}.";
+
+        var keys = root.EnumerateObject()
+            .Select(x => x.Name)
+            .Take(20)
+            .ToArray();
+
+        return keys.Length == 0
+            ? "استجابة Eden AI فارغة من الخصائص."
+            : $"مفاتيح استجابة Eden AI: {string.Join(", ", keys)}.";
     }
 
     private static bool TryGetPropertyIgnoreCase(
