@@ -101,8 +101,7 @@ public sealed class AiGenerationJobService
                 ADD COLUMN IF NOT EXISTS "ImageProvider" text;
             """, cancellationToken);
 
-        var configuredProvider = NormalizeImageProvider(
-            _configuration["QUESTION_IMAGE_PROVIDER"] ?? "none");
+        var configuredProvider = "gemini";
 
         await _db.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO "AiGenerationControl" ("Id", "AudioEnabled", "ImageEnabled", "ImageProvider", "UpdatedAt")
