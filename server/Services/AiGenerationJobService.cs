@@ -106,11 +106,19 @@ public sealed class AiGenerationJobService
 
         await _db.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO "AiGenerationControl" ("Id", "AudioEnabled", "ImageEnabled", "ImageProvider", "UpdatedAt")
-            VALUES (1, false, false, {configuredProvider}, NOW())
-            ON CONFLICT ("Id") DO UPDATE
-            SET "ImageProvider" = COALESCE(
-                NULLIF(TRIM("AiGenerationControl"."ImageProvider"), ''),
-                EXCLUDED."ImageProvider");
+            VALUES (1, false, false, 'gemini', NOW())
+            ON CONFLICT ("Id") DO NOTHING;
+            """, cancellationToken);
+
+        // One-time migration for the existing control row: start in a safe,
+        // provider-isolated state using Gemini, but do not start image generation.
+        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE "AiGenerationControl"
+            SET "ImageProvider" = {configuredProvider},
+                "ImageEnabled" = FALSE,
+                "UpdatedAt" = NOW()
+            WHERE "Id" = 1
+              AND NULLIF(TRIM("ImageProvider"), '') IS NULL;
             """, cancellationToken);
     }
 
