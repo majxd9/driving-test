@@ -60,3 +60,39 @@ button:disabled { cursor:not-allowed; }
 @media(max-width:700px){.home-page main,.exam-stage-v2,.study-premium-stage{padding-inline:12px}.home-hero{padding:24px 18px;border-radius:24px}.home-exam{flex-direction:column;align-items:stretch;padding:22px}.home-exam .exam-action{align-self:flex-start}.exam-topbar-v2{grid-template-columns:42px 1fr auto;min-height:62px;padding-inline:10px;gap:9px}.exam-back-v2,.study-premium-back{width:40px;height:40px}.exam-card-v2,.study-premium-card{border-radius:22px;padding:14px}.exam-image-v2,.study-premium-image{min-height:200px;max-height:39svh;border-radius:17px}.exam-image-v2 img,.study-premium-image-el{max-height:36svh}.exam-actions-v2{grid-template-columns:1fr 1fr}.exam-action-v2.finish{grid-column:1/-1;order:3}.study-premium-actions{grid-template-columns:1fr 1fr}.result-hero{grid-template-columns:1fr;text-align:center;justify-items:center}.result-stat-grid{width:100%}.result-actions{flex-direction:column}.login-v2{padding:12px}.login-v2-panel{border-radius:24px;padding:22px 18px}.admin-header{padding-inline:12px}.admin-tabs{top:70px}.action-row{gap:6px}.action-row button{font-size:.76rem}.admin-card td,.admin-card th{padding:11px 9px}}
 @media(max-width:430px){.result-stat-grid{grid-template-columns:1fr}.exam-title-v2 strong{font-size:.9rem}.exam-timer-v2{padding:8px 10px;font-size:.84rem}.home-hero h1{font-size:2rem}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Admin header compatibility: restore the original admin chrome shape. */
+.admin-header{
+  position:sticky;
+  top:0;
+  z-index:30;
+  padding:14px 18px;
+  background:#22252Cf2;
+  border-bottom:1px solid #33363E;
+  backdrop-filter:blur(18px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+.admin-header b{font-size:16px!important}
+.admin-header p{font-size:11px!important;color:#9C9FA6!important;margin-top:2px!important}
+.admin-header .icon-button{
+  width:38px!important;
+  height:38px!important;
+  min-width:38px!important;
+  padding:0!important;
+  border-radius:12px!important;
+  background:#ffffff10!important;
+  color:#fff!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.admin-header .top-link{
+  padding:9px 12px!important;
+  border-radius:12px!important;
+  color:#9C9FA6!important;
+  background:transparent!important;
+}
+.admin-header .top-link:hover{background:#22252C!important;color:#F1EFE9!important}
+@media(max-width:700px){.admin-header{padding-inline:12px}}
