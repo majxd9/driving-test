@@ -360,6 +360,14 @@ public sealed class AiGenerationWorker : BackgroundService
                 // Never accept the exact same generated file for two different
                 // questions. This is a hard server-side guard against provider,
                 // cache, or routing regressions producing one reused image.
+                _logger.LogInformation(
+                    "AI image provider returned bytes. Job {JobId}, Question {QuestionId}, Bytes {Bytes}, ContentType {ContentType}, ImageHash {ImageHash}.",
+                    claimed.Id,
+                    question.Id,
+                    result.Bytes.Length,
+                    result.ContentType,
+                    imageHash);
+
                 var duplicateImage = await db.QuestionAiImages
                     .AsNoTracking()
                     .AnyAsync(
