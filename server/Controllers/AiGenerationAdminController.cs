@@ -387,9 +387,9 @@ public sealed class AiGenerationAdminController : ControllerBase
             questionId = question.Id,
             category = question.Category.ToString(),
             questionText = question.Text,
-            configuredProvider = (await _jobs.GetControlStateAsync(cancellationToken)).ImageProvider,
+            configuredProvider = control.ImageProvider,
             executionProvider = AiGenerationJobService.ResolveImageExecutionProvider(
-                (await _jobs.GetControlStateAsync(cancellationToken)).ImageProvider,
+                control.ImageProvider,
                 _configuration),
             actualGenerator = _imageGenerator.GetType().FullName,
             promptSource,
