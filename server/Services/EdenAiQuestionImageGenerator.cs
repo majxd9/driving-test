@@ -81,36 +81,185 @@ public sealed class EdenAiQuestionImageGenerator : IQuestionImageGenerator
 
         using var document = JsonDocument.Parse(body);
 
-        // Prefer embedded image bytes when Eden returns them. Resource URLs can
-        // expire or reject server-side downloads (for example HTTP 403), while
-        // embedded bytes are immediately usable by the queue worker.
-        var base64 = FindFirstBase64(document.RootElement);
-        if (!string.IsNullOrWhiteSpace(base64))
+        // Eden returns one provider object per requested provider. Restrict
+        // extraction to the configured provider so an unrelated nested image
+        // can never be mistaken for the generated result.
+        if (TryExtractProviderImage(
+            document.RootElement,
+            primaryProvider,
+            out var generatedBytes,
+            out var generatedContentType,
+            out var generatedUrl,
+            out var providerError))
         {
-            try
+            if (generatedBytes is not null)
+                return new GeneratedImageResult(generatedBytes, generatedContentType);
+
+            if (!string.IsNullOrWhiteSpace(generatedUrl))
+                return await DownloadImageAsync(
+                    client,
+                    generatedUrl,
+                    apiKey,
+                    timeout.Token,
+                    primaryProvider);
+        }
+
+        if (!allowInternalFallback)
+            throw new InvalidOperationException(
+                $"Eden AI لم يُرجع صورة صالحة من المزود المحدد فقط ({primaryProvider}). {providerError}");
+
+        foreach (var fallbackProvider in fallbackProviders)
+        {
+            if (!TryExtractProviderImage(
+                document.RootElement,
+                fallbackProvider,
+                out var fallbackBytes,
+                out var fallbackContentType,
+                out var fallbackUrl,
+                out _))
+                continue;
+
+            if (fallbackBytes is not null)
             {
-                var embeddedBytes = Convert.FromBase64String(base64);
-                if (embeddedBytes.Length > 0 && LooksLikeImage(embeddedBytes, out var embeddedContentType))
-                {
-                    _logger.LogInformation(
-                        "Eden AI image generation succeeded with embedded image bytes using provider {Provider}. Bytes={Bytes}.",
-                        primaryProvider,
-                        embeddedBytes.Length);
-                    return new GeneratedImageResult(embeddedBytes, embeddedContentType);
-                }
+                _logger.LogWarning(
+                    "Eden AI fallback provider {FallbackProvider} supplied the image after primary {PrimaryProvider} failed.",
+                    fallbackProvider,
+                    primaryProvider);
+                return new GeneratedImageResult(fallbackBytes, fallbackContentType);
             }
-            catch (FormatException)
+
+            if (!string.IsNullOrWhiteSpace(fallbackUrl))
             {
-                // Fall back to the resource URL below.
+                _logger.LogWarning(
+                    "Eden AI fallback provider {FallbackProvider} supplied the image URL after primary {PrimaryProvider} failed.",
+                    fallbackProvider,
+                    primaryProvider);
+                return await DownloadImageAsync(
+                    client,
+                    fallbackUrl,
+                    apiKey,
+                    timeout.Token,
+                    fallbackProvider);
             }
         }
 
-        var imageUrl = FindFirstImageUrl(document.RootElement);
+        throw new InvalidOperationException(
+            $"Eden AI لم يُرجع صورة فعلية. المزود الأساسي: {primaryProvider}. التفاصيل: {Truncate(body)}");
+    }
 
-        if (string.IsNullOrWhiteSpace(imageUrl))
-            throw new InvalidOperationException(
-                $"Eden AI لم يُرجع صورة فعلية. المزود الأساسي: {primaryProvider}. التفاصيل: {Truncate(body)}");
+    private static bool TryExtractProviderImage(
+        JsonElement root,
+        string provider,
+        out byte[]? bytes,
+        out string contentType,
+        out string? resourceUrl,
+        out string error)
+    {
+        bytes = null;
+        contentType = "image/png";
+        resourceUrl = null;
+        error = string.Empty;
 
+        if (!TryGetPropertyIgnoreCase(root, provider, out var providerNode) ||
+            providerNode.ValueKind != JsonValueKind.Object)
+        {
+            error = "استجابة المزود المحدد غير موجودة.";
+            return false;
+        }
+
+        if (TryGetPropertyIgnoreCase(providerNode, "status", out var status) &&
+            status.ValueKind == JsonValueKind.String &&
+            string.Equals(status.GetString(), "fail", StringComparison.OrdinalIgnoreCase))
+        {
+            error = $"المزود أعاد حالة fail: {providerNode}";
+            return false;
+        }
+
+        if (!TryGetPropertyIgnoreCase(providerNode, "items", out var items) ||
+            items.ValueKind != JsonValueKind.Array)
+        {
+            error = "استجابة المزود لا تحتوي items.";
+            return false;
+        }
+
+        foreach (var item in items.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.Object)
+                continue;
+
+            foreach (var name in new[] { "image", "image_base64", "base64" })
+            {
+                if (!TryGetPropertyIgnoreCase(item, name, out var value) ||
+                    value.ValueKind != JsonValueKind.String)
+                    continue;
+
+                var raw = value.GetString();
+                if (string.IsNullOrWhiteSpace(raw))
+                    continue;
+
+                try
+                {
+                    var decoded = Convert.FromBase64String(raw);
+                    if (LooksLikeImage(decoded, out var decodedType))
+                    {
+                        bytes = decoded;
+                        contentType = decodedType;
+                        return true;
+                    }
+                }
+                catch (FormatException)
+                {
+                    error = "حقل الصورة المضمّنة ليس Base64 صالحاً.";
+                }
+            }
+
+            foreach (var name in new[] { "image_resource_url", "image_url", "url" })
+            {
+                if (!TryGetPropertyIgnoreCase(item, name, out var value) ||
+                    value.ValueKind != JsonValueKind.String)
+                    continue;
+
+                var raw = value.GetString();
+                if (!string.IsNullOrWhiteSpace(raw))
+                {
+                    resourceUrl = raw;
+                    return true;
+                }
+            }
+        }
+
+        error = "لم نجد صورة داخل items للمزود المحدد.";
+        return false;
+    }
+
+    private static bool TryGetPropertyIgnoreCase(
+        JsonElement node,
+        string name,
+        out JsonElement value)
+    {
+        if (node.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in node.EnumerateObject())
+            {
+                if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = property.Value;
+                    return true;
+                }
+            }
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static async Task<GeneratedImageResult> DownloadImageAsync(
+        HttpClient client,
+        string imageUrl,
+        string apiKey,
+        CancellationToken cancellationToken,
+        string provider)
+    {
         if (TryDecodeDataUrl(imageUrl, out var inlineBytes, out var inlineContentType))
             return new GeneratedImageResult(inlineBytes, inlineContentType);
 
@@ -121,28 +270,25 @@ public sealed class EdenAiQuestionImageGenerator : IQuestionImageGenerator
         using var imageResponse = await client.SendAsync(
             imageRequest,
             HttpCompletionOption.ResponseHeadersRead,
-            timeout.Token);
+            cancellationToken);
+
         if (!imageResponse.IsSuccessStatusCode)
         {
-            var error = await imageResponse.Content.ReadAsStringAsync(timeout.Token);
+            var error = await imageResponse.Content.ReadAsStringAsync(cancellationToken);
             throw new HttpRequestException(
-                $"Eden AI أعاد رابط صورة غير قابل للتنزيل: HTTP {(int)imageResponse.StatusCode} — {Truncate(error)}");
+                $"Eden AI أعاد رابط صورة غير قابل للتنزيل من {provider}: HTTP {(int)imageResponse.StatusCode} — {Truncate(error)}");
         }
 
-        var bytes = await imageResponse.Content.ReadAsByteArrayAsync(timeout.Token);
+        var bytes = await imageResponse.Content.ReadAsByteArrayAsync(cancellationToken);
         if (bytes.Length == 0)
-            throw new InvalidOperationException("Eden AI أعاد ملف صورة فارغاً.");
+            throw new InvalidOperationException($"Eden AI أعاد ملف صورة فارغاً من {provider}.");
 
-        var contentType =
-            imageResponse.Content.Headers.ContentType?.MediaType?.Trim() ??
-            GuessImageContentType(imageUrl);
+        if (!LooksLikeImage(bytes, out var detectedType))
+            throw new InvalidOperationException($"Eden AI أعاد ملفاً غير صوري من {provider}.");
 
-        _logger.LogInformation(
-            "Eden AI image generation succeeded using primary {PrimaryProvider} with {FallbackCount} fallback providers.",
-            primaryProvider,
-            fallbackProviders.Count);
-
-        return new GeneratedImageResult(bytes, contentType);
+        return new GeneratedImageResult(
+            bytes,
+            detectedType);
     }
 
     private string GetRequiredProvider(string key)
