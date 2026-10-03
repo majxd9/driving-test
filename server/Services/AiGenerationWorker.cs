@@ -66,7 +66,6 @@ public sealed class AiGenerationWorker : BackgroundService
 
                 await jobs.ResetStaleProcessingAsync(stoppingToken);
                 await jobs.ResumeProviderPausedJobsForFallbackAsync(stoppingToken);
-                await jobs.PrepareImageQueueForCurrentProviderAsync(stoppingToken);
 
                 if (DateTime.UtcNow >= nextScan)
                 {
