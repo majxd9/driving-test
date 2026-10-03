@@ -177,6 +177,21 @@ export const api = {
       requestBlob(
         `/api/admin/ai-generation/test-image-generation/${id}`,
         { method:'POST' }),
+    startAiTest: (data:{questionId:number;type:'image'|'audio';provider:string}) =>
+      request<import('../types').AiTestRun>(
+        '/api/admin/ai-generation/test/start',
+        { method:'POST', body:JSON.stringify(data) }),
+    getAiTest: (id:number) =>
+      request<import('../types').AiTestRun>(
+        `/api/admin/ai-generation/test/${id}`),
+    approveAiTest: (id:number) =>
+      request<import('../types').AiTestRun>(
+        `/api/admin/ai-generation/test/${id}/approve`,
+        { method:'POST' }),
+    rejectAiTest: (id:number) =>
+      request<import('../types').AiTestRun>(
+        `/api/admin/ai-generation/test/${id}/reject`,
+        { method:'POST' }),
     geminiStatus: () =>
       request<{ configured:boolean; model:string; endpoint:string }>('/api/admin/gemini/status'),
     geminiGenerate: (prompt:string, systemInstruction?:string, previousInteractionId?:string) =>
