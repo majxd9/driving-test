@@ -98,11 +98,13 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
 
  useEffect(()=>{
   void loadReview({replaceCurrent:true});
+ },[]);
+
+ useEffect(()=>{
+  if(reviewItem) return;
 
   const timer=window.setInterval(()=>{
-   // Never replace an image that the admin is currently reviewing.
-   // Poll only while the review slot is empty.
-   if(!reviewItem) void loadReview({replaceCurrent:true});
+   void loadReview({replaceCurrent:true});
   },15000);
 
   return ()=>window.clearInterval(timer);
