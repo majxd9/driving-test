@@ -171,7 +171,8 @@ public sealed class AiGenerationAdminController : ControllerBase
     [HttpPost("test-image-provider")]
     public async Task<IActionResult> TestImageProvider(CancellationToken cancellationToken)
     {
-        var provider = (_configuration["QUESTION_IMAGE_PROVIDER"] ?? "none").Trim().ToLowerInvariant();
+        var control = await _jobs.GetControlStateAsync(cancellationToken);
+        var provider = control.ImageProvider;
         var endpoint = (_configuration["QUESTION_IMAGE_COMFYUI_URL"] ?? string.Empty).Trim();
 
         if (provider == "none")
@@ -374,8 +375,10 @@ public sealed class AiGenerationAdminController : ControllerBase
             questionId = question.Id,
             category = question.Category.ToString(),
             questionText = question.Text,
-            configuredProvider = _jobs.ImageProvider,
-            executionProvider = _jobs.ImageExecutionProvider,
+            configuredProvider = (await _jobs.GetControlStateAsync(cancellationToken)).ImageProvider,
+            executionProvider = AiGenerationJobService.ResolveImageExecutionProvider(
+                (await _jobs.GetControlStateAsync(cancellationToken)).ImageProvider,
+                _configuration),
             actualGenerator = _imageGenerator.GetType().FullName,
             promptSource,
             promptBankEntries = ScenePromptBank.Count,
