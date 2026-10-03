@@ -22,9 +22,15 @@ public sealed class EdenAiQuestionImageGenerator : IQuestionImageGenerator
         _logger = logger;
     }
 
+    public Task<GeneratedImageResult> GenerateAsync(
+        Question question,
+        CancellationToken cancellationToken) =>
+        GenerateAsync(question, cancellationToken, allowInternalFallback: true);
+
     public async Task<GeneratedImageResult> GenerateAsync(
         Question question,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool allowInternalFallback)
     {
         var apiKey = (_configuration["EDENAI_API_KEY"] ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -50,7 +56,9 @@ public sealed class EdenAiQuestionImageGenerator : IQuestionImageGenerator
                 attributes_as_list = false,
                 show_original_response = false,
                 providers = primaryProvider,
-                fallback_providers = string.Join(",", fallbackProviders),
+                fallback_providers = allowInternalFallback
+                    ? string.Join(",", fallbackProviders)
+                    : string.Empty,
                 text = positive,
                 resolution = $"{width}x{height}",
                 num_images = 1
