@@ -373,6 +373,7 @@ public sealed class AiGenerationAdminController : ControllerBase
         if (question is null)
             return NotFound(new { message = "السؤال غير موجود." });
 
+        var control = await _jobs.GetControlStateAsync(cancellationToken);
         var (positive, _) = QuestionImagePromptBuilder.Build(question);
         var promptSource = ScenePromptBank.TryGet(question, out _)
             ? "ScenePromptBank"
