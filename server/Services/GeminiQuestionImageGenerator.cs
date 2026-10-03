@@ -47,6 +47,10 @@ NEGATIVE PROMPT:
         var body = new
         {
             model,
+            // Image generation is intentionally stateless. We do not want a
+            // previous interaction or retained provider-side conversation state
+            // to influence a later question.
+            store = false,
             input = new[]
             {
                 new
