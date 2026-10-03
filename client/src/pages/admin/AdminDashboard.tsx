@@ -5,6 +5,7 @@ import { Analytics, Question, QuestionCategory, Student } from '../../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../../components/OptimizedImage';
 import { StudentAuditModal } from './StudentAuditModal';
 import AudioDiagnostics from '../../components/AudioDiagnostics';
+import AiGenerationLab from '../../components/AiGenerationLab';
 import { getQuestionAudioSource } from '../../utils/questionAudio';
 
 type Tab='overview'|'students'|'questions'|'ai';
@@ -62,9 +63,6 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  const [reviewImageSrc,setReviewImageSrc]=useState('');
  const [reviewLoading,setReviewLoading]=useState(false);
  const [reviewBusy,setReviewBusy]=useState(false);
- const [testQuestionId,setTestQuestionId]=useState('1');
- const [testImageSrc,setTestImageSrc]=useState('');
- const [testImageInfo,setTestImageInfo]=useState('');
 
  const refresh=async()=>{
   await reloadAiStatus();
@@ -178,7 +176,6 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
   return value;
  };
 
- const effectiveImageProvider=status?.imageExecutionProvider || status?.imageProvider || 'none';
  const providerEnabled=status?.imageProvider==='huggingface'||status?.imageProvider==='comfyui'||status?.imageProvider==='edenai'||status?.imageProvider==='gemini';
  const imageFallbackEnabled=Boolean(status?.imageFallbackProvider);
  const audioFallbackEnabled=Boolean(status?.audioFallbackProvider);
