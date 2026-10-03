@@ -109,6 +109,10 @@ export const api = {
       request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/audio/stop', { method:'POST' }),
     startImageGeneration: () =>
       request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/image/start', { method:'POST' }),
+    setImageProvider: (provider:string) =>
+      request<import('../types').AiGenerationControlState>(
+        '/api/admin/ai-generation/control/image/provider',
+        { method:'POST', body:JSON.stringify({ provider }) }),
     stopImageGeneration: () =>
       request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/image/stop', { method:'POST' }),
     retryFailedAi: (type:'audio'|'image') =>
