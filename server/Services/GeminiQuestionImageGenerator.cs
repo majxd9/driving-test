@@ -13,15 +13,18 @@ public sealed class GeminiQuestionImageGenerator : IQuestionImageGenerator
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
     private readonly ILogger<GeminiQuestionImageGenerator> _logger;
+    private readonly QuestionImageReferenceLoader _referenceLoader;
 
     public GeminiQuestionImageGenerator(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
-        ILogger<GeminiQuestionImageGenerator> logger)
+        ILogger<GeminiQuestionImageGenerator> logger,
+        QuestionImageReferenceLoader referenceLoader)
     {
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _logger = logger;
+        _referenceLoader = referenceLoader;
     }
 
     public async Task<GeneratedImageResult> GenerateAsync(
@@ -51,14 +54,7 @@ NEGATIVE PROMPT:
             // previous interaction or retained provider-side conversation state
             // to influence a later question.
             store = false,
-            input = new[]
-            {
-                new
-                {
-                    type = "text",
-                    text = prompt
-                }
-            },
+            input = await BuildInputAsync(question, prompt, cancellationToken),
             response_format = new
             {
                 type = "image",
@@ -119,6 +115,39 @@ NEGATIVE PROMPT:
             _logger.LogError(ex, "Gemini image generation network request failed.");
             throw new InvalidOperationException("تعذر الاتصال بخدمة Gemini لتوليد الصورة.");
         }
+    }
+
+    private async Task<object[]> BuildInputAsync(
+        Question question,
+        string prompt,
+        CancellationToken cancellationToken)
+    {
+        var reference = await _referenceLoader.LoadAsync(question, cancellationToken);
+        if (reference is null)
+            return new object[]
+            {
+                new { type = "text", text = prompt }
+            };
+
+        var base64 = Convert.ToBase64String(reference.Bytes);
+
+        _logger.LogInformation(
+            "Gemini image generation using source reference image for Question {QuestionId}: {SourceUrl}, {Bytes} bytes, {ContentType}.",
+            question.Id,
+            reference.SourceUrl,
+            reference.Bytes.Length,
+            reference.ContentType);
+
+        return new object[]
+        {
+            new
+            {
+                type = "image",
+                mime_type = reference.ContentType,
+                data = base64
+            },
+            new { type = "text", text = prompt }
+        };
     }
 
     private static (byte[] Bytes, string ContentType) ExtractImage(JsonElement root)
