@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using DrivingTestApi.Data;
 using DrivingTestApi.Models;
 using Microsoft.EntityFrameworkCore;
@@ -278,18 +279,31 @@ public sealed class AiGenerationWorker : BackgroundService
                 quotaConsumed = !quota.IsUnlimited(AiGenerationJobType.AiImage);
 
                 var promptFromBank = ScenePromptBank.TryGet(question, out var storedScenePrompt);
+                var (diagnosticPositivePrompt, _) = QuestionImagePromptBuilder.Build(question);
+                var promptFingerprint = Convert.ToHexString(
+                    SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(diagnosticPositivePrompt)))
+                    .ToLowerInvariant()[..16];
                 var executionProvider = generationJobs.ImageExecutionProvider;
 
                 _logger.LogInformation(
-                    "Starting AI image generation. Job {JobId}, Question {QuestionId}, Attempt {Attempt}, ImageProvider {ImageProvider}, ExecutionProvider {ExecutionProvider}, PromptSource {PromptSource}, PromptBankEntries {PromptBankEntries}, PromptLength {PromptLength}, ContentHash {ContentHash}.",
+                    "Starting AI image generation. Job {JobId}, Question {QuestionId}, Attempt {Attempt}, ImageProvider {ImageProvider}, ExecutionProvider {ExecutionProvider}, GeneratorExpected {GeneratorExpected}, PromptSource {PromptSource}, PromptBankEntries {PromptBankEntries}, PromptLength {PromptLength}, PromptFingerprint {PromptFingerprint}, ContentHash {ContentHash}.",
                     claimed.Id,
                     question.Id,
                     claimed.Attempts,
                     provider ?? "none",
                     executionProvider,
+                    provider?.Trim().ToLowerInvariant() switch
+                    {
+                        "gemini" => nameof(GeminiQuestionImageGenerator),
+                        "huggingface" => nameof(HuggingFaceQuestionImageGenerator),
+                        "edenai" => nameof(EdenAiQuestionImageGenerator),
+                        "comfyui" => nameof(ComfyUiQuestionImageGenerator),
+                        _ => "unknown"
+                    },
                     promptFromBank ? "ScenePromptBank" : "FallbackBuilder",
                     ScenePromptBank.Count,
-                    promptFromBank ? storedScenePrompt.Positive.Length : 0,
+                    diagnosticPositivePrompt.Length,
+                    promptFingerprint,
                     claimed.ContentHash);
 
                 var generator = scope.ServiceProvider
@@ -340,6 +354,32 @@ public sealed class AiGenerationWorker : BackgroundService
                     result.Bytes.Length,
                     result.ContentType);
 
+                var imageHash = Convert.ToHexString(
+                    SHA256.HashData(result.Bytes)).ToLowerInvariant();
+
+                // Never accept the exact same generated file for two different
+                // questions. This is a hard server-side guard against provider,
+                // cache, or routing regressions producing one reused image.
+                _logger.LogInformation(
+                    "AI image provider returned bytes. Job {JobId}, Question {QuestionId}, Bytes {Bytes}, ContentType {ContentType}, ImageHash {ImageHash}.",
+                    claimed.Id,
+                    question.Id,
+                    result.Bytes.Length,
+                    result.ContentType,
+                    imageHash);
+
+                var duplicateImage = await db.QuestionAiImages
+                    .AsNoTracking()
+                    .AnyAsync(
+                        x => x.QuestionId != question.Id &&
+                             x.ImageBytes.Length > 0 &&
+                             x.ImageHash == imageHash,
+                        cancellationToken);
+
+                if (duplicateImage)
+                    throw new InvalidOperationException(
+                        "تم رفض صورة AI لأن نفس ملف الصورة مستخدم بالفعل لسؤال آخر. ستتم إعادة المحاولة.");
+
                 var image = await db.QuestionAiImages
                     .SingleOrDefaultAsync(
                         x => x.QuestionId == question.Id,
@@ -354,6 +394,7 @@ public sealed class AiGenerationWorker : BackgroundService
                         QuestionId = question.Id,
                         ImageBytes = result.Bytes,
                         ContentHash = claimed.ContentHash,
+                        ImageHash = imageHash,
                         ContentType = result.ContentType,
                         CreatedAt = generatedAt
                     });
@@ -362,6 +403,7 @@ public sealed class AiGenerationWorker : BackgroundService
                 {
                     image.ImageBytes = result.Bytes;
                     image.ContentHash = claimed.ContentHash;
+                    image.ImageHash = imageHash;
                     image.ContentType = result.ContentType;
                     image.CreatedAt = generatedAt;
                 }

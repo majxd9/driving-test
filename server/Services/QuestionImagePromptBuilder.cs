@@ -149,7 +149,10 @@ public static class QuestionImagePromptBuilder
             ? scenePrompt.Positive + "\u001e" + scenePrompt.Negative
             : string.Empty;
 
-        var payload = string.Join("\u001f", "ai-image-v4-prompt-bank", question.Category, question.Text.Trim(),
+        // v5 intentionally invalidates old AI-image results. The prompt-routing
+        // logic was corrected to be question-ID-first, so images generated with
+        // the old routing must never remain eligible for publication.
+        var payload = string.Join("\u001f", "ai-image-v5-prompt-bank", question.Category, question.Text.Trim(),
             string.Join("\u001e", question.Options.Select(x => x.Trim())), question.ImageUrl?.Trim() ?? string.Empty,
             question.DiagramType ?? string.Empty, question.DiagramUrl?.Trim() ?? string.Empty,
             question.DiagramTitle?.Trim() ?? string.Empty, question.DiagramDescription?.Trim() ?? string.Empty,
