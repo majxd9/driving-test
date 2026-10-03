@@ -20,6 +20,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<AiGenerationJob> AiGenerationJobs => Set<AiGenerationJob>();
     public DbSet<QuestionAiImage> QuestionAiImages => Set<QuestionAiImage>();
     public DbSet<AiImageReview> AiImageReviews => Set<AiImageReview>();
+    public DbSet<AiTestRun> AiTestRuns => Set<AiTestRun>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -78,6 +79,15 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<AiImageReview>()
             .HasIndex(x => new { x.Status, x.CreatedAt });
+
+        builder.Entity<AiTestRun>()
+            .HasIndex(x => new { x.Status, x.CreatedAt });
+
+        builder.Entity<AiTestRun>()
+            .HasOne<Question>()
+            .WithMany()
+            .HasForeignKey(x => x.QuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<QuestionAudio>()
             .HasOne<Question>()
