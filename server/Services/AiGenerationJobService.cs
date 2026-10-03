@@ -679,7 +679,7 @@ public sealed class AiGenerationJobService
     public async Task<AiImageReviewItem?> GetNextAiImageReviewAsync(
         CancellationToken cancellationToken)
     {
-        var row = await (
+        var pendingRows = await (
             from review in _db.AiImageReviews.AsNoTracking()
             join image in _db.QuestionAiImages.AsNoTracking()
                 on review.QuestionId equals image.QuestionId
@@ -693,10 +693,49 @@ public sealed class AiGenerationJobService
                 QuestionId = question.Id,
                 QuestionText = question.Text,
                 Category = question.Category,
+                image.ImageUrl,
                 image.ContentHash,
-                image.CreatedAt
+                image.CreatedAt,
+                question.Options,
+                question.DiagramType,
+                question.DiagramUrl,
+                question.DiagramTitle,
+                question.DiagramDescription
             })
-            .FirstOrDefaultAsync(cancellationToken);
+            .ToListAsync(cancellationToken);
+
+        // Never show a stale image that was generated from an older prompt/hash.
+        // This is important during the v4 -> v5 migration: the old balloon (or
+        // any other old result) must not appear in the review queue while the
+        // replacement image is waiting to be generated.
+        var row = pendingRows
+            .Select(item =>
+            {
+                var question = new Question
+                {
+                    Id = item.QuestionId,
+                    Text = item.QuestionText,
+                    Category = item.Category,
+                    Options = item.Options,
+                    ImageUrl = item.ImageUrl,
+                    DiagramType = item.DiagramType,
+                    DiagramUrl = item.DiagramUrl,
+                    DiagramTitle = item.DiagramTitle,
+                    DiagramDescription = item.DiagramDescription
+                };
+
+                return new
+                {
+                    item.QuestionId,
+                    item.QuestionText,
+                    item.Category,
+                    item.ContentHash,
+                    item.CreatedAt,
+                    CurrentHash = QuestionImagePromptBuilder.GetContentHash(question)
+                };
+            })
+            .FirstOrDefault(item =>
+                string.Equals(item.ContentHash, item.CurrentHash, StringComparison.Ordinal));
 
         if (row is null)
             return null;
