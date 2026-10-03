@@ -6,7 +6,7 @@ namespace DrivingTestApi.Services;
 
 public sealed class ElevenLabsQuestionAudioGenerator : IQuestionAudioGenerator
 {
-    private const string VoiceId="mbMMm5Ft0vNUPsMKAZFu";
+    private const string DefaultVoiceId="0IwoSbTUTTn6egOMrnel";
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
 
@@ -14,7 +14,12 @@ public sealed class ElevenLabsQuestionAudioGenerator : IQuestionAudioGenerator
     { _httpClientFactory=httpClientFactory;_configuration=configuration; }
 
     public Task<GeneratedAudioResult> GenerateAsync(Question question,CancellationToken cancellationToken) =>
-        GenerateTextAsync(QuestionAudioTextBuilder.Build(question), VoiceId, cancellationToken);
+        GenerateTextAsync(QuestionAudioTextBuilder.Build(question), GetConfiguredVoiceId(), cancellationToken);
+
+    private string GetConfiguredVoiceId() =>
+        string.IsNullOrWhiteSpace(_configuration["ELEVENLABS_QUESTION_VOICE_ID"])
+            ? DefaultVoiceId
+            : _configuration["ELEVENLABS_QUESTION_VOICE_ID"]!.Trim();
 
     public async Task<GeneratedAudioResult> GenerateTextAsync(
         string text,
@@ -27,7 +32,7 @@ public sealed class ElevenLabsQuestionAudioGenerator : IQuestionAudioGenerator
         var apiKey=_configuration["ELEVENLABS_API_KEY"];
         if(string.IsNullOrWhiteSpace(apiKey)) throw new InvalidOperationException("لم يتم ضبط ELEVENLABS_API_KEY على الخادم.");
         var client=_httpClientFactory.CreateClient("ElevenLabs");
-        var selectedVoiceId=string.IsNullOrWhiteSpace(voiceId) ? VoiceId : voiceId.Trim();
+        var selectedVoiceId=string.IsNullOrWhiteSpace(voiceId) ? GetConfiguredVoiceId() : voiceId.Trim();
         using var request=new HttpRequestMessage(HttpMethod.Post,$"v1/text-to-speech/{selectedVoiceId}?output_format=mp3_44100_128");
         request.Headers.TryAddWithoutValidation("xi-api-key",apiKey);
         request.Content=JsonContent.Create(new{text,model_id="eleven_multilingual_v2",
