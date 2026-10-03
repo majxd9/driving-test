@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using DrivingTestApi.Data;
 using DrivingTestApi.Models;
 using Microsoft.EntityFrameworkCore;
@@ -340,6 +341,24 @@ public sealed class AiGenerationWorker : BackgroundService
                     result.Bytes.Length,
                     result.ContentType);
 
+                var imageHash = Convert.ToHexString(
+                    SHA256.HashData(result.Bytes)).ToLowerInvariant();
+
+                // Never accept the exact same generated file for two different
+                // questions. This is a hard server-side guard against provider,
+                // cache, or routing regressions producing one reused image.
+                var duplicateImage = await db.QuestionAiImages
+                    .AsNoTracking()
+                    .AnyAsync(
+                        x => x.QuestionId != question.Id &&
+                             x.ImageBytes.Length > 0 &&
+                             x.ImageHash == imageHash,
+                        cancellationToken);
+
+                if (duplicateImage)
+                    throw new InvalidOperationException(
+                        "تم رفض صورة AI لأن نفس ملف الصورة مستخدم بالفعل لسؤال آخر. ستتم إعادة المحاولة.");
+
                 var image = await db.QuestionAiImages
                     .SingleOrDefaultAsync(
                         x => x.QuestionId == question.Id,
@@ -354,6 +373,7 @@ public sealed class AiGenerationWorker : BackgroundService
                         QuestionId = question.Id,
                         ImageBytes = result.Bytes,
                         ContentHash = claimed.ContentHash,
+                        ImageHash = imageHash,
                         ContentType = result.ContentType,
                         CreatedAt = generatedAt
                     });
@@ -362,6 +382,7 @@ public sealed class AiGenerationWorker : BackgroundService
                 {
                     image.ImageBytes = result.Bytes;
                     image.ContentHash = claimed.ContentHash;
+                    image.ImageHash = imageHash;
                     image.ContentType = result.ContentType;
                     image.CreatedAt = generatedAt;
                 }
