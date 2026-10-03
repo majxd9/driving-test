@@ -97,7 +97,7 @@ public sealed class AiTestRunWorker : BackgroundService
                     "huggingface" => await services.GetRequiredService<HuggingFaceQuestionImageGenerator>()
                         .GenerateAsync(question, cancellationToken),
                     "edenai" => await services.GetRequiredService<EdenAiQuestionImageGenerator>()
-                        .GenerateAsync(question, cancellationToken),
+                        .GenerateAsync(question, cancellationToken, allowInternalFallback: false),
                     "comfyui" => await services.GetRequiredService<ComfyUiQuestionImageGenerator>()
                         .GenerateAsync(question, cancellationToken),
                     _ => throw new InvalidOperationException($"مزود الصور غير مدعوم: {run.Provider}")

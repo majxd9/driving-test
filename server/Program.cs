@@ -162,6 +162,7 @@ builder.Services.AddScoped<ComfyUiQuestionImageGenerator>();
 builder.Services.AddScoped<HuggingFaceQuestionImageGenerator>();
 builder.Services.AddScoped<EdenAiQuestionImageGenerator>();
 builder.Services.AddScoped<GeminiQuestionImageGenerator>();
+builder.Services.AddScoped<QuestionImageReferenceLoader>();
 builder.Services.AddScoped<FallbackQuestionImageGenerator>();
 builder.Services.AddScoped<SelectableQuestionImageGenerator>();
 builder.Services.AddScoped<IQuestionImageGenerator>(sp =>
@@ -198,6 +199,13 @@ builder.Services.AddHttpClient("EdenAI", client =>
     client.BaseAddress = new Uri("https://api.edenai.run/");
     client.Timeout = TimeSpan.FromMinutes(20);
 });
+builder.Services.AddHttpClient("QuestionImageReference", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Accept.Add(
+        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("image/*"));
+});
+
 builder.Services.AddHttpClient("Gemini", client =>
 {
     client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
