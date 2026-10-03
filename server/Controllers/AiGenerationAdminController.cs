@@ -20,15 +20,18 @@ public sealed class AiGenerationAdminController : ControllerBase
     private readonly AiGenerationJobService _jobs;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly IQuestionImageGenerator _imageGenerator;
 
     public AiGenerationAdminController(
         AiGenerationJobService jobs,
         IHttpClientFactory httpClientFactory,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IQuestionImageGenerator imageGenerator)
     {
         _jobs = jobs;
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
+        _imageGenerator = imageGenerator;
     }
 
     [HttpGet("status")]
@@ -348,6 +351,41 @@ public sealed class AiGenerationAdminController : ControllerBase
 
     private static string Truncate(string value) =>
         value.Length > 600 ? value[..600] : value;
+    [HttpGet("image-diagnostics/{id:int}")]
+    public async Task<IActionResult> ImageDiagnostics(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var question = await _jobs.GetQuestionForDiagnosticsAsync(id, cancellationToken);
+        if (question is null)
+            return NotFound(new { message = "السؤال غير موجود." });
+
+        var (positive, _) = QuestionImagePromptBuilder.Build(question);
+        var promptSource = ScenePromptBank.TryGet(question, out _)
+            ? "ScenePromptBank"
+            : "FallbackBuilder";
+        var promptFingerprint = Convert.ToHexString(
+            System.Security.Cryptography.SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes(positive)))
+            .ToLowerInvariant();
+
+        return Ok(new
+        {
+            questionId = question.Id,
+            category = question.Category.ToString(),
+            questionText = question.Text,
+            configuredProvider = _jobs.ImageProvider,
+            executionProvider = _jobs.ImageExecutionProvider,
+            actualGenerator = _imageGenerator.GetType().FullName,
+            promptSource,
+            promptBankEntries = ScenePromptBank.Count,
+            promptLength = positive.Length,
+            promptFingerprint,
+            contentHash = QuestionImagePromptBuilder.GetContentHash(question),
+            prompt = positive
+        });
+    }
+
     [HttpGet("completed-images")]
     public async Task<ActionResult<IReadOnlyList<CompletedAiImageItem>>> CompletedImages(
         [FromQuery] int limit = 24,
