@@ -11,6 +11,7 @@ public sealed record BulkGenerationRequest(bool RetryFailed = false, bool Regene
 public sealed record ImageProviderTestResult(string Provider, string State, string Message, string Endpoint);
 
 public sealed record AiGenerationControlRequest(bool? AudioEnabled = null, bool? ImageEnabled = null);
+public sealed record ImageProviderSelectionRequest(string Provider);
 
 [ApiController]
 [Route("api/admin/ai-generation")]
@@ -72,6 +73,17 @@ public sealed class AiGenerationAdminController : ControllerBase
     [HttpPost("control/audio/stop")]
     public async Task<ActionResult<AiGenerationControlState>> StopAudio(CancellationToken cancellationToken) =>
         Ok(await _jobs.SetControlStateAsync(false, null, cancellationToken));
+
+    [HttpPost("control/image/provider")]
+    public async Task<ActionResult<AiGenerationControlState>> SetImageProvider(
+        [FromBody] ImageProviderSelectionRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request is null || string.IsNullOrWhiteSpace(request.Provider))
+            return BadRequest(new { message = "يجب تحديد مزود صور." });
+
+        return Ok(await _jobs.SetImageProviderAsync(request.Provider, cancellationToken));
+    }
 
     [HttpPost("control/image/start")]
     public async Task<ActionResult<AiGenerationControlState>> StartImage(CancellationToken cancellationToken)
