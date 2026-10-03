@@ -62,6 +62,9 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  const [reviewImageSrc,setReviewImageSrc]=useState('');
  const [reviewLoading,setReviewLoading]=useState(false);
  const [reviewBusy,setReviewBusy]=useState(false);
+ const [testQuestionId,setTestQuestionId]=useState('1');
+ const [testImageSrc,setTestImageSrc]=useState('');
+ const [testImageInfo,setTestImageInfo]=useState('');
 
  const refresh=async()=>{
   await reloadAiStatus();
@@ -296,6 +299,44 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
      </button>
     </div>
     {providerTest&&<div className={'ai-provider-message '+testClass}><b>{providerTest.state}</b> — {providerTest.message}<small className="block mt-1" dir="ltr">{providerTest.endpoint}</small></div>}
+   </div>
+
+   <div className="ai-console-card mt-4">
+    <div className="card-title">
+     <div><p>اختبار توليد فعلي</p><b>سؤال واحد فقط — بدون حفظ وبدون Queue</b></div>
+     <span className="status warn">يستهلك طلب المزود</span>
+    </div>
+    <p className="text-muted text-sm leading-relaxed">هذا الاختبار يستخدم المزود المحدد مباشرةً ويتجاوز الـfallback والطابور. الصورة الناتجة لا تُحفظ في قاعدة البيانات.</p>
+    <div className="action-row mt-3">
+     <input
+      className="admin-search"
+      type="number"
+      min="1"
+      max="397"
+      value={testQuestionId}
+      onChange={e=>setTestQuestionId(e.target.value)}
+      aria-label="رقم سؤال اختبار توليد الصورة"
+      placeholder="رقم السؤال"
+     />
+     <button
+      type="button"
+      className="primary-cta"
+      disabled={busy!==''||!providerEnabled}
+      onClick={()=>void act('test-image-generation',async()=>{
+       const id=Number(testQuestionId);
+       if(!Number.isInteger(id)||id<1||id>397)throw new Error('رقم السؤال يجب أن يكون بين 1 و397.');
+       const blob=await api.admin.testImageGeneration(id);
+       if(testImageSrc)URL.revokeObjectURL(testImageSrc);
+       const url=URL.createObjectURL(blob);
+       setTestImageSrc(url);
+       setTestImageInfo(`تم توليد صورة اختبار للسؤال #${id} بواسطة ${providerLabel(control?.imageProvider??status?.imageProvider??'none')} فقط، بدون fallback وبدون حفظ.`);
+      },'تم تنفيذ اختبار توليد مباشر بدون حفظ')}
+     >
+      {busy==='test-image-generation'?'جارٍ التوليد…':'اختبار التوليد الآن'}
+     </button>
+    </div>
+    {testImageInfo&&<div className="ai-provider-message ok mt-3"><b>{testImageInfo}</b></div>}
+    {testImageSrc&&<div className="ai-review-preview mt-4"><img src={testImageSrc} alt="نتيجة اختبار توليد الصورة" /></div>}
    </div>
   </div>
 

@@ -21,18 +21,27 @@ public sealed class AiGenerationAdminController : ControllerBase
     private readonly AiGenerationJobService _jobs;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
-    private readonly IQuestionImageGenerator _imageGenerator;
+    private readonly GeminiQuestionImageGenerator _geminiImageGenerator;
+    private readonly HuggingFaceQuestionImageGenerator _huggingFaceImageGenerator;
+    private readonly EdenAiQuestionImageGenerator _edenImageGenerator;
+    private readonly ComfyUiQuestionImageGenerator _comfyUiImageGenerator;
 
     public AiGenerationAdminController(
         AiGenerationJobService jobs,
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
-        IQuestionImageGenerator imageGenerator)
+        GeminiQuestionImageGenerator geminiImageGenerator,
+        HuggingFaceQuestionImageGenerator huggingFaceImageGenerator,
+        EdenAiQuestionImageGenerator edenImageGenerator,
+        ComfyUiQuestionImageGenerator comfyUiImageGenerator)
     {
         _jobs = jobs;
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
-        _imageGenerator = imageGenerator;
+        _geminiImageGenerator = geminiImageGenerator;
+        _huggingFaceImageGenerator = huggingFaceImageGenerator;
+        _edenImageGenerator = edenImageGenerator;
+        _comfyUiImageGenerator = comfyUiImageGenerator;
     }
 
     [HttpGet("status")]
@@ -392,7 +401,14 @@ public sealed class AiGenerationAdminController : ControllerBase
             executionProvider = AiGenerationJobService.ResolveImageExecutionProvider(
                 control.ImageProvider,
                 _configuration),
-            actualGenerator = _imageGenerator.GetType().FullName,
+            actualGenerator = control.ImageProvider switch
+            {
+                "gemini" => typeof(GeminiQuestionImageGenerator).FullName,
+                "huggingface" => typeof(HuggingFaceQuestionImageGenerator).FullName,
+                "edenai" => typeof(EdenAiQuestionImageGenerator).FullName,
+                "comfyui" => typeof(ComfyUiQuestionImageGenerator).FullName,
+                _ => null
+            },
             promptSource,
             promptBankEntries = ScenePromptBank.Count,
             promptLength = positive.Length,
@@ -400,6 +416,51 @@ public sealed class AiGenerationAdminController : ControllerBase
             contentHash = QuestionImagePromptBuilder.GetContentHash(question),
             prompt = positive
         });
+    }
+
+    [HttpPost("test-image-generation/{id:int}")]
+    public async Task<IActionResult> TestImageGeneration(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var question = await _jobs.GetQuestionForDiagnosticsAsync(id, cancellationToken);
+        if (question is null)
+            return NotFound(new { message = "السؤال غير موجود." });
+
+        var control = await _jobs.GetControlStateAsync(cancellationToken);
+        if (control.ImageProvider == "none")
+            return BadRequest(new { message = "اختر مزود صور أولاً من مركز التحكم." });
+
+        if (!QuestionImagePromptBuilder.ShouldGenerate(question))
+            return BadRequest(new { message = "هذا السؤال غير مطلوب له توليد صورة AI حسب قواعد المشروع." });
+
+        var generator = control.ImageProvider switch
+        {
+            "gemini" => (IQuestionImageGenerator)_geminiImageGenerator,
+            "huggingface" => _huggingFaceImageGenerator,
+            "edenai" => _edenImageGenerator,
+            "comfyui" => _comfyUiImageGenerator,
+            _ => throw new InvalidOperationException("مزود الصور غير مدعوم.")
+        };
+
+        var (positive, _) = QuestionImagePromptBuilder.Build(question);
+        var promptFingerprint = Convert.ToHexString(
+            System.Security.Cryptography.SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes(positive)))
+            .ToLowerInvariant()[..16];
+
+        var result = await generator.GenerateAsync(question, cancellationToken);
+        var imageHash = Convert.ToHexString(
+            System.Security.Cryptography.SHA256.HashData(result.Bytes))
+            .ToLowerInvariant();
+
+        Response.Headers.CacheControl = "no-store, no-cache";
+        Response.Headers["X-AI-Test-Provider"] = control.ImageProvider;
+        Response.Headers["X-AI-Test-Question-Id"] = id.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        Response.Headers["X-AI-Test-Prompt-Fingerprint"] = promptFingerprint;
+        Response.Headers["X-AI-Test-Image-Hash"] = imageHash;
+        Response.Headers["X-AI-Test-Bytes"] = result.Bytes.Length.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return File(result.Bytes, result.ContentType);
     }
 
     [HttpGet("completed-images")]

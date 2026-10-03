@@ -8,6 +8,26 @@ export function resolveApiUrl(path: string): string {
   return `${API_BASE}/${path.replace(/^\/+/, '')}`;
 }
 
+async function requestBlob(path: string, options: RequestInit = {}): Promise<Blob> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      ...(options.body == null ? {} : { 'Content-Type': 'application/json' }),
+      ...(options.headers || {}),
+    },
+  });
+  if (!res.ok) {
+    let message = 'حدث خطأ غير متوقع';
+    try {
+      const body = await res.json();
+      message = Array.isArray(body) ? body.join('، ') : (body.message || message);
+    } catch { /* no JSON body */ }
+    throw new Error(message);
+  }
+  return res.blob();
+}
+
 function getDeviceId(): string {
   const key = 'drv_device_id';
   let id = localStorage.getItem(key);
@@ -152,6 +172,10 @@ export const api = {
     testImageProvider: () =>
       request<import('../types').ImageProviderTestResult>(
         '/api/admin/ai-generation/test-image-provider',
+        { method:'POST' }),
+    testImageGeneration: (id:number) =>
+      requestBlob(
+        `/api/admin/ai-generation/test-image-generation/${id}`,
         { method:'POST' }),
     geminiStatus: () =>
       request<{ configured:boolean; model:string; endpoint:string }>('/api/admin/gemini/status'),
