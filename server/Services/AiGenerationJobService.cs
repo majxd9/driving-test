@@ -26,7 +26,7 @@ public sealed record AiGenerationOverview(
     AiGenerationCounts Image,
     AiGenerationQuota Quota);
 
-public sealed record AiGenerationControlState(bool AudioEnabled, bool ImageEnabled)
+public sealed record AiGenerationControlState(bool AudioEnabled, bool ImageEnabled, string ImageProvider)
 {
     public bool AllEnabled => AudioEnabled && ImageEnabled;
     public bool AllDisabled => !AudioEnabled && !ImageEnabled;
@@ -76,9 +76,6 @@ public sealed class AiGenerationJobService
     public string AudioProvider =>
         (_configuration["QUESTION_AUDIO_PROVIDER"] ?? "elevenlabs").Trim().ToLowerInvariant();
 
-    public string ImageProvider =>
-        (_configuration["QUESTION_IMAGE_PROVIDER"] ?? "none").Trim().ToLowerInvariant();
-
     public string AudioFallbackProvider =>
         HasEdenFallback("EDENAI_AUDIO_PROVIDER")
             ? (_configuration["EDENAI_AUDIO_PROVIDER"] ?? string.Empty).Trim().ToLowerInvariant()
@@ -89,22 +86,6 @@ public sealed class AiGenerationJobService
             ? (_configuration["EDENAI_IMAGE_PROVIDER"] ?? string.Empty).Trim().ToLowerInvariant()
             : string.Empty;
 
-    public bool IsImageProviderEnabled =>
-        ImageProvider is "huggingface" or "comfyui" or "edenai" or "gemini";
-
-    public string ImageExecutionProvider
-    {
-        get
-        {
-            if (!string.Equals(ImageProvider, "huggingface", StringComparison.OrdinalIgnoreCase))
-                return ImageProvider;
-
-            return HuggingFaceQuestionImageGenerator
-                .ResolveConfiguration(_configuration)
-                .Provider;
-        }
-    }
-
     public async Task EnsureControlStorageAsync(CancellationToken cancellationToken = default)
     {
         await _db.Database.ExecuteSqlRawAsync("""
@@ -112,12 +93,24 @@ public sealed class AiGenerationJobService
                 "Id" integer PRIMARY KEY,
                 "AudioEnabled" boolean NOT NULL,
                 "ImageEnabled" boolean NOT NULL,
+                "ImageProvider" text,
                 "UpdatedAt" timestamp with time zone NOT NULL
             );
 
-            INSERT INTO "AiGenerationControl" ("Id", "AudioEnabled", "ImageEnabled", "UpdatedAt")
-            VALUES (1, false, false, NOW())
-            ON CONFLICT ("Id") DO NOTHING;
+            ALTER TABLE "AiGenerationControl"
+                ADD COLUMN IF NOT EXISTS "ImageProvider" text;
+            """, cancellationToken);
+
+        var configuredProvider = NormalizeImageProvider(
+            _configuration["QUESTION_IMAGE_PROVIDER"] ?? "none");
+
+        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO "AiGenerationControl" ("Id", "AudioEnabled", "ImageEnabled", "ImageProvider", "UpdatedAt")
+            VALUES (1, false, false, {configuredProvider}, NOW())
+            ON CONFLICT ("Id") DO UPDATE
+            SET "ImageProvider" = COALESCE(
+                NULLIF(TRIM("AiGenerationControl"."ImageProvider"), ''),
+                EXCLUDED."ImageProvider");
             """, cancellationToken);
     }
 
@@ -129,13 +122,17 @@ public sealed class AiGenerationJobService
             .SqlQueryRaw<AiGenerationControlRow>("""
                 SELECT
                     "AudioEnabled" AS "AudioEnabled",
-                    "ImageEnabled" AS "ImageEnabled"
+                    "ImageEnabled" AS "ImageEnabled",
+                    "ImageProvider" AS "ImageProvider"
                 FROM "AiGenerationControl"
                 WHERE "Id" = 1
             """)
             .SingleAsync(cancellationToken);
 
-        return new AiGenerationControlState(row.AudioEnabled, row.ImageEnabled);
+        return new AiGenerationControlState(
+            row.AudioEnabled,
+            row.ImageEnabled,
+            NormalizeImageProvider(row.ImageProvider ?? "none"));
     }
 
     public async Task<AiGenerationControlState> SetControlStateAsync(
@@ -167,7 +164,47 @@ public sealed class AiGenerationJobService
             await PausePendingJobsAsync(AiGenerationJobType.AiImage, cancellationToken);
         }
 
-        return new AiGenerationControlState(audio, image);
+        return new AiGenerationControlState(audio, image, current.ImageProvider);
+    }
+
+    public async Task<AiGenerationControlState> SetImageProviderAsync(
+        string provider,
+        CancellationToken cancellationToken = default)
+    {
+        var selected = NormalizeImageProvider(provider);
+
+        await EnsureControlStorageAsync(cancellationToken);
+        await PausePendingJobsAsync(AiGenerationJobType.AiImage, cancellationToken);
+
+        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE "AiGenerationControl"
+            SET "ImageProvider" = {selected},
+                "ImageEnabled" = FALSE,
+                "UpdatedAt" = NOW()
+            WHERE "Id" = 1;
+            """, cancellationToken);
+
+        var current = await GetControlStateAsync(cancellationToken);
+        return current;
+    }
+
+    public static string NormalizeImageProvider(string value)
+    {
+        var provider = value.Trim().ToLowerInvariant();
+        return provider is "none" or "gemini" or "huggingface" or "edenai" or "comfyui"
+            ? provider
+            : throw new ArgumentException("مزود الصور يجب أن يكون none أو gemini أو huggingface أو edenai أو comfyui.");
+    }
+
+    public static string ResolveImageExecutionProvider(string selectedProvider, IConfiguration configuration)
+    {
+        var provider = NormalizeImageProvider(selectedProvider);
+        if (!string.Equals(provider, "huggingface", StringComparison.OrdinalIgnoreCase))
+            return provider;
+
+        return HuggingFaceQuestionImageGenerator
+            .ResolveConfiguration(configuration)
+            .Provider;
     }
 
     public async Task PausePendingJobsAsync(
@@ -214,6 +251,7 @@ public sealed class AiGenerationJobService
     {
         public bool AudioEnabled { get; set; }
         public bool ImageEnabled { get; set; }
+        public string? ImageProvider { get; set; }
     }
 
     public async Task EnsureQuestionJobsAsync(
@@ -568,8 +606,8 @@ public sealed class AiGenerationJobService
 
         return new AiGenerationOverview(
             AudioProvider,
-            ImageProvider,
-            ImageExecutionProvider,
+            control.ImageProvider,
+            ResolveImageExecutionProvider(control.ImageProvider, _configuration),
             AudioFallbackProvider,
             ImageFallbackProvider,
             CountStatuses(
