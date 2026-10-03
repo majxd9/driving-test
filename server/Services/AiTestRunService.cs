@@ -131,13 +131,13 @@ public sealed class AiTestRunService
         CancellationToken cancellationToken)
     {
         var row = await (
-            from run in _db.AiTestRuns.AsNoTracking()
+            from testRun in _db.AiTestRuns.AsNoTracking()
             join question in _db.Questions.AsNoTracking()
-                on run.QuestionId equals question.Id
-            where run.Id == id
+                on testRun.QuestionId equals question.Id
+            where testRun.Id == id
             select new
             {
-                Run = run,
+                Run = testRun,
                 QuestionText = question.Text,
                 Category = question.Category
             })
