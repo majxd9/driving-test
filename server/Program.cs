@@ -281,12 +281,20 @@ using (var schemaScope = app.Services.CreateScope())
             "QuestionId" integer NOT NULL,
             "ImageBytes" bytea NOT NULL,
             "ContentHash" text NOT NULL,
+            "ImageHash" text NOT NULL DEFAULT '',
             "ContentType" text NOT NULL,
             "CreatedAt" timestamp with time zone NOT NULL,
             CONSTRAINT "PK_QuestionAiImages" PRIMARY KEY ("QuestionId"),
             CONSTRAINT "FK_QuestionAiImages_Questions_QuestionId"
                 FOREIGN KEY ("QuestionId") REFERENCES "Questions" ("Id") ON DELETE CASCADE
         );
+
+        ALTER TABLE "QuestionAiImages"
+            ADD COLUMN IF NOT EXISTS "ImageHash" text NOT NULL DEFAULT '';
+
+        CREATE INDEX IF NOT EXISTS "IX_QuestionAiImages_ImageHash"
+            ON "QuestionAiImages" ("ImageHash")
+            WHERE "ImageHash" <> '';
 
         CREATE TABLE IF NOT EXISTS "AiImageReviews" (
             "QuestionId" integer NOT NULL,
