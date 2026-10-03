@@ -102,12 +102,22 @@ public sealed class HuggingFaceQuestionImageGenerator : IQuestionImageGenerator
         var contentHash = QuestionImagePromptBuilder.GetContentHash(question);
         var seed = unchecked((int)Convert.ToUInt32(contentHash[..8], 16));
 
+        // Hugging Face Inference Providers use the standard text-to-image
+        // request schema: inputs + parameters. The previous flat payload was not
+        // the current router contract, so the provider could reject the request
+        // before any image generation started.
+        var (_, negative) = QuestionImagePromptBuilder.Build(question);
         var payload = new
         {
-            prompt = positive,
-            num_inference_steps = steps,
-            seed,
-            image_size = new { width, height }
+            inputs = positive,
+            parameters = new
+            {
+                negative_prompt = negative,
+                num_inference_steps = steps,
+                seed,
+                width,
+                height
+            }
         };
 
         var timeoutSeconds = Math.Clamp(
