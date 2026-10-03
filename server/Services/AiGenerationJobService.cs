@@ -580,6 +580,8 @@ public sealed class AiGenerationJobService
 
     public async Task<AiGenerationOverview> GetOverviewAsync(CancellationToken cancellationToken)
     {
+        var control = await GetControlStateAsync(cancellationToken);
+
         var questions = await _db.Questions
             .AsNoTracking()
             .OrderBy(q => q.Id)
