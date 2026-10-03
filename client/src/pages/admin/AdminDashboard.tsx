@@ -81,16 +81,32 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
   return ()=>window.clearInterval(timer);
  },[galleryOpen]);
 
- const loadReview=async()=>{
+ const loadReview=async(options:{replaceCurrent?:boolean}={})=>{
+  const replaceCurrent=options.replaceCurrent!==false;
   setReviewLoading(true);
-  try{setReviewItem(await api.admin.nextAiImageReview())}catch{setReviewItem(null)}finally{setReviewLoading(false)}
+  try{
+   const next=await api.admin.nextAiImageReview();
+   if(replaceCurrent || !reviewItem)
+    setReviewItem(next);
+  }catch{
+   // Do not remove the currently visible review item because of a transient
+   // polling/network failure; the image currently under review must stay stable.
+  }finally{
+   setReviewLoading(false);
+  }
  };
 
  useEffect(()=>{
-  void loadReview();
-  const timer=window.setInterval(()=>{void loadReview()},8000);
+  void loadReview({replaceCurrent:true});
+
+  const timer=window.setInterval(()=>{
+   // Never replace an image that the admin is currently reviewing.
+   // Poll only while the review slot is empty.
+   if(!reviewItem) void loadReview({replaceCurrent:true});
+  },15000);
+
   return ()=>window.clearInterval(timer);
- },[]);
+ },[reviewItem]);
 
  useEffect(()=>{
   if(!reviewItem){
