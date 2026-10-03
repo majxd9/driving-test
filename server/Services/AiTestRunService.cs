@@ -30,12 +30,9 @@ public sealed record AiTestRunView(
 public sealed class AiTestRunService
 {
     private readonly AppDbContext _db;
-    private readonly IConfiguration _configuration;
-
-    public AiTestRunService(AppDbContext db, IConfiguration configuration)
+    public AiTestRunService(AppDbContext db)
     {
         _db = db;
-        _configuration = configuration;
     }
 
     public async Task<AiTestRunView> CreateAsync(
@@ -69,9 +66,8 @@ public sealed class AiTestRunService
             : QuestionAudioTextBuilder.GetCurrentHash(question);
 
         var activeExists = await _db.AiTestRuns.AnyAsync(
-            x => x.Type == type &&
-                 x.Status == AiTestRunStatus.Pending ||
-                 x.Status == AiTestRunStatus.Processing,
+            x => (x.Status == AiTestRunStatus.Pending ||
+                  x.Status == AiTestRunStatus.Processing),
             cancellationToken);
 
         if (activeExists)
