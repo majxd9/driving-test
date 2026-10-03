@@ -693,7 +693,7 @@ public sealed class AiGenerationJobService
                 QuestionId = question.Id,
                 QuestionText = question.Text,
                 Category = question.Category,
-                image.ImageUrl,
+                question.ImageUrl,
                 image.ContentHash,
                 image.CreatedAt,
                 question.Options,
