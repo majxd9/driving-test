@@ -48,7 +48,7 @@ public static class QuestionAudioTextBuilder
     private static string PrepareTtsText(string? value)
     {
         if (string.IsNullOrWhiteSpace(value)) return string.Empty;
-        var text = Regex.Replace(value.Normalize(NormalizationForm.FormC), @"s+", " ").Trim();
+        var text = Regex.Replace(value.Normalize(NormalizationForm.FormC), @"\s+", " ").Trim();
         var marks = new (string Word, string Marked)[]
         {
             ("السؤال","السُّؤَال"),("الإجابة","الإِجَابَة"),("الخيار","الخِيَار"),("رقم","رَقْم"),
@@ -61,9 +61,7 @@ public static class QuestionAudioTextBuilder
     }
 
     private static string ArabicNumber(int number) =>
-        number.ToString(CultureInfo.InvariantCulture)
-            .Replace('0','٠').Replace('1','١').Replace('2','٢').Replace('3','٣').Replace('4','٤')
-            .Replace('5','٥').Replace('6','٦').Replace('7','٧').Replace('8','٨').Replace('9','٩');
+        number.ToString(CultureInfo.InvariantCulture);
 
     private static string Hash(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();

@@ -177,4 +177,30 @@ export interface AiImageReviewItem {
   createdAt: string;
   pendingCount: number;
   reviewedCount: number;
+  prompt: string;
+  negativePrompt: string;
+}
+
+
+export type AiTestRunStatus = 'Pending'|'Processing'|'Succeeded'|'Failed'|'Approved'|'Rejected';
+export interface AiTestRun {
+  id: number;
+  questionId: number;
+  questionText: string;
+  category: string;
+  type: 'Audio'|'Image';
+  provider: string;
+  status: AiTestRunStatus;
+  contentHash: string;
+  prompt: string;
+  negativePrompt: string;
+  hasMedia: boolean;
+  mediaUrl?: string|null;
+  contentType?: string|null;
+  errorType?: string|null;
+  errorMessage?: string|null;
+  attempts: number;
+  createdAt: string;
+  startedAt?: string|null;
+  completedAt?: string|null;
 }

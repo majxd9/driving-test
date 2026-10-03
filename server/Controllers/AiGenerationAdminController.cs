@@ -12,6 +12,7 @@ public sealed record ImageProviderTestResult(string Provider, string State, stri
 
 public sealed record AiGenerationControlRequest(bool? AudioEnabled = null, bool? ImageEnabled = null);
 public sealed record ImageProviderSelectionRequest(string Provider);
+public sealed record AiTestRunRequest(int QuestionId, string Type, string Provider);
 
 [ApiController]
 [Route("api/admin/ai-generation")]
@@ -25,6 +26,7 @@ public sealed class AiGenerationAdminController : ControllerBase
     private readonly HuggingFaceQuestionImageGenerator _huggingFaceImageGenerator;
     private readonly EdenAiQuestionImageGenerator _edenImageGenerator;
     private readonly ComfyUiQuestionImageGenerator _comfyUiImageGenerator;
+    private readonly AiTestRunService _testRuns;
 
     public AiGenerationAdminController(
         AiGenerationJobService jobs,
@@ -33,7 +35,8 @@ public sealed class AiGenerationAdminController : ControllerBase
         GeminiQuestionImageGenerator geminiImageGenerator,
         HuggingFaceQuestionImageGenerator huggingFaceImageGenerator,
         EdenAiQuestionImageGenerator edenImageGenerator,
-        ComfyUiQuestionImageGenerator comfyUiImageGenerator)
+        ComfyUiQuestionImageGenerator comfyUiImageGenerator,
+        AiTestRunService testRuns)
     {
         _jobs = jobs;
         _httpClientFactory = httpClientFactory;
@@ -42,6 +45,7 @@ public sealed class AiGenerationAdminController : ControllerBase
         _huggingFaceImageGenerator = huggingFaceImageGenerator;
         _edenImageGenerator = edenImageGenerator;
         _comfyUiImageGenerator = comfyUiImageGenerator;
+        _testRuns = testRuns;
     }
 
     [HttpGet("status")]
@@ -461,6 +465,103 @@ public sealed class AiGenerationAdminController : ControllerBase
         Response.Headers["X-AI-Test-Image-Hash"] = imageHash;
         Response.Headers["X-AI-Test-Bytes"] = result.Bytes.Length.ToString(System.Globalization.CultureInfo.InvariantCulture);
         return File(result.Bytes, result.ContentType);
+    }
+
+    [HttpPost("test/start")]
+    public async Task<IActionResult> StartAiTest(
+        [FromBody] AiTestRunRequest request,
+        CancellationToken cancellationToken)
+    {
+        var type = request.Type?.Trim().ToLowerInvariant() switch
+        {
+            "image" => AiTestRunType.Image,
+            "audio" => AiTestRunType.Audio,
+            _ => throw new InvalidOperationException("نوع الاختبار يجب أن يكون image أو audio.")
+        };
+
+        // The provider is explicit and the worker calls only that provider. No fallback.
+        var provider = request.Provider?.Trim().ToLowerInvariant() ?? string.Empty;
+
+        try
+        {
+            var run = await _testRuns.CreateAsync(
+                request.QuestionId,
+                type,
+                provider,
+                cancellationToken);
+            return Accepted(run);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("test/{id:long}")]
+    public async Task<IActionResult> GetAiTest(
+        long id,
+        CancellationToken cancellationToken)
+    {
+        var run = await _testRuns.GetViewAsync(id, cancellationToken);
+        return run is null
+            ? NotFound(new { message = "اختبار التوليد غير موجود." })
+            : Ok(run);
+    }
+
+    [HttpGet("test/{id:long}/media")]
+    public async Task<IActionResult> GetAiTestMedia(
+        long id,
+        CancellationToken cancellationToken)
+    {
+        var run = await _testRuns.GetViewAsync(id, cancellationToken);
+        if (run is null)
+            return NotFound(new { message = "اختبار التوليد غير موجود." });
+        if (!run.HasMedia)
+            return NotFound(new { message = "ملف الاختبار لم يصبح جاهزاً بعد." });
+
+        var bytes = await _testRuns.GetMediaAsync(id, cancellationToken);
+        var contentType = await _testRuns.GetMediaContentTypeAsync(id, cancellationToken);
+        if (bytes is null || bytes.Length == 0)
+            return NotFound(new { message = "ملف الاختبار فارغ." });
+
+        Response.Headers.CacheControl = "no-store, no-cache";
+        Response.Headers["Content-Disposition"] = "inline";
+        Response.Headers["X-AI-Test-Provider"] = run.Provider;
+        Response.Headers["X-AI-Test-Question-Id"] = run.QuestionId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return File(bytes, contentType ?? "application/octet-stream");
+    }
+
+    [HttpPost("test/{id:long}/approve")]
+    public async Task<IActionResult> ApproveAiTest(
+        long id,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await _testRuns.ApproveAsync(id, cancellationToken);
+            return result is null
+                ? NotFound(new { message = "اختبار التوليد غير موجود." })
+                : Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("test/{id:long}/reject")]
+    public async Task<IActionResult> RejectAiTest(
+        long id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _testRuns.RejectAsync(id, cancellationToken);
+        return result is null
+            ? NotFound(new { message = "اختبار التوليد غير موجود." })
+            : Ok(result);
     }
 
     [HttpGet("completed-images")]
