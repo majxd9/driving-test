@@ -64,7 +64,8 @@ public sealed class AiGenerationJobService
     private readonly record struct StoredMediaState(
         int QuestionId,
         string ContentHash,
-        bool HasBytes);
+        bool HasBytes,
+        DateTime CreatedAt);
 
     public AiGenerationJobService(AppDbContext db, IConfiguration configuration)
     {
@@ -306,7 +307,7 @@ public sealed class AiGenerationJobService
             ? await _db.QuestionAudios
                 .AsNoTracking()
                 .Where(x => questionIds.Contains(x.QuestionId) && x.AudioBytes.Length > 0)
-                .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+                .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
                 .ToDictionaryAsync(x => x.QuestionId, cancellationToken)
             : new Dictionary<int, StoredMediaState>();
 
@@ -314,7 +315,7 @@ public sealed class AiGenerationJobService
             ? await _db.QuestionAiImages
                 .AsNoTracking()
                 .Where(x => questionIds.Contains(x.QuestionId) && x.ImageBytes.Length > 0)
-                .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+                .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
                 .ToDictionaryAsync(x => x.QuestionId, cancellationToken)
             : new Dictionary<int, StoredMediaState>();
 
@@ -553,13 +554,13 @@ public sealed class AiGenerationJobService
         var audios = await _db.QuestionAudios
             .AsNoTracking()
             .Where(x => x.AudioBytes.Length > 0)
-            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
             .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
 
         var images = await _db.QuestionAiImages
             .AsNoTracking()
             .Where(x => x.ImageBytes.Length > 0)
-            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
             .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
 
         var quota = await new AiGenerationQuotaService(_db, _configuration)
@@ -603,13 +604,13 @@ public sealed class AiGenerationJobService
         var audios = await _db.QuestionAudios
             .AsNoTracking()
             .Where(x => ids.Contains(x.QuestionId) && x.AudioBytes.Length > 0)
-            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
             .ToListAsync(cancellationToken);
 
         var images = await _db.QuestionAiImages
             .AsNoTracking()
             .Where(x => ids.Contains(x.QuestionId) && x.ImageBytes.Length > 0)
-            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
             .ToListAsync(cancellationToken);
 
         var audioByQuestion = audios.ToDictionary(x => x.QuestionId);
@@ -632,13 +633,13 @@ public sealed class AiGenerationJobService
         var audios = await _db.QuestionAudios
             .AsNoTracking()
             .Where(x => ids.Contains(x.QuestionId) && x.AudioBytes.Length > 0)
-            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
             .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
 
         var images = await _db.QuestionAiImages
             .AsNoTracking()
             .Where(x => ids.Contains(x.QuestionId) && x.ImageBytes.Length > 0)
-            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
             .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
 
         var imageReviews = await _db.AiImageReviews
@@ -1049,7 +1050,7 @@ public sealed class AiGenerationJobService
         var audio = await _db.QuestionAudios
             .AsNoTracking()
             .Where(x => x.QuestionId == question.Id && x.AudioBytes.Length > 0)
-            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
             .SingleOrDefaultAsync(cancellationToken);
 
         return audio.HasBytes &&
@@ -1063,7 +1064,7 @@ public sealed class AiGenerationJobService
         var image = await _db.QuestionAiImages
             .AsNoTracking()
             .Where(x => x.QuestionId == question.Id && x.ImageBytes.Length > 0)
-            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true))
+            .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
             .SingleOrDefaultAsync(cancellationToken);
 
         return image.HasBytes &&
