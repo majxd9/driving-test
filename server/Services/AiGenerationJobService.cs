@@ -676,6 +676,13 @@ public sealed class AiGenerationJobService
         }
     }
 
+    public Task<Question?> GetQuestionForDiagnosticsAsync(
+        int questionId,
+        CancellationToken cancellationToken = default) =>
+        _db.Questions
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Id == questionId, cancellationToken);
+
     public async Task<AiImageReviewItem?> GetNextAiImageReviewAsync(
         CancellationToken cancellationToken)
     {
