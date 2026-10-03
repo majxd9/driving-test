@@ -177,6 +177,8 @@ export interface AiImageReviewItem {
   createdAt: string;
   pendingCount: number;
   reviewedCount: number;
+  prompt: string;
+  negativePrompt: string;
 }
 
 
