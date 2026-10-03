@@ -12,7 +12,7 @@ public sealed record ImageProviderTestResult(string Provider, string State, stri
 
 public sealed record AiGenerationControlRequest(bool? AudioEnabled = null, bool? ImageEnabled = null);
 public sealed record ImageProviderSelectionRequest(string Provider);
-public sealed record AiTestRunRequest(int QuestionId, string Provider);
+public sealed record AiTestRunRequest(int QuestionId, string Type, string Provider);
 
 [ApiController]
 [Route("api/admin/ai-generation")]
@@ -472,15 +472,15 @@ public sealed class AiGenerationAdminController : ControllerBase
         [FromBody] AiTestRunRequest request,
         CancellationToken cancellationToken)
     {
-        var type = request.Provider?.Trim().Equals("audio", StringComparison.OrdinalIgnoreCase) == true
-            ? AiTestRunType.Audio
-            : AiTestRunType.Image;
+        var type = request.Type?.Trim().ToLowerInvariant() switch
+        {
+            "image" => AiTestRunType.Image,
+            "audio" => AiTestRunType.Audio,
+            _ => throw new InvalidOperationException("نوع الاختبار يجب أن يكون image أو audio.")
+        };
 
-        // Provider names are explicit in the request. The UI sends the real provider
-        // (for example elevenlabs or gemini), so the test never silently falls back.
+        // The provider is explicit and the worker calls only that provider. No fallback.
         var provider = request.Provider?.Trim().ToLowerInvariant() ?? string.Empty;
-        if (provider is "audio" or "image")
-            return BadRequest(new { message = "يجب إرسال اسم مزود فعلي، وليس نوع الاختبار." });
 
         try
         {
@@ -529,7 +529,7 @@ public sealed class AiGenerationAdminController : ControllerBase
             return NotFound(new { message = "ملف الاختبار فارغ." });
 
         Response.Headers.CacheControl = "no-store, no-cache";
-        Response.Headers.ContentDisposition = "inline";
+        Response.Headers["Content-Disposition"] = "inline";
         Response.Headers["X-AI-Test-Provider"] = run.Provider;
         Response.Headers["X-AI-Test-Question-Id"] = run.QuestionId.ToString(System.Globalization.CultureInfo.InvariantCulture);
         return File(bytes, contentType ?? "application/octet-stream");
