@@ -245,9 +245,25 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
 
     <div className="ai-console-card">
      <div className="flex items-center justify-between gap-3">
-      <div><span>توليد صور AI</span><b className="block mt-1">{providerLabel(status?.imageProvider??'none')}{status?.imageProvider!==effectiveImageProvider&&effectiveImageProvider!=='none'?' → '+providerLabel(effectiveImageProvider):''}{imageFallbackEnabled?' → Eden AI ('+providerLabel(status?.imageFallbackProvider??'')+')':''}</b></div>
+      <div><span>توليد صور AI</span><b className="block mt-1">{providerLabel(status?.imageProvider??'none')}</b></div>
       {stateBadge(Boolean(control?.imageEnabled))}
      </div>
+     <label className="block mt-2 text-sm">
+      مزود الصور المستخدم فعلياً
+      <select
+       className="admin-search mt-2"
+       value={control?.imageProvider??status?.imageProvider??'none'}
+       disabled={busy!==''}
+       onChange={e=>void act('set-image-provider',()=>api.admin.setImageProvider(e.target.value),'تم تغيير مزود الصور وإيقاف الطابور بأمان')}
+      >
+       <option value="none">متوقف</option>
+       <option value="gemini">Gemini فقط</option>
+       <option value="huggingface">Hugging Face / fal-ai</option>
+       <option value="edenai">Eden AI</option>
+       <option value="comfyui">ComfyUI</option>
+      </select>
+     </label>
+     <small>تغيير المزود لا يبدأ التوليد. يتم إيقاف الصور مؤقتاً أولاً، ثم شغّل «توليد الصور الناقصة» يدوياً.</small>
      <small>أي سؤال لديه صورة أصلية أو Diagram لا يدخل توليد AI.</small>
      <div className="action-row mt-3">
       <button type="button" className="primary-cta" disabled={busy!==''||!providerEnabled} onClick={()=>void act('start-image',()=>api.admin.startImageGeneration(),'تم تشغيل الصور وإضافة الصور الناقصة')}>
