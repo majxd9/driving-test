@@ -361,6 +361,20 @@ public sealed class AiTestRunService
 
     public async Task CleanupAsync(CancellationToken cancellationToken)
     {
+        var staleProcessingCutoff = DateTime.UtcNow.AddMinutes(-45);
+        await _db.AiTestRuns
+            .Where(x =>
+                x.Status == AiTestRunStatus.Processing &&
+                x.UpdatedAt < staleProcessingCutoff)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(x => x.Status, AiTestRunStatus.Failed)
+                    .SetProperty(x => x.ErrorType, "StaleRun")
+                    .SetProperty(x => x.ErrorMessage, "انتهت مهلة اختبار التوليد أثناء التنفيذ. لم يتم اعتماد أي نتيجة.")
+                    .SetProperty(x => x.CompletedAt, DateTime.UtcNow)
+                    .SetProperty(x => x.UpdatedAt, DateTime.UtcNow),
+                cancellationToken);
+
         var cutoff = DateTime.UtcNow.AddHours(-24);
         await _db.AiTestRuns
             .Where(x =>
