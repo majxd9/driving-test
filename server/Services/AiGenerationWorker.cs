@@ -279,18 +279,31 @@ public sealed class AiGenerationWorker : BackgroundService
                 quotaConsumed = !quota.IsUnlimited(AiGenerationJobType.AiImage);
 
                 var promptFromBank = ScenePromptBank.TryGet(question, out var storedScenePrompt);
+                var (diagnosticPositivePrompt, _) = QuestionImagePromptBuilder.Build(question);
+                var promptFingerprint = Convert.ToHexString(
+                    SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(diagnosticPositivePrompt)))
+                    .ToLowerInvariant()[..16];
                 var executionProvider = generationJobs.ImageExecutionProvider;
 
                 _logger.LogInformation(
-                    "Starting AI image generation. Job {JobId}, Question {QuestionId}, Attempt {Attempt}, ImageProvider {ImageProvider}, ExecutionProvider {ExecutionProvider}, PromptSource {PromptSource}, PromptBankEntries {PromptBankEntries}, PromptLength {PromptLength}, ContentHash {ContentHash}.",
+                    "Starting AI image generation. Job {JobId}, Question {QuestionId}, Attempt {Attempt}, ImageProvider {ImageProvider}, ExecutionProvider {ExecutionProvider}, GeneratorExpected {GeneratorExpected}, PromptSource {PromptSource}, PromptBankEntries {PromptBankEntries}, PromptLength {PromptLength}, PromptFingerprint {PromptFingerprint}, ContentHash {ContentHash}.",
                     claimed.Id,
                     question.Id,
                     claimed.Attempts,
                     provider ?? "none",
                     executionProvider,
+                    provider?.Trim().ToLowerInvariant() switch
+                    {
+                        "gemini" => nameof(GeminiQuestionImageGenerator),
+                        "huggingface" => nameof(HuggingFaceQuestionImageGenerator),
+                        "edenai" => nameof(EdenAiQuestionImageGenerator),
+                        "comfyui" => nameof(ComfyUiQuestionImageGenerator),
+                        _ => "unknown"
+                    },
                     promptFromBank ? "ScenePromptBank" : "FallbackBuilder",
                     ScenePromptBank.Count,
-                    promptFromBank ? storedScenePrompt.Positive.Length : 0,
+                    diagnosticPositivePrompt.Length,
+                    promptFingerprint,
                     claimed.ContentHash);
 
                 var generator = scope.ServiceProvider
