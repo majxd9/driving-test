@@ -223,11 +223,10 @@ public sealed class AiGenerationWorker : BackgroundService
             }
             else
             {
-                var provider =
-                    scope.ServiceProvider.GetRequiredService<IConfiguration>()["QUESTION_IMAGE_PROVIDER"];
+                var provider = control.ImageProvider;
 
                 if (string.Equals(
-                    provider ?? "none",
+                    provider,
                     "none",
                     StringComparison.OrdinalIgnoreCase))
                 {
@@ -268,7 +267,7 @@ public sealed class AiGenerationWorker : BackgroundService
                 var promptFingerprint = Convert.ToHexString(
                     SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(diagnosticPositivePrompt)))
                     .ToLowerInvariant()[..16];
-                var executionProvider = generationJobs.ImageExecutionProvider;
+                var executionProvider = AiGenerationJobService.ResolveImageExecutionProvider(provider, _configuration);
 
                 _logger.LogInformation(
                     "Starting AI image generation. Job {JobId}, Question {QuestionId}, Attempt {Attempt}, ImageProvider {ImageProvider}, ExecutionProvider {ExecutionProvider}, GeneratorExpected {GeneratorExpected}, PromptSource {PromptSource}, PromptBankEntries {PromptBankEntries}, PromptLength {PromptLength}, PromptFingerprint {PromptFingerprint}, ContentHash {ContentHash}.",
