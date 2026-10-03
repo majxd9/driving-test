@@ -173,9 +173,17 @@ builder.Services.AddScoped<IQuestionImageGenerator>(sp =>
     if (string.Equals(provider, "gemini", StringComparison.OrdinalIgnoreCase))
         return sp.GetRequiredService<GeminiQuestionImageGenerator>();
 
-    if (string.Equals(provider, "huggingface", StringComparison.OrdinalIgnoreCase) &&
-        HasEdenFallbackConfiguration(builder.Configuration, "EDENAI_IMAGE_PROVIDER"))
-        return sp.GetRequiredService<FallbackQuestionImageGenerator>();
+    if (string.Equals(provider, "huggingface", StringComparison.OrdinalIgnoreCase))
+    {
+        if (HasEdenFallbackConfiguration(builder.Configuration, "EDENAI_IMAGE_PROVIDER"))
+            return sp.GetRequiredService<FallbackQuestionImageGenerator>();
+
+        // Hugging Face is a first-class image provider. Do not silently fall back
+        // to ComfyUI when no Eden fallback is configured: that can make the admin
+        // UI report Hugging Face while the worker actually sends requests to an
+        // unrelated/local ComfyUI workflow.
+        return sp.GetRequiredService<HuggingFaceQuestionImageGenerator>();
+    }
 
     return sp.GetRequiredService<ComfyUiQuestionImageGenerator>();
 });
