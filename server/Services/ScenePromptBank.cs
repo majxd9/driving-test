@@ -91,7 +91,7 @@ public static class ScenePromptBank
         var text = File.ReadAllText(path);
         var headers = Regex.Matches(
             text,
-            @"(?m)^\[(\d{3})\]\s+(.+?)\s*$",
+            @"(?m)^\[(\d{3})\]\s+([^\r\n]*?)(?=السؤال:|$)\s*$",
             RegexOptions.CultureInvariant);
 
         var entries = new List<ScenePromptEntry>(headers.Count);
