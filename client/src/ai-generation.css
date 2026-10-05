@@ -61,23 +61,23 @@
 .review-image.ai-secondary { position: relative; }
 .ai-image-label {
   position: absolute;
-  top: 10px;
-  inset-inline-end: 10px;
+  top: 7px;
+  inset-inline-end: 7px;
   z-index: 3;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 29px;
-  padding: 0 10px;
-  border: 1px solid rgba(45,212,191,.28);
+  gap: 4px;
+  min-height: 21px;
+  padding: 0 7px;
+  border: 1px solid rgba(255,255,255,.10);
   border-radius: 999px;
-  background: rgba(8,18,20,.82);
-  color: #b8fff1;
-  font-size: 11px;
-  font-weight: 900;
+  background: rgba(8,18,20,.34);
+  color: rgba(220,255,248,.68);
+  font-size: 7.5px;
+  font-weight: 700;
   line-height: 1;
-  box-shadow: 0 8px 24px rgba(0,0,0,.18);
-  backdrop-filter: blur(10px);
+  box-shadow: none;
+  backdrop-filter: blur(5px);
 }
 .ai-image-label svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .ai-image-import-card { overflow: hidden; }
