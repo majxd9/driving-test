@@ -44,11 +44,19 @@ public sealed class AiGenerationWorker : BackgroundService
         var nextScan = DateTime.UtcNow;
         var invalidImageStateCleaned = false;
         var controlStorageReady = false;
+        var orphanedJobsRecovered = false;
+        var maxConcurrency = Math.Clamp(
+            _configuration.GetValue("AI_AUDIO_MAX_CONCURRENCY", 2),
+            1,
+            4);
+        var activeJobs = new List<Task>();
 
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
+                activeJobs.RemoveAll(task => task.IsCompleted);
+
                 using var scope = _scopeFactory.CreateScope();
                 var jobs = scope.ServiceProvider.GetRequiredService<AiGenerationJobService>();
 
@@ -64,6 +72,14 @@ public sealed class AiGenerationWorker : BackgroundService
                     invalidImageStateCleaned = true;
                 }
 
+                if (!orphanedJobsRecovered)
+                {
+                    await jobs.RecoverOrphanedProcessingJobsAsync(
+                        15,
+                        stoppingToken);
+                    orphanedJobsRecovered = true;
+                }
+
                 await jobs.ResetStaleProcessingAsync(stoppingToken);
                 await jobs.ResumeProviderPausedJobsForFallbackAsync(stoppingToken);
 
@@ -73,11 +89,14 @@ public sealed class AiGenerationWorker : BackgroundService
                     nextScan = DateTime.UtcNow.Add(scanEvery);
                 }
 
-                var claimed = await jobs.ClaimNextJobAsync(stoppingToken);
-                if (claimed is not null)
+                while (activeJobs.Count < maxConcurrency &&
+                       !stoppingToken.IsCancellationRequested)
                 {
-                    await ProcessAsync(claimed, stoppingToken);
-                    continue;
+                    var claimed = await jobs.ClaimNextJobAsync(stoppingToken);
+                    if (claimed is null)
+                        break;
+
+                    activeJobs.Add(ProcessAsync(claimed, stoppingToken));
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -90,6 +109,15 @@ public sealed class AiGenerationWorker : BackgroundService
             }
 
             await Task.Delay(pollEvery, stoppingToken);
+        }
+
+        try
+        {
+            await Task.WhenAll(activeJobs);
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // Normal shutdown.
         }
     }
 
