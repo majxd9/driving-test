@@ -389,7 +389,7 @@ public sealed class AiTestRunService
     {
         var allowed = type == AiTestRunType.Image
             ? new[] { "gemini", "huggingface", "edenai", "comfyui" }
-            : new[] { "elevenlabs", "edenai", "local" };
+            : new[] { "elevenlabs", "edenai", "local", "fish", "fishaudio" };
 
         if (!allowed.Contains(provider, StringComparer.OrdinalIgnoreCase))
             throw new InvalidOperationException(
