@@ -55,8 +55,6 @@ export default function OptimizedImage({
     setMediaSrc(null);
   }, [canonicalSrc, src, authenticatedMedia]);
 
-  if (!canonicalSrc || !candidates.length) return null;
-
   const activeSrc = candidates[candidateIndex] ?? candidates[0];
 
   useEffect(() => {
@@ -90,7 +88,9 @@ export default function OptimizedImage({
       controller.abort();
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [authenticatedMedia, activeSrc, onError]);
+  }, [authenticatedMedia, activeSrc]);
+
+  if (!canonicalSrc || !candidates.length) return null;
 
   const renderedSrc = authenticatedMedia ? mediaSrc : activeSrc;
 
