@@ -11,7 +11,7 @@ import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
-import { preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { getCachedQuestionAudioPromptSource, preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -101,10 +101,15 @@ export default function Study() {
     const audio = audioRef.current;
     if (!audio) return false;
 
+    const source =
+      getCachedQuestionAudioPromptSource(key) ??
+      resolveApiUrl(`/api/questions/audio-prompt/${key}`);
+
     audioModeRef.current = key === 'question-audio-enabled' ? 'enabled-prompt' : null;
     audio.pause();
-    audio.src = resolveApiUrl(`/api/questions/audio-prompt/${key}`);
+    audio.src = source;
     audio.preload = 'auto';
+    audio.load();
     audio.currentTime = 0;
 
     try {
