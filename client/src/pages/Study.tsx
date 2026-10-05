@@ -36,9 +36,9 @@ export default function Study() {
   const [jumpValue, setJumpValue] = useState('1');
   const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const promptAudioRef = useRef<HTMLAudioElement | null>(null);
   const activationPromptPendingRef = useRef(false);
   const activationPromptQuestionRef = useRef<string | null>(null);
+  const audioModeRef = useRef<'question' | 'enabled-prompt' | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
@@ -47,18 +47,6 @@ export default function Study() {
   const [failedAiImageId, setFailedAiImageId] = useState<number | null>(null);
   const [adminImageBusy, setAdminImageBusy] = useState<'hide' | 'delete' | null>(null);
   const [adminImageToolsFor, setAdminImageToolsFor] = useState<'original' | 'ai' | null>(null);
-
-  useEffect(() => {
-    const prompt = createQuestionAudioPrompt('question-audio-enabled');
-
-    promptAudioRef.current = prompt;
-    prompt?.load();
-
-    return () => {
-      prompt?.pause();
-      promptAudioRef.current = null;
-    };
-  }, []);
 
   useEffect(() => {
     if (!category) return;
@@ -103,6 +91,36 @@ export default function Study() {
 
   const currentAudioPath = questions[index]?.audioUrl ?? null;
   const currentAudioUrl = currentAudioPath ? resolveApiUrl(currentAudioPath) : null;
+  const playSystemPromptOnMainAudio = useCallback(async (
+    key: 'question-audio-enabled' | 'question-audio-disabled'
+  ) => {
+    const audio = audioRef.current;
+    const prompt = createQuestionAudioPrompt(key);
+    if (!audio || !prompt) return false;
+
+    const source = prompt.currentSrc || prompt.src;
+    if (!source) return false;
+
+    audioModeRef.current = key === 'question-audio-enabled' ? 'enabled-prompt' : null;
+    audio.pause();
+    audio.src = source;
+    audio.preload = 'auto';
+    audio.load();
+    audio.currentTime = 0;
+
+    try {
+      await audio.play();
+      setAudioPlaying(true);
+      setAudioError(null);
+      return true;
+    } catch (error) {
+      audioModeRef.current = null;
+      setAudioPlaying(false);
+      setAudioError(error instanceof Error ? error.message : 'تعذر تشغيل رسالة الصوت.');
+      return false;
+    }
+  }, []);
+
   const nextAudioPath = questions[index + 1]?.audioUrl ?? null;
   const nextAudioUrl = nextAudioPath ? resolveApiUrl(nextAudioPath) : null;
 
@@ -313,6 +331,7 @@ export default function Study() {
             activationPromptQuestionRef.current = currentAudioUrl;
             const audio = audioRef.current;
             if (!audio || !currentAudioUrl) return;
+            audioModeRef.current = 'question';
             void getQuestionAudioSource(currentAudioUrl)
               .then(source => {
                 if (audio.src !== source) {
@@ -323,7 +342,10 @@ export default function Study() {
                 audio.currentTime = 0;
                 return audio.play();
               })
-              .then(() => setAudioPlaying(true))
+              .then(() => {
+                setAudioPlaying(true);
+                setAudioError(null);
+              })
               .catch(error => setAudioError(error instanceof Error ? error.message : 'تعذر تشغيل الصوت.'));
           }}
           aria-label="تشغيل الصوت"
@@ -339,16 +361,12 @@ export default function Study() {
             setAudioError(null);
             activationPromptPendingRef.current = false;
             activationPromptQuestionRef.current = null;
-            const prompt = promptAudioRef.current;
-            prompt?.pause();
-            if (prompt) prompt.currentTime = 0;
+            audioModeRef.current = null;
             const audio = audioRef.current;
-            if (audio) {
-              audio.pause();
-              audio.currentTime = 0;
-            }
+            audio?.pause();
+            if (audio) audio.currentTime = 0;
             setAudioPlaying(false);
-            void playQuestionAudioPrompt('question-audio-disabled');
+            void playSystemPromptOnMainAudio('question-audio-disabled');
           }}
           aria-label="إيقاف الصوت"
           title="إيقاف الصوت"
@@ -362,18 +380,28 @@ export default function Study() {
           ref={audioRef}
           preload="auto"
           onEnded={() => {
+            if (audioModeRef.current === 'enabled-prompt') {
+              audioModeRef.current = null;
+              setAudioPlaying(false);
+              return;
+            }
+
             setAudioPlaying(false);
 
             const shouldPlayActivationPrompt =
+              audioModeRef.current === 'question' &&
               activationPromptPendingRef.current &&
               activationPromptQuestionRef.current === currentAudioUrl;
 
             activationPromptPendingRef.current = false;
             activationPromptQuestionRef.current = null;
 
-            if (!shouldPlayActivationPrompt) return;
+            if (!shouldPlayActivationPrompt) {
+              audioModeRef.current = null;
+              return;
+            }
 
-            void playQuestionAudioPrompt('question-audio-enabled');
+            void playSystemPromptOnMainAudio('question-audio-enabled');
           }}
           onError={() => {
             setAudioPlaying(false);
