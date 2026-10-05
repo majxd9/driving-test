@@ -201,11 +201,12 @@ export default function Study() {
 
     let active = true;
     const firstQuestion = questions[0];
+    const isVisualCategory = category === 'Ishara' || category === 'Mechanic';
 
     const playFirstEntryPromptWhenReady = async () => {
       // Wait for the initial original visual before the first-entry prompt.
       // This prompt must not block navigation to the training page.
-      if (firstQuestion.imageUrl && shouldShowQuestionImageBeforeAnswer(firstQuestion)) {
+      if (firstQuestion.imageUrl && (isVisualCategory || shouldShowQuestionImageBeforeAnswer(firstQuestion))) {
         const imageUrl = resolveQuestionImageUrl(firstQuestion.imageUrl);
         if (imageUrl) await preloadImage(imageUrl, 'auto');
       }
@@ -226,7 +227,8 @@ export default function Study() {
     const nextQuestion = questions[index + 1];
     if (!nextQuestion) return;
 
-    if (nextQuestion.imageUrl && shouldShowQuestionImageBeforeAnswer(nextQuestion)) {
+    const isVisualCategory = category === 'Ishara' || category === 'Mechanic';
+    if (nextQuestion.imageUrl && (isVisualCategory || shouldShowQuestionImageBeforeAnswer(nextQuestion))) {
       const imageUrl = resolveQuestionImageUrl(nextQuestion.imageUrl);
       if (imageUrl) void preloadImage(imageUrl, 'auto');
     }
@@ -265,10 +267,10 @@ export default function Study() {
   if (!q) return <div className="study-premium-loading">لا توجد أسئلة بهذا القسم.</div>;
 
   const chosen = answers[q.id];
+  const isVisualCategory = category === 'Ishara' || category === 'Mechanic';
   const showImage = Boolean(
     q.imageUrl && (
-      q.category === 'Ishara' ||
-      q.category === 'Mechanic' ||
+      isVisualCategory ||
       chosen !== undefined ||
       shouldShowQuestionImageBeforeAnswer(q)
     )
