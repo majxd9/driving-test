@@ -103,7 +103,7 @@
  }
  .ai-image-import-row { grid-template-columns: 1fr; }
  .ai-image-import-row .primary-cta { width: 100%; }
- .ai-image-label { top: 8px; inset-inline-end: 8px; }
+ .ai-image-label { top: 6px; inset-inline-end: 6px; }
 }
 
 /* AI generation console */
