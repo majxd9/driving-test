@@ -32,6 +32,7 @@ public sealed class AiGenerationAdminController : ControllerBase
     private readonly EdenAiQuestionImageGenerator _edenImageGenerator;
     private readonly ComfyUiQuestionImageGenerator _comfyUiImageGenerator;
     private readonly AiTestRunService _testRuns;
+    private readonly SystemAudioPromptService _systemAudioPrompts;
 
     public AiGenerationAdminController(
         AppDbContext db,
@@ -42,7 +43,8 @@ public sealed class AiGenerationAdminController : ControllerBase
         HuggingFaceQuestionImageGenerator huggingFaceImageGenerator,
         EdenAiQuestionImageGenerator edenImageGenerator,
         ComfyUiQuestionImageGenerator comfyUiImageGenerator,
-        AiTestRunService testRuns)
+        AiTestRunService testRuns,
+        SystemAudioPromptService systemAudioPrompts)
     {
         _db = db;
         _jobs = jobs;
@@ -53,6 +55,7 @@ public sealed class AiGenerationAdminController : ControllerBase
         _edenImageGenerator = edenImageGenerator;
         _comfyUiImageGenerator = comfyUiImageGenerator;
         _testRuns = testRuns;
+        _systemAudioPrompts = systemAudioPrompts;
     }
 
     [HttpGet("status")]
@@ -73,6 +76,7 @@ public sealed class AiGenerationAdminController : ControllerBase
     [HttpPost("control/all/start")]
     public async Task<ActionResult<AiGenerationControlState>> StartAll(CancellationToken cancellationToken)
     {
+        await _systemAudioPrompts.EnsureAllAsync(cancellationToken);
         await _jobs.CleanupInvalidImageGenerationStateAsync(cancellationToken);
         var state = await _jobs.SetControlStateAsync(true, true, cancellationToken);
         await _jobs.ResumePendingTypeAsync(AiGenerationJobType.Audio, cancellationToken);
@@ -84,6 +88,7 @@ public sealed class AiGenerationAdminController : ControllerBase
     [HttpPost("control/audio/start")]
     public async Task<ActionResult<AiGenerationControlState>> StartAudio(CancellationToken cancellationToken)
     {
+        await _systemAudioPrompts.EnsureAllAsync(cancellationToken);
         var state = await _jobs.SetControlStateAsync(true, null, cancellationToken);
         await _jobs.ResumePendingTypeAsync(AiGenerationJobType.Audio, cancellationToken);
         await _jobs.EnqueueBulkAsync(AiGenerationJobType.Audio, false, false, cancellationToken);
@@ -122,12 +127,15 @@ public sealed class AiGenerationAdminController : ControllerBase
     [HttpPost("audio")]
     public async Task<ActionResult<AiGenerationEnqueueResult>> Audio(
         [FromBody] BulkGenerationRequest? request,
-        CancellationToken cancellationToken) =>
-        Ok(await _jobs.EnqueueBulkAsync(
+        CancellationToken cancellationToken)
+    {
+        await _systemAudioPrompts.EnsureAllAsync(cancellationToken);
+        return Ok(await _jobs.EnqueueBulkAsync(
             AiGenerationJobType.Audio,
             request?.RetryFailed ?? false,
             request?.RegenerateCompleted ?? false,
             cancellationToken));
+    }
 
     [HttpPost("image")]
     public async Task<ActionResult<AiGenerationEnqueueResult>> Image(
@@ -151,6 +159,9 @@ public sealed class AiGenerationAdminController : ControllerBase
             _ => throw new ArgumentException("النوع يجب أن يكون audio أو image.")
         };
 
+        if (jobType == AiGenerationJobType.Audio)
+            await _systemAudioPrompts.EnsureAllAsync(cancellationToken);
+
         return Ok(await _jobs.EnqueueBulkAsync(
             jobType,
             retryFailed: true,
@@ -163,6 +174,7 @@ public sealed class AiGenerationAdminController : ControllerBase
         [FromBody] BulkGenerationRequest? request,
         CancellationToken cancellationToken)
     {
+        await _systemAudioPrompts.EnsureAllAsync(cancellationToken);
         var audio = await _jobs.EnqueueBulkAsync(
             AiGenerationJobType.Audio,
             request?.RetryFailed ?? false,
@@ -186,7 +198,10 @@ public sealed class AiGenerationAdminController : ControllerBase
         var control = await _jobs.GetControlStateAsync(cancellationToken);
 
         if (control.AudioEnabled)
+        {
+            await _systemAudioPrompts.EnsureAllAsync(cancellationToken);
             await _jobs.ResumePendingTypeAsync(AiGenerationJobType.Audio, cancellationToken);
+        }
 
         if (control.ImageEnabled)
         {
