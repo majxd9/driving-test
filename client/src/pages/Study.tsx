@@ -11,7 +11,7 @@ import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
-import { createQuestionAudioPrompt, playQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { createQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -62,6 +62,10 @@ export default function Study() {
     setAnswers({});
     setJumpOpen(false);
     setJumpValue('1');
+
+    createQuestionAudioPrompt('question-audio-first-entry');
+    createQuestionAudioPrompt('question-audio-enabled');
+    createQuestionAudioPrompt('question-audio-disabled');
 
     api.getQuestions(category)
       .then((items) => {
@@ -195,12 +199,15 @@ export default function Study() {
 
   useEffect(() => {
     const nextQuestion = questions[index + 1];
-    if (!nextQuestion?.imageUrl || !shouldShowQuestionImageBeforeAnswer(nextQuestion)) return;
+    if (!nextQuestion) return;
 
-    const imageUrl = resolveQuestionImageUrl(nextQuestion.imageUrl);
-    if (imageUrl) void preloadImage(imageUrl);
+    if (nextQuestion.imageUrl && shouldShowQuestionImageBeforeAnswer(nextQuestion)) {
+      const imageUrl = resolveQuestionImageUrl(nextQuestion.imageUrl);
+      if (imageUrl) void preloadImage(imageUrl, 'auto');
+    }
+
     if (nextQuestion.aiImageUrl) {
-      void preloadImage(resolveApiUrl(nextQuestion.aiImageUrl));
+      void preloadImage(resolveApiUrl(nextQuestion.aiImageUrl), 'auto');
     }
   }, [index, questions]);
 
@@ -504,7 +511,6 @@ export default function Study() {
                     sizes="(max-width:700px) 96vw, 760px"
                     className="study-premium-image-el"
                     objectFit="contain"
-                    priority
                     onError={() => setFailedAiImageId(q.id)}
                     showError={false}
                   />
