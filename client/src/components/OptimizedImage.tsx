@@ -9,6 +9,7 @@ type Props = {
   sizes?: string;
   objectFit?: 'contain' | 'cover';
   onError?: () => void;
+  showError?: boolean;
 };
 
 export { resolveQuestionImageUrl } from '../utils/questionImages';
@@ -32,6 +33,7 @@ export default function OptimizedImage({
   sizes,
   objectFit = 'contain',
   onError,
+  showError = true,
 }: Props) {
   // AI images and other API media URLs are already resolved URLs; only local question assets need the sign/mechanic resolver.
   const canonicalSrc = useMemo(() => {
@@ -76,7 +78,7 @@ export default function OptimizedImage({
         }}
         className={`block w-full h-full object-${objectFit} ${loaded ? '' : 'opacity-0'}`}
       />
-      {failed && (
+      {failed && showError && (
         <div className="absolute inset-0 grid place-items-center text-xs text-muted bg-paper p-3 text-center">
           تعذر تحميل الصورة
         </div>
