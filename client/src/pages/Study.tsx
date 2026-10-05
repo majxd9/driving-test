@@ -542,6 +542,7 @@ export default function Study() {
                     sizes="(max-width:700px) 96vw, 760px"
                     className="study-premium-image-el"
                     objectFit="contain"
+                    priority
                     onError={() => setFailedAiImageId(q.id)}
                     showError={false}
                   />
