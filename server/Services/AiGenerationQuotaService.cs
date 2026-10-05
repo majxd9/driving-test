@@ -34,7 +34,7 @@ public sealed class AiGenerationQuotaService
     {
         var provider = jobType == AiGenerationJobType.AiImage
             ? (_configuration["QUESTION_IMAGE_PROVIDER"] ?? "none")
-            : (_configuration["QUESTION_AUDIO_PROVIDER"] ?? "elevenlabs");
+            : (_configuration["QUESTION_AUDIO_PROVIDER"] ?? "fish");
 
         return jobType == AiGenerationJobType.AiImage
             ? string.Equals(provider, "comfyui", StringComparison.OrdinalIgnoreCase)
