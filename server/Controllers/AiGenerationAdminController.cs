@@ -824,6 +824,62 @@ public sealed class AiGenerationAdminController : ControllerBase
         return Ok(await _jobs.GetNextAiImageReviewAsync(cancellationToken));
     }
 
+    [HttpPost("review/reset-all")]
+    public async Task<IActionResult> ResetAllImageReviews(CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+
+        var images = await _db.QuestionAiImages
+            .Where(x => x.ImageBytes.Length > 0)
+            .ToListAsync(cancellationToken);
+
+        if (images.Count == 0)
+            return Ok(new { reset = 0 });
+
+        var questionIds = images.Select(x => x.QuestionId).Distinct().ToArray();
+        var questions = await _db.Questions
+            .Where(x => questionIds.Contains(x.Id))
+            .ToDictionaryAsync(x => x.Id, cancellationToken);
+
+        var reviews = await _db.AiImageReviews
+            .Where(x => questionIds.Contains(x.QuestionId))
+            .ToListAsync(cancellationToken);
+
+        var reviewsByQuestion = reviews.ToDictionary(x => x.QuestionId);
+        var reset = 0;
+
+        foreach (var image in images)
+        {
+            if (!questions.TryGetValue(image.QuestionId, out var question))
+                continue;
+
+            var currentHash = QuestionImagePromptBuilder.GetContentHash(question);
+            if (!string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal))
+                continue;
+
+            if (!reviewsByQuestion.TryGetValue(image.QuestionId, out var review))
+            {
+                review = new AiImageReview
+                {
+                    QuestionId = image.QuestionId,
+                    ContentHash = image.ContentHash,
+                    CreatedAt = image.CreatedAt
+                };
+                _db.AiImageReviews.Add(review);
+                reviewsByQuestion[image.QuestionId] = review;
+            }
+
+            review.ContentHash = image.ContentHash;
+            review.Status = AiImageReviewStatus.Pending;
+            review.ReviewedAt = null;
+            review.CreatedAt = image.CreatedAt;
+            reset++;
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+        return Ok(new { reset });
+    }
+
     [HttpGet("review-image/{id:int}")]
     public async Task<IActionResult> ReviewImage(
         int id,
