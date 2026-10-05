@@ -470,35 +470,26 @@ export default function Study() {
                   }}
                 >
                   <span className="ai-image-label" aria-label="صورة توضيحية">توضيحية</span>
-                  {q.aiImageGenerationStatus === 'Failed' ? (
-                    <div className="study-premium-ai-unavailable" role="status">
-                      صورة AI غير متاحة حالياً
-                      <small>تعذر توليدها بسبب انتهاء رصيد التوليد المجاني.</small>
+                  <OptimizedImage
+                    src={resolveApiUrl(q.aiImageUrl!)}
+                    alt="شرح بصري تعليمي AI"
+                    sizes="(max-width:700px) 96vw, 760px"
+                    className="study-premium-image-el"
+                    objectFit="contain"
+                    priority
+                    onError={() => setFailedAiImageId(q.id)}
+                    showError={false}
+                    authenticatedMedia={isAdmin}
+                  />
+                  {isAdmin && adminImageToolsFor === 'ai' && (
+                    <div className="study-admin-ai-tools" onClick={(event) => event.stopPropagation()}>
+                      <button type="button" onClick={() => void hideAiImageForAdmin()} disabled={adminImageBusy !== null}>
+                        {adminImageBusy === 'hide' ? '...' : 'إخفاء'}
+                      </button>
+                      <button type="button" className="danger" onClick={() => void deleteAiImageForAdmin()} disabled={adminImageBusy !== null}>
+                        {adminImageBusy === 'delete' ? '...' : 'حذف'}
+                      </button>
                     </div>
-                  ) : (
-                    <>
-                      <OptimizedImage
-                        src={resolveApiUrl(q.aiImageUrl!)}
-                        alt="شرح بصري تعليمي AI"
-                        sizes="(max-width:700px) 96vw, 760px"
-                        className="study-premium-image-el"
-                        objectFit="contain"
-                        priority
-                        onError={() => setFailedAiImageId(q.id)}
-                        showError={false}
-                        authenticatedMedia={isAdmin}
-                      />
-                      {isAdmin && adminImageToolsFor === 'ai' && (
-                        <div className="study-admin-ai-tools" onClick={(event) => event.stopPropagation()}>
-                          <button type="button" onClick={() => void hideAiImageForAdmin()} disabled={adminImageBusy !== null}>
-                            {adminImageBusy === 'hide' ? '...' : 'إخفاء'}
-                          </button>
-                          <button type="button" className="danger" onClick={() => void deleteAiImageForAdmin()} disabled={adminImageBusy !== null}>
-                            {adminImageBusy === 'delete' ? '...' : 'حذف'}
-                          </button>
-                        </div>
-                      )}
-                    </>
                   )}
                 </div>
               )}
