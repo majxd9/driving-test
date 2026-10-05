@@ -811,11 +811,6 @@ public sealed class AiGenerationJobService
         if (image is null || image.ImageBytes.Length == 0)
             return false;
 
-        var currentHash = await _db.Questions
-            .Where(x => x.Id == questionId)
-            .Select(x => QuestionImagePromptBuilder.GetContentHash(x))
-            .SingleOrDefaultAsync(cancellationToken);
-
         var review = await _db.AiImageReviews.SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken);
         if (review is null)
         {
