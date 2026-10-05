@@ -15,21 +15,21 @@ async function requestBlob(path: string, options: RequestInit = {}): Promise<Blo
 }
 
 type QuestionCacheEntry = {
-  value: import('./types').Question[];
+  value: import('../types').Question[];
   expiresAt: number;
 };
 
 const questionCache = new Map<string, QuestionCacheEntry>();
-const questionInflight = new Map<string, Promise<import('./types').Question[]>>();
+const questionInflight = new Map<string, Promise<import('../types').Question[]>>();
 const QUESTION_CACHE_TTL_MS = 30_000;
 
-async function getCachedQuestions(category: 'Ser' | 'Ishara' | 'Mechanic', force = false): Promise<import('./types').Question[]> {
+async function getCachedQuestions(category: 'Ser' | 'Ishara' | 'Mechanic', force = false): Promise<import('../types').Question[]> {
   const now = Date.now();
   const cached = questionCache.get(category);
   if (!force && cached && cached.expiresAt > now) return cached.value;
   const existing = questionInflight.get(category);
   if (!force && existing) return existing;
-  const promise = request<import('./types').Question[]>(`/api/questions?category=${category}`)
+  const promise = request<import('../types').Question[]>(`/api/questions?category=${category}`)
     .then(value => {
       questionCache.set(category, { value, expiresAt: Date.now() + QUESTION_CACHE_TTL_MS });
       return value;
