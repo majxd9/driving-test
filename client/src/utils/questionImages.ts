@@ -52,10 +52,8 @@ export function shouldShowQuestionImageBeforeAnswer(
   // Every traffic-sign question is image-dependent by definition.
   if (question.category === 'Ishara') return true;
 
-  if (
-    question.category === 'Mechanic' &&
-    /(ما معنى هذه الاشارة|ماذا تعني هذه الاشارة|ما معنى هذه العلامة|ماذا تعني هذه العلامة|ما اسم هذا الجزء|ما اسم هذه القطعة|ما اسم هذا المكون|اين يوجد هذا الجزء)/.test(text)
-  ) return true;
+  // Original mechanic images are part of the question itself and are always visible.
+  if (question.category === 'Mechanic') return true;
 
-  return /(ما معنى هذه الاشارة|ماذا تعني هذه الاشارة|ما معنى هذه العلامة|ماذا تعني هذه العلامة|ما الذي يوضحه هذا الرسم|الاشارة المرفقة|كما بالصورة|كما في الصورة|حسب الصورة|بالصورة المرفقة)/.test(text);
+  return /(ما معنى هذه الاشارة|ماذا تعني هذه الاشارة|ما معنى هذه العلامة|ماذا تعني هذه العلامة|ما هذه الصورة|ماذا توضح هذه الصورة|ما اسم هذه الصورة|ما الذي يوضحه هذا الرسم|الاشارة المرفقة|كما بالصورة|كما في الصورة|حسب الصورة|بالصورة المرفقة)/.test(text);
 }
