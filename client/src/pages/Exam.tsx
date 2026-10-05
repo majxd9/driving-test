@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api, resolveApiUrl } from '../api/client';
 import { ExamQuestion } from '../types';
 import DiagramRenderer from '../components/DiagramRenderer';
-import OptimizedImage from '../components/OptimizedImage';
+import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
 import { speakArabicFallback, stopArabicFallback } from '../utils/speechFeedback';
