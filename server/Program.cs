@@ -143,6 +143,7 @@ builder.Services.AddScoped<EdenAiQuestionAudioGenerator>();
 builder.Services.AddScoped<LocalQuestionAudioGenerator>();
 builder.Services.AddScoped<FishAudioQuestionAudioGenerator>();
 builder.Services.AddScoped<FallbackQuestionAudioGenerator>();
+builder.Services.AddScoped<SystemAudioPromptService>();
 builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
 {
     var provider = (builder.Configuration["QUESTION_AUDIO_PROVIDER"] ?? "fish").Trim();
