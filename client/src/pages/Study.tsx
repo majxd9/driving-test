@@ -11,7 +11,7 @@ import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
-import { getCachedQuestionAudioPromptSource, preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { getCachedQuestionAudioPromptSource, playQuestionAudioPrompt, preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -43,7 +43,7 @@ export default function Study() {
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
-  const [failedOriginalImageId, setFailedOriginalImageId] = useState<number | null>(null);
+  const firstEntryPromptPlayedRef = useRef(false);
   const [failedAiImageId, setFailedAiImageId] = useState<number | null>(null);
   const [adminImageBusy, setAdminImageBusy] = useState<'hide' | 'delete' | null>(null);
   const [adminImageToolsFor, setAdminImageToolsFor] = useState<'original' | 'ai' | null>(null);
@@ -87,7 +87,6 @@ export default function Study() {
 
   useEffect(() => {
     setSignalState('pending');
-    setFailedOriginalImageId(null);
     setFailedAiImageId(null);
     setAdminImageBusy(null);
     setAdminImageToolsFor(null);
@@ -198,6 +197,32 @@ export default function Study() {
   }, [audioEnabled, audioReady, currentAudioUrl]);
 
   useEffect(() => {
+    if (loading || error || firstEntryPromptPlayedRef.current || !questions.length) return;
+
+    let active = true;
+    const firstQuestion = questions[0];
+
+    const playFirstEntryPromptWhenReady = async () => {
+      // Wait for the initial original visual before the first-entry prompt.
+      // This prompt must not block navigation to the training page.
+      if (firstQuestion.imageUrl && shouldShowQuestionImageBeforeAnswer(firstQuestion)) {
+        const imageUrl = resolveQuestionImageUrl(firstQuestion.imageUrl);
+        if (imageUrl) await preloadImage(imageUrl, 'auto');
+      }
+
+      if (!active || firstEntryPromptPlayedRef.current) return;
+      firstEntryPromptPlayedRef.current = true;
+      void playQuestionAudioPrompt('question-audio-first-entry');
+    };
+
+    void playFirstEntryPromptWhenReady();
+
+    return () => {
+      active = false;
+    };
+  }, [loading, error, questions]);
+
+  useEffect(() => {
     const nextQuestion = questions[index + 1];
     if (!nextQuestion) return;
 
@@ -240,13 +265,20 @@ export default function Study() {
   if (!q) return <div className="study-premium-loading">لا توجد أسئلة بهذا القسم.</div>;
 
   const chosen = answers[q.id];
-  const showImage = Boolean(q.imageUrl && (chosen !== undefined || shouldShowQuestionImageBeforeAnswer(q)));
+  const showImage = Boolean(
+    q.imageUrl && (
+      q.category === 'Ishara' ||
+      q.category === 'Mechanic' ||
+      chosen !== undefined ||
+      shouldShowQuestionImageBeforeAnswer(q)
+    )
+  );
   const answered = Object.keys(answers).length;
   const correct = questions.filter(x => answers[x.id] === x.correctAnswerIndex).length;
   const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0;
   const isLast = index === questions.length - 1;
   const explanationNeeded = chosen !== undefined && Boolean(q.explanation);
-  const showOriginalImage = Boolean(q.imageUrl && showImage && failedOriginalImageId !== q.id);
+  const showOriginalImage = Boolean(q.imageUrl && showImage);
   const showAiImageForStudent = Boolean(q.aiImageUrl && failedAiImageId !== q.id);
 
   const hideAiImageForAdmin = async () => {
@@ -282,7 +314,6 @@ export default function Study() {
     try {
       await api.admin.hideQuestionImage(q.id);
       setQuestions(current => current.map(item => item.id === q.id ? { ...item, imageUrl: null } : item));
-      setFailedOriginalImageId(q.id);
       setAdminImageToolsFor(null);
     } finally {
       setAdminImageBusy(null);
@@ -481,8 +512,7 @@ export default function Study() {
                     className="study-premium-image-el"
                     objectFit="contain"
                     priority
-                    onError={() => setFailedOriginalImageId(q.id)}
-                    showError={false}
+                    showError
                   />
                   {isAdmin && adminImageToolsFor === 'original' && (
                     <div className="study-admin-ai-tools" onClick={(event) => event.stopPropagation()}>
