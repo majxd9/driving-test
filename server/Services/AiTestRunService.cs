@@ -146,29 +146,29 @@ public sealed class AiTestRunService
         if (row is null)
             return null;
 
-        var run = row.Run;
+        var testRun = row.Run;
         return new AiTestRunView(
-            run.Id,
-            run.QuestionId,
+            testRun.Id,
+            testRun.QuestionId,
             row.QuestionText,
             row.Category.ToString(),
-            run.Type.ToString(),
-            run.Provider,
-            run.Status.ToString(),
-            run.ContentHash,
-            run.Prompt,
-            run.NegativePrompt,
-            run.MediaBytes.Length > 0,
-            run.MediaBytes.Length > 0
-                ? $"/api/admin/ai-generation/test/{run.Id}/media?v={run.UpdatedAt.Ticks}"
+            testRun.Type.ToString(),
+            testRun.Provider,
+            testRun.Status.ToString(),
+            testRun.ContentHash,
+            testRun.Prompt,
+            testRun.NegativePrompt,
+            testRun.MediaBytes.Length > 0,
+            testRun.MediaBytes.Length > 0
+                ? $"/api/admin/ai-generation/test/{testRun.Id}/media?v={testRun.UpdatedAt.Ticks}"
                 : null,
-            run.MediaBytes.Length > 0 ? run.ContentType : null,
-            run.ErrorType,
-            run.ErrorMessage,
-            run.Attempts,
-            run.CreatedAt,
-            run.StartedAt,
-            run.CompletedAt);
+            testRun.MediaBytes.Length > 0 ? testRun.ContentType : null,
+            testRun.ErrorType,
+            testRun.ErrorMessage,
+            testRun.Attempts,
+            testRun.CreatedAt,
+            testRun.StartedAt,
+            testRun.CompletedAt);
     }
 
     public async Task<byte[]?> GetMediaAsync(long id, CancellationToken cancellationToken)
