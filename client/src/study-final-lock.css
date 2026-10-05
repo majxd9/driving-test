@@ -469,3 +469,139 @@ html:has(.study-premium),html:has(.study-premium) body,html:has(.study-premium) 
     transform:translateY(-5px)!important;
   }
 }
+
+
+/* ABSOLUTE LAST STUDY GEOMETRY — question is a fixed grid row directly above answers. */
+@media(max-width:700px){
+  .study-premium-card{
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:18px 145px 58px minmax(0,1fr)!important;
+    gap:4px!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    padding:5px!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+  .study-premium-card>.spirit-question-signal{
+    position:absolute!important;
+    top:7px!important;
+    right:7px!important;
+    left:auto!important;
+    z-index:50!important;
+  }
+  .study-premium-meta{
+    position:static!important;
+    grid-row:1!important;
+    width:100%!important;
+    height:18px!important;
+    min-height:18px!important;
+    max-height:18px!important;
+  }
+  .study-premium-images,
+  .study-premium-no-image{
+    position:static!important;
+    grid-row:2!important;
+    width:100%!important;
+    height:145px!important;
+    min-height:145px!important;
+    max-height:145px!important;
+    margin:0!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:row!important;
+    gap:5px!important;
+  }
+  .study-premium-images .study-premium-image{
+    flex:1 1 0!important;
+    width:0!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-height:none!important;
+  }
+  .study-premium-no-image{
+    display:block!important;
+  }
+  .study-premium-explanation,
+  .study-premium-diagram{
+    display:none!important;
+  }
+
+  /* This is now the row immediately before the four answer buttons. */
+  .study-premium-question{
+    position:static!important;
+    grid-row:3!important;
+    width:100%!important;
+    height:58px!important;
+    min-height:58px!important;
+    max-height:58px!important;
+    margin:0!important;
+    padding:4px 10px!important;
+    box-sizing:border-box!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    overflow:hidden!important;
+    z-index:40!important;
+  }
+
+  .study-premium-answers{
+    position:static!important;
+    grid-row:4!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:repeat(var(--option-count,4),minmax(0,1fr))!important;
+    gap:5px!important;
+    z-index:30!important;
+  }
+  .study-premium-option{
+    position:static!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    transform:none!important;
+  }
+
+  .study-premium-header .study-premium-back{
+    transform:translateY(-4px)!important;
+  }
+}
+@media(max-width:430px){
+  .study-premium-card{
+    grid-template-rows:17px 125px 58px minmax(0,1fr)!important;
+  }
+  .study-premium-meta{
+    height:17px!important;
+    min-height:17px!important;
+    max-height:17px!important;
+  }
+  .study-premium-images,
+  .study-premium-no-image{
+    height:125px!important;
+    min-height:125px!important;
+    max-height:125px!important;
+  }
+  .study-premium-question{
+    height:58px!important;
+    min-height:58px!important;
+    max-height:58px!important;
+  }
+  .study-premium-header .study-premium-back{
+    transform:translateY(-5px)!important;
+  }
+}
