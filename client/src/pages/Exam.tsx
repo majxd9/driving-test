@@ -466,7 +466,6 @@ export default function Exam() {
               )}
             </div>
           )}
-)}
           {!shouldShowQuestionImageBeforeAnswer(q) && !q.aiImageUrl && (
             <div className="exam-image-placeholder-v2" aria-hidden="true"/>
           )}
