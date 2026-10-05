@@ -124,7 +124,7 @@ html:has(.study-premium),html:has(.study-premium) body,html:has(.study-premium) 
 
 
 /* =========================================================
-   ABSOLUTE FINAL STUDY MOBILE GEOMETRY
+   FINAL STUDY MOBILE GEOMETRY — fixed question position
    ========================================================= */
 @media(max-width:700px){
   .study-premium{
@@ -149,45 +149,66 @@ html:has(.study-premium),html:has(.study-premium) body,html:has(.study-premium) 
     overflow:hidden!important;
     display:block!important;
   }
-
   .study-premium-meta{
     position:absolute!important;
     top:5px!important;
     left:5px!important;
     right:5px!important;
     height:18px!important;
+    min-height:18px!important;
+    max-height:18px!important;
     z-index:20!important;
   }
-
-  .study-premium-image,
+  .study-premium-images,
   .study-premium-no-image{
     position:absolute!important;
     top:27px!important;
     left:5px!important;
     right:5px!important;
     width:auto!important;
-    height:112px!important;
-    min-height:112px!important;
-    max-height:112px!important;
+    height:260px!important;
+    min-height:260px!important;
+    max-height:260px!important;
     z-index:10!important;
   }
-
-  .study-premium-question{
+  .study-premium-image{
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+  }
+  .study-premium-explanation{
     position:absolute!important;
-    top:143px!important;
+    top:267px!important;
     left:5px!important;
     right:5px!important;
     width:auto!important;
-    height:56px!important;
-    min-height:56px!important;
-    max-height:56px!important;
-    z-index:12!important;
-    overflow:hidden!important;
+    height:28px!important;
+    min-height:28px!important;
+    max-height:28px!important;
+    z-index:35!important;
   }
-
+  .study-premium-question{
+    position:absolute!important;
+    top:295px!important;
+    left:5px!important;
+    right:5px!important;
+    width:auto!important;
+    height:72px!important;
+    min-height:72px!important;
+    max-height:72px!important;
+    margin:0!important;
+    padding:5px 10px!important;
+    z-index:40!important;
+    overflow:hidden!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    box-sizing:border-box!important;
+  }
   .study-premium-answers{
     position:absolute!important;
-    top:203px!important;
+    top:372px!important;
     left:5px!important;
     right:5px!important;
     bottom:53px!important;
@@ -202,7 +223,6 @@ html:has(.study-premium),html:has(.study-premium) body,html:has(.study-premium) 
     gap:5px!important;
     overflow:hidden!important;
   }
-
   .study-premium-option{
     width:100%!important;
     height:100%!important;
@@ -211,16 +231,7 @@ html:has(.study-premium),html:has(.study-premium) body,html:has(.study-premium) 
     display:flex!important;
     align-items:center!important;
     overflow:hidden!important;
-    padding:7px 9px!important;
   }
-
-  .study-premium-option-text{
-    font-size:13px!important;
-    line-height:1.38!important;
-    -webkit-line-clamp:3!important;
-    overflow:hidden!important;
-  }
-
   .study-premium-actions{
     position:absolute!important;
     left:5px!important;
@@ -230,56 +241,51 @@ html:has(.study-premium),html:has(.study-premium) body,html:has(.study-premium) 
     height:43px!important;
     min-height:43px!important;
     max-height:43px!important;
-    z-index:200!important;
-    display:grid!important;
-    grid-template-columns:1fr 1.25fr!important;
-    gap:5px!important;
-    margin:0!important;
-    padding:0!important;
-    visibility:visible!important;
-    opacity:1!important;
+    z-index:500!important;
   }
-
-  .study-premium-action{
-    width:100%!important;
-    height:43px!important;
-    min-height:43px!important;
-    max-height:43px!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    visibility:visible!important;
-    opacity:1!important;
-  }
-
   .study-premium-card>.spirit-question-signal{
     top:7px!important;
     right:7px!important;
     left:auto!important;
     z-index:60!important;
   }
-
-  .study-premium-card>.spirit-question-signal.state-idle{
-    visibility:visible!important;
-    opacity:1!important;
-  }
-  .study-premium-card>.spirit-question-signal.state-pending{
-    visibility:visible!important;
-    opacity:1!important;
+  /* Back button: raise it slightly. */
+  .study-premium-header .study-premium-back{
+    transform:translateY(-4px)!important;
   }
 }
-
 @media(max-width:430px){
-  .study-premium-image,
-  .study-premium-no-image{height:104px!important;min-height:104px!important;max-height:104px!important}
-  .study-premium-question{top:135px!important;height:56px!important;min-height:56px!important;max-height:56px!important}
-  .study-premium-answers{top:195px!important;bottom:51px!important;gap:5px!important}
-  .study-premium-actions{height:41px!important;min-height:41px!important;max-height:41px!important}
-  .study-premium-action{height:41px!important;min-height:41px!important;max-height:41px!important}
+  .study-premium-images,
+  .study-premium-no-image{
+    top:27px!important;
+    height:250px!important;
+    min-height:250px!important;
+    max-height:250px!important;
+  }
+  .study-premium-explanation{
+    top:257px!important;
+  }
+  .study-premium-question{
+    top:285px!important;
+    height:70px!important;
+    min-height:70px!important;
+    max-height:70px!important;
+  }
+  .study-premium-answers{
+    top:360px!important;
+    bottom:51px!important;
+  }
+  .study-premium-actions{
+    height:41px!important;
+    min-height:41px!important;
+    max-height:41px!important;
+  }
+  .study-premium-header .study-premium-back{
+    transform:translateY(-5px)!important;
+  }
 }
 
-/* =========================================================
-   MODELS DRIFT — React-state driven, no :has dependency
+  MODELS DRIFT — React-state driven, no :has dependency
    ========================================================= */
 .models-page.is-drifting .models-spirit-scene .spirit-scene-car{
   animation:models-drifting-car-premium 1.25s cubic-bezier(.18,.82,.2,1) both!important;
