@@ -537,7 +537,7 @@ public sealed class AiGenerationJobService
                 "NextAttemptAt" = NOW()
             WHERE "Status" = 1
               AND "StartedAt" IS NOT NULL
-              AND "StartedAt" < NOW() - MAKE_INTERVAL(mins => {safeMinutes});
+              AND "StartedAt" < NOW() - ({safeMinutes} * INTERVAL '1 minute');
             """, cancellationToken);
     }
 
