@@ -404,6 +404,17 @@ export default function Study() {
             <div className="study-premium-no-image" aria-hidden="true" />
           )}
 
+          <div className={`study-premium-explanation ${explanationNeeded ? '' : 'is-empty'}`} aria-hidden={!explanationNeeded}>
+            {explanationNeeded ? (
+              <>
+                <b>الشرح</b>
+                <span>{q.explanation}</span>
+              </>
+            ) : (
+              <span>&nbsp;</span>
+            )}
+          </div>
+
           <div className="study-premium-question">{q.text}</div>
 
           <div
@@ -432,17 +443,6 @@ export default function Study() {
                 </button>
               );
             })}
-          </div>
-
-          <div className={`study-premium-explanation ${explanationNeeded ? '' : 'is-empty'}`} aria-hidden={!explanationNeeded}>
-            {explanationNeeded ? (
-              <>
-                <b>الشرح</b>
-                <span>{q.explanation}</span>
-              </>
-            ) : (
-              <span>&nbsp;</span>
-            )}
           </div>
 
           <div className="study-premium-diagram"><DiagramRenderer question={q} /></div>
