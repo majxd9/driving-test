@@ -16,7 +16,8 @@ public enum AiImageReviewStatus
 {
     Pending = 0,
     Approved = 1,
-    Rejected = 2
+    Rejected = 2,
+    Hidden = 3
 }
 
 public sealed class AiImageReview
