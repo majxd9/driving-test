@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, resolveApiUrl } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import { ExamQuestion } from '../types';
 import DiagramRenderer from '../components/DiagramRenderer';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
-import { speakArabicFallback, stopArabicFallback } from '../utils/speechFeedback';
+import { createQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 
 const DURATION = 15 * 60;
 const OPTION_NUMBERS = ['١', '٢', '٣', '٤', '٥', '٦'];
@@ -22,6 +23,8 @@ const UiIcon = ({name}:{name:'back'|'next'|'finish'|'check'}) => {
 export default function Exam() {
   const { modelId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Admin';
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [current, setCurrent] = useState(0);
@@ -39,7 +42,10 @@ export default function Exam() {
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
-  const audioPromptShownRef = useRef(false);
+  const activationPromptPendingRef = useRef(false);
+  const activationPromptQuestionRef = useRef<string | null>(null);
+  const audioModeRef = useRef<'question' | 'enabled-prompt' | null>(null);
+  const [adminImageBusy, setAdminImageBusy] = useState<'approve' | 'reject' | 'hide' | 'delete' | null>(null);
 
   questionsRef.current = questions;
   answersRef.current = answers;
@@ -79,16 +85,11 @@ export default function Exam() {
   useEffect(() => { void loadExam(); }, [loadExam]);
 
   useEffect(() => {
-    if (audioPromptShownRef.current) return;
-    audioPromptShownRef.current = true;
-    const timer = window.setTimeout(() => {
-      speakArabicFallback('إذا بدك تشغيل الصوت، اضغط زر التشغيل');
-    }, 450);
-    return () => {
-      window.clearTimeout(timer);
-      stopArabicFallback();
-    };
+    createQuestionAudioPrompt('question-audio-first-entry');
+    createQuestionAudioPrompt('question-audio-enabled');
+    createQuestionAudioPrompt('question-audio-disabled');
   }, []);
+
 
   const finish = useCallback(() => {
     const currentQuestions = questionsRef.current;
@@ -131,6 +132,31 @@ export default function Exam() {
       },
     });
   }, [navigate, modelId]);
+
+  const playSystemPromptOnMainAudio = useCallback(async (key: 'question-audio-enabled' | 'question-audio-disabled') => {
+    const audio = audioRef.current;
+    const prompt = createQuestionAudioPrompt(key);
+    if (!audio || !prompt) return false;
+    const source = prompt.currentSrc || prompt.src;
+    if (!source) return false;
+    audioModeRef.current = key === 'question-audio-enabled' ? 'enabled-prompt' : null;
+    audio.pause();
+    audio.src = source;
+    audio.preload = 'auto';
+    audio.load();
+    audio.currentTime = 0;
+    try {
+      await audio.play();
+      setAudioPlaying(true);
+      setAudioError(null);
+      return true;
+    } catch (error) {
+      audioModeRef.current = null;
+      setAudioPlaying(false);
+      setAudioError(error instanceof Error ? error.message : 'تعذر تشغيل رسالة الصوت.');
+      return false;
+    }
+  }, []);
 
   const currentAudioPath = questions[current]?.audioUrl ?? null;
   const currentAudioUrl = currentAudioPath ? resolveApiUrl(currentAudioPath) : null;
@@ -243,6 +269,31 @@ export default function Exam() {
   if(loadError||!questions.length)return <div className="page-shell flex items-center justify-center px-5"><div className="surface-panel w-full max-w-md text-center p-7"><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-xl font-black mb-2">تعذر تحضير الاختبار</h1><p className="text-muted text-sm leading-relaxed">{loadError??'لم يتم العثور على أسئلة.'}</p><button onClick={loadExam} className="primary-cta mt-5 w-full">إعادة المحاولة</button></div></div>;
 
   const q=questions[current]; const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
+
+  const updateCurrentAiImage = (next: string | null) => {
+    setQuestions(items => items.map(item => item.id === q.id ? { ...item, aiImageUrl: next } : item));
+  };
+  const approveAiImageForAdmin = async () => {
+    if (!isAdmin || !q.aiImageUrl || adminImageBusy) return;
+    setAdminImageBusy('approve');
+    try { await api.admin.approveAiImageReview(q.id); } finally { setAdminImageBusy(null); }
+  };
+  const rejectAiImageForAdmin = async () => {
+    if (!isAdmin || !q.aiImageUrl || adminImageBusy) return;
+    setAdminImageBusy('reject');
+    try { await api.admin.rejectAiImageReview(q.id); updateCurrentAiImage(null); } finally { setAdminImageBusy(null); }
+  };
+  const hideAiImageForAdmin = async () => {
+    if (!isAdmin || !q.aiImageUrl || adminImageBusy) return;
+    setAdminImageBusy('hide');
+    try { await api.admin.hideAiImageReview(q.id); updateCurrentAiImage(null); } finally { setAdminImageBusy(null); }
+  };
+  const deleteAiImageForAdmin = async () => {
+    if (!isAdmin || !q.aiImageUrl || adminImageBusy) return;
+    if (!window.confirm('حذف صورة AI من هذا السؤال؟')) return;
+    setAdminImageBusy('delete');
+    try { await api.admin.deleteAiImageReview(q.id); updateCurrentAiImage(null); } finally { setAdminImageBusy(null); }
+  };
   const selectedAnswer = answers[q.id];
   // الصورة الأصلية تبقى خاضعة لسياسة الإخفاء الحالية، وصورة AI تعرض فقط إذا كانت مولدة مسبقاً.
   return <div className="exam-page-v2" dir="rtl">
@@ -289,8 +340,11 @@ export default function Exam() {
               onClick={() => {
                 setAudioEnabled(true);
                 setAudioError(null);
+                activationPromptPendingRef.current = true;
+                activationPromptQuestionRef.current = currentAudioUrl;
                 const audio = audioRef.current;
                 if (!audio || !currentAudioUrl) return;
+                audioModeRef.current = 'question';
                 void getQuestionAudioSource(currentAudioUrl)
                   .then(source => {
                     if (audio.src !== source) {
@@ -315,13 +369,16 @@ export default function Exam() {
               onClick={() => {
                 setAudioEnabled(false);
                 setAudioError(null);
-                stopArabicFallback();
+                activationPromptPendingRef.current = false;
+                activationPromptQuestionRef.current = null;
+                audioModeRef.current = null;
                 const audio = audioRef.current;
                 if (audio) {
                   audio.pause();
                   audio.currentTime = 0;
                 }
                 setAudioPlaying(false);
+                void playSystemPromptOnMainAudio('question-audio-disabled');
               }}
               aria-label="إيقاف الصوت"
               title="إيقاف الصوت"
@@ -334,7 +391,30 @@ export default function Exam() {
             <audio
               ref={audioRef}
               preload="auto"
-            onEnded={() => setAudioPlaying(false)}
+              onEnded={() => {
+                if (audioModeRef.current === 'enabled-prompt') {
+                  audioModeRef.current = null;
+                  setAudioPlaying(false);
+                  return;
+                }
+
+                setAudioPlaying(false);
+
+                const shouldPlayActivationPrompt =
+                  audioModeRef.current === 'question' &&
+                  activationPromptPendingRef.current &&
+                  activationPromptQuestionRef.current === currentAudioUrl;
+
+                activationPromptPendingRef.current = false;
+                activationPromptQuestionRef.current = null;
+
+                if (!shouldPlayActivationPrompt) {
+                  audioModeRef.current = null;
+                  return;
+                }
+
+                void playSystemPromptOnMainAudio('question-audio-enabled');
+              }}
               onError={() => {
                 setAudioPlaying(false);
                 setAudioError('تعذر تشغيل ملف الصوت على هذا الجهاز.');
@@ -359,18 +439,34 @@ export default function Exam() {
             <div className="exam-question-image-frame ai-frame">
               <div className="ai-image-label" aria-label="صورة توضيحية">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m5 17 4-4 3 3 3-4 4 5"/></svg>
-                <span>صورة توضيحية</span>
+                <span>{isAdmin ? 'صورة AI — مراجعة الإدارة' : 'صورة توضيحية'}</span>
               </div>
               <OptimizedImage
                 src={resolveApiUrl(q.aiImageUrl)}
                 alt="شرح بصري تعليمي للسؤال"
                 className="h-full w-full"
-                priority
                 objectFit="contain"
-                sizes="(max-width:700px) 46vw, 380px"
+                sizes="(max-width:700px) 96vw, 760px"
               />
+              {isAdmin && (
+                <div className="exam-admin-ai-tools" onClick={event => event.stopPropagation()}>
+                  <button type="button" onClick={() => void approveAiImageForAdmin()} disabled={adminImageBusy !== null}>
+                    {adminImageBusy === 'approve' ? '...' : 'موافقة'}
+                  </button>
+                  <button type="button" className="danger" onClick={() => void rejectAiImageForAdmin()} disabled={adminImageBusy !== null}>
+                    {adminImageBusy === 'reject' ? '...' : 'رفض'}
+                  </button>
+                  <button type="button" onClick={() => void hideAiImageForAdmin()} disabled={adminImageBusy !== null}>
+                    {adminImageBusy === 'hide' ? '...' : 'إخفاء'}
+                  </button>
+                  <button type="button" className="danger" onClick={() => void deleteAiImageForAdmin()} disabled={adminImageBusy !== null}>
+                    {adminImageBusy === 'delete' ? '...' : 'حذف'}
+                  </button>
+                </div>
+              )}
             </div>
           )}
+)}
           {!shouldShowQuestionImageBeforeAnswer(q) && !q.aiImageUrl && (
             <div className="exam-image-placeholder-v2" aria-hidden="true"/>
           )}
