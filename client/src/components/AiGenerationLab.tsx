@@ -11,6 +11,7 @@ const imageProviders = [
 ] as const;
 
 const audioProviders = [
+  ['fish', 'Fish Audio'],
   ['elevenlabs', 'ElevenLabs'],
   ['edenai', 'Eden AI'],
   ['local', 'Local TTS'],
@@ -35,7 +36,7 @@ export default function AiGenerationLab() {
   const [type, setType] = useState<MediaType>('image');
   const [questionId, setQuestionId] = useState('1');
   const [imageProvider, setImageProvider] = useState('gemini');
-  const [audioProvider, setAudioProvider] = useState('elevenlabs');
+  const [audioProvider, setAudioProvider] = useState('fish');
   const [run, setRun] = useState<import('../types').AiTestRun | null>(null);
   const [busy, setBusy] = useState(false);
   const [polling, setPolling] = useState(false);
