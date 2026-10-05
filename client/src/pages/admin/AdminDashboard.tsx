@@ -167,6 +167,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  };
 
  const providerLabel=(value:string)=>{
+  if(value==='fish'||value==='fishaudio')return 'Fish Audio';
   if(value==='comfyui')return 'ComfyUI';
   if(value==='huggingface')return 'Hugging Face';
   if(value==='edenai')return 'Eden AI';
