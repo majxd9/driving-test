@@ -99,6 +99,9 @@ public sealed class AiGenerationJobService
                 "UpdatedAt" timestamp with time zone NOT NULL
             );
 
+            ALTER TABLE "AiGenerationControl" ENABLE ROW LEVEL SECURITY;
+            REVOKE ALL ON TABLE "AiGenerationControl" FROM anon, authenticated, service_role;
+
             ALTER TABLE "AiGenerationControl"
                 ADD COLUMN IF NOT EXISTS "ImageProvider" text;
             """, cancellationToken);
