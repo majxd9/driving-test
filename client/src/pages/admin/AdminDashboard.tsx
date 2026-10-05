@@ -227,6 +227,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
    .catch(()=>{if(active)setReviewImageSrc('')});
   return ()=>{
    active=false;
+   controller.abort();
    if(objectUrl)URL.revokeObjectURL(objectUrl);
   };
  },[reviewItem]);
