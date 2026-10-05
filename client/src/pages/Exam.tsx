@@ -136,6 +136,12 @@ export default function Exam() {
   const currentAudioUrl = currentAudioPath ? resolveApiUrl(currentAudioPath) : null;
   const nextAudioPath = questions[current + 1]?.audioUrl ?? null;
   const nextAudioUrl = nextAudioPath ? resolveApiUrl(nextAudioPath) : null;
+  const nextQuestionImageUrl = questions[current + 1]?.imageUrl
+    ? resolveQuestionImageUrl(questions[current + 1].imageUrl)
+    : null;
+  const nextQuestionAiImageUrl = questions[current + 1]?.aiImageUrl
+    ? resolveApiUrl(questions[current + 1].aiImageUrl!)
+    : null;
 
   useEffect(() => {
 
