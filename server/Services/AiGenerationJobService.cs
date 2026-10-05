@@ -681,17 +681,10 @@ public sealed class AiGenerationJobService
 
             if (images.TryGetValue(question.Id, out var image) && image.HasBytes)
             {
-                var imageHash = QuestionImagePromptBuilder.GetContentHash(question);
-                var reviewApproved = imageReviews.TryGetValue(question.Id, out var review) &&
-                                     review.Status == AiImageReviewStatus.Approved &&
-                                     review.ContentHash == image.ContentHash &&
-                                     image.ContentHash == imageHash;
-
-                if (includeUnapprovedAiImages || reviewApproved)
-                {
-                    question.AiImageUrl =
-                        $"/api/questions/{question.Id}/ai-image?v={image.ContentHash}-{image.CreatedAt.Ticks}";
-                }
+                // أي صورة AI مخزنة تعتبر متاحة للعرض حالياً.
+                // حالة المراجعة لا تحجب الصورة؛ الإدارة تستطيع إخفاء/حذف الصورة لاحقاً.
+                question.AiImageUrl =
+                    $"/api/questions/{question.Id}/ai-image?v={image.ContentHash}-{image.CreatedAt.Ticks}";
             }
         }
     }
