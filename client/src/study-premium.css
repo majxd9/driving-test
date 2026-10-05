@@ -104,3 +104,84 @@
   .study-premium-header .study-premium-counter-wrap{gap:4px!important}
   .exam-topbar-v2 .exam-question-counter-wrap{gap:4px!important}
 }
+
+
+/* Training layout: image is the main visual area, explanation follows it, then question/options. */
+.study-premium-card{
+  grid-template-rows:24px minmax(170px,30dvh) auto minmax(48px,8dvh) minmax(0,1fr)!important;
+}
+.study-premium-images,
+.study-premium-no-image{
+  min-height:0;
+  height:100%;
+}
+.study-premium-image{
+  min-height:0;
+  height:100%;
+  aspect-ratio:auto;
+}
+.study-premium-explanation{
+  width:100%;
+  box-sizing:border-box;
+}
+.ai-image-label{
+  top:5px!important;
+  inset-inline-end:5px!important;
+  min-height:16px!important;
+  padding:0 5px!important;
+  gap:3px!important;
+  border-radius:7px!important;
+  background:rgba(8,18,20,.24)!important;
+  border-color:rgba(255,255,255,.08)!important;
+  color:rgba(220,255,248,.55)!important;
+  font-size:6.5px!important;
+  font-weight:700!important;
+  backdrop-filter:blur(3px)!important;
+}
+.ai-image-label svg{
+  width:8px!important;
+  height:8px!important;
+}
+
+@media(max-width:700px){
+  .study-premium-card{
+    grid-template-rows:18px clamp(150px,27dvh,215px) auto minmax(42px,8dvh) minmax(0,1fr)!important;
+  }
+  .study-premium-image{
+    border-radius:12px;
+    padding:3px;
+  }
+  .ai-image-label{
+    top:4px!important;
+    inset-inline-end:4px!important;
+    min-height:14px!important;
+    padding:0 4px!important;
+    font-size:6px!important;
+  }
+  .ai-image-label svg{
+    width:7px!important;
+    height:7px!important;
+  }
+}
+
+@media(max-width:420px){
+  .study-premium-card{
+    grid-template-rows:17px clamp(135px,25dvh,185px) auto minmax(42px,8dvh) minmax(0,1fr)!important;
+  }
+  .study-premium-explanation{
+    display:flex!important;
+    height:30px!important;
+    min-height:30px!important;
+  }
+}
+
+@media(max-height:700px) and (max-width:700px){
+  .study-premium-card{
+    grid-template-rows:16px clamp(125px,24dvh,170px) auto minmax(38px,8dvh) minmax(0,1fr)!important;
+  }
+  .study-premium-explanation{
+    display:flex!important;
+    height:29px!important;
+    min-height:29px!important;
+  }
+}
