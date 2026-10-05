@@ -8,6 +8,7 @@ type Props = {
   priority?: boolean;
   sizes?: string;
   objectFit?: 'contain' | 'cover';
+  onError?: () => void;
 };
 
 export { resolveQuestionImageUrl } from '../utils/questionImages';
@@ -30,6 +31,7 @@ export default function OptimizedImage({
   priority = false,
   sizes,
   objectFit = 'contain',
+  onError,
 }: Props) {
   // AI images and other API media URLs are already resolved URLs; only local question assets need the sign/mechanic resolver.
   const canonicalSrc = useMemo(() => {
@@ -70,6 +72,7 @@ export default function OptimizedImage({
           }
           setFailed(true);
           setLoaded(true);
+          onError?.();
         }}
         className={`block w-full h-full object-${objectFit} ${loaded ? '' : 'opacity-0'}`}
       />
