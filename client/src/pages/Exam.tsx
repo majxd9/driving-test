@@ -342,7 +342,39 @@ export default function Exam() {
             />
           </div>
       <div className="exam-scroll-v2">
-        <div className="exam-image-slot-v2">{shouldShowQuestionImageBeforeAnswer(q) ? <OptimizedImage src={q.imageUrl ?? ''} alt="صورة السؤال" className="h-full w-full" priority objectFit="contain" /> : <div className="exam-image-placeholder-v2" aria-hidden="true"/>}</div>
+        <div className={`exam-image-slot-v2 ${q.aiImageUrl && shouldShowQuestionImageBeforeAnswer(q) ? 'has-two-images' : ''}`}>
+          {shouldShowQuestionImageBeforeAnswer(q) && (
+            <div className="exam-question-image-frame">
+              <OptimizedImage
+                src={q.imageUrl ?? ''}
+                alt="صورة السؤال"
+                className="h-full w-full"
+                priority
+                objectFit="contain"
+                sizes="(max-width:700px) 46vw, 380px"
+              />
+            </div>
+          )}
+          {q.aiImageUrl && (
+            <div className="exam-question-image-frame ai-frame">
+              <div className="ai-image-label" aria-label="صورة توضيحية">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m5 17 4-4 3 3 3-4 4 5"/></svg>
+                <span>صورة توضيحية</span>
+              </div>
+              <OptimizedImage
+                src={resolveApiUrl(q.aiImageUrl)}
+                alt="شرح بصري تعليمي للسؤال"
+                className="h-full w-full"
+                priority
+                objectFit="contain"
+                sizes="(max-width:700px) 46vw, 380px"
+              />
+            </div>
+          )}
+          {!shouldShowQuestionImageBeforeAnswer(q) && !q.aiImageUrl && (
+            <div className="exam-image-placeholder-v2" aria-hidden="true"/>
+          )}
+        </div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
         <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>setAnswers(a=>({...a,[q.id]:i}))} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{OPTION_NUMBERS[i] ?? String(i + 1)}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
         <DiagramRenderer question={q}/>
