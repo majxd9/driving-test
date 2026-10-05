@@ -5,7 +5,7 @@ import { QuestionCategory } from '../types';
 import SiteGuide from '../components/SiteGuide';
 import SpiritDriveScene from '../components/SpiritDriveScene';
 import SpiritNitro from '../components/SpiritNitro';
-import { createQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { playQuestionAudioPrompt, preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 import { api } from '../api/client';
 
 const Icon = ({type}:{type:'rules'|'signs'|'mechanic'|'arrow'}) => {
@@ -30,20 +30,15 @@ const categories:{key:QuestionCategory;title:string;subtitle:string;path:string;
 export default function Home(){
  const {user,logout}=useAuth();const navigate=useNavigate();const [total,setTotal]=useState<number|null>(user?.questionCount ?? null);
 
- const openStudy = (path: string) => {
-  const prompt = createQuestionAudioPrompt('question-audio-first-entry');
-  if (prompt) {
-    prompt.pause();
-    prompt.currentTime = 0;
-    void prompt.play().catch(() => undefined);
-  }
+ const openStudy = async (path: string) => {
+  await playQuestionAudioPrompt('question-audio-first-entry');
   navigate(path);
  };
 
  useEffect(() => {
-  createQuestionAudioPrompt('question-audio-first-entry');
-  createQuestionAudioPrompt('question-audio-enabled');
-  createQuestionAudioPrompt('question-audio-disabled');
+  preloadQuestionAudioPrompt('question-audio-first-entry');
+  preloadQuestionAudioPrompt('question-audio-enabled');
+  preloadQuestionAudioPrompt('question-audio-disabled');
  }, []);
 
  useEffect(()=>{
