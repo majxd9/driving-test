@@ -131,13 +131,13 @@ public sealed class AiTestRunService
         CancellationToken cancellationToken)
     {
         var row = await (
-            from testRun in _db.AiTestRuns.AsNoTracking()
+            from queryRun in _db.AiTestRuns.AsNoTracking()
             join question in _db.Questions.AsNoTracking()
-                on testRun.QuestionId equals question.Id
-            where testRun.Id == id
+                on queryRun.QuestionId equals question.Id
+            where queryRun.Id == id
             select new
             {
-                Run = testRun,
+                Run = queryRun,
                 QuestionText = question.Text,
                 Category = question.Category
             })
@@ -146,29 +146,29 @@ public sealed class AiTestRunService
         if (row is null)
             return null;
 
-        var testRun = row.Run;
+        var viewRun = row.Run;
         return new AiTestRunView(
-            testRun.Id,
-            testRun.QuestionId,
+            viewRun.Id,
+            viewRun.QuestionId,
             row.QuestionText,
             row.Category.ToString(),
-            testRun.Type.ToString(),
-            testRun.Provider,
-            testRun.Status.ToString(),
-            testRun.ContentHash,
-            testRun.Prompt,
-            testRun.NegativePrompt,
-            testRun.MediaBytes.Length > 0,
-            testRun.MediaBytes.Length > 0
-                ? $"/api/admin/ai-generation/test/{testRun.Id}/media?v={testRun.UpdatedAt.Ticks}"
+            viewRun.Type.ToString(),
+            viewRun.Provider,
+            viewRun.Status.ToString(),
+            viewRun.ContentHash,
+            viewRun.Prompt,
+            viewRun.NegativePrompt,
+            viewRun.MediaBytes.Length > 0,
+            viewRun.MediaBytes.Length > 0
+                ? $"/api/admin/ai-generation/test/{viewRun.Id}/media?v={viewRun.UpdatedAt.Ticks}"
                 : null,
-            testRun.MediaBytes.Length > 0 ? testRun.ContentType : null,
-            testRun.ErrorType,
-            testRun.ErrorMessage,
-            testRun.Attempts,
-            testRun.CreatedAt,
-            testRun.StartedAt,
-            testRun.CompletedAt);
+            viewRun.MediaBytes.Length > 0 ? viewRun.ContentType : null,
+            viewRun.ErrorType,
+            viewRun.ErrorMessage,
+            viewRun.Attempts,
+            viewRun.CreatedAt,
+            viewRun.StartedAt,
+            viewRun.CompletedAt);
     }
 
     public async Task<byte[]?> GetMediaAsync(long id, CancellationToken cancellationToken)
