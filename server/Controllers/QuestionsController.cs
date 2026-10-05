@@ -204,11 +204,8 @@ public class QuestionsController : ControllerBase
         if (question is null)
             return NotFound(new { message = "السؤال غير موجود." });
 
-        var currentHash = QuestionImagePromptBuilder.GetContentHash(question);
-
         // أي صورة AI مخزنة وموجودة في قاعدة البيانات متاحة للعرض.
         // لا نعتمد على حالة المراجعة هنا؛ الإدارة هي التي تقرر لاحقاً ما تريد حذفه.
-        _ = currentHash;
 
         // The URL contains both the content hash and generation timestamp, so a
         // regenerated image cannot remain trapped behind a previous immutable cache.
