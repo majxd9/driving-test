@@ -14,6 +14,31 @@ async function requestBlob(path: string, options: RequestInit = {}): Promise<Blo
   return res.blob();
 }
 
+type QuestionCacheEntry = {
+  value: import('./types').Question[];
+  expiresAt: number;
+};
+
+const questionCache = new Map<string, QuestionCacheEntry>();
+const questionInflight = new Map<string, Promise<import('./types').Question[]>>();
+const QUESTION_CACHE_TTL_MS = 30_000;
+
+async function getCachedQuestions(category: 'Ser' | 'Ishara' | 'Mechanic', force = false): Promise<import('./types').Question[]> {
+  const now = Date.now();
+  const cached = questionCache.get(category);
+  if (!force && cached && cached.expiresAt > now) return cached.value;
+  const existing = questionInflight.get(category);
+  if (!force && existing) return existing;
+  const promise = request<import('./types').Question[]>(`/api/questions?category=${category}`)
+    .then(value => {
+      questionCache.set(category, { value, expiresAt: Date.now() + QUESTION_CACHE_TTL_MS });
+      return value;
+    })
+    .finally(() => questionInflight.delete(category));
+  questionInflight.set(category, promise);
+  return promise;
+}
+
 function getDeviceId(): string { const key = 'drv_device_id'; let id = localStorage.getItem(key); if (!id) { id = crypto.randomUUID(); localStorage.setItem(key, id); } return id; }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -29,7 +54,9 @@ export const api = {
   warmup: () => request<{ status: string }>('/api/healthz', { method: 'GET', cache: 'no-store' }),
   me: () => request<import('../types').LoginResponse>('/api/auth/me'),
   logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
-  getQuestions: (category: 'Ser' | 'Ishara' | 'Mechanic') => request<import('../types').Question[]>(`/api/questions?category=${category}`),
+  getQuestions: (category: 'Ser' | 'Ishara' | 'Mechanic') => getCachedQuestions(category),
+  prefetchQuestions: (category: 'Ser' | 'Ishara' | 'Mechanic') => { void getCachedQuestions(category).catch(() => undefined); },
+  refreshQuestions: (category: 'Ser' | 'Ishara' | 'Mechanic') => getCachedQuestions(category, true),
   getExamQuestions: (modelId: number) => request<import('../types').ExamQuestion[]>(`/api/questions/exam/${modelId}`),
   submitExamAttempt: (data: { modelId: number; answers: Record<number, number> }) => request<import('../types').ExamSubmission>('/api/exam-attempts', { method: 'POST', body: JSON.stringify(data) }),
   admin: {
