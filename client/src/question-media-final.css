@@ -1,0 +1,70 @@
+/* Final question-media polish: keep dual-source images side-by-side and make the
+   explanatory AI marker intentionally quiet. Loaded after all legacy visual patches. */
+
+.study-premium-images.has-two-images,
+.exam-image-slot-v2.has-two-images{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:6px!important;
+  align-items:stretch!important;
+}
+
+.study-premium-images.has-two-images .study-premium-image,
+.exam-image-slot-v2.has-two-images .exam-question-image-frame{
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+
+.study-premium-images .study-premium-image,
+.exam-image-slot-v2 .exam-question-image-frame{
+  position:relative!important;
+  overflow:hidden!important;
+}
+
+.study-premium-image.ai-secondary .ai-image-label,
+.exam-question-image-frame.ai-frame .ai-image-label{
+  position:absolute!important;
+  top:7px!important;
+  inset-inline-end:7px!important;
+  z-index:8!important;
+  min-height:0!important;
+  width:auto!important;
+  padding:1px 4px!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:4px!important;
+  background:rgba(5,10,14,.16)!important;
+  color:rgba(255,255,255,.52)!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(2px)!important;
+  -webkit-backdrop-filter:blur(2px)!important;
+  font-size:6px!important;
+  line-height:1.15!important;
+  font-weight:700!important;
+  pointer-events:none!important;
+  text-shadow:0 1px 4px rgba(0,0,0,.72)!important;
+}
+
+.study-premium-image.ai-secondary .ai-image-label svg,
+.exam-question-image-frame.ai-frame .ai-image-label svg{
+  display:none!important;
+}
+
+@media(max-width:700px){
+  .study-premium-images.has-two-images,
+  .exam-image-slot-v2.has-two-images{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:5px!important;
+  }
+
+  .study-premium-image.ai-secondary .ai-image-label,
+  .exam-question-image-frame.ai-frame .ai-image-label{
+    top:5px!important;
+    inset-inline-end:5px!important;
+    padding:1px 3px!important;
+    font-size:5.5px!important;
+    background:rgba(5,10,14,.13)!important;
+    color:rgba(255,255,255,.48)!important;
+  }
+}
