@@ -11,7 +11,7 @@ import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
-import { createQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -63,9 +63,9 @@ export default function Study() {
     setJumpOpen(false);
     setJumpValue('1');
 
-    createQuestionAudioPrompt('question-audio-first-entry');
-    createQuestionAudioPrompt('question-audio-enabled');
-    createQuestionAudioPrompt('question-audio-disabled');
+    preloadQuestionAudioPrompt('question-audio-first-entry');
+    preloadQuestionAudioPrompt('question-audio-enabled');
+    preloadQuestionAudioPrompt('question-audio-disabled');
 
     api.getQuestions(category)
       .then((items) => {
@@ -99,17 +99,12 @@ export default function Study() {
     key: 'question-audio-enabled' | 'question-audio-disabled'
   ) => {
     const audio = audioRef.current;
-    const prompt = createQuestionAudioPrompt(key);
-    if (!audio || !prompt) return false;
-
-    const source = prompt.currentSrc || prompt.src;
-    if (!source) return false;
+    if (!audio) return false;
 
     audioModeRef.current = key === 'question-audio-enabled' ? 'enabled-prompt' : null;
     audio.pause();
-    audio.src = source;
+    audio.src = resolveApiUrl(`/api/questions/audio-prompt/${key}`);
     audio.preload = 'auto';
-    audio.load();
     audio.currentTime = 0;
 
     try {
