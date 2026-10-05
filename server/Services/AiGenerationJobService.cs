@@ -76,7 +76,7 @@ public sealed class AiGenerationJobService
     }
 
     public string AudioProvider =>
-        (_configuration["QUESTION_AUDIO_PROVIDER"] ?? "elevenlabs").Trim().ToLowerInvariant();
+        (_configuration["QUESTION_AUDIO_PROVIDER"] ?? "fish").Trim().ToLowerInvariant();
 
     public string AudioFallbackProvider =>
         HasEdenFallback("EDENAI_AUDIO_PROVIDER")
