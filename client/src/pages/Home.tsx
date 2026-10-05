@@ -5,7 +5,7 @@ import { QuestionCategory } from '../types';
 import SiteGuide from '../components/SiteGuide';
 import SpiritDriveScene from '../components/SpiritDriveScene';
 import SpiritNitro from '../components/SpiritNitro';
-import { preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { preloadQuestionAudioPrompt, unlockQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 import { api } from '../api/client';
 
 const Icon = ({type}:{type:'rules'|'signs'|'mechanic'|'arrow'}) => {
@@ -31,6 +31,8 @@ export default function Home(){
  const {user,logout}=useAuth();const navigate=useNavigate();const [total,setTotal]=useState<number|null>(user?.questionCount ?? null);
 
  const openStudy = (path: string) => {
+  // Unlock audio from the user's tap without playing the prompt audibly.
+  unlockQuestionAudioPrompt('question-audio-first-entry');
   navigate(path);
  };
 
