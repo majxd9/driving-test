@@ -213,13 +213,27 @@
   flex-basis:32px!important;
   border-radius:9px!important;
 }
-.study-premium-header .study-premium-back,
-.study-premium-header .study-premium-brand,
-.study-premium-header .study-premium-counter-wrap{
-  transform:translateY(-2px);
+.study-premium-header{
+  grid-template-columns:44px auto minmax(0,1fr) auto!important;
+}
+.study-premium-header .study-premium-brand{
+  text-align:center!important;
+  align-items:center!important;
+  justify-content:center!important;
+  transform:none;
+}
+.study-premium-header .study-premium-kicker{
+  width:auto!important;
+  text-align:center!important;
+  align-self:center!important;
+}
+.study-premium-header .study-premium-back{
+  transform:translateY(3px);
 }
 .study-premium-header .study-premium-counter-wrap{
+  transform:translateY(-5px);
   gap:4px!important;
+  justify-self:end!important;
 }
 @media(max-width:700px){
   .study-premium-header .study-top .question-audio-nav__status{
@@ -234,16 +248,51 @@
     flex-basis:30px!important;
   }
 }
-@media(max-width:430px){
+@media(max-width:700px){
   .study-premium-header{
-    grid-template-columns:40px minmax(0,1fr) auto!important;
+    grid-template-columns:38px auto minmax(0,1fr) auto!important;
     gap:7px!important;
-    padding-inline:9px!important;
+  }
+  .study-premium-header .study-premium-counter-wrap{
+    transform:translateY(-4px);
+  }
+  .study-premium-header .study-premium-brand{
+    min-width:82px;
   }
   .study-premium-header .study-top .question-audio-nav__status{
-    display:none!important;
+    max-width:88px!important;
+    font-size:7px!important;
+  }
+}
+@media(max-width:430px){
+  .study-premium-header{
+    grid-template-columns:36px auto minmax(58px,1fr) auto!important;
+    gap:4px!important;
+    padding-inline:7px!important;
+  }
+  .study-premium-header .study-premium-brand{
+    min-width:68px;
+  }
+  .study-premium-header .study-premium-brand strong{
+    font-size:11px;
+  }
+  .study-premium-header .study-premium-kicker{
+    font-size:7px;
+  }
+  .study-premium-header .study-top .question-audio-nav__status{
+    display:block!important;
+    max-width:58px!important;
+    font-size:6.2px!important;
+    line-height:1.15!important;
+  }
+  .study-premium-header .study-top .question-audio-nav__audio{
+    width:27px!important;
+    min-width:27px!important;
+    height:27px!important;
+    min-height:27px!important;
+    flex-basis:27px!important;
   }
   .study-premium-header .study-top{
-    gap:3px!important;
+    gap:2px!important;
   }
 }
