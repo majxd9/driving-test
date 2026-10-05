@@ -911,4 +911,26 @@ public sealed class AiGenerationAdminController : ControllerBase
         return Ok(await _jobs.ReviewAiImageAsync(id, false, cancellationToken));
     }
 
+    [HttpPost("review-image/{id:int}/hide")]
+    public async Task<IActionResult> HideReviewImage(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var hidden = await _jobs.HideAiImageAsync(id, cancellationToken);
+        return hidden
+            ? Ok(new { hidden = true, questionId = id })
+            : NotFound(new { message = "صورة AI غير موجودة لهذا السؤال." });
+    }
+
+    [HttpDelete("review-image/{id:int}")]
+    public async Task<IActionResult> DeleteReviewImage(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var deleted = await _jobs.DeleteAiImageAsync(id, cancellationToken);
+        return deleted
+            ? Ok(new { deleted = true, questionId = id })
+            : NotFound(new { message = "صورة AI غير موجودة لهذا السؤال." });
+    }
+
 }
