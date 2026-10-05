@@ -7,7 +7,7 @@ import DiagramRenderer from '../components/DiagramRenderer';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
-import { createQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 
 const DURATION = 15 * 60;
 const OPTION_NUMBERS = ['١', '٢', '٣', '٤', '٥', '٦'];
@@ -85,9 +85,9 @@ export default function Exam() {
   useEffect(() => { void loadExam(); }, [loadExam]);
 
   useEffect(() => {
-    createQuestionAudioPrompt('question-audio-first-entry');
-    createQuestionAudioPrompt('question-audio-enabled');
-    createQuestionAudioPrompt('question-audio-disabled');
+    preloadQuestionAudioPrompt('question-audio-first-entry');
+    preloadQuestionAudioPrompt('question-audio-enabled');
+    preloadQuestionAudioPrompt('question-audio-disabled');
   }, []);
 
 
@@ -135,16 +135,14 @@ export default function Exam() {
 
   const playSystemPromptOnMainAudio = useCallback(async (key: 'question-audio-enabled' | 'question-audio-disabled') => {
     const audio = audioRef.current;
-    const prompt = createQuestionAudioPrompt(key);
-    if (!audio || !prompt) return false;
-    const source = prompt.currentSrc || prompt.src;
-    if (!source) return false;
+    if (!audio) return false;
+
     audioModeRef.current = key === 'question-audio-enabled' ? 'enabled-prompt' : null;
     audio.pause();
-    audio.src = source;
+    audio.src = resolveApiUrl(`/api/questions/audio-prompt/${key}`);
     audio.preload = 'auto';
-    audio.load();
     audio.currentTime = 0;
+
     try {
       await audio.play();
       setAudioPlaying(true);
