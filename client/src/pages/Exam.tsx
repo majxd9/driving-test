@@ -192,7 +192,7 @@ export default function Exam() {
       audio.removeAttribute('src');
       audio.load();
     };
-  }, [currentAudioUrl, nextAudioUrl]);
+  }, [currentAudioUrl, nextAudioUrl, nextQuestionImageUrl, nextQuestionAiImageUrl]);
 
 
 
