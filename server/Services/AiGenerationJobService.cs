@@ -805,6 +805,52 @@ public sealed class AiGenerationJobService
                 cancellationToken);
     }
 
+    public async Task<bool> HideAiImageAsync(int questionId, CancellationToken cancellationToken)
+    {
+        var image = await _db.QuestionAiImages.SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken);
+        if (image is null || image.ImageBytes.Length == 0)
+            return false;
+
+        var currentHash = await _db.Questions
+            .Where(x => x.Id == questionId)
+            .Select(x => QuestionImagePromptBuilder.GetContentHash(x))
+            .SingleOrDefaultAsync(cancellationToken);
+
+        var review = await _db.AiImageReviews.SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken);
+        if (review is null)
+        {
+            review = new AiImageReview
+            {
+                QuestionId = questionId,
+                ContentHash = image.ContentHash,
+                CreatedAt = image.CreatedAt
+            };
+            _db.AiImageReviews.Add(review);
+        }
+
+        review.ContentHash = image.ContentHash;
+        review.Status = AiImageReviewStatus.Hidden;
+        review.ReviewedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> DeleteAiImageAsync(int questionId, CancellationToken cancellationToken)
+    {
+        var image = await _db.QuestionAiImages.SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken);
+        if (image is null)
+            return false;
+
+        _db.QuestionAiImages.Remove(image);
+
+        var review = await _db.AiImageReviews.SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken);
+        if (review is not null)
+            _db.AiImageReviews.Remove(review);
+
+        await _db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
     public async Task<AiImageReviewItem?> ReviewAiImageAsync(
         int questionId,
         bool approve,
