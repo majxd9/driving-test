@@ -160,8 +160,7 @@ public sealed class EdenAiQuestionImageGenerator : IQuestionImageGenerator
         resourceUrl = null;
         error = string.Empty;
 
-        if (!TryGetPropertyIgnoreCase(root, provider, out var providerNode) ||
-            providerNode.ValueKind != JsonValueKind.Object)
+        if (!TryGetProviderNode(root, provider, out var providerNode))
         {
             error = $"استجابة المزود المحدد غير موجودة. {DescribeResponseRoot(root)}";
             return false;
@@ -245,6 +244,37 @@ public sealed class EdenAiQuestionImageGenerator : IQuestionImageGenerator
         return keys.Length == 0
             ? "استجابة Eden AI فارغة من الخصائص."
             : $"مفاتيح استجابة Eden AI: {string.Join(", ", keys)}.";
+    }
+
+    private static bool TryGetProviderNode(
+        JsonElement root,
+        string provider,
+        out JsonElement providerNode)
+    {
+        // Eden may key the response by the exact configured provider
+        // ("openai") or by provider/model ("openai/gpt-image-1.5").
+        if (TryGetPropertyIgnoreCase(root, provider, out providerNode) &&
+            providerNode.ValueKind == JsonValueKind.Object)
+            return true;
+
+        if (root.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in root.EnumerateObject())
+            {
+                if (property.Value.ValueKind != JsonValueKind.Object)
+                    continue;
+
+                if (string.Equals(property.Name, provider, StringComparison.OrdinalIgnoreCase) ||
+                    property.Name.StartsWith(provider + "/", StringComparison.OrdinalIgnoreCase))
+                {
+                    providerNode = property.Value;
+                    return true;
+                }
+            }
+        }
+
+        providerNode = default;
+        return false;
     }
 
     private static bool TryGetPropertyIgnoreCase(
