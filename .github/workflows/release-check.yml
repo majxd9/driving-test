@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   client:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: client
@@ -44,7 +44,7 @@ jobs:
       - run: npm audit --omit=dev --audit-level=moderate
 
   server:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: server
