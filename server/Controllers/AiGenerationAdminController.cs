@@ -601,6 +601,7 @@ public sealed class AiGenerationAdminController : ControllerBase
         var entries = new List<(int QuestionId, string EntryName)>();
         var seenIds = new HashSet<int>();
         long totalUncompressed = 0;
+        string? commonRoot = null;
 
         await using var stream = file.OpenReadStream();
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false);
@@ -610,11 +611,34 @@ public sealed class AiGenerationAdminController : ControllerBase
             cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrEmpty(entry.Name)) continue;
 
-            var normalizedName = entry.FullName.Replace('\\\\', '/');
-            var baseName = Path.GetFileName(normalizedName);
-            if (!string.Equals(baseName, normalizedName, StringComparison.Ordinal))
+            var normalizedName = entry.FullName.Replace('\\', '/');
+            var parts = normalizedName.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            // Accept either 003.webp or one common root folder such as rady1/003.webp.
+            // Never accept deeper/nested paths or path traversal.
+            if (normalizedName.StartsWith("/", StringComparison.Ordinal) ||
+                parts.Any(part => part is "." or "..") ||
+                parts.Length > 2)
             {
                 problems.Add($"المسار غير مسموح: {entry.FullName}");
+                continue;
+            }
+
+            var baseName = parts[^1];
+            if (parts.Length == 2)
+            {
+                var root = parts[0];
+                if (commonRoot is null)
+                    commonRoot = root;
+                else if (!string.Equals(commonRoot, root, StringComparison.Ordinal))
+                {
+                    problems.Add($"تم العثور على أكثر من مجلد رئيسي داخل ZIP: {entry.FullName}");
+                    continue;
+                }
+            }
+            else if (commonRoot is not null)
+            {
+                problems.Add($"لا يمكن خلط صور داخل مجلد مع صور في جذر ZIP: {entry.FullName}");
                 continue;
             }
 
