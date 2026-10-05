@@ -354,7 +354,7 @@ export default function Study() {
         />
       </div>
       <main className="study-premium-stage">
-        <section className="study-premium-card">
+        <section className={`study-premium-card ${explanationNeeded ? 'has-explanation' : 'no-explanation'}`}>
           <SpiritTrafficSignal state={signalState} />
 
           <div className="study-premium-meta">
