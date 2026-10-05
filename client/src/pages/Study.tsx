@@ -479,7 +479,6 @@ export default function Study() {
                     priority
                     onError={() => setFailedAiImageId(q.id)}
                     showError={false}
-                    authenticatedMedia={isAdmin}
                   />
                   {isAdmin && adminImageToolsFor === 'ai' && (
                     <div className="study-admin-ai-tools" onClick={(event) => event.stopPropagation()}>
