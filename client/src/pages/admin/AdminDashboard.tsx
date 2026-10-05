@@ -403,7 +403,7 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
     <div><p>QUESTION IMAGE IMPORT</p><b>استيراد صور الأسئلة دفعة واحدة</b></div>
     <span className="status on">ربط حسب رقم السؤال</span>
    </div>
-   <p className="text-muted text-sm leading-relaxed">ارفع ملف ZIP يحتوي ملفات WebP بأسماء مثل <code dir="ltr">3.webp</code> و<code dir="ltr">153.webp</code>. النظام يتحقق من الرقم، السؤال الموجود، ونوع الملف، ثم يحفظ الصورة مباشرة مرتبطة بالسؤال نفسه ويحدّث hash النسخة الحالية.</p>
+   <p className="text-muted text-sm leading-relaxed">ارفع ملف ZIP يحتوي ملفات WebP بأسماء مثل <code dir="ltr">3.webp</code> و<code dir="ltr">153.webp</code>. الصور ترتبط حسب رقم السؤال وتبقى الصورة الأساسية منفصلة عنها. صورة AI معتمدة مسبقاً لا تُستبدل تلقائياً، وأرقام الأسئلة غير الموجودة في قاعدة البيانات يتم تجاهلها بدلاً من إلغاء الدفعة كلها.</p>
    <div className="ai-image-import-row">
     <label className="ai-image-import-input">
      <span>{importFile?importFile.name:'اختر ملف ZIP للصور'}</span>
@@ -416,8 +416,8 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
    {importBusy&&<small className="text-muted block mt-2">لا تغلق الصفحة حتى يكتمل رفع الملف وحفظ الصور.</small>}
    {importResult&&<div className={'ai-provider-message '+(importResult.invalid===0?'ok':'problem')}>
     <b>النتيجة: {importResult.imported+importResult.replaced} صورة مرتبطة.</b>
-    <span className="block mt-1">جديدة {importResult.imported} · استبدال {importResult.replaced} · أخطاء {importResult.invalid}</span>
-    {importResult.problems.length>0&&<details className="mt-2"><summary>عرض تفاصيل الأخطاء</summary><pre className="ai-import-problems">{importResult.problems.join('\\n')}</pre></details>}
+    <span className="block mt-1">جديدة {importResult.imported} · استبدال {importResult.replaced} · محفوظة/متجاهلة {importResult.skipped} · أخطاء {importResult.invalid}</span>
+    {importResult.problems.length>0&&<details className="mt-2"><summary>عرض التفاصيل</summary><pre className="ai-import-problems">{importResult.problems.join('\\n')}</pre></details>}
    </div>}
   </div>
 
