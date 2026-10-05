@@ -327,7 +327,6 @@ export default function Study() {
     try {
       await api.admin.removeQuestionImage(q.id);
       setQuestions(current => current.map(item => item.id === q.id ? { ...item, imageUrl: null } : item));
-      setFailedOriginalImageId(q.id);
       setAdminImageToolsFor(null);
     } finally {
       setAdminImageBusy(null);
