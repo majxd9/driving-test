@@ -209,7 +209,12 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
   let active=true;
   let objectUrl='';
   setReviewImageSrc('');
-  void fetch(resolveApiUrl(reviewItem.imageUrl),{credentials:'include',cache:'no-store'})
+  const controller = new AbortController();
+  void fetch(resolveApiUrl(reviewItem.imageUrl),{
+    credentials:'include',
+    cache:'force-cache',
+    signal:controller.signal
+  })
    .then(response=>{
     if(!response.ok)throw new Error('تعذر تحميل صورة المراجعة.');
     return response.blob();
