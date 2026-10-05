@@ -170,6 +170,9 @@ export default function Study() {
 
     const imageUrl = resolveQuestionImageUrl(nextQuestion.imageUrl);
     if (imageUrl) void preloadImage(imageUrl);
+    if (nextQuestion.aiImageUrl) {
+      void preloadImage(resolveApiUrl(nextQuestion.aiImageUrl));
+    }
   }, [index, questions]);
 
   const goTo = useCallback((nextIndex: number) => {
