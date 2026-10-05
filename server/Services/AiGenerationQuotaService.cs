@@ -141,6 +141,8 @@ public sealed class AiGenerationQuotaService
                     "MonthStart" timestamp with time zone NOT NULL PRIMARY KEY,
                     "GeneratedCount" integer NOT NULL
                 );
+                ALTER TABLE "AiGenerationUsage" ENABLE ROW LEVEL SECURITY;
+                REVOKE ALL ON TABLE "AiGenerationUsage" FROM anon, authenticated, service_role;
                 """, cancellationToken);
 
             _schemaReady = true;
