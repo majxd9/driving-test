@@ -145,7 +145,7 @@ builder.Services.AddScoped<FishAudioQuestionAudioGenerator>();
 builder.Services.AddScoped<FallbackQuestionAudioGenerator>();
 builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
 {
-    var provider = (builder.Configuration["QUESTION_AUDIO_PROVIDER"] ?? "elevenlabs").Trim();
+    var provider = (builder.Configuration["QUESTION_AUDIO_PROVIDER"] ?? "fish").Trim();
 
     if (string.Equals(provider, "local", StringComparison.OrdinalIgnoreCase))
         return sp.GetRequiredService<LocalQuestionAudioGenerator>();
