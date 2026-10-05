@@ -19,13 +19,16 @@ public class QuestionsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly AiGenerationJobService _generationJobs;
+    private readonly SystemAudioPromptService _systemAudioPrompts;
 
     public QuestionsController(
         AppDbContext db,
-        AiGenerationJobService generationJobs)
+        AiGenerationJobService generationJobs,
+        SystemAudioPromptService systemAudioPrompts)
     {
         _db = db;
         _generationJobs = generationJobs;
+        _systemAudioPrompts = systemAudioPrompts;
     }
 
     [HttpGet]
@@ -148,7 +151,16 @@ public class QuestionsController : ControllerBase
             .SingleOrDefaultAsync(x => x.Key == key, cancellationToken);
 
         if (prompt is null || prompt.AudioBytes.Length == 0)
-            return NotFound(new { message = "ملف رسالة الصوت غير موجود." });
+        {
+            await _systemAudioPrompts.EnsurePromptAsync(key, cancellationToken);
+
+            prompt = await _db.SystemAudios
+                .AsNoTracking()
+                .SingleOrDefaultAsync(x => x.Key == key, cancellationToken);
+        }
+
+        if (prompt is null || prompt.AudioBytes.Length == 0)
+            return NotFound(new { message = "تعذر توفير ملف رسالة الصوت حالياً." });
 
         Response.Headers.CacheControl = "public,max-age=31536000,immutable";
         Response.Headers.ETag = $"\"{prompt.ContentHash}\"";
