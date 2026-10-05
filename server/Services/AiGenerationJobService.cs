@@ -295,19 +295,64 @@ public sealed class AiGenerationJobService
 
     public async Task CleanupInvalidImageGenerationStateAsync(CancellationToken cancellationToken)
     {
-        // Remove only queued AI-image jobs for questions that have an authoritative
-        // original image/diagram. Never delete already generated AI media here.
-        await _db.Database.ExecuteSqlRawAsync("""
-            DELETE FROM "AiGenerationJobs"
-            WHERE "JobType" = 1
-              AND "QuestionId" IN (
-                    SELECT "Id"
-                    FROM "Questions"
-                    WHERE NULLIF(TRIM(COALESCE("ImageUrl", '')), '') IS NOT NULL
-                       OR "DiagramType" IS NOT NULL
-                       OR NULLIF(TRIM(COALESCE("DiagramUrl", '')), '') IS NOT NULL
-                  );
-            """, cancellationToken);
+        // Pending image jobs are executable work, so historical revisions must
+        // never remain claimable after a question changes. Also remove jobs for
+        // questions that already have an authoritative original/diagram or a
+        // matching stored AI image.
+        var questions = await _db.Questions
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var questionById = questions.ToDictionary(x => x.Id);
+        var currentHashes = questions.ToDictionary(
+            x => x.Id,
+            x => QuestionImagePromptBuilder.GetContentHash(x));
+
+        var images = await _db.QuestionAiImages
+            .AsNoTracking()
+            .Where(x => x.ImageBytes.Length > 0)
+            .Select(x => new { x.QuestionId, x.ContentHash })
+            .ToListAsync(cancellationToken);
+
+        var imageByQuestion = images.ToDictionary(x => x.QuestionId);
+        var pendingJobs = await _db.AiGenerationJobs
+            .Where(x => x.JobType == AiGenerationJobType.AiImage &&
+                        x.Status == AiGenerationJobStatus.Pending)
+            .ToListAsync(cancellationToken);
+
+        var removed = false;
+
+        foreach (var job in pendingJobs)
+        {
+            if (!questionById.TryGetValue(job.QuestionId, out var question))
+            {
+                _db.AiGenerationJobs.Remove(job);
+                removed = true;
+                continue;
+            }
+
+            var hasAuthoritativeImage =
+                !string.IsNullOrWhiteSpace(question.ImageUrl) ||
+                !string.IsNullOrWhiteSpace(question.DiagramType) ||
+                !string.IsNullOrWhiteSpace(question.DiagramUrl);
+
+            var currentHash = currentHashes[job.QuestionId];
+            var hasMatchingStoredImage =
+                imageByQuestion.TryGetValue(job.QuestionId, out var image) &&
+                string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal);
+
+            var isStaleRevision =
+                !string.Equals(job.ContentHash, currentHash, StringComparison.Ordinal);
+
+            if (hasAuthoritativeImage || hasMatchingStoredImage || isStaleRevision)
+            {
+                _db.AiGenerationJobs.Remove(job);
+                removed = true;
+            }
+        }
+
+        if (removed)
+            await _db.SaveChangesAsync(cancellationToken);
     }
 
     public async Task EnqueueMissingAsync(CancellationToken cancellationToken)
