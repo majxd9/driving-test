@@ -46,7 +46,7 @@ export default function Study() {
   const [failedOriginalImageId, setFailedOriginalImageId] = useState<number | null>(null);
   const [failedAiImageId, setFailedAiImageId] = useState<number | null>(null);
   const [adminImageBusy, setAdminImageBusy] = useState<'hide' | 'delete' | null>(null);
-  const [adminImageToolsOpen, setAdminImageToolsOpen] = useState(false);
+  const [adminImageToolsFor, setAdminImageToolsFor] = useState<'original' | 'ai' | null>(null);
 
   useEffect(() => {
     const prompt = createQuestionAudioPrompt('question-audio-enabled');
@@ -98,7 +98,7 @@ export default function Study() {
     setFailedOriginalImageId(null);
     setFailedAiImageId(null);
     setAdminImageBusy(null);
-    setAdminImageToolsOpen(false);
+    setAdminImageToolsFor(null);
   }, [index]);
 
   const currentAudioPath = questions[index]?.audioUrl ?? null;
@@ -231,6 +231,7 @@ export default function Study() {
     try {
       await api.admin.hideAiImageReview(q.id);
       setFailedAiImageId(q.id);
+      setAdminImageToolsFor(null);
     } finally {
       setAdminImageBusy(null);
     }
@@ -243,6 +244,32 @@ export default function Study() {
     try {
       await api.admin.deleteAiImageReview(q.id);
       setFailedAiImageId(q.id);
+      setAdminImageToolsFor(null);
+    } finally {
+      setAdminImageBusy(null);
+    }
+  };
+
+  const hideOriginalImageForAdmin = async () => {
+    if (!q.imageUrl || adminImageBusy) return;
+    setAdminImageBusy('hide');
+    try {
+      await api.admin.hideQuestionImage(q.id);
+      setFailedOriginalImageId(q.id);
+      setAdminImageToolsFor(null);
+    } finally {
+      setAdminImageBusy(null);
+    }
+  };
+
+  const removeOriginalImageForAdmin = async () => {
+    if (!q.imageUrl || adminImageBusy) return;
+    if (!window.confirm('إزالة الصورة الأصلية من هذا السؤال؟')) return;
+    setAdminImageBusy('delete');
+    try {
+      await api.admin.removeQuestionImage(q.id);
+      setFailedOriginalImageId(q.id);
+      setAdminImageToolsFor(null);
     } finally {
       setAdminImageBusy(null);
     }
@@ -402,6 +429,12 @@ export default function Study() {
             <div className="study-premium-images">
               {showOriginalImage && (
                 <div className="study-premium-image">
+                  <div
+                    className={`study-premium-image-inner-admin ${isAdmin && adminImageToolsFor === 'original' ? 'is-open' : ''}`}
+                    onClick={() => {
+                      if (isAdmin) setAdminImageToolsFor(current => current === 'original' ? null : 'original');
+                    }}
+                  >
                   <OptimizedImage
                     src={q.imageUrl!}
                     alt={`الصورة الأصلية للسؤال ${q.id}`}
@@ -410,14 +443,26 @@ export default function Study() {
                     objectFit="contain"
                     priority
                     onError={() => setFailedOriginalImageId(q.id)}
+                    showError={false}
                   />
+                  {isAdmin && adminImageToolsFor === 'original' && (
+                    <div className="study-admin-ai-tools" onClick={(event) => event.stopPropagation()}>
+                      <button type="button" onClick={() => void hideOriginalImageForAdmin()} disabled={adminImageBusy !== null}>
+                        {adminImageBusy === 'hide' ? '...' : 'إخفاء'}
+                      </button>
+                      <button type="button" className="danger" onClick={() => void removeOriginalImageForAdmin()} disabled={adminImageBusy !== null}>
+                        {adminImageBusy === 'delete' ? '...' : 'إزالة'}
+                      </button>
+                    </div>
+                  )}
+                  </div>
                 </div>
               )}
               {showAiImageForStudent && (
                 <div
-                  className={`study-premium-image ai-secondary ${isAdmin && adminImageToolsOpen ? 'admin-tools-open' : ''}`}
+                  className={`study-premium-image ai-secondary ${isAdmin && adminImageToolsFor === 'ai' ? 'admin-tools-open' : ''}`}
                   onClick={() => {
-                    if (isAdmin) setAdminImageToolsOpen(open => !open);
+                    if (isAdmin) setAdminImageToolsFor(current => current === 'ai' ? null : 'ai');
                   }}
                 >
                   <span className="ai-image-label" aria-label="صورة توضيحية">توضيحية</span>
@@ -436,8 +481,9 @@ export default function Study() {
                         objectFit="contain"
                         priority
                         onError={() => setFailedAiImageId(q.id)}
+                        showError={false}
                       />
-                      {isAdmin && adminImageToolsOpen && (
+                      {isAdmin && adminImageToolsFor === 'ai' && (
                         <div className="study-admin-ai-tools" onClick={(event) => event.stopPropagation()}>
                           <button type="button" onClick={() => void hideAiImageForAdmin()} disabled={adminImageBusy !== null}>
                             {adminImageBusy === 'hide' ? '...' : 'إخفاء'}
