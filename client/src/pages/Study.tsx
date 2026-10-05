@@ -465,7 +465,7 @@ export default function Study() {
           </div>
 
           {(showOriginalImage || showAiImageForStudent) ? (
-            <div className="study-premium-images">
+            <div className={`study-premium-images ${showOriginalImage && showAiImageForStudent ? 'has-two-images' : ''}`}>
               {showOriginalImage && (
                 <div className="study-premium-image">
                   <div
