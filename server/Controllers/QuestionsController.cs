@@ -204,6 +204,13 @@ public class QuestionsController : ControllerBase
         if (question is null)
             return NotFound(new { message = "السؤال غير موجود." });
 
+        var review = await _db.AiImageReviews
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
+
+        if (review?.Status == AiImageReviewStatus.Hidden)
+            return NotFound(new { message = "صورة AI مخفية لهذا السؤال." });
+
         // أي صورة AI مخزنة وموجودة في قاعدة البيانات متاحة للعرض.
         // لا نعتمد على حالة المراجعة هنا؛ الإدارة هي التي تقرر لاحقاً ما تريد حذفه.
 
