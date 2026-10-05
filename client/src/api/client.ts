@@ -64,6 +64,8 @@ export const api = {
     nextAiImageReview: () => request<import('../types').AiImageReviewItem|null>('/api/admin/ai-generation/review/next'),
     approveAiImageReview: (id:number) => request<import('../types').AiImageReviewItem|null>(`/api/admin/ai-generation/review/${id}/approve`, { method:'POST' }),
     rejectAiImageReview: (id:number) => request<import('../types').AiImageReviewItem|null>(`/api/admin/ai-generation/review/${id}/reject`, { method:'POST' }),
+    hideAiImageReview: (id:number) => request<{hidden:boolean;questionId:number}>(`/api/admin/ai-generation/review-image/${id}/hide`, { method:'POST' }),
+    deleteAiImageReview: (id:number) => request<{deleted:boolean;questionId:number}>(`/api/admin/ai-generation/review-image/${id}`, { method:'DELETE' }),
     resetAllAiImageReviews: () => request<{ reset:number }>('/api/admin/ai-generation/review/reset-all', { method:'POST' }),
     enqueueAllAudio: (retryFailed = false, regenerateCompleted = false) => request<import('../types').AiGenerationEnqueueResult>('/api/admin/ai-generation/audio', { method:'POST', body:JSON.stringify({ retryFailed, regenerateCompleted }) }),
     enqueueAllImages: (retryFailed = false, regenerateCompleted = false) => request<import('../types').AiGenerationEnqueueResult>('/api/admin/ai-generation/image', { method:'POST', body:JSON.stringify({ retryFailed, regenerateCompleted }) }),
