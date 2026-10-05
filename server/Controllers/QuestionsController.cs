@@ -220,7 +220,6 @@ public class QuestionsController : ControllerBase
         Response.Headers.CacheControl = "public,max-age=31536000,immutable";
         Response.Headers.ETag = $"\"{version}\"";
         Response.Headers["X-AI-Image-Hash"] = image.ContentHash;
-        Response.Headers["X-AI-Image-Current-Hash"] = currentHash;
         return File(image.ImageBytes, image.ContentType);
     }
 
