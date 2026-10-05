@@ -335,11 +335,6 @@ export default function Study() {
             </div>
           )}
         </div>
-      </header>
-
-      <div className="study-premium-progress"><span style={{ width: `${progress}%` }} /></div>
-
-
       <div className="question-audio-nav study-top" role="group" aria-label="التحكم بالصوت">
         <button
           type="button"
@@ -420,6 +415,11 @@ export default function Study() {
           }}
         />
       </div>
+      </header>
+
+      <div className="study-premium-progress"><span style={{ width: `${progress}%` }} /></div>
+
+
       <main className="study-premium-stage">
         <section className={`study-premium-card ${explanationNeeded ? 'has-explanation' : 'no-explanation'}`}>
           <SpiritTrafficSignal state={signalState} />
@@ -440,7 +440,7 @@ export default function Study() {
                     }}
                   >
                   <OptimizedImage
-                    src={q.imageUrl!}
+                    src={resolveQuestionImageUrl(q.imageUrl)}
                     alt={`الصورة الأصلية للسؤال ${q.id}`}
                     sizes="(max-width:700px) 96vw, 760px"
                     className="study-premium-image-el"
