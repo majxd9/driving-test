@@ -139,6 +139,13 @@ export const api = {
       request<import('../types').AiGenerationEnqueueResult>(
         '/api/admin/ai-generation/retry-failed/'+type,
         { method:'POST' }),
+    importAiImagesZip: (file: File) => {
+      const form = new FormData();
+      form.append('file', file, file.name);
+      return request<import('../types').AiImageImportResult>(
+        '/api/admin/ai-generation/import-zip',
+        { method: 'POST', body: form });
+    },
     completedAiImages: (limit = 24) =>
       request<import('../types').CompletedAiImageItem[]>(
         `/api/admin/ai-generation/completed-images?limit=${limit}`),
