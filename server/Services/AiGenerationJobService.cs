@@ -663,6 +663,11 @@ public sealed class AiGenerationJobService
             .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
             .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
 
+        var imageReviews = await _db.AiImageReviews
+            .AsNoTracking()
+            .Where(x => ids.Contains(x.QuestionId))
+            .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
+
         foreach (var question in questions)
         {
             if (audios.TryGetValue(question.Id, out var audio) &&
@@ -674,10 +679,13 @@ public sealed class AiGenerationJobService
                     $"/api/questions/{question.Id}/audio-play?v={audio.ContentHash}";
             }
 
-            if (images.TryGetValue(question.Id, out var image) && image.HasBytes)
+            if (images.TryGetValue(question.Id, out var image) &&
+                image.HasBytes &&
+                (!imageReviews.TryGetValue(question.Id, out var review) ||
+                 review.Status != AiImageReviewStatus.Hidden))
             {
-                // أي صورة AI مخزنة تعتبر متاحة للعرض حالياً.
-                // حالة المراجعة لا تحجب الصورة؛ الإدارة تستطيع إخفاء/حذف الصورة لاحقاً.
+                // Pending/Approved/Rejected لا تمنع العرض.
+                // Hidden فقط يحجب الصورة، والحذف يزيل السجل/البيانات.
                 question.AiImageUrl =
                     $"/api/questions/{question.Id}/ai-image?v={image.ContentHash}-{image.CreatedAt.Ticks}";
             }
