@@ -216,7 +216,6 @@ export default function Study() {
 
   const chosen = answers[q.id];
   const showImage = Boolean(q.imageUrl && (chosen !== undefined || shouldShowQuestionImageBeforeAnswer(q)));
-  const showAiImage = Boolean(q.aiImageUrl);
   const answered = Object.keys(answers).length;
   const correct = questions.filter(x => answers[x.id] === x.correctAnswerIndex).length;
   const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0;
