@@ -387,7 +387,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                     provider,
                     "unconfigured",
                     "أضف QUESTION_IMAGE_MODEL_FILENAME أو QUESTION_IMAGE_WORKFLOW_JSON.",
-                    endpoint));
+                    comfyEndpoint));
             }
 
             try
