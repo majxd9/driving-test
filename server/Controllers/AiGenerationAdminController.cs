@@ -345,27 +345,27 @@ public sealed class AiGenerationAdminController : ControllerBase
 
         if (provider == "comfyui")
         {
-            var endpoint = (_configuration["QUESTION_IMAGE_COMFYUI_URL"] ?? string.Empty).Trim();
+            var comfyEndpoint = (_configuration["QUESTION_IMAGE_COMFYUI_URL"] ?? string.Empty).Trim();
             var model = (_configuration["QUESTION_IMAGE_MODEL_FILENAME"] ?? string.Empty).Trim();
             var workflow = (_configuration["QUESTION_IMAGE_WORKFLOW_JSON"] ?? string.Empty).Trim();
 
-            if (string.IsNullOrWhiteSpace(endpoint))
+            if (string.IsNullOrWhiteSpace(comfyEndpoint))
             {
                 return Ok(new ImageProviderTestResult(
                     provider,
                     "unconfigured",
                     "يجب ضبط QUESTION_IMAGE_COMFYUI_URL.",
-                    endpoint));
+                    comfyEndpoint));
             }
 
-            if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var comfyUri) ||
+            if (!Uri.TryCreate(comfyEndpoint, UriKind.Absolute, out var comfyUri) ||
                 (string.IsNullOrWhiteSpace(comfyUri.Host)))
             {
                 return Ok(new ImageProviderTestResult(
                     provider,
                     "unconfigured",
                     "QUESTION_IMAGE_COMFYUI_URL ليس عنواناً صالحاً.",
-                    endpoint));
+                    comfyEndpoint));
             }
 
             if (!string.Equals(
@@ -378,7 +378,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                     provider,
                     "unreachable",
                     "عنوان ComfyUI يشير إلى localhost/127.0.0.1 في بيئة الإنتاج؛ هذا يشير إلى خادم Render نفسه وليس جهاز ComfyUI.",
-                    endpoint));
+                    comfyEndpoint));
             }
 
             if (string.IsNullOrWhiteSpace(model) && string.IsNullOrWhiteSpace(workflow))
@@ -406,14 +406,14 @@ public sealed class AiGenerationAdminController : ControllerBase
                         provider,
                         "error",
                         $"ComfyUI رفض فحص الاتصال: HTTP {(int)response.StatusCode}. {Truncate(details)}",
-                        endpoint));
+                        comfyEndpoint));
                 }
 
                 return Ok(new ImageProviderTestResult(
                     provider,
                     "connected",
                     $"ComfyUI متاح عبر الشبكة وتم التحقق من الإعداد الأساسي. {(string.IsNullOrWhiteSpace(model) ? "سيستخدم workflow المخصص." : $"Checkpoint: {model}")}",
-                    endpoint));
+                    comfyEndpoint));
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
@@ -421,7 +421,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                     provider,
                     "timeout",
                     "انتهت مهلة الاتصال بـComfyUI.",
-                    endpoint));
+                    comfyEndpoint));
             }
             catch (Exception ex)
             {
@@ -429,7 +429,7 @@ public sealed class AiGenerationAdminController : ControllerBase
                     provider,
                     "unreachable",
                     $"تعذر الاتصال بـComfyUI: {ex.Message}",
-                    endpoint));
+                    comfyEndpoint));
             }
         }
 
