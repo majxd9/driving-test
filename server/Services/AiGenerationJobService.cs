@@ -698,14 +698,20 @@ public sealed class AiGenerationJobService
             }
 
             if (images.TryGetValue(question.Id, out var image) &&
-                image.HasBytes &&
-                (!imageReviews.TryGetValue(question.Id, out var review) ||
-                 review.Status != AiImageReviewStatus.Hidden))
+                image.HasBytes)
             {
-                // Pending/Approved/Rejected لا تمنع العرض.
-                // Hidden فقط يحجب الصورة، والحذف يزيل السجل/البيانات.
-                question.AiImageUrl =
-                    $"/api/questions/{question.Id}/ai-image?v={image.ContentHash}-{image.CreatedAt.Ticks}";
+                var hasReview = imageReviews.TryGetValue(question.Id, out var review);
+                var canExposeImage = includeUnapprovedAiImages
+                    ? (!hasReview || review!.Status != AiImageReviewStatus.Hidden)
+                    : (hasReview && review!.Status == AiImageReviewStatus.Approved);
+
+                // الطلاب لا يحصلون على صورة AI إلا بعد موافقة الإدارة الصريحة.
+                // الإدارة فقط يمكنها رؤية الصور المعلّقة/المرفوضة للمراجعة.
+                if (canExposeImage)
+                {
+                    question.AiImageUrl =
+                        $"/api/questions/{question.Id}/ai-image?v={image.ContentHash}-{image.CreatedAt.Ticks}";
+                }
             }
         }
     }
