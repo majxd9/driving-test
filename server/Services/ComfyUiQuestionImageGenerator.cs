@@ -19,9 +19,12 @@ public sealed class ComfyUiQuestionImageGenerator : IQuestionImageGenerator
 
     public async Task<GeneratedImageResult> GenerateAsync(Question question, CancellationToken cancellationToken)
     {
-        var model = _configuration["QUESTION_IMAGE_MODEL_FILENAME"];
-        if (string.IsNullOrWhiteSpace(model))
-            throw new InvalidOperationException("لم يتم ضبط QUESTION_IMAGE_MODEL_FILENAME لخدمة ComfyUI.");
+        var model = (_configuration["QUESTION_IMAGE_MODEL_FILENAME"] ?? string.Empty).Trim();
+        var customWorkflow = (_configuration["QUESTION_IMAGE_WORKFLOW_JSON"] ?? string.Empty).Trim();
+
+        if (string.IsNullOrWhiteSpace(model) && string.IsNullOrWhiteSpace(customWorkflow))
+            throw new InvalidOperationException(
+                "لم يتم ضبط QUESTION_IMAGE_MODEL_FILENAME لخدمة ComfyUI، ولم يتم توفير QUESTION_IMAGE_WORKFLOW_JSON.");
 
         var client = _httpClientFactory.CreateClient("ComfyUI");
         var (positive, negative) = QuestionImagePromptBuilder.Build(question);
@@ -65,7 +68,14 @@ public sealed class ComfyUiQuestionImageGenerator : IQuestionImageGenerator
             if (historyItem.TryGetProperty("status", out var status) &&
                 status.TryGetProperty("status_str", out var statusString) &&
                 string.Equals(statusString.GetString(), "error", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("ComfyUI فشل في تنفيذ الـworkflow.");
+            {
+                var detail = status.TryGetProperty("messages", out var messages)
+                    ? messages.ToString()
+                    : string.Empty;
+
+                throw new InvalidOperationException(
+                    $"ComfyUI فشل في تنفيذ الـworkflow. {detail}".Trim());
+            }
 
             if (!historyItem.TryGetProperty("outputs", out var outputs))
                 continue;
