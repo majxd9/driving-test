@@ -278,22 +278,7 @@ export default function Exam() {
       <div className={`exam-timer-v2 ${seconds<=60?'urgent':''}`} aria-label={`الوقت المتبقي ${mm}:${ss}`}>{mm}:{ss}</div>
     </header>
     <div className="exam-progress-v2"><span style={{width:`${((current+1)/questions.length)*100}%`}}/></div>
-    {q.aiImageUrl && (
-      <div className="ai-question-image-card" aria-label="شرح بصري تعليمي">
-        <div className="ai-image-label" aria-label="صورة توضيحية">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m5 17 4-4 3 3 3-4 4 5"/></svg>
-          <span>صورة توضيحية</span>
-        </div>
-        <OptimizedImage
-          src={resolveApiUrl(q.aiImageUrl)}
-          alt="شرح بصري تعليمي للسؤال"
-          className="ai-question-image"
-          objectFit="contain"
-          sizes="(max-width:700px) 92vw, 760px"
-          priority
-        />
-      </div>
-    )}
+
 
     <main className="exam-stage-v2"><section className="exam-card-v2">
       <div className="question-audio-nav exam-inside" role="group" aria-label="التحكم بالصوت">
