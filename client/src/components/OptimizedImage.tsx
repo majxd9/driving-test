@@ -17,12 +17,17 @@ export { resolveQuestionImageUrl } from '../utils/questionImages';
 
 function withVersion(url: string) {
   if (!url || /^(data:|blob:)/i.test(url)) return url;
-  return `${url}${url.includes('?') ? '&' : '?'}v=20260928`;
+  // Bump the public-image cache key when the canonical image pack changes.
+  return `${url}${url.includes('?') ? '&' : '?'}v=20261005`;
 }
 
 function imageCandidates(src: string, canonicalSrc: string) {
-  const candidates = [withVersion(canonicalSrc)];
-  if (src && src !== canonicalSrc) candidates.push(withVersion(src));
+  // Try the cache-busted asset first, then the raw public URL. This keeps
+  // original images visible even when a CDN has a stale cached response.
+  const candidates = [withVersion(canonicalSrc), canonicalSrc];
+  if (src && src !== canonicalSrc) {
+    candidates.push(withVersion(src), src);
+  }
   return [...new Set(candidates.filter(Boolean))];
 }
 
