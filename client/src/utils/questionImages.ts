@@ -17,16 +17,20 @@ export function resolveQuestionImageUrl(src?: string | null): string {
   if (!src) return '';
   if (/^(data:|blob:)/i.test(src)) return src;
 
+  // Normalize legacy/absolute database values before matching the bundled
+  // public assets. Query strings and hashes must never change the asset path.
+  const cleanSrc = src.split(/[?#]/, 1)[0].replace(/\\/g, '/');
+
   // Reviewed 236..245 assets exist as SVG in the repository. Always resolve
   // these IDs to SVG even when the database still contains a legacy .webp path.
-  const reviewedSign = src.match(/(?:^|\/)sign_(23[6-9]|24[0-5])\.(?:svg|webp)$/i);
+  const reviewedSign = cleanSrc.match(/(?:^|\/)sign_(23[6-9]|24[0-5])\.(?:svg|webp)$/i);
   if (reviewedSign) return `${PRIMARY_IMAGE_BASE}/sign_${reviewedSign[1]}.svg`;
 
-  const diagramMatch = src.match(/(?:^|\/)sign_(30[0-6])\.svg$/i);
+  const diagramMatch = cleanSrc.match(/(?:^|\/)sign_(30[0-6])\.svg$/i);
   if (diagramMatch) return `${PRIMARY_IMAGE_BASE}/sign_${diagramMatch[1]}.svg`;
 
-  const mechanicPathMatch = src.match(/(?:^|\/)mechanic\/mechanic_(\d+)\.(?:webp|png|jpe?g)$/i);
-  const signMatch = src.match(/(?:^|\/)sign_(\d+)\.(?:webp|png|jpe?g|svg)$/i);
+  const mechanicPathMatch = cleanSrc.match(/(?:^|\/)mechanic\/mechanic_(\d+)\.(?:webp|png|jpe?g)$/i);
+  const signMatch = cleanSrc.match(/(?:^|\/)sign_(\d+)\.(?:webp|png|jpe?g|svg)$/i);
 
   if (mechanicPathMatch) {
     const number = Number(mechanicPathMatch[1]);
