@@ -46,6 +46,7 @@ export default function Study() {
   const [failedOriginalImageId, setFailedOriginalImageId] = useState<number | null>(null);
   const [failedAiImageId, setFailedAiImageId] = useState<number | null>(null);
   const [adminImageBusy, setAdminImageBusy] = useState<'hide' | 'delete' | null>(null);
+  const [adminImageToolsOpen, setAdminImageToolsOpen] = useState(false);
 
   useEffect(() => {
     const prompt = createQuestionAudioPrompt('question-audio-enabled');
@@ -97,6 +98,7 @@ export default function Study() {
     setFailedOriginalImageId(null);
     setFailedAiImageId(null);
     setAdminImageBusy(null);
+    setAdminImageToolsOpen(false);
   }, [index]);
 
   const currentAudioPath = questions[index]?.audioUrl ?? null;
@@ -412,7 +414,12 @@ export default function Study() {
                 </div>
               )}
               {showAiImageForStudent && (
-                <div className="study-premium-image ai-secondary">
+                <div
+                  className={`study-premium-image ai-secondary ${isAdmin && adminImageToolsOpen ? 'admin-tools-open' : ''}`}
+                  onClick={() => {
+                    if (isAdmin) setAdminImageToolsOpen(open => !open);
+                  }}
+                >
                   <span className="ai-image-label" aria-label="صورة توضيحية">توضيحية</span>
                   {q.aiImageGenerationStatus === 'Failed' ? (
                     <div className="study-premium-ai-unavailable" role="status">
@@ -430,7 +437,7 @@ export default function Study() {
                         priority
                         onError={() => setFailedAiImageId(q.id)}
                       />
-                      {isAdmin && (
+                      {isAdmin && adminImageToolsOpen && (
                         <div className="study-admin-ai-tools" onClick={(event) => event.stopPropagation()}>
                           <button type="button" onClick={() => void hideAiImageForAdmin()} disabled={adminImageBusy !== null}>
                             {adminImageBusy === 'hide' ? '...' : 'إخفاء'}
