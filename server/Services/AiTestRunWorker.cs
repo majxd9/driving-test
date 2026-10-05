@@ -119,6 +119,10 @@ public sealed class AiTestRunWorker : BackgroundService
                         .GenerateAsync(question, cancellationToken),
                     "local" => await services.GetRequiredService<LocalQuestionAudioGenerator>()
                         .GenerateAsync(question, cancellationToken),
+                    "fish" => await services.GetRequiredService<FishAudioQuestionAudioGenerator>()
+                        .GenerateAsync(question, cancellationToken),
+                    "fishaudio" => await services.GetRequiredService<FishAudioQuestionAudioGenerator>()
+                        .GenerateAsync(question, cancellationToken),
                     _ => throw new InvalidOperationException($"مزود الصوت غير مدعوم: {run.Provider}")
                 };
 
