@@ -85,6 +85,7 @@ public sealed class AiGenerationWorker : BackgroundService
 
                 if (DateTime.UtcNow >= nextScan)
                 {
+                    await jobs.CleanupInvalidImageGenerationStateAsync(stoppingToken);
                     await jobs.EnqueueMissingAsync(stoppingToken);
                     nextScan = DateTime.UtcNow.Add(scanEvery);
                 }
@@ -552,13 +553,18 @@ public sealed class AiGenerationWorker : BackgroundService
         // generation allowance because no usable image/audio was produced.
         return message.Contains("quota_exceeded", StringComparison.OrdinalIgnoreCase)
             || message.Contains("HTTP 402", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("HTTP 429", StringComparison.OrdinalIgnoreCase)
             || message.Contains("depleted your monthly included credits", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("limit: 0", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("rate limit", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("resource exhausted", StringComparison.OrdinalIgnoreCase)
             || message.Contains("HTTP 400", StringComparison.OrdinalIgnoreCase)
             || message.Contains("HTTP 401", StringComparison.OrdinalIgnoreCase)
             || message.Contains("HTTP 403", StringComparison.OrdinalIgnoreCase)
             || message.Contains("HTTP 422", StringComparison.OrdinalIgnoreCase)
             || message.Contains("sufficient permissions", StringComparison.OrdinalIgnoreCase)
             || message.Contains("permission_required", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("QUESTION_IMAGE_MODEL_FILENAME", StringComparison.OrdinalIgnoreCase)
             || message.Contains("لم يُرجع صورة فعلية", StringComparison.OrdinalIgnoreCase)
             || message.Contains("ليست ملف صورة صالحاً", StringComparison.OrdinalIgnoreCase)
             || message.Contains("ملف صورة فارغ", StringComparison.OrdinalIgnoreCase);
