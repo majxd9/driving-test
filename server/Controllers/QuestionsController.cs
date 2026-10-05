@@ -115,7 +115,10 @@ public class QuestionsController : ControllerBase
             picked.AddRange(categoryPicked);
         }
 
-        await _generationJobs.AttachStudentMediaUrlsAsync(picked, HttpContext.RequestAborted);
+        await _generationJobs.AttachStudentMediaUrlsAsync(
+            picked,
+            HttpContext.RequestAborted,
+            includeUnapprovedAiImages: User.IsInRole("Admin"));
 
         return Ok(picked.Select(q => new ExamQuestionResponse(
             q.Id,
@@ -211,8 +214,12 @@ public class QuestionsController : ControllerBase
         if (review?.Status == AiImageReviewStatus.Hidden)
             return NotFound(new { message = "صورة AI مخفية لهذا السؤال." });
 
-        // أي صورة AI مخزنة وموجودة في قاعدة البيانات متاحة للعرض.
-        // لا نعتمد على حالة المراجعة هنا؛ الإدارة هي التي تقرر لاحقاً ما تريد حذفه.
+        // الطلاب/الزوار لا يمكنهم طلب صورة AI قبل موافقة الإدارة.
+        // يبقى endpoint عاماً لأن عنصر <img> قد لا يرسل كوكي المصادقة
+        // عبر النطاقات، لكن الموافقة نفسها تُفرض هنا على مستوى الخادم.
+        if (!User.IsInRole("Admin") &&
+            (review is null || review.Status != AiImageReviewStatus.Approved))
+            return NotFound(new { message = "صورة AI بانتظار موافقة الإدارة." });
 
         // The URL contains both the content hash and generation timestamp, so a
         // regenerated image cannot remain trapped behind a previous immutable cache.
