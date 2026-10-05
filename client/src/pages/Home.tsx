@@ -28,10 +28,26 @@ const categories:{key:QuestionCategory;title:string;subtitle:string;path:string;
 export default function Home(){
  const {user,logout}=useAuth();const navigate=useNavigate();const [total,setTotal]=useState<number|null>(user?.questionCount ?? null);
 
- const openStudy = (path: string) => {
-  // Start this inside the user's click so browser autoplay policies do not block it.
-  void playQuestionAudioPrompt('question-audio-first-entry').catch(() => undefined);
-  navigate(path);
+ const openStudy = async (path: string) => {
+  // Start the entry message from the actual category-button click.
+  // Navigate only after playback has successfully started so mobile browsers do not
+  // cancel the audio when the Home page unmounts.
+  try {
+    const prompt = await import('../utils/questionAudioPrompts').then(m =>
+      m.createQuestionAudioPrompt('question-audio-first-entry')
+    );
+    if (prompt) {
+      prompt.pause();
+      prompt.currentTime = 0;
+      try {
+        await prompt.play();
+      } catch {
+        // Navigation must still happen even when autoplay policy blocks the prompt.
+      }
+    }
+  } finally {
+    navigate(path);
+  }
  };
 
  useEffect(()=>{
