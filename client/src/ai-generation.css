@@ -576,3 +576,182 @@
     height:100%!important;
   }
 }
+
+
+/* FINAL MEDIA FRAME LOCK — desktop/laptop training and exams. */
+@media (min-width: 701px) {
+  .study-premium-card {
+    grid-template-rows: 24px 280px 38px 58px minmax(0,1fr) 0 !important;
+  }
+
+  .study-premium-images,
+  .study-premium-no-image {
+    width:100% !important;
+    height:280px !important;
+    min-height:280px !important;
+    max-height:280px !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    overflow:hidden !important;
+  }
+
+  .study-premium-images {
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:8px !important;
+  }
+
+  .study-premium-image {
+    width:100% !important;
+    height:280px !important;
+    min-height:280px !important;
+    max-height:280px !important;
+    aspect-ratio:auto !important;
+    min-width:0 !important;
+    overflow:hidden !important;
+    box-sizing:border-box !important;
+  }
+
+  .study-premium-image-el,
+  .study-premium-image-inner-admin,
+  .study-premium-image-el img {
+    width:100% !important;
+    height:100% !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    object-fit:contain !important;
+    object-position:center center !important;
+  }
+
+  .study-premium-explanation {
+    height:38px !important;
+    min-height:38px !important;
+    max-height:38px !important;
+    box-sizing:border-box !important;
+  }
+
+  .study-premium-question {
+    height:58px !important;
+    min-height:58px !important;
+    max-height:58px !important;
+    box-sizing:border-box !important;
+  }
+
+  .exam-image-slot-v2 {
+    width:100% !important;
+    height:300px !important;
+    min-height:300px !important;
+    max-height:300px !important;
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:8px !important;
+    overflow:hidden !important;
+  }
+
+  .exam-image-slot-v2.has-two-images {
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+
+  .exam-question-image-frame {
+    width:100% !important;
+    height:300px !important;
+    min-height:300px !important;
+    max-height:300px !important;
+    aspect-ratio:auto !important;
+    overflow:hidden !important;
+    box-sizing:border-box !important;
+  }
+
+  .exam-question-image-frame img {
+    width:100% !important;
+    height:100% !important;
+    object-fit:contain !important;
+    object-position:center center !important;
+  }
+}
+
+/* Mobile exam image box: stable height, full-image contain, no crop/reflow. */
+@media (max-width: 700px) {
+  .exam-image-slot-v2 {
+    width:100% !important;
+    height:220px !important;
+    min-height:220px !important;
+    max-height:220px !important;
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:5px !important;
+    overflow:hidden !important;
+  }
+  .exam-image-slot-v2.has-two-images {
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+  .exam-question-image-frame {
+    width:100% !important;
+    height:220px !important;
+    min-height:220px !important;
+    max-height:220px !important;
+    aspect-ratio:auto !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .exam-image-slot-v2 {
+    height:170px !important;
+    min-height:170px !important;
+    max-height:170px !important;
+  }
+  .exam-question-image-frame {
+    height:170px !important;
+    min-height:170px !important;
+    max-height:170px !important;
+  }
+}
+
+/* Administrator-only controls on the exam AI image. */
+.exam-question-image-frame.ai-frame { position:relative !important; }
+.exam-admin-ai-tools {
+  position:absolute !important;
+  left:8px !important;
+  bottom:8px !important;
+  z-index:30 !important;
+  display:flex !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+  gap:5px !important;
+  padding:5px !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:10px !important;
+  background:rgba(4,11,15,.82) !important;
+  backdrop-filter:blur(7px) !important;
+}
+.exam-admin-ai-tools button {
+  min-width:44px !important;
+  height:28px !important;
+  padding:0 9px !important;
+  border:1px solid rgba(255,255,255,.13) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.07) !important;
+  color:#eef8f6 !important;
+  font:inherit !important;
+  font-size:9px !important;
+  font-weight:900 !important;
+  cursor:pointer !important;
+}
+.exam-admin-ai-tools button.danger {
+  color:#ffb1b3 !important;
+  border-color:rgba(255,90,100,.28) !important;
+  background:rgba(130,25,33,.24) !important;
+}
+.exam-admin-ai-tools button:disabled { opacity:.55 !important; cursor:wait !important; }
+@media(max-width:700px){
+  .exam-admin-ai-tools { left:6px !important; bottom:6px !important; gap:4px !important; padding:4px !important; }
+  .exam-admin-ai-tools button { min-width:40px !important; height:25px !important; font-size:8px !important; padding:0 7px !important; }
+}
+
+/* Review preview should show the complete generated image; no thumbnail crop. */
+.ai-review-preview img {
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+}
