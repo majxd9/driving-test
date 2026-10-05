@@ -9,65 +9,23 @@ export function resolveApiUrl(path: string): string {
 }
 
 async function requestBlob(path: string, options: RequestInit = {}): Promise<Blob> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      ...(options.body == null ? {} : { 'Content-Type': 'application/json' }),
-      ...(options.headers || {}),
-    },
-  });
-  if (!res.ok) {
-    let message = 'حدث خطأ غير متوقع';
-    try {
-      const body = await res.json();
-      message = Array.isArray(body) ? body.join('، ') : (body.message || message);
-    } catch { /* no JSON body */ }
-    throw new Error(message);
-  }
+  const res = await fetch(`${API_BASE}${path}`, { ...options, credentials: 'include', headers: { ...(options.body == null ? {} : { 'Content-Type': 'application/json' }), ...(options.headers || {}) } });
+  if (!res.ok) { let message = 'حدث خطأ غير متوقع'; try { const body = await res.json(); message = Array.isArray(body) ? body.join('، ') : (body.message || message); } catch { /* no JSON body */ } throw new Error(message); }
   return res.blob();
 }
 
-function getDeviceId(): string {
-  const key = 'drv_device_id';
-  let id = localStorage.getItem(key);
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem(key, id);
-  }
-  return id;
-}
+function getDeviceId(): string { const key = 'drv_device_id'; let id = localStorage.getItem(key); if (!id) { id = crypto.randomUUID(); localStorage.setItem(key, id); } return id; }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const isFormData = options.body instanceof FormData;
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      ...(isFormData || options.body == null ? {} : { 'Content-Type': 'application/json' }),
-      ...(options.headers || {}),
-    },
-  });
-
-  if (!res.ok) {
-    let message = 'حدث خطأ غير متوقع';
-    try {
-      const body = await res.json();
-      message = Array.isArray(body) ? body.join('، ') : (body.message || message);
-    } catch { /* no JSON body */ }
-    throw new Error(message);
-  }
+  const res = await fetch(`${API_BASE}${path}`, { ...options, credentials: 'include', headers: { ...(isFormData || options.body == null ? {} : { 'Content-Type': 'application/json' }), ...(options.headers || {}) } });
+  if (!res.ok) { let message = 'حدث خطأ غير متوقع'; try { const body = await res.json(); message = Array.isArray(body) ? body.join('، ') : (body.message || message); } catch { /* no JSON body */ } throw new Error(message); }
   if (res.status === 204) return undefined as T;
   return res.json();
 }
 
 export const api = {
-  login: (userName: string, password: string) => {
-    const body = new URLSearchParams({ userName, password, deviceId: getDeviceId() });
-    return request<import('../types').LoginResponse>('/api/auth/login', {
-      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body,
-    });
-  },
+  login: (userName: string, password: string) => { const body = new URLSearchParams({ userName, password, deviceId: getDeviceId() }); return request<import('../types').LoginResponse>('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body }); },
   warmup: () => request<{ status: string }>('/api/healthz', { method: 'GET', cache: 'no-store' }),
   me: () => request<import('../types').LoginResponse>('/api/auth/me'),
   logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
@@ -92,8 +50,9 @@ export const api = {
     aiGenerationControl: () => request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control'),
     startAllAiGeneration: () => request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/all/start', { method:'POST' }),
     stopAllAiGeneration: () => request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/all/stop', { method:'POST' }),
-    startAudioGeneration: () => request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/audio/start', { method:'POST' }),
-    reconcileAudioGeneration: () => request<{ created:number; closedHistoricalJobs:number; status:{total:number;stored:number;missing:number;pending:number;processing:number;failed:number} }>('/api/admin/ai-generation/audio-repair/reconcile', { method:'POST' }),
+    // The admin button now runs the repair/reconcile pipeline, not just a flag toggle.
+    startAudioGeneration: () => request<unknown>('/api/admin/ai-generation/audio-repair/reconcile', { method:'POST' }),
+    reconcileAudioGeneration: () => request<{ created:number; closedHistoricalJobs:number; stored:number; status:{total:number;stored:number;missing:number;pending:number;processing:number;failed:number} }>('/api/admin/ai-generation/audio-repair/reconcile', { method:'POST' }),
     audioGenerationRepairStatus: () => request<{ total:number;stored:number;missing:number;pending:number;processing:number;failed:number }>('/api/admin/ai-generation/audio-repair/status'),
     stopAudioGeneration: () => request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/audio/stop', { method:'POST' }),
     startImageGeneration: () => request<import('../types').AiGenerationControlState>('/api/admin/ai-generation/control/image/start', { method:'POST' }),
