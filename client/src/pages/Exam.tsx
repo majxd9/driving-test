@@ -7,7 +7,7 @@ import DiagramRenderer from '../components/DiagramRenderer';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
-import { preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { getCachedQuestionAudioPromptSource, preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 
 const DURATION = 15 * 60;
 const OPTION_NUMBERS = ['١', '٢', '٣', '٤', '٥', '٦'];
