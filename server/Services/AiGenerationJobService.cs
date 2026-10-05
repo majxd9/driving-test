@@ -642,7 +642,8 @@ public sealed class AiGenerationJobService
 
     public async Task AttachStudentMediaUrlsAsync(
         IEnumerable<Question> source,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool includeUnapprovedAiImages = false)
     {
         var questions = source.ToList();
         if (questions.Count == 0)
@@ -678,20 +679,18 @@ public sealed class AiGenerationJobService
                     $"/api/questions/{question.Id}/audio-play?v={audio.ContentHash}";
             }
 
-            if (images.TryGetValue(question.Id, out var image) &&
-                image.HasBytes &&
-                imageReviews.TryGetValue(question.Id, out var review) &&
-                review.Status == AiImageReviewStatus.Approved)
+            if (images.TryGetValue(question.Id, out var image) && image.HasBytes)
             {
                 var imageHash = QuestionImagePromptBuilder.GetContentHash(question);
+                var reviewApproved = imageReviews.TryGetValue(question.Id, out var review) &&
+                                     review.Status == AiImageReviewStatus.Approved &&
+                                     review.ContentHash == image.ContentHash &&
+                                     image.ContentHash == imageHash;
 
-                // A student only receives the image after explicit manual approval
-                // and only when that approved image matches the current prompt hash.
-                if (image.ContentHash == imageHash &&
-                    review.ContentHash == imageHash)
+                if (includeUnapprovedAiImages || reviewApproved)
                 {
                     question.AiImageUrl =
-                        $"/api/questions/{question.Id}/ai-image?v={imageHash}-{image.CreatedAt.Ticks}";
+                        $"/api/questions/{question.Id}/ai-image?v={image.ContentHash}-{image.CreatedAt.Ticks}";
                 }
             }
         }
