@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { api, resolveApiUrl } from '../api/client';
 import { Question, QuestionCategory } from '../types';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
@@ -23,6 +24,8 @@ const OPTION_NUMBERS = ['١', '٢', '٣', '٤', '٥', '٦'];
 export default function Study() {
   const { category } = useParams<{ category: QuestionCategory }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Admin';
   const theme = THEME[category as QuestionCategory] ?? THEME.Ser;
   const [questions, setQuestions] = useState<Question[]>([]);
   const [index, setIndex] = useState(0);
@@ -40,6 +43,9 @@ export default function Study() {
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [failedOriginalImageId, setFailedOriginalImageId] = useState<number | null>(null);
+  const [failedAiImageId, setFailedAiImageId] = useState<number | null>(null);
+  const [adminImageBusy, setAdminImageBusy] = useState<'hide' | 'delete' | null>(null);
 
   useEffect(() => {
     const prompt = createQuestionAudioPrompt('question-audio-enabled');
@@ -88,6 +94,9 @@ export default function Study() {
 
   useEffect(() => {
     setSignalState('pending');
+    setFailedOriginalImageId(null);
+    setFailedAiImageId(null);
+    setAdminImageBusy(null);
   }, [index]);
 
   const currentAudioPath = questions[index]?.audioUrl ?? null;
@@ -211,6 +220,31 @@ export default function Study() {
   const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0;
   const isLast = index === questions.length - 1;
   const explanationNeeded = chosen !== undefined && Boolean(q.explanation);
+  const showOriginalImage = Boolean(q.imageUrl && showImage && failedOriginalImageId !== q.id);
+  const showAiImageForStudent = Boolean(q.aiImageUrl && failedAiImageId !== q.id);
+
+  const hideAiImageForAdmin = async () => {
+    if (!q.aiImageUrl || adminImageBusy) return;
+    setAdminImageBusy('hide');
+    try {
+      await api.admin.hideAiImageReview(q.id);
+      setFailedAiImageId(q.id);
+    } finally {
+      setAdminImageBusy(null);
+    }
+  };
+
+  const deleteAiImageForAdmin = async () => {
+    if (!q.aiImageUrl || adminImageBusy) return;
+    if (!window.confirm('حذف صورة AI من هذا السؤال؟')) return;
+    setAdminImageBusy('delete');
+    try {
+      await api.admin.deleteAiImageReview(q.id);
+      setFailedAiImageId(q.id);
+    } finally {
+      setAdminImageBusy(null);
+    }
+  };
 
   const choose = (answerIndex: number) => {
     if (chosen !== undefined) return;
@@ -362,40 +396,51 @@ export default function Study() {
             <span>{chosen === undefined ? 'اختر إجابة' : 'تمت الإجابة'}</span>
           </div>
 
-          {(q.imageUrl && showImage) || showAiImage ? (
+          {(showOriginalImage || showAiImageForStudent) ? (
             <div className="study-premium-images">
-              {q.imageUrl && showImage && (
+              {showOriginalImage && (
                 <div className="study-premium-image">
                   <OptimizedImage
-                    src={q.imageUrl}
+                    src={q.imageUrl!}
                     alt={`الصورة الأصلية للسؤال ${q.id}`}
                     sizes="(max-width:700px) 96vw, 760px"
                     className="study-premium-image-el"
                     objectFit="contain"
                     priority
+                    onError={() => setFailedOriginalImageId(q.id)}
                   />
                 </div>
               )}
-              {q.aiImageUrl && (
+              {showAiImageForStudent && (
                 <div className="study-premium-image ai-secondary">
-                  <div className="ai-image-label" aria-label="صورة توضيحية">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m5 17 4-4 3 3 3-4 4 5"/></svg>
-                    <span>صورة توضيحية</span>
-                  </div>
+                  <span className="ai-image-label" aria-label="صورة توضيحية">توضيحية</span>
                   {q.aiImageGenerationStatus === 'Failed' ? (
                     <div className="study-premium-ai-unavailable" role="status">
                       صورة AI غير متاحة حالياً
                       <small>تعذر توليدها بسبب انتهاء رصيد التوليد المجاني.</small>
                     </div>
                   ) : (
-                    <OptimizedImage
-                      src={resolveApiUrl(q.aiImageUrl!)}
-                      alt="شرح بصري تعليمي AI"
-                      sizes="(max-width:700px) 96vw, 760px"
-                      className="study-premium-image-el"
-                      objectFit="contain"
-                      priority
-                    />
+                    <>
+                      <OptimizedImage
+                        src={resolveApiUrl(q.aiImageUrl!)}
+                        alt="شرح بصري تعليمي AI"
+                        sizes="(max-width:700px) 96vw, 760px"
+                        className="study-premium-image-el"
+                        objectFit="contain"
+                        priority
+                        onError={() => setFailedAiImageId(q.id)}
+                      />
+                      {isAdmin && (
+                        <div className="study-admin-ai-tools" onClick={(event) => event.stopPropagation()}>
+                          <button type="button" onClick={() => void hideAiImageForAdmin()} disabled={adminImageBusy !== null}>
+                            {adminImageBusy === 'hide' ? '...' : 'إخفاء'}
+                          </button>
+                          <button type="button" className="danger" onClick={() => void deleteAiImageForAdmin()} disabled={adminImageBusy !== null}>
+                            {adminImageBusy === 'delete' ? '...' : 'حذف'}
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}
