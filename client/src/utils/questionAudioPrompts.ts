@@ -83,16 +83,32 @@ export async function playQuestionAudioPrompt(
   const audio = promptPlaybackAudio;
   if (!audio) return false;
 
+  const directSource = resolveApiUrl(
+    `/api/questions/audio-prompt/${key}`
+  );
+
   try {
-    const source = await getQuestionAudioPromptSource(key);
     audio.pause();
-    audio.src = source;
+    audio.src = directSource;
     audio.preload = 'auto';
     audio.currentTime = 0;
+
+    // Important: call play() before awaiting any network work so a mobile
+    // browser/WebView still sees the original user gesture.
     await audio.play();
     return true;
   } catch {
-    audio.pause();
-    return false;
+    try {
+      const cachedSource = await getQuestionAudioPromptSource(key);
+      audio.pause();
+      audio.src = cachedSource;
+      audio.preload = 'auto';
+      audio.currentTime = 0;
+      await audio.play();
+      return true;
+    } catch {
+      audio.pause();
+      return false;
+    }
   }
 }
