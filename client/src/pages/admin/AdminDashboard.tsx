@@ -28,6 +28,7 @@ function CreateStudentForm({onCreated}:{onCreated:()=>void}){const [userName,set
 
 function Questions({questions,reload}:{questions:Question[];reload:()=>void}){
  const [editing,setEditing]=useState<Question|null>(null);
+ const [previewQuestion,setPreviewQuestion]=useState<Question|null>(null);
  const [search,setSearch]=useState('');
  const [busy,setBusy]=useState('');
  const runAudio=async(id:number,force:boolean)=>{setBusy(`a-${id}`);try{await api.admin.generateQuestionAudio(id,force);await reload()}catch(e){alert(e instanceof Error?e.message:'تعذر وضع مهمة الصوت في الطابور')}finally{setBusy('')}};
@@ -38,17 +39,91 @@ function Questions({questions,reload}:{questions:Question[];reload:()=>void}){
   <div className="toolbar"><div><p className="eyebrow">محرر المحتوى</p><h1>الأسئلة</h1></div><button className="primary-cta" onClick={()=>setEditing({id:0,category:'Ser',text:'',options:['','','',''],correctAnswerIndex:0,explanation:'',imageUrl:undefined,diagramType:undefined,diagramUrl:undefined,diagramTitle:undefined,diagramDescription:undefined,audioUrl:null})}>＋ إضافة سؤال</button></div>
   <input className="admin-search" placeholder="ابحث عن سؤال أو رقمه..." value={search} onChange={e=>setSearch(e.target.value)} aria-label="البحث عن سؤال"/>
   <div className="admin-card mt-4"><div className="table-wrap"><table><thead><tr><th>#</th><th>السؤال</th><th>القسم</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>
-  {filtered.map(q=><tr key={q.id}><td>{q.id}</td><td><b>{q.text}</b></td><td>{q.category}</td><td><div className="action-row"><span className={`status ${q.audioGenerationStatus==='Completed'?'on':'off'}`}>صوت: {label(q.audioGenerationStatus)}</span>{q.aiImageGenerationStatus!=='NotRequired'&&<span className={`status ${q.aiImageGenerationStatus==='Completed'?'on':'off'}`}>AI: {label(q.aiImageGenerationStatus)}</span>}</div></td><td><div className="action-row">
-    <button onClick={()=>setEditing(q)}>تعديل</button>
-    {q.audioUrl&&<AdminAudioPreview src={resolveApiUrl(q.audioUrl)}/>}
-    <AudioDiagnostics src={q.audioUrl?resolveApiUrl(q.audioUrl):null} questionId={q.id}/>
-    <button onClick={()=>void runAudio(q.id,Boolean(q.audioUrl))} disabled={busy===`a-${q.id}`}>{busy===`a-${q.id}`?'إضافة للطابور…':q.audioUrl?'إعادة توليد الصوت':'توليد الصوت'}</button>
-    {q.aiImageGenerationStatus!=='NotRequired'&&<button onClick={()=>void runImage(q.id,Boolean(q.aiImageUrl))} disabled={busy===`i-${q.id}`}>{busy===`i-${q.id}`?'إضافة للطابور…':q.aiImageUrl?'إعادة توليد الصورة':'توليد صورة AI'}</button>}
-    <button className="danger" onClick={()=>{if(confirm('حذف السؤال نهائياً؟'))void api.admin.deleteQuestion(q.id).then(reload)}}>حذف</button>
-  </div></td></tr>)}
+  {filtered.map(q=><tr key={q.id}>
+   <td>{q.id}</td>
+   <td><b>{q.text}</b></td>
+   <td>{q.category}</td>
+   <td><div className="action-row"><span className={`status ${q.audioGenerationStatus==='Completed'?'on':'off'}`}>صوت: {label(q.audioGenerationStatus)}</span>{q.aiImageGenerationStatus!=='NotRequired'&&<span className={`status ${q.aiImageGenerationStatus==='Completed'?'on':'off'}`}>AI: {label(q.aiImageGenerationStatus)}</span>}</div></td>
+   <td>
+    <div className="action-row">
+      <button type="button" onClick={()=>setPreviewQuestion(q)}>عرض التفاصيل</button>
+      {q.audioUrl
+        ? <AdminAudioPreview src={resolveApiUrl(q.audioUrl)}/>
+        : <button type="button" disabled title="لا يوجد ملف صوت محفوظ حالياً">🔊 استماع</button>}
+      <button type="button" onClick={()=>setPreviewQuestion(q)}>عرض الصور</button>
+      <button type="button" onClick={()=>setEditing(q)}>تعديل</button>
+      <AudioDiagnostics src={q.audioUrl?resolveApiUrl(q.audioUrl):null} questionId={q.id}/>
+      <button onClick={()=>void runAudio(q.id,Boolean(q.audioUrl))} disabled={busy===`a-${q.id}`}>{busy===`a-${q.id}`?'إضافة للطابور…':q.audioUrl?'إعادة توليد الصوت':'توليد الصوت'}</button>
+      {q.aiImageGenerationStatus!=='NotRequired'&&<button onClick={()=>void runImage(q.id,Boolean(q.aiImageUrl))} disabled={busy===`i-${q.id}`}>{busy===`i-${q.id}`?'إضافة للطابور…':q.aiImageUrl?'إعادة توليد الصورة':'توليد صورة AI'}</button>}
+      <button className="danger" onClick={()=>{if(confirm('حذف السؤال نهائياً؟'))void api.admin.deleteQuestion(q.id).then(reload)}}>حذف</button>
+    </div>
+   </td>
+  </tr>)}
   </tbody></table></div></div>
   {editing&&<QuestionEditor initial={editing} close={()=>setEditing(null)} saved={()=>{setEditing(null);reload()}}/>}
+  {previewQuestion&&<QuestionPreviewModal question={previewQuestion} close={()=>setPreviewQuestion(null)}/>}
  </section>;
+}
+
+function QuestionPreviewModal({question,close}:{question:Question;close:()=>void}){
+ const originalImage=resolveQuestionImageUrl(question.imageUrl);
+ const diagramImage=question.diagramUrl||'';
+ const aiImage=question.aiImageUrl?resolveApiUrl(question.aiImageUrl):'';
+ const categoryLabel=question.category==='Ser'?'قواعد السير':question.category==='Ishara'?'الإشارات':'الميكانيك';
+ return <div className="modal-backdrop" onClick={close}>
+  <div className="editor-modal max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+   <button className="modal-close" onClick={close} aria-label="إغلاق">×</button>
+   <div className="card-title mb-4"><div><p>تفاصيل السؤال</p><b>#{question.id} · {categoryLabel}</b></div></div>
+
+   <div className="space-y-4">
+    <div className="admin-card">
+     <p className="text-muted text-xs mb-2">نص السؤال</p>
+     <h3 className="text-base leading-8">{question.text}</h3>
+    </div>
+
+    <div className="admin-card">
+     <p className="text-muted text-xs mb-2">الاختيارات</p>
+     <div className="space-y-2">
+      {question.options.map((option,index)=><div key={index} className={`p-3 rounded-xl border ${index===question.correctAnswerIndex?'border-brand bg-brand/10':'border-line'}`}>
+       <b>{index+1}. </b>{option}{index===question.correctAnswerIndex&&<span className="mr-2 text-brand">✓ الإجابة الصحيحة</span>}
+      </div>)}
+     </div>
+    </div>
+
+    {(originalImage||diagramImage||aiImage)&&<div className="admin-card">
+      <p className="text-muted text-xs mb-3">الصور المرتبطة بالسؤال</p>
+      <div className="grid md:grid-cols-2 gap-4">
+       {originalImage&&<div><p className="text-xs text-muted mb-2">الصورة الأصلية</p><div className="admin-image-preview"><OptimizedImage src={question.imageUrl||''} alt="الصورة الأصلية للسؤال" priority sizes="320px"/></div></div>}
+       {diagramImage&&<div><p className="text-xs text-muted mb-2">Diagram</p><div className="admin-image-preview"><img src={resolveApiUrl(diagramImage)} alt={question.diagramTitle||'توضيح السؤال'} loading="eager"/></div></div>}
+       {aiImage&&<div><p className="text-xs text-muted mb-2">صورة AI</p><div className="admin-image-preview"><img src={aiImage} alt="صورة AI للسؤال" loading="eager"/></div></div>}
+      </div>
+     </div>}
+
+    {!originalImage&&!diagramImage&&!aiImage&&<div className="admin-card"><p className="text-muted">لا توجد صورة مرتبطة بهذا السؤال حالياً.</p></div>}
+
+    <div className="admin-card">
+     <p className="text-muted text-xs mb-2">الصوت</p>
+     {question.audioUrl
+       ? <AdminAudioPreview src={resolveApiUrl(question.audioUrl)}/>
+       : <div className="flex items-center gap-2"><span className="status off">لا يوجد صوت محفوظ</span><button type="button" onClick={()=>close()}>إغلاق</button></div>}
+    </div>
+
+    {question.explanation&&<div className="admin-card"><p className="text-muted text-xs mb-2">شرح الإجابة</p><p className="leading-7">{question.explanation}</p></div>}
+
+    {(question.diagramType||question.diagramTitle||question.diagramDescription||question.diagramUrl)&&<div className="admin-card">
+      <p className="text-muted text-xs mb-2">بيانات التوضيح</p>
+      {question.diagramType&&<p><b>النوع:</b> {question.diagramType}</p>}
+      {question.diagramTitle&&<p><b>العنوان:</b> {question.diagramTitle}</p>}
+      {question.diagramDescription&&<p><b>الوصف:</b> {question.diagramDescription}</p>}
+      {question.diagramUrl&&<p dir="ltr" className="break-all text-xs mt-2">{question.diagramUrl}</p>}
+    </div>}
+   </div>
+
+   <div className="action-row mt-5">
+    <button type="button" onClick={close}>إغلاق</button>
+   </div>
+  </div>
+ </div>;
 }
 
 function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types').AiGenerationOverview|null;reloadAiStatus:()=>Promise<void>}) {
