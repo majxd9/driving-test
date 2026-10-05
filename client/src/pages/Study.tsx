@@ -302,40 +302,7 @@ export default function Study() {
           <small>{answered} مجاب · {correct} صحيح</small>
         </div>
 
-        <div className="study-premium-counter-wrap">
-          <button
-            type="button"
-            className="study-premium-counter"
-            aria-label={`السؤال ${index + 1} من ${questions.length}. اضغط للانتقال إلى سؤال آخر`}
-            aria-expanded={jumpOpen}
-            onClick={() => {
-              setJumpValue(String(index + 1));
-              setJumpOpen(open => !open);
-            }}
-          >
-            <b>{index + 1}</b><span>من {questions.length}</span>
-          </button>
-
-          {jumpOpen && (
-            <div className="question-jump-popover">
-              <form onSubmit={(event) => void jumpToQuestion(event)}>
-                <input
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  min={1}
-                  max={questions.length}
-                  value={jumpValue}
-                  onChange={event => setJumpValue(event.target.value.replace(/\D/g, ''))}
-                  autoFocus
-                  aria-label="رقم السؤال"
-                />
-                <button type="submit">انتقال</button>
-              </form>
-              <small>اكتب رقم السؤال من 1 إلى {questions.length}</small>
-            </div>
-          )}
-        </div>
-      <div className="question-audio-nav study-top" role="group" aria-label="التحكم بالصوت">
+        <div className="question-audio-nav study-top" role="group" aria-label="التحكم بالصوت">
         <button
           type="button"
           className={"question-audio-nav__audio play " + (audioPlaying ? "playing" : "")}
@@ -415,6 +382,40 @@ export default function Study() {
           }}
         />
       </div>
+
+        <div className="study-premium-counter-wrap">
+          <button
+            type="button"
+            className="study-premium-counter"
+            aria-label={`السؤال ${index + 1} من ${questions.length}. اضغط للانتقال إلى سؤال آخر`}
+            aria-expanded={jumpOpen}
+            onClick={() => {
+              setJumpValue(String(index + 1));
+              setJumpOpen(open => !open);
+            }}
+          >
+            <b>{index + 1}</b><span>من {questions.length}</span>
+          </button>
+
+          {jumpOpen && (
+            <div className="question-jump-popover">
+              <form onSubmit={(event) => void jumpToQuestion(event)}>
+                <input
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  min={1}
+                  max={questions.length}
+                  value={jumpValue}
+                  onChange={event => setJumpValue(event.target.value.replace(/\D/g, ''))}
+                  autoFocus
+                  aria-label="رقم السؤال"
+                />
+                <button type="submit">انتقال</button>
+              </form>
+              <small>اكتب رقم السؤال من 1 إلى {questions.length}</small>
+            </div>
+          )}
+        </div>
       </header>
 
       <div className="study-premium-progress"><span style={{ width: `${progress}%` }} /></div>
