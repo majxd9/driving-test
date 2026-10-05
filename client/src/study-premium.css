@@ -348,3 +348,64 @@
     min-width:58px!important;
   }
 }
+
+
+/* Locked question position: image loading must never reflow the question text. */
+.study-premium-card{
+  grid-template-rows:24px 210px 38px 58px minmax(0,1fr)!important;
+}
+.study-premium-images,
+.study-premium-no-image{
+  height:210px!important;
+  min-height:210px!important;
+  max-height:210px!important;
+}
+.study-premium-question{
+  height:58px!important;
+  min-height:58px!important;
+  max-height:58px!important;
+  box-sizing:border-box!important;
+}
+.study-premium-header .study-premium-back{
+  transform:translateY(9px)!important;
+}
+
+@media(max-width:700px){
+  .study-premium-card{
+    grid-template-rows:18px 185px 30px 54px minmax(0,1fr)!important;
+  }
+  .study-premium-images,
+  .study-premium-no-image{
+    height:185px!important;
+    min-height:185px!important;
+    max-height:185px!important;
+  }
+  .study-premium-question{
+    height:54px!important;
+    min-height:54px!important;
+    max-height:54px!important;
+  }
+  .study-premium-header .study-premium-back{
+    transform:translateY(9px)!important;
+  }
+}
+
+@media(max-width:420px){
+  .study-premium-card{
+    grid-template-rows:17px 185px 30px 54px minmax(0,1fr)!important;
+  }
+  .study-premium-images,
+  .study-premium-no-image{
+    height:185px!important;
+    min-height:185px!important;
+    max-height:185px!important;
+  }
+  .study-premium-question{
+    height:54px!important;
+    min-height:54px!important;
+    max-height:54px!important;
+  }
+  .study-premium-header .study-premium-back{
+    transform:translateY(11px)!important;
+  }
+}
