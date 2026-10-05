@@ -77,6 +77,12 @@ export function preloadQuestionAudioPrompt(key: QuestionAudioPromptKey) {
   void getQuestionAudioPromptSource(key).catch(() => undefined);
 }
 
+export function getCachedQuestionAudioPromptSource(
+  key: QuestionAudioPromptKey
+): string | null {
+  return promptSourceCache.get(key) ?? null;
+}
+
 export function playQuestionAudioPrompt(
   key: QuestionAudioPromptKey
 ): Promise<boolean> {
