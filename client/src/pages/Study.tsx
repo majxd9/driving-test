@@ -230,6 +230,7 @@ export default function Study() {
     setAdminImageBusy('hide');
     try {
       await api.admin.hideAiImageReview(q.id);
+      setQuestions(current => current.map(item => item.id === q.id ? { ...item, aiImageUrl: null } : item));
       setFailedAiImageId(q.id);
       setAdminImageToolsFor(null);
     } finally {
@@ -243,6 +244,7 @@ export default function Study() {
     setAdminImageBusy('delete');
     try {
       await api.admin.deleteAiImageReview(q.id);
+      setQuestions(current => current.map(item => item.id === q.id ? { ...item, aiImageUrl: null } : item));
       setFailedAiImageId(q.id);
       setAdminImageToolsFor(null);
     } finally {
@@ -255,6 +257,7 @@ export default function Study() {
     setAdminImageBusy('hide');
     try {
       await api.admin.hideQuestionImage(q.id);
+      setQuestions(current => current.map(item => item.id === q.id ? { ...item, imageUrl: null } : item));
       setFailedOriginalImageId(q.id);
       setAdminImageToolsFor(null);
     } finally {
@@ -268,6 +271,7 @@ export default function Study() {
     setAdminImageBusy('delete');
     try {
       await api.admin.removeQuestionImage(q.id);
+      setQuestions(current => current.map(item => item.id === q.id ? { ...item, imageUrl: null } : item));
       setFailedOriginalImageId(q.id);
       setAdminImageToolsFor(null);
     } finally {
@@ -451,7 +455,7 @@ export default function Study() {
                         {adminImageBusy === 'hide' ? '...' : 'إخفاء'}
                       </button>
                       <button type="button" className="danger" onClick={() => void removeOriginalImageForAdmin()} disabled={adminImageBusy !== null}>
-                        {adminImageBusy === 'delete' ? '...' : 'إزالة'}
+                        {adminImageBusy === 'delete' ? '...' : 'إزالة من السؤال'}
                       </button>
                     </div>
                   )}
