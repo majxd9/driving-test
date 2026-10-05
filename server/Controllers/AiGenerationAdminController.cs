@@ -7,9 +7,6 @@ using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.Processing;
 
 namespace DrivingTestApi.Controllers;
 
@@ -733,16 +730,6 @@ public sealed class AiGenerationAdminController : ControllerBase
                 continue;
             }
 
-            try
-            {
-                bytes = await OptimizeImportedWebpAsync(bytes, cancellationToken);
-            }
-            catch (Exception ex) when (ex is UnknownImageFormatException or InvalidImageContentException or ImageFormatException)
-            {
-                problems.Add($"السؤال #{questionId}: تعذر معالجة صورة WebP للتحسين. {ex.Message}");
-                continue;
-            }
-
             var imageHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
             if (hashToQuestion.TryGetValue(imageHash, out var previousQuestionId) && previousQuestionId != questionId)
             {
@@ -817,41 +804,6 @@ public sealed class AiGenerationAdminController : ControllerBase
             problems));
     }
 
-
-    private static async Task<byte[]> OptimizeImportedWebpAsync(
-        byte[] source,
-        CancellationToken cancellationToken)
-    {
-        using var input = new MemoryStream(source, writable: false);
-        using var image = await Image.LoadAsync(input, cancellationToken);
-
-        const int maxWidth = 1600;
-        const int maxHeight = 900;
-        const int quality = 74;
-
-        if (image.Width <= maxWidth && image.Height <= maxHeight)
-            return source;
-
-        image.Mutate(ctx => ctx.Resize(new ResizeOptions
-        {
-            Size = new SixLabors.ImageSharp.Size(maxWidth, maxHeight),
-            Mode = SixLabors.ImageSharp.Processing.ResizeMode.Max
-        }));
-
-        await using var output = new MemoryStream();
-        await image.SaveAsync(
-            output,
-            new WebpEncoder
-            {
-                FileFormat = SixLabors.ImageSharp.Formats.Webp.WebpFileFormatType.Lossy,
-                Quality = quality,
-                Method = SixLabors.ImageSharp.Formats.Webp.WebpEncodingMethod.Level4,
-                UseAlphaCompression = true
-            },
-            cancellationToken);
-
-        return output.ToArray();
-    }
 
     [HttpGet("completed-images")]
     public async Task<ActionResult<IReadOnlyList<CompletedAiImageItem>>> CompletedImages(
