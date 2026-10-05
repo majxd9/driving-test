@@ -545,3 +545,34 @@
     font-size:7.5px!important;
   }
 }
+
+
+.study-premium-image-inner-admin{
+  position:relative!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  cursor:default;
+}
+.study-premium-image-inner-admin .study-premium-image-el{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+}
+.study-premium-image-inner-admin.is-open{
+  cursor:pointer;
+}
+.study-premium-image.ai-secondary{
+  cursor:default;
+}
+.study-premium-image.ai-secondary.admin-tools-open{
+  cursor:pointer!important;
+}
+@media(max-width:700px){
+  .study-premium-image-inner-admin{
+    width:100%!important;
+    height:100%!important;
+  }
+}
