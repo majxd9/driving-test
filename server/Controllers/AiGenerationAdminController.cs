@@ -697,15 +697,31 @@ public sealed class AiGenerationAdminController : ControllerBase
             .Where(q => ids.Contains(q.Id))
             .ToDictionaryAsync(q => q.Id, cancellationToken);
 
-        foreach (var id in ids)
-            if (!questions.ContainsKey(id))
-                problems.Add($"السؤال #{id} غير موجود في قاعدة البيانات.");
+        // The archive may contain IDs from a newer/older question bank revision.
+        // Missing question rows must not cancel an otherwise valid batch.
+        var missingQuestionIds = ids
+            .Where(id => !questions.ContainsKey(id))
+            .Distinct()
+            .OrderBy(id => id)
+            .ToArray();
+
+        entries = entries
+            .Where(entry => questions.ContainsKey(entry.QuestionId))
+            .ToList();
 
         if (problems.Count > 0)
             return BadRequest(new
             {
                 message = "تم إيقاف الاستيراد قبل الكتابة لأن ملف ZIP يحتوي مشاكل في البنية أو أرقام الأسئلة.",
                 problems
+            });
+
+        if (entries.Count == 0)
+            return BadRequest(new
+            {
+                message = "لم يبقَ أي سؤال صالح للاستيراد بعد مطابقة أرقام الأسئلة مع قاعدة البيانات.",
+                skipped = missingQuestionIds.Length,
+                problems = missingQuestionIds.Select(id => $"السؤال #{id} غير موجود في قاعدة البيانات.").ToArray()
             });
 
         var existingImages = await _db.QuestionAiImages
@@ -717,13 +733,36 @@ public sealed class AiGenerationAdminController : ControllerBase
             .GroupBy(x => x.ImageHash, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.First().QuestionId, StringComparer.OrdinalIgnoreCase);
 
+        var existingImageQuestionIds = existingImages
+            .Select(x => x.QuestionId)
+            .Distinct()
+            .ToArray();
+        var existingReviews = existingImageQuestionIds.Length == 0
+            ? new Dictionary<int, AiImageReviewStatus>()
+            : await _db.AiImageReviews
+                .AsNoTracking()
+                .Where(x => existingImageQuestionIds.Contains(x.QuestionId))
+                .ToDictionaryAsync(x => x.QuestionId, x => x.Status, cancellationToken);
+
         var imported = 0;
         var replaced = 0;
+        var skipped = missingQuestionIds.Length;
         var importedIds = new List<int>();
 
         foreach (var (questionId, entryName) in entries)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            // QuestionAiImages intentionally stores one active AI image per question.
+            // Never overwrite an image that was already approved by an administrator
+            // just because a later ZIP happens to contain the same question ID.
+            if (existingReviews.TryGetValue(questionId, out var existingStatus) &&
+                existingStatus == AiImageReviewStatus.Approved)
+            {
+                skipped++;
+                continue;
+            }
+
             var entry = archive.GetEntry(entryName);
             var question = questions[questionId];
             if (entry is null)
@@ -812,13 +851,15 @@ public sealed class AiGenerationAdminController : ControllerBase
 
         Response.Headers.CacheControl = "no-store";
         return Ok(new AiImageImportResult(
-            entries.Count,
+            ids.Length,
             imported,
             replaced,
-            0,
+            skipped,
             problems.Count,
             importedIds.OrderBy(x => x).ToArray(),
-            problems));
+            problems.Concat(
+                missingQuestionIds.Select(id => $"السؤال #{id} غير موجود في قاعدة البيانات وتم تجاهله.")
+            ).ToArray()));
     }
 
 
