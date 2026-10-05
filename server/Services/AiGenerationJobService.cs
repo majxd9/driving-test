@@ -670,9 +670,10 @@ public sealed class AiGenerationJobService
         foreach (var question in questions)
         {
             if (audios.TryGetValue(question.Id, out var audio) &&
-                audio.HasBytes &&
-                IsMatchingAudioHash(audio.ContentHash, question))
+                audio.HasBytes)
             {
+                // A real stored audio file is playable regardless of which
+                // historical TTS hash produced it. Hash is freshness metadata.
                 question.AudioUrl =
                     $"/api/questions/{question.Id}/audio-play?v={audio.ContentHash}";
             }
@@ -1123,8 +1124,7 @@ public sealed class AiGenerationJobService
             .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
             .SingleOrDefaultAsync(cancellationToken);
 
-        return audio.HasBytes &&
-               IsMatchingAudioHash(audio.ContentHash, question);
+        return audio.HasBytes;
     }
 
     private async Task<bool> HasMatchingImageAsync(
@@ -1149,8 +1149,7 @@ public sealed class AiGenerationJobService
     {
         var audioHash = QuestionAudioTextBuilder.GetCurrentHash(question);
         var audioReady = audios.TryGetValue(question.Id, out var audio) &&
-                         audio.HasBytes &&
-                         IsMatchingAudioHash(audio.ContentHash, question);
+                         audio.HasBytes;
 
         question.AudioUrl = audioReady
             ? $"/api/questions/{question.Id}/audio-play?v={audio.ContentHash}"
@@ -1238,9 +1237,7 @@ public sealed class AiGenerationJobService
                 audios is not null &&
                 audios.TryGetValue(question.Id, out var audio))
             {
-                isCompleted =
-                    audio.HasBytes &&
-                    IsMatchingAudioHash(audio.ContentHash, question);
+                isCompleted = audio.HasBytes;
             }
             else if (type == AiGenerationJobType.AiImage &&
                      images is not null &&
