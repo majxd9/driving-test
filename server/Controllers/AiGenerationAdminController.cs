@@ -296,11 +296,141 @@ public sealed class AiGenerationAdminController : ControllerBase
                     route));
             }
 
-            return Ok(new ImageProviderTestResult(
-                provider,
-                "connected",
-                $"تم العثور على مفتاح Gemini وإعداد مزود الصور {model}. هذا الفحص لا ينفذ توليداً مدفوعاً.",
-                route));
+            try
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(TimeSpan.FromSeconds(6));
+
+                using var client = _httpClientFactory.CreateClient("Gemini");
+                using var request = new HttpRequestMessage(
+                    HttpMethod.Get,
+                    $"v1beta/models/{Uri.EscapeDataString(model)}");
+                request.Headers.Add("x-goog-api-key", token);
+
+                using var response = await client.SendAsync(request, timeout.Token);
+                var details = await response.Content.ReadAsStringAsync(timeout.Token);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return Ok(new ImageProviderTestResult(
+                        provider,
+                        "error",
+                        $"فشل التحقق من Gemini للموديل {model}: HTTP {(int)response.StatusCode}. {Truncate(details)}",
+                        route));
+                }
+
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "connected",
+                    $"مفتاح Gemini صالح والموديل {model} معروف لدى API. هذا الفحص لا ينفذ توليد صورة.",
+                    route));
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "timeout",
+                    "انتهت مهلة فحص Gemini.",
+                    route));
+            }
+            catch (Exception ex)
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "error",
+                    $"تعذر فحص Gemini: {ex.Message}",
+                    route));
+            }
+        }
+
+        if (provider == "comfyui")
+        {
+            var endpoint = (_configuration["QUESTION_IMAGE_COMFYUI_URL"] ?? string.Empty).Trim();
+            var model = (_configuration["QUESTION_IMAGE_MODEL_FILENAME"] ?? string.Empty).Trim();
+            var workflow = (_configuration["QUESTION_IMAGE_WORKFLOW_JSON"] ?? string.Empty).Trim();
+
+            if (string.IsNullOrWhiteSpace(endpoint))
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "unconfigured",
+                    "يجب ضبط QUESTION_IMAGE_COMFYUI_URL.",
+                    endpoint));
+            }
+
+            if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var comfyUri) ||
+                (string.IsNullOrWhiteSpace(comfyUri.Host)))
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "unconfigured",
+                    "QUESTION_IMAGE_COMFYUI_URL ليس عنواناً صالحاً.",
+                    endpoint));
+            }
+
+            if (!string.Equals(
+                    _configuration["ASPNETCORE_ENVIRONMENT"],
+                    "Development",
+                    StringComparison.OrdinalIgnoreCase) &&
+                comfyUri.IsLoopback)
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "unreachable",
+                    "عنوان ComfyUI يشير إلى localhost/127.0.0.1 في بيئة الإنتاج؛ هذا يشير إلى خادم Render نفسه وليس جهاز ComfyUI.",
+                    endpoint));
+            }
+
+            if (string.IsNullOrWhiteSpace(model) && string.IsNullOrWhiteSpace(workflow))
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "unconfigured",
+                    "أضف QUESTION_IMAGE_MODEL_FILENAME أو QUESTION_IMAGE_WORKFLOW_JSON.",
+                    endpoint));
+            }
+
+            try
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(TimeSpan.FromSeconds(6));
+
+                using var client = _httpClientFactory.CreateClient("ComfyUI");
+                using var request = new HttpRequestMessage(HttpMethod.Get, "/system_stats");
+                using var response = await client.SendAsync(request, timeout.Token);
+                var details = await response.Content.ReadAsStringAsync(timeout.Token);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return Ok(new ImageProviderTestResult(
+                        provider,
+                        "error",
+                        $"ComfyUI رفض فحص الاتصال: HTTP {(int)response.StatusCode}. {Truncate(details)}",
+                        endpoint));
+                }
+
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "connected",
+                    $"ComfyUI متاح عبر الشبكة وتم التحقق من الإعداد الأساسي. {(string.IsNullOrWhiteSpace(model) ? "سيستخدم workflow المخصص." : $"Checkpoint: {model}")}",
+                    endpoint));
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "timeout",
+                    "انتهت مهلة الاتصال بـComfyUI.",
+                    endpoint));
+            }
+            catch (Exception ex)
+            {
+                return Ok(new ImageProviderTestResult(
+                    provider,
+                    "unreachable",
+                    $"تعذر الاتصال بـComfyUI: {ex.Message}",
+                    endpoint));
+            }
         }
 
         if (provider == "huggingface")
