@@ -168,6 +168,16 @@ export interface CompletedAiImageItem {
   createdAt: string;
 }
 
+export interface AiImageImportResult {
+  totalEntries: number;
+  imported: number;
+  replaced: number;
+  skipped: number;
+  invalid: number;
+  importedQuestionIds: number[];
+  problems: string[];
+}
+
 export interface AiImageReviewItem {
   questionId: number;
   questionText: string;
