@@ -759,3 +759,223 @@
   object-fit:contain !important;
   object-position:center center !important;
 }
+
+
+/* TRAINING LAYOUT RESTORE — let study-final-lock.css remain authoritative. */
+/* The AI media styles above also contain historical training layout overrides.
+   Keep them for exam/AI previews, but the student training screen must use the
+   stable Study layout from study-final-lock.css. This block is intentionally last. */
+
+.study-premium-card{
+  display:grid!important;
+  position:relative!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:20px 120px 62px minmax(0,1fr) 0 0 44px!important;
+  gap:5px!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  padding:6px!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+
+.study-premium-meta{
+  position:static!important;
+  grid-row:1!important;
+  width:100%!important;
+  height:20px!important;
+  min-height:20px!important;
+  max-height:20px!important;
+}
+
+.study-premium-images,
+.study-premium-no-image{
+  position:static!important;
+  grid-row:2!important;
+  width:100%!important;
+  height:120px!important;
+  min-height:120px!important;
+  max-height:120px!important;
+  margin:0!important;
+  padding:4px!important;
+  overflow:hidden!important;
+  display:flex!important;
+  flex-direction:row!important;
+  gap:8px!important;
+  box-sizing:border-box!important;
+}
+
+.study-premium-images .study-premium-image{
+  flex:1 1 0!important;
+  width:0!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-height:none!important;
+  aspect-ratio:auto!important;
+  padding:4px!important;
+  box-sizing:border-box!important;
+}
+
+.study-premium-image-inner-admin,
+.study-premium-image-el,
+.study-premium-image-el img{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+
+.study-premium-explanation,
+.study-premium-diagram{
+  position:static!important;
+  display:none!important;
+}
+
+.study-premium-question{
+  position:static!important;
+  grid-row:3!important;
+  width:100%!important;
+  height:62px!important;
+  min-height:62px!important;
+  max-height:62px!important;
+  margin:0!important;
+  padding:4px 10px!important;
+  box-sizing:border-box!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  overflow:hidden!important;
+  z-index:auto!important;
+}
+
+.study-premium-answers{
+  position:static!important;
+  grid-row:4!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  grid-template-rows:repeat(var(--option-count,4),minmax(0,1fr))!important;
+  gap:6px!important;
+  z-index:auto!important;
+}
+
+.study-premium-option{
+  position:static!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  min-width:0!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  padding:8px 10px!important;
+  transform:none!important;
+}
+
+/* Mobile: restore the fixed image slot immediately above the question. */
+@media(max-width:700px){
+  .study-premium-card{
+    display:grid!important;
+    grid-template-rows:18px 112px 58px minmax(0,1fr) 0 0 42px!important;
+    gap:4px!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    padding:5px!important;
+    overflow:hidden!important;
+  }
+
+  .study-premium-meta{
+    grid-row:1!important;
+    height:18px!important;
+    min-height:18px!important;
+    max-height:18px!important;
+  }
+
+  .study-premium-images,
+  .study-premium-no-image{
+    grid-row:2!important;
+    width:100%!important;
+    height:112px!important;
+    min-height:112px!important;
+    max-height:112px!important;
+    margin:0!important;
+    padding:3px!important;
+    gap:5px!important;
+    overflow:hidden!important;
+  }
+
+  .study-premium-images .study-premium-image{
+    width:0!important;
+    height:100%!important;
+    min-height:0!important;
+    flex:1 1 0!important;
+    padding:3px!important;
+  }
+
+  .study-premium-question{
+    grid-row:3!important;
+    height:58px!important;
+    min-height:58px!important;
+    max-height:58px!important;
+    padding:4px 10px!important;
+    font-size:15px!important;
+  }
+
+  .study-premium-answers{
+    grid-row:4!important;
+    gap:5px!important;
+  }
+
+  .study-premium-option{
+    padding:7px 9px!important;
+    border-radius:11px!important;
+  }
+}
+
+@media(max-width:430px){
+  .study-premium-card{
+    grid-template-rows:17px 104px 58px minmax(0,1fr) 0 0 40px!important;
+    gap:4px!important;
+    padding:5px!important;
+  }
+
+  .study-premium-meta{
+    height:17px!important;
+    min-height:17px!important;
+    max-height:17px!important;
+  }
+
+  .study-premium-images,
+  .study-premium-no-image{
+    height:104px!important;
+    min-height:104px!important;
+    max-height:104px!important;
+  }
+
+  .study-premium-question{
+    height:58px!important;
+    min-height:58px!important;
+    max-height:58px!important;
+    font-size:14px!important;
+  }
+
+  .study-premium-answers{
+    gap:5px!important;
+  }
+}
