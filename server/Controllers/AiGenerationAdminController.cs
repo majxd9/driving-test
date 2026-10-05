@@ -770,21 +770,23 @@ public sealed class AiGenerationAdminController : ControllerBase
                 .SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken);
             if (review is null)
             {
+                // Imported images must pass the same administrator review gate
+                // as generated images. Never publish an imported image directly.
                 _db.AiImageReviews.Add(new AiImageReview
                 {
                     QuestionId = questionId,
                     ContentHash = contentHash,
-                    Status = AiImageReviewStatus.Approved,
+                    Status = AiImageReviewStatus.Pending,
                     CreatedAt = now,
-                    ReviewedAt = now
+                    ReviewedAt = null
                 });
             }
             else
             {
                 review.ContentHash = contentHash;
-                review.Status = AiImageReviewStatus.Approved;
+                review.Status = AiImageReviewStatus.Pending;
                 review.CreatedAt = now;
-                review.ReviewedAt = now;
+                review.ReviewedAt = null;
             }
 
             hashToQuestion[imageHash] = questionId;
