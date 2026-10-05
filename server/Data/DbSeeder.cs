@@ -134,6 +134,10 @@ CREATE INDEX IF NOT EXISTS ""IX_ExamAttempts_StudentId_CreatedAt""
             // وأخيراً نصلح الأسئلة غير المكتملة.
             await RepairIncompleteQuestionsAsync(db);
         }
+
+        // Keep the production database hardened after every normal startup.
+        // This runs after bootstrap/seed so a newly generated EF schema is protected too.
+        await DatabaseSecurityHardening.ApplyAsync(db);
     }
 
     private static async Task NormalizeQuestionImagesAsync(AppDbContext db)
