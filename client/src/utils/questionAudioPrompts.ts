@@ -83,6 +83,35 @@ export function getCachedQuestionAudioPromptSource(
   return promptSourceCache.get(key) ?? null;
 }
 
+export function unlockQuestionAudioPrompt(key: QuestionAudioPromptKey = 'question-audio-first-entry') {
+  const audio = promptPlaybackAudio;
+  if (!audio) return;
+
+  // The training button is a real user gesture. Briefly starting the same
+  // audio element muted unlocks playback for the delayed, post-navigation prompt.
+  try {
+    audio.pause();
+    audio.muted = true;
+    audio.src = promptSourceCache.get(key) ?? resolveApiUrl(
+      `/api/questions/audio-prompt/${key}`
+    );
+    audio.preload = 'auto';
+    audio.currentTime = 0;
+    const promise = audio.play();
+    if (promise) {
+      void promise.then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.muted = false;
+      }).catch(() => {
+        audio.muted = false;
+      });
+    }
+  } catch {
+    audio.muted = false;
+  }
+}
+
 export function playQuestionAudioPrompt(
   key: QuestionAudioPromptKey
 ): Promise<boolean> {
