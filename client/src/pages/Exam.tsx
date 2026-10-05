@@ -444,6 +444,7 @@ export default function Exam() {
                 alt="شرح بصري تعليمي للسؤال"
                 className="h-full w-full"
                 objectFit="contain"
+                priority
                 sizes="(max-width:700px) 96vw, 760px"
               />
               {isAdmin && (
