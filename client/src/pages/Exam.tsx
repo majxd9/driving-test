@@ -175,6 +175,16 @@ export default function Exam() {
     }
 
     preloadQuestionAudio(nextAudioUrl);
+    if (nextQuestionImageUrl) {
+      const image = new Image();
+      image.decoding = 'async';
+      image.src = nextQuestionImageUrl;
+    }
+    if (nextQuestionAiImageUrl) {
+      const image = new Image();
+      image.decoding = 'async';
+      image.src = nextQuestionAiImageUrl;
+    }
 
     return () => {
       active = false;
