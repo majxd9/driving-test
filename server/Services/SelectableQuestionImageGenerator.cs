@@ -9,19 +9,22 @@ public sealed class SelectableQuestionImageGenerator : IQuestionImageGenerator
     private readonly FallbackQuestionImageGenerator _huggingFace;
     private readonly EdenAiQuestionImageGenerator _eden;
     private readonly ComfyUiQuestionImageGenerator _comfyUi;
+    private readonly IConfiguration _configuration;
 
     public SelectableQuestionImageGenerator(
         AiGenerationJobService jobs,
         GeminiQuestionImageGenerator gemini,
         FallbackQuestionImageGenerator huggingFace,
         EdenAiQuestionImageGenerator eden,
-        ComfyUiQuestionImageGenerator comfyUi)
+        ComfyUiQuestionImageGenerator comfyUi,
+        IConfiguration configuration)
     {
         _jobs = jobs;
         _gemini = gemini;
         _huggingFace = huggingFace;
         _eden = eden;
         _comfyUi = comfyUi;
+        _configuration = configuration;
     }
 
     public async Task<GeneratedImageResult> GenerateAsync(
