@@ -141,6 +141,7 @@ builder.Services.AddScoped<IGeminiService, GeminiService>();
 builder.Services.AddScoped<ElevenLabsQuestionAudioGenerator>();
 builder.Services.AddScoped<EdenAiQuestionAudioGenerator>();
 builder.Services.AddScoped<LocalQuestionAudioGenerator>();
+builder.Services.AddScoped<FishAudioQuestionAudioGenerator>();
 builder.Services.AddScoped<FallbackQuestionAudioGenerator>();
 builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
 {
@@ -151,6 +152,10 @@ builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
 
     if (string.Equals(provider, "edenai", StringComparison.OrdinalIgnoreCase))
         return sp.GetRequiredService<EdenAiQuestionAudioGenerator>();
+
+    if (string.Equals(provider, "fish", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(provider, "fishaudio", StringComparison.OrdinalIgnoreCase))
+        return sp.GetRequiredService<FishAudioQuestionAudioGenerator>();
 
     if (string.Equals(provider, "elevenlabs", StringComparison.OrdinalIgnoreCase) &&
         HasEdenFallbackConfiguration(builder.Configuration, "EDENAI_AUDIO_PROVIDER"))
@@ -177,6 +182,11 @@ builder.Services.AddHttpClient("ElevenLabs", client =>
 {
     client.BaseAddress = new Uri("https://api.elevenlabs.io/");
     client.Timeout = TimeSpan.FromSeconds(90);
+});
+builder.Services.AddHttpClient("FishAudio", client =>
+{
+    client.BaseAddress = new Uri("https://api.fish.audio/");
+    client.Timeout = TimeSpan.FromMinutes(3);
 });
 builder.Services.AddHttpClient("LocalTts", client =>
 {
