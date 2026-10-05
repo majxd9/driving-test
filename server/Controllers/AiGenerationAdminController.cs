@@ -1,8 +1,12 @@
+using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Text.Json;
+using DrivingTestApi.Data;
 using DrivingTestApi.Models;
 using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DrivingTestApi.Controllers;
 
@@ -19,6 +23,7 @@ public sealed record AiTestRunRequest(int QuestionId, string Type, string Provid
 [Authorize(Roles = "Admin")]
 public sealed class AiGenerationAdminController : ControllerBase
 {
+    private readonly AppDbContext _db;
     private readonly AiGenerationJobService _jobs;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
@@ -29,6 +34,7 @@ public sealed class AiGenerationAdminController : ControllerBase
     private readonly AiTestRunService _testRuns;
 
     public AiGenerationAdminController(
+        AppDbContext db,
         AiGenerationJobService jobs,
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
@@ -38,6 +44,7 @@ public sealed class AiGenerationAdminController : ControllerBase
         ComfyUiQuestionImageGenerator comfyUiImageGenerator,
         AiTestRunService testRuns)
     {
+        _db = db;
         _jobs = jobs;
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
@@ -562,6 +569,215 @@ public sealed class AiGenerationAdminController : ControllerBase
         return result is null
             ? NotFound(new { message = "اختبار التوليد غير موجود." })
             : Ok(result);
+    }
+
+    public sealed record AiImageImportResult(
+        int TotalEntries,
+        int Imported,
+        int Replaced,
+        int Skipped,
+        int Invalid,
+        IReadOnlyList<int> ImportedQuestionIds,
+        IReadOnlyList<string> Problems);
+
+    [HttpPost("import-zip")]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(250_000_000)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 250_000_000)]
+    public async Task<ActionResult<AiImageImportResult>> ImportImagesZip(
+        [FromForm] IFormFile? file,
+        CancellationToken cancellationToken)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(new { message = "اختر ملف ZIP يحتوي صور الأسئلة أولاً." });
+
+        if (!string.Equals(Path.GetExtension(file.FileName), ".zip", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "الملف المطلوب يجب أن يكون ZIP." });
+
+        if (file.Length > 240_000_000)
+            return BadRequest(new { message = "حجم ملف ZIP أكبر من الحد المسموح للاستيراد." });
+
+        var problems = new List<string>();
+        var entries = new List<(int QuestionId, string EntryName)>();
+        var seenIds = new HashSet<int>();
+        long totalUncompressed = 0;
+
+        await using var stream = file.OpenReadStream();
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false);
+
+        foreach (var entry in archive.Entries)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (string.IsNullOrEmpty(entry.Name)) continue;
+
+            var normalizedName = entry.FullName.Replace('\\\\', '/');
+            var baseName = Path.GetFileName(normalizedName);
+            if (!string.Equals(baseName, normalizedName, StringComparison.Ordinal))
+            {
+                problems.Add($"المسار غير مسموح: {entry.FullName}");
+                continue;
+            }
+
+            if (!string.Equals(Path.GetExtension(baseName), ".webp", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var stem = Path.GetFileNameWithoutExtension(baseName);
+            if (!int.TryParse(stem, out var questionId) || questionId < 1 || questionId > 397)
+            {
+                problems.Add($"اسم صورة غير صالح: {entry.FullName}");
+                continue;
+            }
+
+            if (!seenIds.Add(questionId))
+            {
+                problems.Add($"الصورة مكررة للسؤال #{questionId}: {entry.FullName}");
+                continue;
+            }
+
+            if (entry.Length <= 0 || entry.Length > 8_000_000)
+            {
+                problems.Add($"حجم الصورة غير صالح للسؤال #{questionId}: {entry.Length} bytes");
+                continue;
+            }
+
+            totalUncompressed += entry.Length;
+            if (totalUncompressed > 240_000_000)
+            {
+                problems.Add("إجمالي الحجم غير المضغوط داخل ZIP تجاوز الحد الآمن.");
+                break;
+            }
+
+            entries.Add((questionId, entry.FullName));
+        }
+
+        if (entries.Count == 0)
+            return BadRequest(new { message = "لم يتم العثور على صور WebP صالحة بأسماء أرقام الأسئلة.", problems });
+
+        var ids = entries.Select(x => x.QuestionId).ToArray();
+        var questions = await _db.Questions
+            .Where(q => ids.Contains(q.Id))
+            .ToDictionaryAsync(q => q.Id, cancellationToken);
+
+        foreach (var id in ids)
+            if (!questions.ContainsKey(id))
+                problems.Add($"السؤال #{id} غير موجود في قاعدة البيانات.");
+
+        if (problems.Count > 0)
+            return BadRequest(new
+            {
+                message = "تم إيقاف الاستيراد قبل الكتابة لأن ملف ZIP يحتوي مشاكل في البنية أو أرقام الأسئلة.",
+                problems
+            });
+
+        var existingImages = await _db.QuestionAiImages
+            .AsNoTracking()
+            .Where(x => x.ImageBytes.Length > 0 && x.ImageHash != "")
+            .Select(x => new { x.QuestionId, x.ImageHash })
+            .ToListAsync(cancellationToken);
+        var hashToQuestion = existingImages
+            .GroupBy(x => x.ImageHash, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First().QuestionId, StringComparer.OrdinalIgnoreCase);
+
+        var imported = 0;
+        var replaced = 0;
+        var importedIds = new List<int>();
+
+        foreach (var (questionId, entryName) in entries)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var entry = archive.GetEntry(entryName);
+            var question = questions[questionId];
+            if (entry is null)
+            {
+                problems.Add($"تعذر قراءة الإدخال: {entryName}");
+                continue;
+            }
+
+            await using var entryStream = entry.Open();
+            using var buffer = new MemoryStream(capacity: checked((int)entry.Length));
+            await entryStream.CopyToAsync(buffer, cancellationToken);
+            var bytes = buffer.ToArray();
+
+            if (bytes.Length < 12 ||
+                bytes[0] != (byte)'R' || bytes[1] != (byte)'I' || bytes[2] != (byte)'F' || bytes[3] != (byte)'F' ||
+                bytes[8] != (byte)'W' || bytes[9] != (byte)'E' || bytes[10] != (byte)'B' || bytes[11] != (byte)'P')
+            {
+                problems.Add($"السؤال #{questionId}: الملف ليس WebP صالحاً.");
+                continue;
+            }
+
+            var imageHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+            if (hashToQuestion.TryGetValue(imageHash, out var previousQuestionId) && previousQuestionId != questionId)
+            {
+                problems.Add($"السؤال #{questionId}: نفس الصورة مستخدمة مسبقاً للسؤال #{previousQuestionId}.");
+                continue;
+            }
+
+            var contentHash = QuestionImagePromptBuilder.GetContentHash(question);
+            var now = DateTime.UtcNow;
+            var image = await _db.QuestionAiImages
+                .SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken);
+
+            if (image is null)
+            {
+                _db.QuestionAiImages.Add(new QuestionAiImage
+                {
+                    QuestionId = questionId,
+                    ImageBytes = bytes,
+                    ContentHash = contentHash,
+                    ImageHash = imageHash,
+                    ContentType = "image/webp",
+                    CreatedAt = now
+                });
+                imported++;
+            }
+            else
+            {
+                var wasPresent = image.ImageBytes.Length > 0;
+                image.ImageBytes = bytes;
+                image.ContentHash = contentHash;
+                image.ImageHash = imageHash;
+                image.ContentType = "image/webp";
+                image.CreatedAt = now;
+                if (wasPresent) replaced++; else imported++;
+            }
+
+            var review = await _db.AiImageReviews
+                .SingleOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken);
+            if (review is null)
+            {
+                _db.AiImageReviews.Add(new AiImageReview
+                {
+                    QuestionId = questionId,
+                    ContentHash = contentHash,
+                    Status = AiImageReviewStatus.Approved,
+                    CreatedAt = now,
+                    ReviewedAt = now
+                });
+            }
+            else
+            {
+                review.ContentHash = contentHash;
+                review.Status = AiImageReviewStatus.Approved;
+                review.CreatedAt = now;
+                review.ReviewedAt = now;
+            }
+
+            hashToQuestion[imageHash] = questionId;
+            importedIds.Add(questionId);
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        Response.Headers.CacheControl = "no-store";
+        return Ok(new AiImageImportResult(
+            entries.Count,
+            imported,
+            replaced,
+            0,
+            problems.Count,
+            importedIds.OrderBy(x => x).ToArray(),
+            problems));
     }
 
     [HttpGet("completed-images")]
