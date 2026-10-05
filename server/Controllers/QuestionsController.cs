@@ -206,22 +206,9 @@ public class QuestionsController : ControllerBase
 
         var currentHash = QuestionImagePromptBuilder.GetContentHash(question);
 
-        var review = await _db.AiImageReviews
-            .AsNoTracking()
-            .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
-
-        var isAdmin = User.IsInRole("Admin");
-
-        // Students only receive explicitly approved images matching the current question.
-        // Admins can inspect stored images during the cleanup pass before approval.
-        if (!isAdmin &&
-            (review is null ||
-             review.Status != AiImageReviewStatus.Approved ||
-             !string.Equals(review.ContentHash, image.ContentHash, StringComparison.Ordinal) ||
-             !string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal)))
-        {
-            return NotFound(new { message = "صورة AI غير معتمدة للنشر بعد." });
-        }
+        // أي صورة AI مخزنة وموجودة في قاعدة البيانات متاحة للعرض.
+        // لا نعتمد على حالة المراجعة هنا؛ الإدارة هي التي تقرر لاحقاً ما تريد حذفه.
+        _ = currentHash;
 
         // The URL contains both the content hash and generation timestamp, so a
         // regenerated image cannot remain trapped behind a previous immutable cache.
