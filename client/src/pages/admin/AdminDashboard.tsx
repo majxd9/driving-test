@@ -425,6 +425,18 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
      <button type="button" className="secondary-cta" disabled={reviewLoading||reviewBusy} onClick={()=>void loadReview()}>
       {reviewLoading?'جارٍ التحديث…':'تحديث المراجعة'}
      </button>
+     <button
+      type="button"
+      className="secondary-cta"
+      disabled={reviewLoading||reviewBusy||busy!==''}
+      onClick={()=>void act('reset-reviews',async()=>{
+       const result=await api.admin.resetAllAiImageReviews();
+       await loadReview({replaceCurrent:true});
+       return result;
+      },'تمت إعادة صور AI الحالية إلى قائمة المراجعة')}
+     >
+      {busy==='reset-reviews'?'جارٍ إعادة الفحص…':'إعادة فحص كل الصور'}
+     </button>
     </div>
    </div>
    <p className="text-muted text-sm leading-relaxed">
