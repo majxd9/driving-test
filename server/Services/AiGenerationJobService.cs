@@ -663,11 +663,6 @@ public sealed class AiGenerationJobService
             .Select(x => new StoredMediaState(x.QuestionId, x.ContentHash, true, x.CreatedAt))
             .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
 
-        var imageReviews = await _db.AiImageReviews
-            .AsNoTracking()
-            .Where(x => ids.Contains(x.QuestionId))
-            .ToDictionaryAsync(x => x.QuestionId, cancellationToken);
-
         foreach (var question in questions)
         {
             if (audios.TryGetValue(question.Id, out var audio) &&
