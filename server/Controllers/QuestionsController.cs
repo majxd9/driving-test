@@ -32,9 +32,14 @@ public class QuestionsController : ControllerBase
     public async Task<ActionResult<List<Question>>> GetByCategory([FromQuery] QuestionCategory category)
     {
         var questions = await QuestionBankCache.GetCategoryAsync(_db, category);
-        await _generationJobs.AttachStudentMediaUrlsAsync(questions, HttpContext.RequestAborted);
+        await _generationJobs.AttachStudentMediaUrlsAsync(
+            questions,
+            HttpContext.RequestAborted,
+            includeUnapprovedAiImages: User.IsInRole("Admin"));
 
-        Response.Headers.CacheControl = "private,max-age=60,stale-while-revalidate=30";
+        Response.Headers.CacheControl = User.IsInRole("Admin")
+            ? "private,no-store"
+            : "private,max-age=60,stale-while-revalidate=30";
         return Ok(DeduplicateQuestions(questions));
     }
 
@@ -205,12 +210,15 @@ public class QuestionsController : ControllerBase
             .AsNoTracking()
             .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
 
-        // The public endpoint is the final gate: AI content is invisible until
-        // an administrator explicitly approves the exact current image version.
-        if (review is null ||
-            review.Status != AiImageReviewStatus.Approved ||
-            !string.Equals(review.ContentHash, image.ContentHash, StringComparison.Ordinal) ||
-            !string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal))
+        var isAdmin = User.IsInRole("Admin");
+
+        // Students only receive explicitly approved images matching the current question.
+        // Admins can inspect stored images during the cleanup pass before approval.
+        if (!isAdmin &&
+            (review is null ||
+             review.Status != AiImageReviewStatus.Approved ||
+             !string.Equals(review.ContentHash, image.ContentHash, StringComparison.Ordinal) ||
+             !string.Equals(image.ContentHash, currentHash, StringComparison.Ordinal)))
         {
             return NotFound(new { message = "صورة AI غير معتمدة للنشر بعد." });
         }
@@ -223,6 +231,38 @@ public class QuestionsController : ControllerBase
         Response.Headers["X-AI-Image-Hash"] = image.ContentHash;
         Response.Headers["X-AI-Image-Current-Hash"] = currentHash;
         return File(image.ImageBytes, image.ContentType);
+    }
+
+    [HttpPost("{id:int}/image/hide")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> HideQuestionImage(int id, CancellationToken cancellationToken)
+    {
+        var question = await _db.Questions.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+        if (question is null)
+            return NotFound(new { message = "السؤال غير موجود." });
+
+        if (string.IsNullOrWhiteSpace(question.ImageUrl))
+            return NotFound(new { message = "لا توجد صورة أصلية مرتبطة بهذا السؤال." });
+
+        question.ImageUrl = null;
+        await _db.SaveChangesAsync(cancellationToken);
+        return Ok(new { hidden = true, questionId = id });
+    }
+
+    [HttpDelete("{id:int}/image")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> RemoveQuestionImage(int id, CancellationToken cancellationToken)
+    {
+        var question = await _db.Questions.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+        if (question is null)
+            return NotFound(new { message = "السؤال غير موجود." });
+
+        if (string.IsNullOrWhiteSpace(question.ImageUrl))
+            return NotFound(new { message = "لا توجد صورة أصلية مرتبطة بهذا السؤال." });
+
+        question.ImageUrl = null;
+        await _db.SaveChangesAsync(cancellationToken);
+        return Ok(new { deletedFromQuestion = true, questionId = id });
     }
 
     [HttpGet("{id:int}/audio")]
