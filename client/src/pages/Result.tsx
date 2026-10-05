@@ -76,6 +76,10 @@ function ReviewCard({ item, index, mode }: { item: ReviewItem; index: number; mo
         )}
         {item.question.aiImageUrl && (
           <div className="review-image ai-secondary">
+            <div className="ai-image-label" aria-label="صورة توضيحية">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m5 17 4-4 3 3 3-4 4 5"/></svg>
+              <span>صورة توضيحية</span>
+            </div>
             <OptimizedImage src={resolveApiUrl(item.question.aiImageUrl)} alt="شرح بصري تعليمي AI" sizes="160px" />
           </div>
         )}

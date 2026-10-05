@@ -63,6 +63,21 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  const [reviewImageSrc,setReviewImageSrc]=useState('');
  const [reviewLoading,setReviewLoading]=useState(false);
  const [reviewBusy,setReviewBusy]=useState(false);
+ const [importFile,setImportFile]=useState<File|null>(null);
+ const [importBusy,setImportBusy]=useState(false);
+ const [importResult,setImportResult]=useState<import('../../types').AiImageImportResult|null>(null);
+
+ const importImages=async()=>{
+  if(!importFile||importBusy)return;
+  setImportBusy(true);setImportResult(null);
+  try{
+   const result=await api.admin.importAiImagesZip(importFile);
+   setImportResult(result);
+   setImportFile(null);
+   await refresh();
+  }catch(e){alert(e instanceof Error?e.message:'تعذر استيراد صور الأسئلة.')}
+  finally{setImportBusy(false)}
+ };
 
  const refresh=async()=>{
   await reloadAiStatus();
@@ -300,6 +315,29 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
    </div>
 
    <AiGenerationLab />
+  </div>
+
+  <div className="admin-card ai-image-import-card">
+   <div className="card-title">
+    <div><p>QUESTION IMAGE IMPORT</p><b>استيراد صور الأسئلة دفعة واحدة</b></div>
+    <span className="status on">ربط حسب رقم السؤال</span>
+   </div>
+   <p className="text-muted text-sm leading-relaxed">ارفع ملف ZIP يحتوي ملفات WebP بأسماء مثل <code dir="ltr">3.webp</code> و<code dir="ltr">153.webp</code>. النظام يتحقق من الرقم، السؤال الموجود، ونوع الملف، ثم يحفظ الصورة مباشرة مرتبطة بالسؤال نفسه ويحدّث hash النسخة الحالية.</p>
+   <div className="ai-image-import-row">
+    <label className="ai-image-import-input">
+     <span>{importFile?importFile.name:'اختر ملف ZIP للصور'}</span>
+     <input type="file" accept=".zip,application/zip" onChange={e=>{setImportFile(e.target.files?.[0]??null);setImportResult(null)}} disabled={importBusy}/>
+    </label>
+    <button type="button" className="primary-cta" disabled={!importFile||importBusy} onClick={()=>void importImages()}>
+     {importBusy?'جارٍ استيراد الصور…':'استيراد وربط الصور'}
+    </button>
+   </div>
+   {importBusy&&<small className="text-muted block mt-2">لا تغلق الصفحة حتى يكتمل رفع الملف وحفظ الصور.</small>}
+   {importResult&&<div className={'ai-provider-message '+(importResult.invalid===0?'ok':'problem')}>
+    <b>النتيجة: {importResult.imported+importResult.replaced} صورة مرتبطة.</b>
+    <span className="block mt-1">جديدة {importResult.imported} · استبدال {importResult.replaced} · أخطاء {importResult.invalid}</span>
+    {importResult.problems.length>0&&<details className="mt-2"><summary>عرض تفاصيل الأخطاء</summary><pre className="ai-import-problems">{importResult.problems.join('\\n')}</pre></details>}
+   </div>}
   </div>
 
   <div className="admin-card ai-review-card">
