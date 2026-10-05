@@ -23,6 +23,19 @@ const questionCache = new Map<string, QuestionCacheEntry>();
 const questionInflight = new Map<string, Promise<import('../types').Question[]>>();
 const QUESTION_CACHE_TTL_MS = 30_000;
 
+function normalizeQuestionCategory(value: unknown): import('../types').QuestionCategory {
+  if (value === 1 || String(value).toLowerCase() === 'ishara') return 'Ishara';
+  if (value === 2 || String(value).toLowerCase() === 'mechanic') return 'Mechanic';
+  return 'Ser';
+}
+
+function normalizeQuestions(items: import('../types').Question[]): import('../types').Question[] {
+  return items.map(item => ({
+    ...item,
+    category: normalizeQuestionCategory((item as unknown as { category?: unknown }).category),
+  }));
+}
+
 async function getCachedQuestions(category: 'Ser' | 'Ishara' | 'Mechanic', force = false): Promise<import('../types').Question[]> {
   const now = Date.now();
   const cached = questionCache.get(category);
@@ -31,8 +44,9 @@ async function getCachedQuestions(category: 'Ser' | 'Ishara' | 'Mechanic', force
   if (!force && existing) return existing;
   const promise = request<import('../types').Question[]>(`/api/questions?category=${category}`)
     .then(value => {
-      questionCache.set(category, { value, expiresAt: Date.now() + QUESTION_CACHE_TTL_MS });
-      return value;
+      const normalized = normalizeQuestions(value);
+      questionCache.set(category, { value: normalized, expiresAt: Date.now() + QUESTION_CACHE_TTL_MS });
+      return normalized;
     })
     .finally(() => questionInflight.delete(category));
   questionInflight.set(category, promise);
