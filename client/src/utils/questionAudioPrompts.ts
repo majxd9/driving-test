@@ -77,38 +77,35 @@ export function preloadQuestionAudioPrompt(key: QuestionAudioPromptKey) {
   void getQuestionAudioPromptSource(key).catch(() => undefined);
 }
 
-export async function playQuestionAudioPrompt(
+export function playQuestionAudioPrompt(
   key: QuestionAudioPromptKey
 ): Promise<boolean> {
   const audio = promptPlaybackAudio;
-  if (!audio) return false;
+  if (!audio) return Promise.resolve(false);
 
+  const cachedSource = promptSourceCache.get(key);
   const directSource = resolveApiUrl(
     `/api/questions/audio-prompt/${key}`
   );
 
   try {
     audio.pause();
-    audio.src = directSource;
+    audio.src = cachedSource || directSource;
     audio.preload = 'auto';
     audio.currentTime = 0;
 
-    // Important: call play() before awaiting any network work so a mobile
-    // browser/WebView still sees the original user gesture.
-    await audio.play();
-    return true;
+    // The play call itself must happen synchronously from the click/tap.
+    // Waiting for a fetch here can make mobile browsers/WebView reject it
+    // as an autoplay attempt even though the user just pressed the button.
+    const playPromise = audio.play();
+    if (!playPromise) return Promise.resolve(true);
+
+    return playPromise.then(
+      () => true,
+      () => false
+    );
   } catch {
-    try {
-      const cachedSource = await getQuestionAudioPromptSource(key);
-      audio.pause();
-      audio.src = cachedSource;
-      audio.preload = 'auto';
-      audio.currentTime = 0;
-      await audio.play();
-      return true;
-    } catch {
-      audio.pause();
-      return false;
-    }
+    audio.pause();
+    return Promise.resolve(false);
   }
 }
