@@ -79,7 +79,7 @@
   box-shadow: 0 8px 24px rgba(0,0,0,.18);
   backdrop-filter: blur(10px);
 }
-.ai-image-label svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ai-image-label svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .ai-image-import-card { overflow: hidden; }
 .ai-image-import-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; align-items: stretch; margin-top: 14px; }
 .ai-image-import-input { position: relative; min-height: 48px; display: flex; align-items: center; padding: 0 13px; border: 1px dashed rgba(127,127,127,.28); border-radius: 13px; background: rgba(127,127,127,.035); cursor: pointer; overflow: hidden; }
