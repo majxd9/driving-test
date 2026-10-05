@@ -5,7 +5,7 @@ import { QuestionCategory } from '../types';
 import SiteGuide from '../components/SiteGuide';
 import SpiritDriveScene from '../components/SpiritDriveScene';
 import SpiritNitro from '../components/SpiritNitro';
-import { playQuestionAudioPrompt, preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 import { api } from '../api/client';
 
 const Icon = ({type}:{type:'rules'|'signs'|'mechanic'|'arrow'}) => {
@@ -30,8 +30,7 @@ const categories:{key:QuestionCategory;title:string;subtitle:string;path:string;
 export default function Home(){
  const {user,logout}=useAuth();const navigate=useNavigate();const [total,setTotal]=useState<number|null>(user?.questionCount ?? null);
 
- const openStudy = async (path: string) => {
-  await playQuestionAudioPrompt('question-audio-first-entry');
+ const openStudy = (path: string) => {
   navigate(path);
  };
 
