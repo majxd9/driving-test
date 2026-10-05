@@ -464,3 +464,84 @@
     bottom:47px!important;
   }
 }
+
+
+/* AI explanatory label: text only, very subtle, no badge/container. */
+.study-premium-image.ai-secondary .ai-image-label{
+  position:absolute!important;
+  top:5px!important;
+  inset-inline-end:6px!important;
+  z-index:8!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  color:rgba(235,250,247,.46)!important;
+  font-size:6px!important;
+  font-weight:700!important;
+  line-height:1!important;
+  pointer-events:none!important;
+  text-shadow:0 1px 4px rgba(0,0,0,.65)!important;
+}
+.study-premium-image.ai-secondary .ai-image-label svg{display:none!important}
+
+/* Admin-only controls appear after the administrator taps the AI image. */
+.study-admin-ai-tools{
+  position:absolute!important;
+  left:7px!important;
+  bottom:7px!important;
+  z-index:20!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  padding:4px!important;
+  border-radius:9px!important;
+  background:rgba(4,11,15,.72)!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  backdrop-filter:blur(6px)!important;
+}
+.study-admin-ai-tools button{
+  min-width:42px!important;
+  height:26px!important;
+  padding:0 8px!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:7px!important;
+  background:rgba(255,255,255,.07)!important;
+  color:#eef8f6!important;
+  font:inherit!important;
+  font-size:8px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+}
+.study-admin-ai-tools button.danger{
+  color:#ffb1b3!important;
+  border-color:rgba(255,90,100,.28)!important;
+  background:rgba(130,25,33,.24)!important;
+}
+.study-admin-ai-tools button:disabled{
+  opacity:.55!important;
+  cursor:wait!important;
+}
+.study-premium-image.ai-secondary.admin-tools-open{
+  cursor:pointer!important;
+}
+@media(max-width:700px){
+  .study-premium-image.ai-secondary .ai-image-label{
+    top:4px!important;
+    inset-inline-end:5px!important;
+    font-size:5.5px!important;
+  }
+  .study-admin-ai-tools{
+    left:6px!important;
+    bottom:6px!important;
+  }
+  .study-admin-ai-tools button{
+    min-width:40px!important;
+    height:24px!important;
+    font-size:7.5px!important;
+  }
+}
