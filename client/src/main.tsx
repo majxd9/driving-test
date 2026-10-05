@@ -30,6 +30,7 @@ import './interaction-polish-v1.css';
 import './content-protection.css';
 import './question-audio.css';
 import './ai-generation.css';
+import './question-media-final.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
