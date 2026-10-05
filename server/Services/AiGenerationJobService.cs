@@ -523,6 +523,24 @@ public sealed class AiGenerationJobService
         }
     }
 
+    public async Task RecoverOrphanedProcessingJobsAsync(
+        int olderThanMinutes = 15,
+        CancellationToken cancellationToken = default)
+    {
+        var safeMinutes = Math.Clamp(olderThanMinutes, 5, 60);
+        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE "AiGenerationJobs"
+            SET "Status" = 0,
+                "LockedUntil" = NULL,
+                "StartedAt" = NULL,
+                "UpdatedAt" = NOW(),
+                "NextAttemptAt" = NOW()
+            WHERE "Status" = 1
+              AND "StartedAt" IS NOT NULL
+              AND "StartedAt" < NOW() - MAKE_INTERVAL(mins => {safeMinutes});
+            """, cancellationToken);
+    }
+
     public async Task ResetStaleProcessingAsync(CancellationToken cancellationToken)
     {
         await _db.Database.ExecuteSqlRawAsync("""
@@ -1033,7 +1051,9 @@ public sealed class AiGenerationJobService
                     OR
                     ("JobType" = 1 AND {1} AND {2})
                 )
-              ORDER BY "Priority" DESC, "CreatedAt" ASC
+              ORDER BY
+                  CASE WHEN "JobType" = 0 THEN 1000 ELSE "Priority" END DESC,
+                  "CreatedAt" ASC
               FOR UPDATE SKIP LOCKED
               LIMIT 1
               """;
