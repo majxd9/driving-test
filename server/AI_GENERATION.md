@@ -4,7 +4,16 @@
 
 ## الصوت
 
-المزود الحالي يبقى ElevenLabs عند ضبط:
+مزود الصوت المدعوم حالياً هو Fish Audio، ويمكن تحديده صراحةً عبر:
+
+QUESTION_AUDIO_PROVIDER=fish
+FISH_AUDIO_API_KEY=<your-fish-audio-api-key>
+FISH_AUDIO_MODEL=s2.1-pro-free
+FISH_AUDIO_VOICE_ID=<optional-reference-voice-id>
+
+النموذج المجاني الحالي في Fish Audio هو S2.1 Pro عبر المعرّف s2.1-pro-free. إذا لم يتم ضبط FISH_AUDIO_VOICE_ID يستخدم الطلب النموذج بدون reference_id. لا يتم وضع مفتاح Fish Audio في الواجهة أو المستودع.
+
+للتراجع إلى مزود آخر يبقى ElevenLabs أو Eden AI أو Local TTS مدعوماً:
 
 QUESTION_AUDIO_PROVIDER=elevenlabs
 
@@ -61,7 +70,7 @@ QUESTION_IMAGE_POLL_MS=2000
 
 AI_MONTHLY_GENERATION_LIMIT=600
 
-العداد مستقل عن عدد الطلاب، لأن الصوت أو صورة AI تُولد مرة واحدة وتُخزن ثم يستخدمها كل الطلاب. عند بلوغ الحد تتوقف Jobs الجديدة مؤقتاً، وتعود تلقائياً مع بداية الشهر التالي. الحد يشمل ElevenLabs وPiper وComfyUI لأنه يُطبق قبل استدعاء المزود مباشرة.
+العداد مستقل عن عدد الطلاب، لأن الصوت أو صورة AI تُولد مرة واحدة وتُخزن ثم يستخدمها كل الطلاب. عند بلوغ الحد تتوقف Jobs الجديدة مؤقتاً، وتعود تلقائياً مع بداية الشهر التالي. الحد يطبق قبل استدعاء مزود الصوت أو الصورة مباشرة، ويشمل Fish Audio وElevenLabs وPiper وComfyUI.
 
 ## Queue
 
