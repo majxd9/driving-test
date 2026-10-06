@@ -4,11 +4,12 @@
 
 الحالة الحالية: **CONDITIONAL / RELEASE SIGN-OFF PENDING**
 
-تم تنفيذ وإثبات عدة إصلاحات حرجة في backend/database، لكن لا أعتبر الإصدار Production-Cleared نهائياً قبل:
-1. اختبار E2E حقيقي بحساب طالب اختبار وحساب Admin.
-2. ضبط Render health check إلى `/api/healthz` إذا أصبح إعداد الخدمة قابلاً للتعديل عبر أداة/صلاحية مناسبة.
-3. اعتماد خطة backup/export دورية لأن Supabase Free لا يوفر automatic backups.
-4. تنفيذ E2E تفاعلي فعلي للحسابات بعد تسجيل الدخول بحساب طالب تجريبي وحساب Admin.
+تم تنفيذ وإثبات الإصلاحات الحرجة الأساسية. المتبقي قبل Production-Cleared الكامل هو:
+1. E2E تفاعلي كامل بحساب طالب وحساب Admin لإثبات كل السيناريوهات الحساسة.
+2. اعتماد خطة backup/export دورية لبيانات Supabase، لأن نسخة GitHub لا تتضمن بيانات قاعدة البيانات.
+3. تنفيذ اختبار قبول نهائي للواجهة على هاتف وDesktop بعد استقرار النسخة الحالية.
+
+تم بالفعل تفعيل Render health check على `/api/healthz` والتحقق من نجاح آخر deployment.
 
 ## ما تم إصلاحه
 
@@ -96,15 +97,26 @@
 
 ## Render
 
-تم التحقق من deployment live للـcommit:
-`68d8125b1e3655f67a699f39cdfc23265f76dae7`
+تم إصلاح فشل Render الذي ظهر بعد تفعيل health check.
 
-كما اجتاز startup:
-- Application started.
+السبب المثبت من logs:
+- `NpgsqlException: Exception while reading from stream`
+- `EndOfStreamException`
+- وقع أثناء `Program.cs` في startup schema bootstrap.
+- النتيجة كانت `Exit status 134` و`Aborted (core dumped)`.
+
+تمت المعالجة عبر:
+- تفعيل `EnableRetryOnFailure` لـ PostgreSQL/Npgsql.
+- إضافة 5 محاولات startup schema bootstrap مع backoff.
+- بعد الإصلاح نجح Render deploy على commit `b99050ef6cfa7292f660e4a9ba84a8df49d12539`.
+
+كما تم تنظيف تحذيرات EF Core الخاصة بقوائم JSON بإضافة `ValueComparer` للقوائم، وبعد الإصلاح نجح deployment على commit:
+`bc7a04925312e500aa6812fbdf0566fae66c7e3b`.
+
+آخر startup production تحقق من:
 - Background startup maintenance completed.
-- لا يوجد FormatException بعد إصلاح raw SQL.
-
-كان هناك خطأ مؤقت في أول deployment بسبب `DEFAULT '{}'` داخل ExecuteSqlRawAsync؛ تم تصحيحه إلى escaped raw format، وبعده نجحت صيانة startup.
+- لا يوجد `Aborted` أو `Exited with status` في startup الأخير.
+- Render service healthCheckPath = `/api/healthz`.
 
 ## عناصر ليست محسومة بالكامل
 
@@ -125,7 +137,7 @@
 لا يوجد طلب لتغيير الاختبارات أو الاختيارات. الحالة الحالية محفوظة كما هي، ولا يُعتبر هذا البند عائق إصدار.
 
 ### P1 — Render health check
-يوجد endpoint صالح `/api/healthz`، لكن خدمة Render لا تزال بدون healthCheckPath مفعّل.
+تم تفعيل `/api/healthz` كـ Health Check Path في Render، وآخر deployment نجح بعد التفعيل والإصلاحات اللاحقة.
 
 ### P1 — backups
 Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump دوري خارج المشروع قبل اعتباره Production-ready من ناحية recovery.
@@ -151,9 +163,10 @@ Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump د
 
 قبل إعلان Production-Cleared:
 - [ ] E2E Student/Admin.
-- [ ] Render healthCheckPath `/api/healthz` — إعداد الخدمة ما زال غير مفعّل لأن أداة Render المتاحة في جلسة التدقيق لا تعرض عملية update service لهذا الحقل.
-- [x] Backup/export workflow verified: GitHub Actions artifact `driving-test-backup` was successfully created from commit `8d7f037638fc47957bd4b5cfd63cabd375be28d2`; secrets/runtime values are intentionally excluded.
-- [ ] Production frontend deployment verified after the latest main commit.
+- [x] Render healthCheckPath `/api/healthz` مفعل.
+- [x] Backup workflow موجود ويُنتج artifact مصدر للمشروع؛ آخر snapshot سابق نجح.
+- [x] Production frontend deployment verified after latest main commit `bc7a04925312e500aa6812fbdf0566fae66c7e3b`.
+- [ ] Supabase data export/restore drill.
 
 
 
@@ -173,10 +186,11 @@ Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump د
 
 ### Remaining release gates
 - E2E فعلي: Login طالب + رفض الطالب لـ`/api/admin/*` + Login Admin + إنشاء/تعديل حساب Admin/Student.
-- ضبط Render `healthCheckPath` إلى `/api/healthz` عندما تتوفر صلاحية/أداة تعديل الخدمة؛ أداة Render المتاحة حالياً لا تعرض update-service لهذا الحقل.
+- اختبار Student device binding من جهاز ثانٍ.
+- Supabase backup/export + restore drill.
 
 ## Final verification notes — 2026-10-06
-- Latest release-check before the final backup sequence completed successfully on commit `9e924be9b61d04ba2e32e9f26abed4f79cffdec5`.
+- Latest release-check for the startup-retry fix completed successfully on commit `b99050ef6cfa7292f660e4a9ba84a8df49d12539`.
 - The admin-only audio diagnostics hardening deployed live on Render commit `2ef995deafd5e2c2ce8bc4fa80ce83fa91a733cc` and Cloudflare deployment `79939057-ccc2-4c40-9f7b-47a9c69325c7` completed successfully.
 - Supabase verification: Questions = 397; QuestionAudios = 397; invalid option count = 0; invalid answer index count = 0; no `anon`/`authenticated` table grants on public tables; RLS is enabled on all public tables.
 - Supabase advisors currently report informational RLS-without-policy findings consistent with the backend-only access model, plus 6 unused-index notices. No index was removed without workload evidence.
