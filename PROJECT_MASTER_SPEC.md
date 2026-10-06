@@ -115,3 +115,14 @@
 
 ## 14. Performance — Login
 تم إزالة warmup الشبكي المؤجل من صفحة تسجيل الدخول لأن الطلب كان يمكن أن يتزامن مع محاولة الدخول على الأجهزة البطيئة، بينما تسجيل الدخول نفسه هو الطلب المطلوب لتشغيل الـAPI عند الحاجة.
+
+
+## 15. الحالة التشغيلية — 2026-10-06
+- Render healthCheckPath مفعّل على `/api/healthz`.
+- آخر backend deployment ناجح بعد إصلاحات startup/EF: `bc7a04925312e500aa6812fbdf0566fae66c7e3b`.
+- Cloudflare Pages production deployment على آخر main نجح.
+- آخر release-check على snapshot النهائي نجح.
+- AI Image generation متوقف حالياً من مركز التحكم؛ توجد 98 مهمة image pending لكنها مؤجلة حتى يُفعّلها Admin.
+- `AiTestRuns` queued حالياً = 0.
+- QuestionAudios مكتملة = 397/397.
+- لا يتم تشغيل AI generation تلقائياً من Study/Exam؛ المسارات تستدعي فقط إرفاق روابط الوسائط.
