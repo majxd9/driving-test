@@ -398,10 +398,62 @@ app.UseStaticFiles(new StaticFileOptions
 });
 app.UseCors("Frontend");
 app.UseAuthentication();
+
+app.Use(async (context, next) =>
+{
+    var method = context.Request.Method;
+    var stateChanging =
+        !HttpMethods.IsGet(method) &&
+        !HttpMethods.IsHead(method) &&
+        !HttpMethods.IsOptions(method) &&
+        !HttpMethods.IsTrace(method);
+
+    if (stateChanging && context.Request.Cookies.ContainsKey("auth_token"))
+    {
+        var expectedOrigin = frontendOrigin.TrimEnd('/');
+        var origin = context.Request.Headers.Origin.ToString().TrimEnd('/');
+        var referer = context.Request.Headers.Referer.ToString();
+        var trusted = string.Equals(
+            origin, expectedOrigin, StringComparison.OrdinalIgnoreCase);
+
+        if (!trusted && Uri.TryCreate(referer, UriKind.Absolute, out var refererUri))
+        {
+            trusted = string.Equals(
+                refererUri.GetLeftPart(UriPartial.Authority).TrimEnd('/'),
+                expectedOrigin,
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (!trusted)
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            await context.Response.WriteAsJsonAsync(new { message = "مصدر الطلب غير مسموح." });
+            return;
+        }
+    }
+
+    await next();
+});
+
 app.UseAuthorization();
 
-app.MapGet("/api/healthz", () => Results.Ok(new { status = "ok" }))
-    .AllowAnonymous();
+app.MapGet("/api/healthz", async (AppDbContext db, CancellationToken cancellationToken) =>
+{
+    try
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(3));
+        var canConnect = await db.Database.CanConnectAsync(timeout.Token);
+
+        return canConnect
+            ? Results.Ok(new { status = "ok", database = "ok" })
+            : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+    catch
+    {
+        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+}).AllowAnonymous();
 
 app.MapControllers();
 app.Run();

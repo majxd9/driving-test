@@ -48,6 +48,14 @@ export interface AuthLog {
   reason: string;
 }
 
+export interface ExamSession {
+  attemptId: number;
+  modelId: number;
+  expiresAt: string;
+  answers: Record<number, number>;
+  questions: ExamQuestion[];
+}
+
 export interface ExamQuestion {
   id: number;
   text: string;

@@ -29,6 +29,9 @@ export default function Exam() {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [current, setCurrent] = useState(0);
   const [seconds, setSeconds] = useState(DURATION);
+  const [attemptId, setAttemptId] = useState<number | null>(null);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  const [savingQuestionId, setSavingQuestionId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [jumpOpen, setJumpOpen] = useState(false);
@@ -53,29 +56,30 @@ export default function Exam() {
   const loadExam = useCallback(async () => {
     const id = Number(modelId) || 1;
     const sequence = ++loadSequenceRef.current;
-
     setLoading(true);
     setLoadError(null);
+    setAttemptId(null);
+    setExpiresAt(null);
 
     try {
-      const picked = await api.getExamQuestions(id);
+      const session = await api.startExamAttempt(id);
       if (sequence !== loadSequenceRef.current) return;
-      if (picked.length !== 30) throw new Error('تعذر تجهيز ٣٠ سؤالاً للاختبار.');
+      if (session.questions.length !== 30) throw new Error('تعذر تجهيز ٣٠ سؤالاً للاختبار.');
 
-      setQuestions(picked);
-      setAnswers({});
+      setQuestions(session.questions);
+      setAnswers(session.answers);
       setCurrent(0);
-      setSeconds(DURATION);
+      setExpiresAt(session.expiresAt);
+      setSeconds(Math.max(0, Math.ceil((new Date(session.expiresAt).getTime() - Date.now()) / 1000)));
+      setAttemptId(session.attemptId);
       setJumpOpen(false);
       setJumpValue('1');
-      questionsRef.current = picked;
-      answersRef.current = {};
+      questionsRef.current = session.questions;
+      answersRef.current = session.answers;
       finishedRef.current = false;
-      // صور الأسئلة لا تُعرض أثناء الاختبار ولا نحتاج لتحميلها هنا.
-      // صفحة النتيجة هي مكان مراجعة الصور.
     } catch (err) {
       if (sequence === loadSequenceRef.current) {
-        setLoadError(err instanceof Error ? err.message : 'تعذر تحميل الأسئلة.');
+        setLoadError(err instanceof Error ? err.message : 'تعذر تحميل الاختبار.');
       }
     } finally {
       if (sequence === loadSequenceRef.current) setLoading(false);
@@ -91,47 +95,44 @@ export default function Exam() {
   }, []);
 
 
-  const finish = useCallback(() => {
-    const currentQuestions = questionsRef.current;
+  const finish = useCallback(async () => {
+    const currentAttemptId = attemptId;
     const currentAnswers = answersRef.current;
-    if (finishedRef.current || !currentQuestions.length) return;
+    if (finishedRef.current || !currentAttemptId || !questionsRef.current.length) return;
 
     finishedRef.current = true;
 
-    const answered = Object.keys(currentAnswers).length;
-    const correct = currentQuestions.reduce(
-      (total, question) =>
-        total + (currentAnswers[question.id] === question.correctAnswerIndex ? 1 : 0),
-      0
-    );
-
-    const reviewQuestions = currentQuestions.map(question => ({
-      question: {
-        id: question.id,
-        text: question.text,
-        options: question.options,
-        correctAnswerIndex: question.correctAnswerIndex,
-        explanation: question.explanation,
-        imageUrl: question.imageUrl,
-        aiImageUrl: question.aiImageUrl,
-        diagramType: question.diagramType,
-        diagramUrl: question.diagramUrl,
-        diagramTitle: question.diagramTitle,
-        diagramDescription: question.diagramDescription,
-      },
-      chosen: currentAnswers[question.id] ?? null,
-    }));
-
-    navigate('/result', {
-      state: {
-        correct,
-        total: currentQuestions.length,
-        answered,
-        reviewQuestions,
-        modelId: Number(modelId) || 1,
-      },
-    });
-  }, [navigate, modelId]);
+    try {
+      const submission = await api.submitExamAttempt(currentAttemptId, currentAnswers);
+      navigate('/result', {
+        state: {
+          correct: submission.correct,
+          total: submission.total,
+          answered: submission.answered,
+          reviewQuestions: submission.reviewQuestions.map(item => ({
+            question: {
+              id: item.id,
+              text: item.text,
+              options: item.options,
+              correctAnswerIndex: item.correctAnswerIndex,
+              explanation: item.explanation,
+              imageUrl: item.imageUrl,
+              aiImageUrl: item.aiImageUrl,
+              diagramType: item.diagramType,
+              diagramUrl: item.diagramUrl,
+              diagramTitle: item.diagramTitle,
+              diagramDescription: item.diagramDescription,
+            },
+            chosen: item.chosenAnswerIndex,
+          })),
+          modelId: submission.modelId,
+        },
+      });
+    } catch (err) {
+      finishedRef.current = false;
+      setLoadError(err instanceof Error ? err.message : 'تعذر حفظ نتيجة الاختبار.');
+    }
+  }, [attemptId, navigate]);
 
   const playSystemPromptOnMainAudio = useCallback(async (key: 'question-audio-enabled' | 'question-audio-disabled') => {
     const audio = audioRef.current;
@@ -220,31 +221,32 @@ export default function Exam() {
 
 
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !audioEnabled || !audioReady || !currentAudioUrl) return;
+  // Question audio remains click-to-play only; navigation never starts playback automatically.
 
-    if (!audio.paused) return;
+  const chooseAnswer = useCallback(async (selectedAnswerIndex: number) => {
+    const question = questionsRef.current[current];
+    const currentAttemptId = attemptId;
+    if (!question || !currentAttemptId || savingQuestionId !== null || finishedRef.current) return;
 
-    void getQuestionAudioSource(currentAudioUrl)
-      .then(source => {
-        if (audio.src !== source) {
-          audio.src = source;
-          audio.preload = 'auto';
-          audio.load();
-        }
-        audio.currentTime = 0;
-        return audio.play();
-      })
-      .then(() => {
-        setAudioPlaying(true);
-        setAudioError(null);
-      })
-      .catch(() => {
-        setAudioPlaying(false);
-        setAudioError('اضغط زر التشغيل لاستئناف الصوت.');
-      });
-  }, [audioEnabled, audioReady, currentAudioUrl]);
+    const previous = answersRef.current[question.id];
+    const nextAnswers = { ...answersRef.current, [question.id]: selectedAnswerIndex };
+    setAnswers(nextAnswers);
+    answersRef.current = nextAnswers;
+    setSavingQuestionId(question.id);
+
+    try {
+      await api.saveExamAnswer(currentAttemptId, question.id, selectedAnswerIndex);
+    } catch (err) {
+      const reverted = { ...answersRef.current };
+      if (previous === undefined) delete reverted[question.id];
+      else reverted[question.id] = previous;
+      setAnswers(reverted);
+      answersRef.current = reverted;
+      setLoadError(err instanceof Error ? err.message : 'تعذر حفظ الإجابة. حاول مرة أخرى.');
+    } finally {
+      setSavingQuestionId(null);
+    }
+  }, [attemptId, current, savingQuestionId]);
 
   const goToQuestion = useCallback((nextIndex:number) => {
     setCurrent(currentIndex => {
@@ -261,7 +263,19 @@ export default function Exam() {
     goToQuestion(requested - 1);
   }, [goToQuestion, jumpValue, questions.length]);
 
-  useEffect(()=>{if(loading)return;const timer=setInterval(()=>{setSeconds(s=>{if(s<=1){clearInterval(timer);finish();return 0;}return s-1;});},1000);return()=>clearInterval(timer);},[loading,finish]);
+  useEffect(() => {
+    if (loading || !expiresAt) return;
+
+    const updateRemaining = () => {
+      const remaining = Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 1000));
+      setSeconds(remaining);
+      if (remaining <= 0) void finish();
+    };
+
+    updateRemaining();
+    const timer = window.setInterval(updateRemaining, 1000);
+    return () => window.clearInterval(timer);
+  }, [loading, expiresAt, finish]);
 
   if(loading)return <div className="page-shell flex items-center justify-center px-4"><div className="surface-panel w-full max-w-xl p-5"><div className="skeleton h-44 rounded-2xl"/><p className="text-center text-muted text-sm mt-4">جارِ تجهيز الاختبار...</p></div></div>;
   if(loadError||!questions.length)return <div className="page-shell flex items-center justify-center px-5"><div className="surface-panel w-full max-w-md text-center p-7"><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-xl font-black mb-2">تعذر تحضير الاختبار</h1><p className="text-muted text-sm leading-relaxed">{loadError??'لم يتم العثور على أسئلة.'}</p><button onClick={loadExam} className="primary-cta mt-5 w-full">إعادة المحاولة</button></div></div>;
@@ -470,13 +484,13 @@ export default function Exam() {
           )}
         </div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
-        <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={()=>setAnswers(a=>({...a,[q.id]:i}))} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{OPTION_NUMBERS[i] ?? String(i + 1)}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
+        <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={() => void chooseAnswer(i)} disabled={savingQuestionId === q.id || finishedRef.current} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{OPTION_NUMBERS[i] ?? String(i + 1)}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
         <DiagramRenderer question={q}/>
       </div>
       <div className="exam-actions-v2">
         <button type="button" onClick={() => goToQuestion(current - 1)} disabled={current === 0} className="exam-action-v2 secondary"><UiIcon name="back"/><span>السابق</span></button>
-        <button type="button" onClick={finish} className="exam-action-v2 finish"><UiIcon name="finish"/><span>إنهاء الاختبار</span></button>
-        <button type="button" onClick={() => isLast ? finish() : goToQuestion(current + 1)} className="exam-action-v2 next"><span>{isLast ? 'عرض النتيجة' : 'التالي'}</span><UiIcon name="next"/></button>
+        <button type="button" onClick={() => void finish()} className="exam-action-v2 finish"><UiIcon name="finish"/><span>إنهاء الاختبار</span></button>
+        <button type="button" onClick={() => isLast ? void finish() : goToQuestion(current + 1)} className="exam-action-v2 next"><span>{isLast ? 'عرض النتيجة' : 'التالي'}</span><UiIcon name="next"/></button>
       </div>
     </section></main>
 

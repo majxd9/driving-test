@@ -72,7 +72,20 @@ export const api = {
   prefetchQuestions: (category: 'Ser' | 'Ishara' | 'Mechanic') => { void getCachedQuestions(category).catch(() => undefined); },
   refreshQuestions: (category: 'Ser' | 'Ishara' | 'Mechanic') => getCachedQuestions(category, true),
   getExamQuestions: (modelId: number) => request<import('../types').ExamQuestion[]>(`/api/questions/exam/${modelId}`),
-  submitExamAttempt: (data: { modelId: number; answers: Record<number, number> }) => request<import('../types').ExamSubmission>('/api/exam-attempts', { method: 'POST', body: JSON.stringify(data) }),
+  startExamAttempt: (modelId: number) => request<import('../types').ExamSession>('/api/exam-attempts/start', {
+    method: 'POST',
+    body: JSON.stringify({ modelId }),
+  }),
+  saveExamAnswer: (attemptId: number, questionId: number, selectedAnswerIndex: number) =>
+    request<{ saved: boolean; answered: number; expiresAt: string }>(`/api/exam-attempts/${attemptId}/answer`, {
+      method: 'POST',
+      body: JSON.stringify({ questionId, selectedAnswerIndex }),
+    }),
+  submitExamAttempt: (attemptId: number, answers: Record<number, number>) =>
+    request<import('../types').ExamSubmission>(`/api/exam-attempts/${attemptId}/submit`, {
+      method: 'POST',
+      body: JSON.stringify({ answers }),
+    }),
   admin: {
     listStudents: () => request<import('../types').Student[]>('/api/admin/students'),
     createStudent: (data: { userName: string; fullName: string; password: string; accessDays: number | null }) => request<import('../types').Student>('/api/admin/students', { method: 'POST', body: JSON.stringify(data) }),

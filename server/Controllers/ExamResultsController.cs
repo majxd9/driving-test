@@ -9,7 +9,7 @@ namespace DrivingTestApi.Controllers;
 
 [ApiController]
 [Route("api/exams")]
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class ExamResultsController : ControllerBase
 {
     private readonly AppDbContext _db;

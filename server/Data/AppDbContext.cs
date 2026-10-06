@@ -104,6 +104,10 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .HasConversion(intListConverter);
 
         builder.Entity<ExamAttempt>()
+            .Property(e => e.QuestionIds)
+            .HasConversion(intListConverter);
+
+        builder.Entity<ExamAttempt>()
             .HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(e => e.StudentId)
@@ -111,5 +115,11 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<ExamAttempt>()
             .HasIndex(e => new { e.StudentId, e.CreatedAt });
+
+        builder.Entity<ExamAttempt>()
+            .HasIndex(e => new { e.StudentId, e.Completed, e.ExpiresAt });
+
+        builder.Entity<AiTestRun>()
+            .HasIndex(e => e.QuestionId);
     }
 }
