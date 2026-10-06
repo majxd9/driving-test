@@ -68,7 +68,10 @@ export default function Exam() {
 
       setQuestions(session.questions);
       setAnswers(session.answers);
-      setCurrent(0);
+      const firstUnanswered = session.questions.findIndex(
+        question => session.answers[question.id] === undefined
+      );
+      setCurrent(firstUnanswered >= 0 ? firstUnanswered : 0);
       setExpiresAt(session.expiresAt);
       setSeconds(Math.max(0, Math.ceil((new Date(session.expiresAt).getTime() - Date.now()) / 1000)));
       setAttemptId(session.attemptId);
@@ -344,6 +347,11 @@ export default function Exam() {
 
 
     <main className="exam-stage-v2"><section className="exam-card-v2">
+      {loadError && (
+        <div className="surface-panel px-4 py-3 text-sm text-center text-muted" role="alert">
+          {loadError}
+        </div>
+      )}
       <div className="question-audio-nav exam-inside" role="group" aria-label="التحكم بالصوت">
             <button
               type="button"
