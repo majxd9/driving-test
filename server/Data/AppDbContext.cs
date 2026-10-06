@@ -112,11 +112,11 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<ExamAttempt>()
             .Property(e => e.WrongQuestionIds)
-            .HasConversion(intListConverter);
+            .HasConversion(intListConverter, intListComparer);
 
         builder.Entity<ExamAttempt>()
             .Property(e => e.QuestionIds)
-            .HasConversion(intListConverter);
+            .HasConversion(intListConverter, intListComparer);
 
         builder.Entity<ExamAttempt>()
             .HasOne<ApplicationUser>()
