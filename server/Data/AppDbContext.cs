@@ -2,6 +2,7 @@ using System.Text.Json;
 using DrivingTestApi.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DrivingTestApi.Data;
@@ -26,19 +27,29 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(builder);
 
-        // تخزين القوائم (Options / QuestionIds) كنص JSON داخل عمود واحد — أبسط حل لمشروع بهالحجم.
-        // ملاحظة: EF Core ممكن يطبع تحذيراً بسيطاً بالكونسول بخصوص هالنوع من القوائم، هذا طبيعي ولا يؤثر على عمل النظام.
+        // Store small list properties as JSON while providing explicit value comparers so
+        // EF Core detects in-place list changes correctly.
         var stringListConverter = new ValueConverter<List<string>, string>(
             v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
             v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
+
+        var stringListComparer = new ValueComparer<List<string>>(
+            (a, b) => ReferenceEquals(a, b) || (a is not null && b is not null && a.SequenceEqual(b, StringComparer.Ordinal)),
+            value => value.Aggregate(0, (hash, item) => HashCode.Combine(hash, item is null ? 0 : StringComparer.Ordinal.GetHashCode(item))),
+            value => value.ToList());
 
         var intListConverter = new ValueConverter<List<int>, string>(
             v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
             v => JsonSerializer.Deserialize<List<int>>(v, (JsonSerializerOptions?)null) ?? new List<int>());
 
+        var intListComparer = new ValueComparer<List<int>>(
+            (a, b) => ReferenceEquals(a, b) || (a is not null && b is not null && a.SequenceEqual(b)),
+            value => value.Aggregate(0, HashCode.Combine),
+            value => value.ToList());
+
         builder.Entity<Question>()
             .Property(q => q.Options)
-            .HasConversion(stringListConverter);
+            .HasConversion(stringListConverter, stringListComparer);
 
         builder.Entity<QuestionAudio>()
             .HasKey(x => x.QuestionId);
@@ -97,7 +108,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<ExamModel>()
             .Property(e => e.QuestionIds)
-            .HasConversion(intListConverter);
+            .HasConversion(intListConverter, intListComparer);
 
         builder.Entity<ExamAttempt>()
             .Property(e => e.WrongQuestionIds)
