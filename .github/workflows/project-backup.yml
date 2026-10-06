@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - ".github/workflows/project-backup.yml"
+      - "BACKUP_TRIGGER.md"
   schedule:
     - cron: "0 3 * * 0"
 
