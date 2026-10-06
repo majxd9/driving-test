@@ -3,11 +3,13 @@ using DrivingTestApi.DTOs;
 using DrivingTestApi.Models;
 using DrivingTestApi.Services;
 using System.Security.Cryptography;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace DrivingTestApi.Controllers;
 
@@ -19,15 +21,172 @@ public class AdminController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly AppDbContext _db;
     private readonly AiGenerationJobService _generationJobs;
+    private readonly IMemoryCache _memoryCache;
 
     public AdminController(
         UserManager<ApplicationUser> userManager,
         AppDbContext db,
-        AiGenerationJobService generationJobs)
+        AiGenerationJobService generationJobs,
+        IMemoryCache memoryCache)
     {
         _userManager = userManager;
         _db = db;
         _generationJobs = generationJobs;
+        _memoryCache = memoryCache;
+    }
+
+    [HttpGet("accounts")]
+    public async Task<ActionResult<List<AccountResponse>>> GetAccounts()
+    {
+        var users = await _userManager.Users
+            .OrderByDescending(u => u.CreatedAt)
+            .ToListAsync();
+
+        var result = new List<AccountResponse>(users.Count);
+
+        foreach (var user in users)
+        {
+            var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Student";
+            result.Add(ToAccountResponse(user, role));
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPost("accounts")]
+    public async Task<ActionResult<AccountResponse>> CreateAccount(CreateAccountRequest request)
+    {
+        var role = NormalizeAccountRole(request.Role);
+
+        if (role is null)
+            return BadRequest(new { message = "الصلاحية يجب أن تكون Student أو Admin." });
+
+        if (string.IsNullOrWhiteSpace(request.UserName) ||
+            string.IsNullOrWhiteSpace(request.FullName) ||
+            string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest(new { message = "اسم المستخدم والاسم الكامل وكلمة المرور مطلوبة." });
+        }
+
+        var user = new ApplicationUser
+        {
+            UserName = request.UserName.Trim(),
+            FullName = request.FullName.Trim(),
+            IsActive = true,
+            AccessExpiresAt = NormalizeAccessExpiry(request.AccessExpiresAt)
+        };
+
+        var result = await _userManager.CreateAsync(user, request.Password);
+
+        if (!result.Succeeded)
+            return BadRequest(result.Errors.Select(e => e.Description));
+
+        var roleResult = await _userManager.AddToRoleAsync(user, role);
+
+        if (!roleResult.Succeeded)
+        {
+            await _userManager.DeleteAsync(user);
+            return BadRequest(roleResult.Errors.Select(e => e.Description));
+        }
+
+        return Ok(ToAccountResponse(user, role));
+    }
+
+    [HttpPut("accounts/{id}")]
+    public async Task<ActionResult<AccountResponse>> UpdateAccount(
+        string id,
+        UpdateAccountRequest request)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+
+        if (user is null)
+            return NotFound(new { message = "الحساب غير موجود." });
+
+        var requestedRole = NormalizeAccountRole(request.Role);
+        if (requestedRole is null)
+            return BadRequest(new { message = "الصلاحية يجب أن تكون Student أو Admin." });
+
+        if (string.IsNullOrWhiteSpace(request.UserName) ||
+            string.IsNullOrWhiteSpace(request.FullName))
+        {
+            return BadRequest(new { message = "اسم المستخدم والاسم الكامل مطلوبان." });
+        }
+
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        var currentRole = currentRoles.FirstOrDefault() ?? "Student";
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.Equals(user.Id, currentUserId, StringComparison.Ordinal) &&
+            (!request.IsActive || !string.Equals(requestedRole, currentRole, StringComparison.Ordinal)))
+        {
+            return BadRequest(new { message = "لا يمكن للأدمن تعطيل حسابه أو تغيير صلاحيته من داخل الجلسة الحالية." });
+        }
+
+        if (currentRole == "Admin" &&
+            (!request.IsActive || !string.Equals(requestedRole, "Admin", StringComparison.Ordinal)))
+        {
+            var activeAdmins = (await _userManager.GetUsersInRoleAsync("Admin"))
+                .Count(x => x.IsActive && x.Id != user.Id);
+
+            if (activeAdmins == 0)
+                return BadRequest(new { message = "يجب إبقاء أدمن نشط واحد على الأقل في النظام." });
+        }
+
+        user.UserName = request.UserName.Trim();
+        user.FullName = request.FullName.Trim();
+        user.IsActive = request.IsActive;
+        user.AccessExpiresAt = NormalizeAccessExpiry(request.AccessExpiresAt);
+
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+            return BadRequest(updateResult.Errors.Select(e => e.Description));
+
+        if (!string.Equals(currentRole, requestedRole, StringComparison.Ordinal))
+        {
+            var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            if (!removeResult.Succeeded)
+                return BadRequest(removeResult.Errors.Select(e => e.Description));
+
+            var addResult = await _userManager.AddToRoleAsync(user, requestedRole);
+            if (!addResult.Succeeded)
+                return BadRequest(addResult.Errors.Select(e => e.Description));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Password))
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var passwordResult = await _userManager.ResetPasswordAsync(user, token, request.Password);
+
+            if (!passwordResult.Succeeded)
+                return BadRequest(passwordResult.Errors.Select(e => e.Description));
+        }
+
+        _memoryCache.Remove($"auth-status:{user.Id}:Admin");
+        _memoryCache.Remove($"auth-status:{user.Id}:Student");
+
+        var finalRole = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? requestedRole;
+        return Ok(ToAccountResponse(user, finalRole));
+    }
+
+    [HttpPost("accounts/{id}/reset-device")]
+    public async Task<IActionResult> ResetAccountDevice(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+
+        if (user is null)
+            return NotFound(new { message = "الحساب غير موجود." });
+
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Student";
+        if (role == "Admin")
+            return BadRequest(new { message = "حساب الأدمن غير مرتبط بجهاز." });
+
+        user.DeviceId = null;
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+            return BadRequest(result.Errors.Select(e => e.Description));
+
+        return NoContent();
     }
 
     [HttpGet("students")]
@@ -524,6 +683,42 @@ public class AdminController : ControllerBase
             DiagramDescription =
                 r.DiagramDescription
         };
+    }
+
+    private static string? NormalizeAccountRole(string? role)
+    {
+        if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+            return "Admin";
+
+        if (string.Equals(role, "Student", StringComparison.OrdinalIgnoreCase))
+            return "Student";
+
+        return null;
+    }
+
+    private static DateTime? NormalizeAccessExpiry(DateTime? value)
+    {
+        if (value is null)
+            return null;
+
+        var utc = value.Value.Kind == DateTimeKind.Utc
+            ? value.Value
+            : DateTime.SpecifyKind(value.Value, DateTimeKind.Utc);
+
+        return utc.Date.AddDays(1).AddTicks(-1);
+    }
+
+    private static AccountResponse ToAccountResponse(ApplicationUser user, string role)
+    {
+        return new AccountResponse(
+            user.Id,
+            user.UserName ?? "",
+            user.FullName,
+            role,
+            user.IsActive,
+            !string.IsNullOrEmpty(user.DeviceId),
+            user.AccessExpiresAt,
+            user.CreatedAt);
     }
 
     private static StudentResponse ToResponse(
