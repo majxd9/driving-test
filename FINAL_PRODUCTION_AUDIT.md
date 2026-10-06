@@ -9,6 +9,7 @@
 2. اعتماد تعريف نهائي قابل للقياس لـ Models 7–8.
 3. ضبط Render health check إلى `/api/healthz`.
 4. اعتماد خطة backup/export دورية لأن Supabase Free لا يوفر automatic backups.
+5. تنفيذ E2E تفاعلي فعلي للحسابات بعد تسجيل الدخول بحساب طالب تجريبي وحساب Admin.
 
 ## ما تم إصلاحه
 
@@ -156,3 +157,24 @@ Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump د
 - [ ] Backup/export procedure verified.
 - [ ] Production frontend deployment verified after the latest main commit.
 
+
+
+## Account-management feature audit — 2026-10-06
+تم تنفيذ الميزة المطلوبة لإدارة الحسابات من Admin فقط:
+- GET/POST/PUT لحسابات المستخدمين تحت `/api/admin/accounts`.
+- إنشاء Student أو Admin.
+- تعديل الاسم، اسم المستخدم، كلمة المرور، الصلاحية، الحالة ومدة الوصول.
+- إعادة ضبط جهاز الطالب من لوحة الإدارة.
+- حماية منع إسقاط آخر Admin نشط.
+- حماية منع الأدمن من تعطيل/خفض صلاحيته من الجلسة الحالية.
+- واجهة جديدة **الحسابات** داخل لوحة الإدارة.
+- Cloudflare Pages build للإصدار الذي يحتوي واجهة الحسابات انتهى **success** على commit `9a38dbd9fa69789c10c71c1d3138fd1511440239`.
+- Render build الذي يحتوي backend account management انتهى **live** على commit `5320c2aef0075a9b464ad4b242801d1fbe4649bd`، وهو يتضمن commit الـAPI السابق.
+- حساب الطالب التجريبي `Test` موجود فعلياً في Supabase بحالة Student ونشط ومربوط بجهاز.
+- لم يتم تنفيذ تفاعل تسجيل الدخول E2E من أداة آلية متاحة في جلسة التدقيق؛ لذلك يبقى هذا البند غير مثبت آلياً.
+
+### Remaining release gates
+- E2E فعلي: Login طالب + رفض الطالب لـ`/api/admin/*) + Login Admin + إنشاء/تعديل حساب Admin/Student.
+- تعريف Models 7–8 بصعوبة قابلة للقياس.
+- ضبط Render `healthCheckPath` إلى `/api/healthz`.
+- اعتماد backup/export واختباره.
