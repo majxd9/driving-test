@@ -34,8 +34,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
 
         var stringListComparer = new ValueComparer<List<string>>(
-            (a, b) => ReferenceEquals(a, b) || (a is not null && b is not null && a.SequenceEqual(b, StringComparer.Ordinal)),
-            value => value.Aggregate(0, (hash, item) => HashCode.Combine(hash, item is null ? 0 : StringComparer.Ordinal.GetHashCode(item))),
+            (a, b) => ReferenceEquals(a, b) || (a != null && b != null && a.SequenceEqual(b, StringComparer.Ordinal)),
+            value => value.Aggregate(0, (hash, item) => HashCode.Combine(hash, item == null ? 0 : StringComparer.Ordinal.GetHashCode(item))),
             value => value.ToList());
 
         var intListConverter = new ValueConverter<List<int>, string>(
@@ -43,7 +43,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             v => JsonSerializer.Deserialize<List<int>>(v, (JsonSerializerOptions?)null) ?? new List<int>());
 
         var intListComparer = new ValueComparer<List<int>>(
-            (a, b) => ReferenceEquals(a, b) || (a is not null && b is not null && a.SequenceEqual(b)),
+            (a, b) => ReferenceEquals(a, b) || (a != null && b != null && a.SequenceEqual(b)),
             value => value.Aggregate(0, HashCode.Combine),
             value => value.ToList());
 
