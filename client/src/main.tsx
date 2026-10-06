@@ -31,7 +31,6 @@ import './content-protection.css';
 import './question-audio.css';
 import './ai-generation.css';
 import './question-media-final.css';
-import './interaction-visual-final.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
