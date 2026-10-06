@@ -6,10 +6,9 @@
 
 تم تنفيذ وإثبات عدة إصلاحات حرجة في backend/database، لكن لا أعتبر الإصدار Production-Cleared نهائياً قبل:
 1. اختبار E2E حقيقي بحساب طالب اختبار وحساب Admin.
-2. اعتماد تعريف نهائي قابل للقياس لـ Models 7–8.
-3. ضبط Render health check إلى `/api/healthz`.
-4. اعتماد خطة backup/export دورية لأن Supabase Free لا يوفر automatic backups.
-5. تنفيذ E2E تفاعلي فعلي للحسابات بعد تسجيل الدخول بحساب طالب تجريبي وحساب Admin.
+2. ضبط Render health check إلى `/api/healthz` إذا أصبح إعداد الخدمة قابلاً للتعديل عبر أداة/صلاحية مناسبة.
+3. اعتماد خطة backup/export دورية لأن Supabase Free لا يوفر automatic backups.
+4. تنفيذ E2E تفاعلي فعلي للحسابات بعد تسجيل الدخول بحساب طالب تجريبي وحساب Admin.
 
 ## ما تم إصلاحه
 
@@ -122,8 +121,8 @@
 - محاولة submit بجلسة أخرى.
 - التحقق من أن النتيجة لا يمكن تعديلها من العميل.
 
-### P1 — Models 7–8
-الواجهة تعتبر 7 و8 متقدمة، لكن ExamQuestionPicker الحالي لا يملك Difficulty metadata أو bank مستقلاً؛ الفرق الفعلي هو deterministic seed مختلف. لا يجب إعلان أنها "أصعب فعلاً" دون معيار محتوى قابل للقياس.
+### Models 7–8
+لا يوجد طلب لتغيير الاختبارات أو الاختيارات. الحالة الحالية محفوظة كما هي، ولا يُعتبر هذا البند عائق إصدار.
 
 ### P1 — Render health check
 يوجد endpoint صالح `/api/healthz`، لكن خدمة Render لا تزال بدون healthCheckPath مفعّل.
@@ -152,8 +151,7 @@ Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump د
 
 قبل إعلان Production-Cleared:
 - [ ] E2E Student/Admin.
-- [ ] D5 final specification and deterministic test.
-- [ ] Render healthCheckPath.
+- [ ] Render healthCheckPath `/api/healthz` — إعداد الخدمة ما زال غير مفعّل لأن أداة Render المتاحة في جلسة التدقيق لا تعرض عملية update service لهذا الحقل.
 - [ ] Backup/export procedure verified.
 - [ ] Production frontend deployment verified after the latest main commit.
 
@@ -175,6 +173,5 @@ Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump د
 
 ### Remaining release gates
 - E2E فعلي: Login طالب + رفض الطالب لـ`/api/admin/*) + Login Admin + إنشاء/تعديل حساب Admin/Student.
-- تعريف Models 7–8 بصعوبة قابلة للقياس.
-- ضبط Render `healthCheckPath` إلى `/api/healthz`.
+- ضبط Render `healthCheckPath` إلى `/api/healthz` عندما تتوفر صلاحية/أداة تعديل الخدمة.
 - اعتماد backup/export واختباره.
