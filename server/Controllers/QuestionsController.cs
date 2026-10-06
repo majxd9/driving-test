@@ -172,7 +172,7 @@ public class QuestionsController : ControllerBase
     }
 
     [HttpGet("{id:int}/audio-debug")]
-    [AllowAnonymous]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAudioDebug(int id, CancellationToken cancellationToken)
     {
         var audio = await _db.QuestionAudios.AsNoTracking().SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
