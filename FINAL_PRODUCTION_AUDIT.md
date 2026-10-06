@@ -231,3 +231,21 @@ Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump د
 
 ## UI acceptance status
 تعديلات viewport الثابتة الأخيرة نُشرت ونجحت CI، لكن المستخدم أفاد أن التخطيط المرئي المطلوب لم يتغير فعلياً على صفحة التدريب التفاعلي. لذلك **هذا البند غير مغلق** وسيُعاد تدقيقه على Study page نفسها قبل اعتباره منجزاً، ولا يُسجل كنجاح لمجرد نجاح build/deploy.
+
+
+## Database Integrity Audit — 2026-10-06
+الحالة: **مكتملة ✅**
+
+التحقق الحالي:
+- Questions = 397.
+- CorrectAnswerIndex غير صالح = 0.
+- Orphan QuestionAudios = 0.
+- Orphan QuestionAiImages = 0.
+- Orphan AiImageReviews = 0.
+- Orphan ExamAttempts = 0.
+- Orphan AiGenerationJobs = 0.
+- public tables = 20.
+- public tables with RLS disabled = 0.
+- direct grants to anon/authenticated on public tables = 0.
+- تم التحقق سابقاً من 4 خيارات صالحة لكل 397 سؤالاً.
+- لم يتم حذف أو تعديل أي فهرس في هذه المهمة.
