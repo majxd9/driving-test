@@ -298,3 +298,370 @@
     line-height:1.55!important;
   }
 }
+
+
+/* ============================================================
+   FIXED EXAM VIEWPORT + STRONG GLASS — OWNER RULE
+   The exam page itself never grows with text. Only the internal
+   question area scrolls when a question is unusually long.
+   ============================================================ */
+
+.exam-page-v2{
+  height:100dvh!important;
+  min-height:100dvh!important;
+  max-height:100dvh!important;
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+}
+
+.exam-stage-v2{
+  height:calc(100dvh - 66px)!important;
+  min-height:0!important;
+  max-height:calc(100dvh - 66px)!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  padding:10px 12px 10px!important;
+}
+
+.exam-card-v2{
+  position:relative!important;
+  isolation:isolate!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  overflow:hidden!important;
+  display:flex!important;
+  flex-direction:column!important;
+
+  /* Real transparent frosted glass, not an opaque panel. */
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.020) 45%,rgba(45,212,191,.035)),
+    rgba(13,29,40,.52)!important;
+  border:1px solid rgba(255,255,255,.19)!important;
+  box-shadow:
+    0 24px 70px rgba(0,0,0,.30),
+    inset 0 1px 0 rgba(255,255,255,.13),
+    inset 0 -1px 0 rgba(0,0,0,.16)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(155%)!important;
+  backdrop-filter:blur(22px) saturate(155%)!important;
+}
+
+.exam-card-v2::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:-1!important;
+  pointer-events:none!important;
+  background:
+    radial-gradient(circle at 14% 0%,rgba(255,255,255,.11),transparent 24%),
+    radial-gradient(circle at 86% 100%,rgba(45,212,191,.075),transparent 26%)!important;
+  border-radius:inherit!important;
+}
+
+.exam-scroll-v2{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  max-height:100%!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  scrollbar-width:none!important;
+  -webkit-overflow-scrolling:touch!important;
+  padding:0 4px 6px!important;
+}
+.exam-scroll-v2::-webkit-scrollbar{display:none!important}
+
+/* Fixed image box. The box does not grow with the source image. */
+.exam-image-slot-v2{
+  flex:0 0 auto!important;
+  height:280px!important;
+  min-height:280px!important;
+  max-height:280px!important;
+  overflow:hidden!important;
+  margin:0 0 10px!important;
+}
+.exam-image-slot-v2:not(.has-two-images){
+  height:280px!important;
+  min-height:280px!important;
+  max-height:280px!important;
+}
+.exam-image-slot-v2.has-two-images{
+  height:210px!important;
+  min-height:210px!important;
+  max-height:210px!important;
+}
+
+.exam-question-image-frame,
+.exam-image-slot-v2.has-two-images .exam-question-image-frame{
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.070),rgba(5,17,25,.38)),
+    rgba(10,22,30,.36)!important;
+  border:1px solid rgba(255,255,255,.17)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 12px 30px rgba(0,0,0,.20)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(140%)!important;
+  backdrop-filter:blur(14px) saturate(140%)!important;
+}
+.exam-question-image-frame img{
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+}
+
+/* Fixed question text box. Long questions scroll INSIDE this box. */
+.exam-question-v2{
+  flex:0 0 auto!important;
+  height:92px!important;
+  min-height:92px!important;
+  max-height:92px!important;
+  box-sizing:border-box!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  scrollbar-width:none!important;
+  display:block!important;
+  padding:8px 8px!important;
+  margin:0 0 8px!important;
+  font-size:18px!important;
+  line-height:1.62!important;
+  font-weight:900!important;
+  text-align:center!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+.exam-question-v2::-webkit-scrollbar{display:none!important}
+.exam-question-label{
+  display:block!important;
+  margin-bottom:5px!important;
+  font-size:12px!important;
+}
+
+/* Every option has one fixed height across all questions. */
+.exam-answers-v2{
+  flex:0 0 auto!important;
+  height:250px!important;
+  min-height:250px!important;
+  max-height:250px!important;
+  display:grid!important;
+  grid-template-rows:repeat(4,1fr)!important;
+  gap:8px!important;
+  margin:0 0 10px!important;
+}
+.exam-option-v2{
+  height:58px!important;
+  min-height:58px!important;
+  max-height:58px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  display:grid!important;
+  grid-template-columns:38px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:7px 10px!important;
+  border-radius:16px!important;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.075),rgba(8,20,29,.42)),
+    rgba(12,25,35,.40)!important;
+  border:1px solid rgba(255,255,255,.15)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.075),
+    0 7px 20px rgba(0,0,0,.14)!important;
+  -webkit-backdrop-filter:blur(12px) saturate(135%)!important;
+  backdrop-filter:blur(12px) saturate(135%)!important;
+}
+.exam-option-letter-v2{
+  width:34px!important;
+  height:34px!important;
+  flex:none!important;
+}
+.exam-option-text-v2{
+  min-width:0!important;
+  max-height:44px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  scrollbar-width:none!important;
+  font-size:14px!important;
+  line-height:1.50!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+.exam-option-text-v2::-webkit-scrollbar{display:none!important}
+
+/* Navigation remains fixed-sized as part of the page shell. */
+.exam-actions-v2{
+  flex:0 0 auto!important;
+  min-height:64px!important;
+}
+
+/* Keep the page fixed on compact screens as well. */
+@media(max-width:700px){
+  .exam-stage-v2{
+    height:calc(100dvh - 62px)!important;
+    max-height:calc(100dvh - 62px)!important;
+    padding:7px 7px 8px!important;
+  }
+
+  .exam-card-v2{
+    border-radius:22px!important;
+    background:
+      linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.025) 46%,rgba(45,212,191,.045)),
+      rgba(13,29,40,.50)!important;
+    border-color:rgba(255,255,255,.21)!important;
+    -webkit-backdrop-filter:blur(24px) saturate(160%)!important;
+    backdrop-filter:blur(24px) saturate(160%)!important;
+  }
+
+  .exam-image-slot-v2,
+  .exam-image-slot-v2:not(.has-two-images){
+    height:235px!important;
+    min-height:235px!important;
+    max-height:235px!important;
+  }
+
+  .exam-image-slot-v2.has-two-images{
+    height:180px!important;
+    min-height:180px!important;
+    max-height:180px!important;
+  }
+
+  .exam-question-v2{
+    height:86px!important;
+    min-height:86px!important;
+    max-height:86px!important;
+    font-size:17px!important;
+    line-height:1.56!important;
+    padding:7px 5px!important;
+  }
+
+  .exam-answers-v2{
+    height:232px!important;
+    min-height:232px!important;
+    max-height:232px!important;
+    gap:7px!important;
+    grid-template-rows:repeat(4,1fr)!important;
+  }
+
+  .exam-option-v2{
+    height:56px!important;
+    min-height:56px!important;
+    max-height:56px!important;
+    padding:7px 9px!important;
+    gap:8px!important;
+    border-radius:15px!important;
+  }
+
+  .exam-option-letter-v2{
+    width:32px!important;
+    height:32px!important;
+  }
+
+  .exam-option-text-v2{
+    max-height:42px!important;
+    font-size:13.5px!important;
+    line-height:1.46!important;
+  }
+}
+
+@media(max-width:430px){
+  .exam-image-slot-v2,
+  .exam-image-slot-v2:not(.has-two-images){
+    height:205px!important;
+    min-height:205px!important;
+    max-height:205px!important;
+  }
+
+  .exam-image-slot-v2.has-two-images{
+    height:158px!important;
+    min-height:158px!important;
+    max-height:158px!important;
+  }
+
+  .exam-question-v2{
+    height:80px!important;
+    min-height:80px!important;
+    max-height:80px!important;
+    font-size:16px!important;
+    line-height:1.52!important;
+  }
+
+  .exam-answers-v2{
+    height:220px!important;
+    min-height:220px!important;
+    max-height:220px!important;
+    gap:6px!important;
+  }
+
+  .exam-option-v2{
+    height:53px!important;
+    min-height:53px!important;
+    max-height:53px!important;
+    padding:6px 8px!important;
+  }
+
+  .exam-option-text-v2{
+    max-height:40px!important;
+    font-size:13px!important;
+    line-height:1.42!important;
+  }
+}
+
+/* Same fixed-box rule for the training screen. */
+.study-premium-card{
+  overflow:hidden!important;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.020) 45%,rgba(45,212,191,.035)),
+    rgba(13,29,40,.52)!important;
+  border-color:rgba(255,255,255,.19)!important;
+  box-shadow:
+    0 24px 70px rgba(0,0,0,.30),
+    inset 0 1px 0 rgba(255,255,255,.13)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(155%)!important;
+  backdrop-filter:blur(22px) saturate(155%)!important;
+}
+
+@media(max-width:700px){
+  .study-premium-image{
+    height:205px!important;
+    min-height:205px!important;
+    max-height:205px!important;
+    flex:0 0 205px!important;
+  }
+  .study-premium-question{
+    height:82px!important;
+    min-height:82px!important;
+    max-height:82px!important;
+    overflow-y:auto!important;
+    scrollbar-width:none!important;
+    font-size:16px!important;
+    line-height:1.52!important;
+  }
+  .study-premium-question::-webkit-scrollbar{display:none!important}
+  .study-premium-answers{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:6px!important;
+    overflow:visible!important;
+  }
+  .study-premium-option{
+    height:56px!important;
+    min-height:56px!important;
+    max-height:56px!important;
+    overflow:hidden!important;
+    padding:7px 9px!important;
+  }
+  .study-premium-option-text{
+    max-height:42px!important;
+    overflow-y:auto!important;
+    scrollbar-width:none!important;
+    font-size:13px!important;
+    line-height:1.42!important;
+  }
+  .study-premium-option-text::-webkit-scrollbar{display:none!important}
+}
