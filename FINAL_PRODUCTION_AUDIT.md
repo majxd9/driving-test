@@ -210,3 +210,24 @@ Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump د
 - Render memory خلال آخر نافذة قياس: تقريباً 95–142 MB.
 - Render HTTP request/latency metrics لم تُرجع نقاط في نافذة القياس الحالية، لذلك لا يوجد رقم latency production موثوق نعتمد عليه كـbaseline.
 - Cloudflare Pages production آخر نشر ناجح على commit d453a5200f08d4db1b8b0a6a04ff23c148c6519e.
+## Security Audit — 2026-10-06
+الحالة: **مغلقة من ناحية الفحص، مع نقاط E2E متبقية**.
+
+تم التحقق من:
+- JWT يتحقق من issuer وsignature وlifetime، ومدة الجلسة 12 ساعة مع ClockSkew دقيقة واحدة.
+- JWT محفوظ داخل HttpOnly + Secure cookie، وSameSite=None.
+- Student DeviceId binding مفعّل، وAdmin غير مربوط بالجهاز.
+- AdminController محمي بـ Authorize(Roles = Admin).
+- endpoint تشخيص الصوت مقيد لـAdmin.
+- صور AI القديمة لا تُعرض إذا لم يطابق ContentHash النسخة الحالية للسؤال، والموافقة الإدارية مطلوبة قبل عرضها للطلاب.
+- CSRF Origin/Referer protection موجودة لطلبات state-changing مع auth cookie.
+- login rate limit = 8 محاولات/دقيقة لكل client IP، مع Identity lockout بعد 5 محاولات فاشلة/15 دقيقة.
+- Supabase RLS مفعّل على جداول public، ولا توجد table grants لـanon/authenticated في الفحص الحالي.
+- ملاحظة Supabase حول RLS بدون policies هي INFO متسقة مع نموذج الوصول backend-only؛ لا توجد صلاحيات مباشرة للanon/authenticated.
+
+تم العثور على نقطة أمان منخفضة/متوسطة في endpoint العام لرسائل الصوت النظامية: كان GET يمكنه تشغيل توليد TTS وحفظ النتيجة عند غياب الملف، أي side effect من anonymous GET. تم إصلاحها بجعل endpoint للقراءة فقط؛ الاستعادة أصبحت من StartupMaintenanceService/Admin.
+
+مهم: الاختبار الشبكي المباشر من بيئة التدقيق لم يكن متاحاً بسبب فشل DNS في بيئة التنفيذ، لذلك بقيت اختبارات E2E الشبكية الحية ضمن release gates ولم ندّعِ نجاحها.
+
+## UI acceptance status
+تعديلات viewport الثابتة الأخيرة نُشرت ونجحت CI، لكن المستخدم أفاد أن التخطيط المرئي المطلوب لم يتغير فعلياً على صفحة التدريب التفاعلي. لذلك **هذا البند غير مغلق** وسيُعاد تدقيقه على Study page نفسها قبل اعتباره منجزاً، ولا يُسجل كنجاح لمجرد نجاح build/deploy.
