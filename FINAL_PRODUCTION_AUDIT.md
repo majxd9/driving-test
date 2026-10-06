@@ -195,3 +195,18 @@ Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump د
 - Supabase verification: Questions = 397; QuestionAudios = 397; invalid option count = 0; invalid answer index count = 0; no `anon`/`authenticated` table grants on public tables; RLS is enabled on all public tables.
 - Supabase advisors currently report informational RLS-without-policy findings consistent with the backend-only access model, plus 6 unused-index notices. No index was removed without workload evidence.
 - AI control remains AudioEnabled=true, ImageEnabled=false, ImageProvider=comfyui.
+
+## Baseline Measurement — 2026-10-06 18:30 UTC
+
+تم أخذ قياس baseline جديد بعد آخر تغييرات الواجهة والوسائط، بدون تعديل سلوك الاختبار:
+- Questions = 397.
+- QuestionAudios ذات الملفات الفعلية = 397/397.
+- QuestionAiImages ذات الملفات الفعلية = 298.
+- AiGenerationJobs: Pending = 99، Processing = 0، Completed = 803، Failed = 12.
+- AiTestRuns Pending = 0.
+- Supabase database size = 204,319,891 bytes (~194.7 MiB).
+- Render: Free, 1 instance, Oregon, auto deploy من main، Health Check = /api/healthz.
+- Render CPU خلال آخر نافذة قياس: تقريباً 0.02–0.06 CPU.
+- Render memory خلال آخر نافذة قياس: تقريباً 95–142 MB.
+- Render HTTP request/latency metrics لم تُرجع نقاط في نافذة القياس الحالية، لذلك لا يوجد رقم latency production موثوق نعتمد عليه كـbaseline.
+- Cloudflare Pages production آخر نشر ناجح على commit d453a5200f08d4db1b8b0a6a04ff23c148c6519e.
