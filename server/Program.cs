@@ -28,7 +28,12 @@ var frontendOrigin = (builder.Configuration["FrontendOrigin"] ?? "http://localho
 if (!builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(builder.Configuration["FrontendOrigin"]))
     throw new InvalidOperationException("يجب ضبط FrontendOrigin في بيئة الإنتاج.");
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString, npgsqlOptions =>
+{
+    // Supabase pooler connections can be interrupted transiently during cold starts.
+    // Retry transient PostgreSQL/network failures instead of crashing the API process.
+    npgsqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null);
+}));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 8;
@@ -235,10 +240,17 @@ var app = builder.Build();
 // The production database already exists and this project does not use EF migrations.
 // Create the small AI-audio table before accepting requests so question queries never
 // race the schema creation on a cold start.
-using (var schemaScope = app.Services.CreateScope())
+var schemaInitialized = false;
+Exception? schemaInitializationError = null;
+
+for (var attempt = 1; attempt <= 5 && !schemaInitialized; attempt++)
 {
-    var db = schemaScope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.ExecuteSqlRawAsync("""
+    try
+    {
+        using var schemaScope = app.Services.CreateScope();
+        var db = schemaScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.Database.ExecuteSqlRawAsync("""
+
         CREATE TABLE IF NOT EXISTS "QuestionAudios" (
             "QuestionId" integer NOT NULL,
             "AudioBytes" bytea NOT NULL,
@@ -353,6 +365,30 @@ using (var schemaScope = app.Services.CreateScope())
             WHERE r."QuestionId" = q."QuestionId"
         );
         """);
+        schemaInitialized = true;
+    }
+    catch (Exception ex) when (attempt < 5)
+    {
+        schemaInitializationError = ex;
+        var delaySeconds = Math.Min(20, attempt * 3);
+        app.Logger.LogWarning(
+            ex,
+            "Database schema bootstrap attempt {Attempt}/5 failed. Retrying in {DelaySeconds}s.",
+            attempt,
+            delaySeconds);
+        await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+    }
+    catch (Exception ex)
+    {
+        schemaInitializationError = ex;
+    }
+}
+
+if (!schemaInitialized)
+{
+    throw new InvalidOperationException(
+        "تعذر تهيئة مخطط قاعدة البيانات بعد عدة محاولات. لن يبدأ الخادم بحالة غير مكتملة.",
+        schemaInitializationError);
 }
 
 
