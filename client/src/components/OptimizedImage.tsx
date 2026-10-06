@@ -52,12 +52,14 @@ export default function OptimizedImage({
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const [mediaSrc, setMediaSrc] = useState<string | null>(null);
+  const [retryAttempt, setRetryAttempt] = useState(0);
 
   useEffect(() => {
     setCandidateIndex(0);
     setLoaded(false);
     setFailed(false);
     setMediaSrc(null);
+    setRetryAttempt(0);
   }, [canonicalSrc, src, authenticatedMedia]);
 
   const activeSrc = candidates[candidateIndex] ?? candidates[0];
@@ -97,7 +99,12 @@ export default function OptimizedImage({
 
   if (!canonicalSrc || !candidates.length) return null;
 
-  const renderedSrc = authenticatedMedia ? mediaSrc : activeSrc;
+  const addRetryToken = (url: string | null) => {
+    if (!url || retryAttempt <= 0 || /^(data:|blob:)/i.test(url)) return url;
+    return `${url}${url.includes('?') ? '&' : '?'}img-retry=${retryAttempt}`;
+  };
+
+  const renderedSrc = authenticatedMedia ? mediaSrc : addRetryToken(activeSrc);
 
   return (
     <div className={`relative ${className}`}>
@@ -114,8 +121,21 @@ export default function OptimizedImage({
         onError={() => {
           if (candidateIndex + 1 < candidates.length) {
             setCandidateIndex(index => index + 1);
+            setLoaded(false);
+            setFailed(false);
             return;
           }
+
+          if (retryAttempt < 2) {
+            const nextAttempt = retryAttempt + 1;
+            window.setTimeout(() => {
+              setRetryAttempt(nextAttempt);
+              setLoaded(false);
+              setFailed(false);
+            }, 500 * nextAttempt);
+            return;
+          }
+
           setFailed(true);
           setLoaded(true);
           onError?.();
