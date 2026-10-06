@@ -1,0 +1,48 @@
+name: Project Backup
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/project-backup.yml"
+  schedule:
+    - cron: "0 3 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact Git snapshot
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build backup archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          SNAPSHOT_DIR="$RUNNER_TEMP/driving-test-backup"
+          mkdir -p "$SNAPSHOT_DIR"
+          git archive HEAD | tar -x -C "$SNAPSHOT_DIR"
+          cat > "$SNAPSHOT_DIR/BACKUP_METADATA.txt" <<EOF
+          Project: driving-test
+          Commit: $GITHUB_SHA
+          Branch: $GITHUB_REF_NAME
+          Created: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          Backup purpose: tracked project source snapshot for recovery.
+          Secrets and runtime environment values are intentionally not included.
+          Restore source from this archive into a clean repository checkout.
+          EOF
+          cd "$SNAPSHOT_DIR"
+          zip -qr "$RUNNER_TEMP/driving-test-backup-${GITHUB_SHA:0:12}.zip" .
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: driving-test-backup-${GITHUB_SHA:0:12}
+          path: ${{ runner.temp }}/driving-test-backup-${GITHUB_SHA:0:12}.zip
+          if-no-files-found: error
+          retention-days: 30
