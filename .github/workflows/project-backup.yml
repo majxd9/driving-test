@@ -43,7 +43,7 @@ jobs:
       - name: Upload backup artifact
         uses: actions/upload-artifact@v4
         with:
-          name: driving-test-backup-${GITHUB_SHA:0:12}
-          path: ${{ runner.temp }}/driving-test-backup-${GITHUB_SHA:0:12}.zip
+          name: driving-test-backup
+          path: ${{ runner.temp }}/driving-test-backup-*.zip
           if-no-files-found: error
           retention-days: 30
