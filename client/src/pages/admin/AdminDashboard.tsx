@@ -8,31 +8,32 @@ import AudioDiagnostics from '../../components/AudioDiagnostics';
 import AiGenerationLab from '../../components/AiGenerationLab';
 import { getQuestionAudioSource } from '../../utils/questionAudio';
 
-type Tab='overview'|'accounts'|'students'|'questions'|'ai';
-const tabs:[Tab,string][]=[['overview','نظرة عامة'],['accounts','الحسابات'],['students','الطلاب'],['questions','الأسئلة'],['ai','AI GENERATION']];
+type Tab='overview'|'accounts'|'questions'|'ai';
+const tabs:[Tab,string][]=[['overview','نظرة عامة'],['accounts','الحسابات'],['questions','الأسئلة'],['ai','AI GENERATION']];
 
 export default function AdminDashboard(){
- const navigate=useNavigate();const [tab,setTab]=useState<Tab>('overview');const [accounts,setAccounts]=useState<Account[]>([]);const [students,setStudents]=useState<Student[]>([]);const [questions,setQuestions]=useState<Question[]>([]);const [analytics,setAnalytics]=useState<Analytics|null>(null);const [loading,setLoading]=useState(true);const [showStudent,setShowStudent]=useState(false);
+ const navigate=useNavigate();const [tab,setTab]=useState<Tab>('overview');const [accounts,setAccounts]=useState<Account[]>([]);const [students,setStudents]=useState<Student[]>([]);const [questions,setQuestions]=useState<Question[]>([]);const [analytics,setAnalytics]=useState<Analytics|null>(null);const [loading,setLoading]=useState(true);
  const [aiStatus,setAiStatus]=useState<import('../../types').AiGenerationOverview|null>(null);
- const reload=async(tabToLoad:Tab=tab)=>{setLoading(true);try{if(tabToLoad==='overview')setAnalytics(await api.admin.analytics());if(tabToLoad==='accounts')setAccounts(await api.admin.listAccounts());if(tabToLoad==='students')setStudents(await api.admin.listStudents());if(tabToLoad==='questions')setQuestions(await api.admin.listQuestions());if(tabToLoad==='ai')setAiStatus(await api.admin.aiGenerationStatus())}finally{setLoading(false)}};
+ const reload=async(tabToLoad:Tab=tab)=>{setLoading(true);try{if(tabToLoad==='overview')setAnalytics(await api.admin.analytics());if(tabToLoad==='accounts'){const [a,s]=await Promise.all([api.admin.listAccounts(),api.admin.listStudents()]);setAccounts(a);setStudents(s)}if(tabToLoad==='questions')setQuestions(await api.admin.listQuestions());if(tabToLoad==='ai')setAiStatus(await api.admin.aiGenerationStatus())}finally{setLoading(false)}};
  const reloadAiStatus=async()=>{try{setAiStatus(await api.admin.aiGenerationStatus())}catch{}};
  useEffect(()=>{void reload(tab)},[tab]);
- return <div className="min-h-screen bg-paper"><header className="admin-header"><div className="flex items-center gap-3"><button onClick={()=>navigate('/app')} className="icon-button" aria-label="العودة">→</button><div><b>لوحة الإدارة</b><p>إدارة الحسابات، الأسئلة ومؤشرات الأداء</p></div></div><button onClick={()=>void reload()} className="top-link" aria-label="تحديث القسم الحالي">تحديث ↻</button></header><main className="max-w-7xl mx-auto px-4 md:px-6 py-6"><nav className="admin-tabs" aria-label="أقسام الإدارة">{tabs.map(([k,l])=><button key={k} onClick={()=>setTab(k)} className={tab===k?'active':''} aria-current={tab===k?'page':undefined}>{l}</button>)}</nav>{loading?<div className="py-20 text-center text-muted">جارِ تحميل القسم...</div>:<>{tab==='overview'&&<Overview analytics={analytics}/>} {tab==='accounts'&&<Accounts accounts={accounts} reload={()=>reload('accounts')}/>} {tab==='students'&&<Students students={students} reload={()=>reload('students')} showForm={showStudent} setShowForm={setShowStudent}/>} {tab==='questions'&&<Questions questions={questions} reload={()=>reload('questions')}/>} {tab==='ai'&&<AiGenerationPanel status={aiStatus} reloadAiStatus={reloadAiStatus}/>}</>}</main></div>;
+ return <div className="min-h-screen bg-paper"><header className="admin-header"><div className="flex items-center gap-3"><button onClick={()=>navigate('/app')} className="icon-button" aria-label="العودة">→</button><div><b>لوحة الإدارة</b><p>إدارة الحسابات، الأسئلة ومؤشرات الأداء</p></div></div><button onClick={()=>void reload()} className="top-link" aria-label="تحديث القسم الحالي">تحديث ↻</button></header><main className="max-w-7xl mx-auto px-4 md:px-6 py-6"><nav className="admin-tabs" aria-label="أقسام الإدارة">{tabs.map(([k,l])=><button key={k} onClick={()=>setTab(k)} className={tab===k?'active':''} aria-current={tab===k?'page':undefined}>{l}</button>)}</nav>{loading?<div className="py-20 text-center text-muted">جارِ تحميل القسم...</div>:<>{tab==='overview'&&<Overview analytics={analytics}/>} {tab==='accounts'&&<Accounts accounts={accounts} students={students} reload={()=>reload('accounts')}/>} {tab==='questions'&&<Questions questions={questions} reload={()=>reload('questions')}/>} {tab==='ai'&&<AiGenerationPanel status={aiStatus} reloadAiStatus={reloadAiStatus}/>}</>}</main></div>;
 }
 
-function Accounts({accounts,reload}:{accounts:Account[];reload:()=>void}){
+function Accounts({accounts,students,reload}:{accounts:Account[];students:Student[];reload:()=>void}){
  const [search,setSearch]=useState('');
  const [editor,setEditor]=useState<{account:Account|null;role:'Admin'|'Student'}|null>(null);
+ const [auditStudent,setAuditStudent]=useState<Student|null>(null);
  const filtered=useMemo(()=>accounts.filter(a=>(a.fullName+' '+a.userName+' '+a.role).toLowerCase().includes(search.toLowerCase())),[accounts,search]);
  return <section>
   <div className="toolbar"><div><p className="eyebrow">إدارة المستخدمين والصلاحيات</p><h1>الحسابات</h1></div><div className="action-row">
    <button onClick={()=>setEditor({account:null,role:'Student'})} className="secondary-cta">＋ إضافة طالب</button>
    <button onClick={()=>setEditor({account:null,role:'Admin'})} className="primary-cta">＋ إضافة أدمن</button>
   </div></div>
-  <p className="text-muted text-sm mb-4">هذا القسم للأدمن فقط. يمكن تعديل الاسم، اسم المستخدم، كلمة المرور، الصلاحية، الحالة ومدة الوصول، مع منع إسقاط آخر أدمن نشط بالخطأ.</p>
+  <p className="text-muted text-sm mb-4">الطلاب والأدمن ضمن نفس القائمة. من هنا تستطيع تعديل بيانات أي حساب، وإدارة جهاز الطالب وسجل دخوله.</p>
   <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ابحث بالاسم أو اسم المستخدم أو الصلاحية..." className="admin-search" aria-label="البحث عن حساب"/>
   <div className="admin-card mt-4"><div className="table-wrap"><table><thead><tr><th>الاسم</th><th>اسم المستخدم</th><th>الصلاحية</th><th>الحالة</th><th>الجهاز</th><th>انتهاء الوصول</th><th>إجراءات</th></tr></thead><tbody>
-   {filtered.map(account=><tr key={account.id}>
+   {filtered.map(account=>{const student=students.find(s=>s.id===account.id);return <tr key={account.id}>
     <td><b>{account.fullName}</b></td>
     <td dir="ltr">{account.userName}</td>
     <td><span className={account.role==='Admin'?'status on':'status'}>{account.role==='Admin'?'أدمن':'طالب'}</span></td>
@@ -40,14 +41,15 @@ function Accounts({accounts,reload}:{accounts:Account[];reload:()=>void}){
     <td>{account.role==='Admin'?'—':account.deviceBound?'مرتبط':'غير مرتبط'}</td>
     <td>{account.accessExpiresAt?new Date(account.accessExpiresAt).toLocaleDateString('ar-SY'):'بدون انتهاء'}</td>
     <td><div className="action-row"><button type="button" onClick={()=>setEditor({account,role:account.role})}>تعديل</button>
-     {account.role==='Student'&&<button type="button" onClick={async()=>{try{await api.admin.resetAccountDevice(account.id);reload()}catch(e){alert(e instanceof Error?e.message:'تعذر إعادة ضبط الجهاز')}}}>إعادة ربط الجهاز</button>}
+     {student&&<button type="button" onClick={()=>setAuditStudent(student)}>سجل الطالب</button>}
+     {student&&<button type="button" onClick={async()=>{try{await api.admin.resetAccountDevice(account.id);reload()}catch(e){alert(e instanceof Error?e.message:'تعذر إعادة ضبط الجهاز')}}}>إعادة الجهاز</button>}
     </div></td>
-   </tr>)}
+   </tr>})}
   </tbody></table></div>{filtered.length===0&&<div className="py-8 text-center text-muted">لا توجد حسابات مطابقة.</div>}</div>
   {editor&&<AccountEditor initial={editor.account} newRole={editor.role} close={()=>setEditor(null)} saved={()=>{setEditor(null);reload()}}/>}
+  {auditStudent&&<StudentAuditModal student={auditStudent} onClose={()=>setAuditStudent(null)}/>} 
  </section>;
 }
-
 function AccountEditor({initial,newRole,close,saved}:{initial:Account|null;newRole:'Admin'|'Student';close:()=>void;saved:()=>void}){
  const isNew=initial===null;
  const [userName,setUserName]=useState(initial?.userName??'');
@@ -88,10 +90,6 @@ function AccountEditor({initial,newRole,close,saved}:{initial:Account|null;newRo
  </div></div>;
 }
 function Overview({analytics}:{analytics:Analytics|null}){if(!analytics)return <div className="admin-card text-muted">لا توجد بيانات إحصائية حالياً.</div>;const max=Math.max(...Object.values(analytics.questions.byCategory),1);return <section className="space-y-5"><div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">{[['الطلاب',analytics.students.total,''],['النشطون',analytics.students.active,'brand'],['الأسئلة',analytics.questions.total,'signs'],['نسبة النجاح',`${analytics.exams.passRate}%`,'exam']].map(([l,v,c])=><div className="stat-card" key={l as string}><p>{l}</p><strong className={c==='brand'?'text-brand':c==='signs'?'text-signs':c==='exam'?'text-exam':''}>{v}</strong></div>)}</div><div className="grid lg:grid-cols-2 gap-5"><div className="admin-card"><div className="card-title"><div><p>توزيع بنك الأسئلة</p><b>حسب القسم</b></div></div><div className="bars">{Object.entries(analytics.questions.byCategory).map(([k,v])=><div className="bar-row" key={k}><span>{k==='Ser'?'قواعد السير':k==='Ishara'?'الإشارات':'الميكانيك'}</span><div><i style={{width:`${(v/max)*100}%`}}/></div><b>{v}</b></div>)}</div></div><div className="admin-card"><div className="card-title"><div><p>الاختبارات</p><b>ملخص الأداء</b></div></div><div className="mini-metrics"><div><strong>{analytics.exams.total}</strong><span>اختبار مكتمل</span></div><div><strong>{analytics.exams.averageScore}</strong><span>متوسط الإجابات</span></div><div><strong>{analytics.auth.successful}</strong><span>دخول ناجح</span></div><div><strong>{analytics.auth.failed}</strong><span>محاولة فاشلة</span></div></div></div></div><div className="admin-card"><div className="card-title"><div><p>أكثر الأسئلة نشاطاً</p><b>مؤشر دقة الإجابة</b></div></div><div className="table-wrap"><table><thead><tr><th>السؤال</th><th>المحاولات</th><th>الدقة</th></tr></thead><tbody>{analytics.topQuestions.slice(0,8).map(q=><tr key={q.questionId}><td>{q.text}</td><td>{q.attempts}</td><td><span className="accuracy-pill">{q.accuracy}%</span></td></tr>)}</tbody></table></div></div></section>}
-
-function Students({students,reload,showForm,setShowForm}:{students:Student[];reload:()=>void;showForm:boolean;setShowForm:(v:boolean)=>void}){const [search,setSearch]=useState('');const [auditStudent,setAuditStudent]=useState<Student|null>(null);const filtered=useMemo(()=>students.filter(s=>(s.fullName+' '+s.userName).toLowerCase().includes(search.toLowerCase())),[students,search]);async function act(fn:()=>Promise<unknown>){await fn();reload()}return <section><div className="toolbar"><div><p className="eyebrow">إدارة الحسابات</p><h1>الطلاب</h1></div><button onClick={()=>setShowForm(!showForm)} className="primary-cta">{showForm?'إغلاق':'＋ إضافة طالب'}</button></div>{showForm&&<CreateStudentForm onCreated={()=>{setShowForm(false);reload()}}/>}<input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ابحث بالاسم أو اسم المستخدم..." className="admin-search" aria-label="البحث عن طالب"/><div className="admin-card mt-4"><div className="table-wrap"><table><thead><tr><th>الاسم</th><th>الحالة</th><th>الجهاز</th><th>الصلاحية</th><th>إجراءات</th></tr></thead><tbody>{filtered.map(s=><tr key={s.id}><td><b>{s.fullName}</b><small dir="ltr">{s.userName}</small></td><td><span className={`status ${s.isActive?'on':'off'}`}>{s.isActive?'نشط':'معطل'}</span></td><td>{s.deviceBound?'مرتبط':'غير مرتبط'}</td><td>{s.accessExpiresAt?new Date(s.accessExpiresAt).toLocaleDateString('ar-SY'):'دائم'}</td><td><div className="action-row"><button onClick={()=>setAuditStudent(s)}>سجل الدخول</button><button onClick={()=>act(()=>api.admin.setStatus(s.id,!s.isActive))}>{s.isActive?'تعطيل':'تفعيل'}</button><button onClick={()=>act(()=>api.admin.resetDevice(s.id))}>إعادة الجهاز</button><button className="danger" onClick={()=>{if(confirm(`حذف حساب ${s.fullName}؟`))void act(()=>api.admin.deleteStudent(s.id))}}>حذف</button></div></td></tr>)}</tbody></table></div></div>{auditStudent&&<StudentAuditModal student={auditStudent} onClose={()=>setAuditStudent(null)}/>}</section>}
-
-function CreateStudentForm({onCreated}:{onCreated:()=>void}){const [userName,setUserName]=useState(''),[fullName,setFullName]=useState(''),[password,setPassword]=useState(''),[days,setDays]=useState('90'),[error,setError]=useState(''),[busy,setBusy]=useState(false);async function submit(e:FormEvent){e.preventDefault();setBusy(true);setError('');try{await api.admin.createStudent({userName,fullName,password,accessDays:days?Number(days):null});onCreated()}catch(e){setError(e instanceof Error?e.message:'تعذر الحفظ')}finally{setBusy(false)}}return <form onSubmit={submit} className="admin-card form-grid"><input placeholder="الاسم الكامل" value={fullName} onChange={e=>setFullName(e.target.value)} required/><input placeholder="اسم المستخدم" value={userName} onChange={e=>setUserName(e.target.value)} required dir="ltr"/><input placeholder="كلمة المرور" value={password} onChange={e=>setPassword(e.target.value)} required dir="ltr"/><input placeholder="مدة الصلاحية بالأيام" value={days} onChange={e=>setDays(e.target.value)} type="number" min="1"/><button disabled={busy} className="primary-cta">{busy?'جارٍ الحفظ...':'حفظ الحساب'}</button>{error&&<p className="text-exam text-sm">{error}</p>}</form>}
 
 function Questions({questions,reload}:{questions:Question[];reload:()=>void}){
  const [editing,setEditing]=useState<Question|null>(null);
