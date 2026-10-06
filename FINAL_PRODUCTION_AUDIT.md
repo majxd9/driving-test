@@ -130,8 +130,8 @@
 ### P1 — backups
 Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump دوري خارج المشروع قبل اعتباره Production-ready من ناحية recovery.
 
-### P2 — public debug endpoint
-`GET /api/questions/{id}/audio-debug` متاح Anonymous ويعرض معلومات تشخيصية عن الملف/hash. لا يكشف مفتاحاً سرياً، لكنه لا يلزم المستخدم النهائي ويُفضّل تقييده إلى Admin في hardening لاحق.
+### P2 — audio diagnostics
+`GET /api/questions/{id}/audio-debug` أصبح مقيداً إلى **Admin** فقط. لا يؤثر ذلك على تشغيل الصوت للمستخدمين.
 
 ### P2 — AI worker churn
 الـworker يفحص كل 3 ثوانٍ ويجري scan كل 30 ثانية. مع إبقاء generation متوقفاً يمكن تحمله حالياً، لكن عند التفعيل على Free يجب مراقبة DB load والـconnection pool.
@@ -152,7 +152,7 @@ Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump د
 قبل إعلان Production-Cleared:
 - [ ] E2E Student/Admin.
 - [ ] Render healthCheckPath `/api/healthz` — إعداد الخدمة ما زال غير مفعّل لأن أداة Render المتاحة في جلسة التدقيق لا تعرض عملية update service لهذا الحقل.
-- [ ] Backup/export procedure verified.
+- [x] Backup/export workflow verified: GitHub Actions artifact `driving-test-backup` was successfully created from commit `8d7f037638fc47957bd4b5cfd63cabd375be28d2`; secrets/runtime values are intentionally excluded.
 - [ ] Production frontend deployment verified after the latest main commit.
 
 
@@ -172,6 +172,12 @@ Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump د
 - لم يتم تنفيذ تفاعل تسجيل الدخول E2E من أداة آلية متاحة في جلسة التدقيق؛ لذلك يبقى هذا البند غير مثبت آلياً.
 
 ### Remaining release gates
-- E2E فعلي: Login طالب + رفض الطالب لـ`/api/admin/*) + Login Admin + إنشاء/تعديل حساب Admin/Student.
-- ضبط Render `healthCheckPath` إلى `/api/healthz` عندما تتوفر صلاحية/أداة تعديل الخدمة.
-- اعتماد backup/export واختباره.
+- E2E فعلي: Login طالب + رفض الطالب لـ`/api/admin/*` + Login Admin + إنشاء/تعديل حساب Admin/Student.
+- ضبط Render `healthCheckPath` إلى `/api/healthz` عندما تتوفر صلاحية/أداة تعديل الخدمة؛ أداة Render المتاحة حالياً لا تعرض update-service لهذا الحقل.
+
+## Final verification notes — 2026-10-06
+- Latest release-check before the final backup sequence completed successfully on commit `9e924be9b61d04ba2e32e9f26abed4f79cffdec5`.
+- The admin-only audio diagnostics hardening deployed live on Render commit `2ef995deafd5e2c2ce8bc4fa80ce83fa91a733cc` and Cloudflare deployment `79939057-ccc2-4c40-9f7b-47a9c69325c7` completed successfully.
+- Supabase verification: Questions = 397; QuestionAudios = 397; invalid option count = 0; invalid answer index count = 0; no `anon`/`authenticated` table grants on public tables; RLS is enabled on all public tables.
+- Supabase advisors currently report informational RLS-without-policy findings consistent with the backend-only access model, plus 6 unused-index notices. No index was removed without workload evidence.
+- AI control remains AudioEnabled=true, ImageEnabled=false, ImageProvider=comfyui.
