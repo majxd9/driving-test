@@ -87,6 +87,10 @@ export const api = {
       body: JSON.stringify({ answers }),
     }),
   admin: {
+    listAccounts: () => request<import('../types').Account[]>('/api/admin/accounts'),
+    createAccount: (data: { userName: string; fullName: string; password: string; role: 'Admin'|'Student'; accessExpiresAt: string | null }) => request<import('../types').Account>('/api/admin/accounts', { method: 'POST', body: JSON.stringify(data) }),
+    updateAccount: (id: string, data: { userName: string; fullName: string; role: 'Admin'|'Student'; isActive: boolean; accessExpiresAt: string | null; password: string | null }) => request<import('../types').Account>('/api/admin/accounts/'+id, { method: 'PUT', body: JSON.stringify(data) }),
+    resetAccountDevice: (id: string) => request<void>('/api/admin/accounts/'+id+'/reset-device', { method: 'POST' }),
     listStudents: () => request<import('../types').Student[]>('/api/admin/students'),
     createStudent: (data: { userName: string; fullName: string; password: string; accessDays: number | null }) => request<import('../types').Student>('/api/admin/students', { method: 'POST', body: JSON.stringify(data) }),
     setStatus: (id: string, isActive: boolean) => request<void>(`/api/admin/students/${id}/status`, { method: 'PATCH', body: JSON.stringify({ isActive }) }),
