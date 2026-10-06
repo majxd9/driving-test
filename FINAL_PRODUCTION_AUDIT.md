@@ -264,3 +264,43 @@ Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump د
 - DiagramUrl حالياً = 0.
 - حماية stale AI images مطبقة على مسار AttachStudentMediaUrls وعلى endpoint الصورة نفسه.
 - قواعد توليد الصور تستثني السؤال الذي لديه صورة أصلية/مخطط، ولا تبدأ التوليد تلقائياً من Study/Exam.
+
+## API Endpoint Security Audit — Task 6 — 2026-10-06
+الحالة: مكتملة ✅
+
+تمت مراجعة جميع Controllers الحالية ومساراتها:
+- AuthController
+- AdminController
+- QuestionsController
+- ExamAttemptsController
+- ExamResultsController
+- AiGenerationAdminController
+- AiGenerationAudioRepairController
+- GeminiAdminController
+
+النتيجة:
+- جميع مسارات الإدارة وAI وGemini ونتائج الإدارة محمية بـ Admin role.
+- مسارات بدء/إجابة/إنهاء الاختبار محمية بـ Student role وتتحقق من StudentId وQuestionIds داخل الجلسة.
+- Question exam endpoint لا يعيد CorrectAnswerIndex؛ يعيد -1 قبل إنهاء الاختبار.
+- Submission يعيد النتيجة المحسوبة من قاعدة البيانات بعد التحقق من الإجابات.
+- مسارات الصور والصوت العامة لا تعرض بيانات الحساب أو مفاتيح سرية.
+- AI image endpoint يرفض الصورة القديمة/hash غير المطابق ويتطلب Approved للطلاب.
+- Audio debug محمي بـAdmin.
+- endpoint الرسائل الصوتية النظامية أصبح read-only ولا يسبب توليداً أو كتابة عبر anonymous GET.
+- CORS مقيد بـFrontendOrigin، مع Origin/Referer protection للطلبات ذات الحالة مع cookie.
+- Login rate-limit وIdentity lockout مفعلان.
+- لا توجد صلاحيات مباشرة لـanon/authenticated على جداول Supabase.
+
+ملاحظة تصميمية مقصودة:
+- GET /api/questions?category=... يتطلب Authentication ويستخدم في وضع الدراسة، لذلك تعرض بيانات المعرفة التعليمية اللازمة للدراسة (بما فيها الإجابة/الشرح) للطالب المصادق عليه. هذا endpoint ليس مصدر أسئلة الاختبار النشط.
+- GET /api/questions/exam/{modelId} يتطلب Authentication ويخفي الإجابة الصحيحة قبل إنهاء الاختبار.
+
+ما تم سابقاً ويُحتسب ضمن هذه المهمة:
+- إصلاح side-effect في GET الخاص برسائل الصوت.
+- حماية audio-debug.
+- حماية stale AI images.
+- حماية admin/AI routes.
+
+المتبقي من Task 6:
+- لا توجد ثغرة endpoint مثبتة تحتاج إصلاحاً إضافياً حالياً.
+- تبقى اختبارات E2E الشبكية/المصادق عليها ضمن release gates، كما هو مسجل في Task 3.
