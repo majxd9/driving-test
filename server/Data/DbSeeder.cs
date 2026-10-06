@@ -549,9 +549,10 @@ CREATE INDEX IF NOT EXISTS ""IX_AiTestRuns_QuestionId""
     private static string CoreQuestionSignature(
         QuestionCategory category,
         string? text,
-        IEnumerable<string>? options)
+        IEnumerable<string>? options,
+        string? imageUrl = null)
     {
-        return string.Join(
+        var signature = string.Join(
             "|",
             category,
             NormalizeIdentityPart(text),
@@ -559,6 +560,17 @@ CREATE INDEX IF NOT EXISTS ""IX_AiTestRuns_QuestionId""
                 "\u001f",
                 (options ?? Array.Empty<string>())
                     .Select(NormalizeIdentityPart)));
+
+        // For image-dependent categories, the referenced image is part of the
+        // question's identity. Two traffic-sign or mechanic-part questions can
+        // intentionally share the same wording/options while referring to
+        // different visual objects.
+        if (category is QuestionCategory.Ishara or QuestionCategory.Mechanic)
+        {
+            signature += "|" + NormalizeIdentityPart(imageUrl);
+        }
+
+        return signature;
     }
 
     private static string SeedQuestionSignature(
@@ -568,7 +580,8 @@ CREATE INDEX IF NOT EXISTS ""IX_AiTestRuns_QuestionId""
         return CoreQuestionSignature(
             category,
             q.Text,
-            q.Options);
+            q.Options,
+            q.ImageUrl);
     }
 
     private static async Task RemoveDuplicateSeedQuestionsAsync(
@@ -615,7 +628,8 @@ CREATE INDEX IF NOT EXISTS ""IX_AiTestRuns_QuestionId""
                 CoreQuestionSignature(
                     category,
                     item.Text,
-                    item.Options));
+                    item.Options,
+                    item.ImageUrl));
         }
 
         if (seedSignatures.Count == 0)
@@ -636,7 +650,8 @@ CREATE INDEX IF NOT EXISTS ""IX_AiTestRuns_QuestionId""
             var signature = CoreQuestionSignature(
                 question.Category,
                 question.Text,
-                question.Options);
+                question.Options,
+                question.ImageUrl);
 
             // ننظف فقط النسخ المكررة التي تنتمي فعلاً إلى questions.json،
             // وبالتالي لا نحذف أسئلة يدوية مستقلة.
@@ -687,7 +702,8 @@ CREATE INDEX IF NOT EXISTS ""IX_AiTestRuns_QuestionId""
             .Select(q => CoreQuestionSignature(
                 q.Category,
                 q.Text,
-                q.Options))
+                q.Options,
+                q.ImageUrl))
             .ToHashSet(StringComparer.Ordinal);
 
         var added = 0;
