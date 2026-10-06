@@ -249,3 +249,18 @@ Supabase Free لا يوفر automatic backups؛ يجب إنشاء export/dump د
 - direct grants to anon/authenticated on public tables = 0.
 - تم التحقق سابقاً من 4 خيارات صالحة لكل 397 سؤالاً.
 - لم يتم حذف أو تعديل أي فهرس في هذه المهمة.
+
+
+## Media Integrity Audit — 2026-10-06
+الحالة: **مكتملة ✅**
+
+النتائج:
+- QuestionAudios فارغة = 0؛ الصوت الفعلي مكتمل 397/397.
+- QuestionAiImages المسجلة = 298.
+- 7 سجلات AI image تحتوي Bytes فارغة، وجميعها مرتبطة بمراجعة Status=Rejected؛ لذلك ليست صوراً منشورة ناقصة.
+- AI image reviews: Pending = 276، Approved = 22، Rejected = 7، Hidden = 0.
+- كل مراجعة Pending/Approved لديها سجل صورة وبيانات فعلية.
+- الصور الأصلية المرتبطة بالأسئلة = 240.
+- DiagramUrl حالياً = 0.
+- حماية stale AI images مطبقة على مسار AttachStudentMediaUrls وعلى endpoint الصورة نفسه.
+- قواعد توليد الصور تستثني السؤال الذي لديه صورة أصلية/مخطط، ولا تبدأ التوليد تلقائياً من Study/Exam.
