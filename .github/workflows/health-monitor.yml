@@ -25,16 +25,28 @@ jobs:
         run: |
           echo "Checking API health..."
 
+          HEALTH_ENDPOINT="$HEALTHCHECK_URL"
+          case "$HEALTH_ENDPOINT" in
+            */api/healthz) ;;
+            */) HEALTH_ENDPOINT="${HEALTH_ENDPOINT}api/healthz" ;;
+            *) HEALTH_ENDPOINT="${HEALTH_ENDPOINT}/api/healthz" ;;
+          esac
+
           for attempt in 1 2 3; do
             echo "Attempt $attempt/3..."
+
+            MAX_TIME=60
+            if [ "$attempt" -gt 1 ]; then
+              MAX_TIME=30
+            fi
 
             if curl \
               --fail \
               --show-error \
               --silent \
               --connect-timeout 10 \
-              --max-time 30 \
-              "$HEALTHCHECK_URL"; then
+              --max-time "$MAX_TIME" \
+              "$HEALTH_ENDPOINT"; then
 
               echo
               echo "API health check passed."
