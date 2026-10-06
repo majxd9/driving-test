@@ -68,7 +68,7 @@ CREATE INDEX IF NOT EXISTS ""IX_ExamAttempts_StudentId_CreatedAt""
     ON ""ExamAttempts"" (""StudentId"", ""CreatedAt"");
 
 ALTER TABLE ""ExamAttempts"" ADD COLUMN IF NOT EXISTS ""QuestionIds"" text NOT NULL DEFAULT '[]';
-ALTER TABLE ""ExamAttempts"" ADD COLUMN IF NOT EXISTS ""AnswersJson"" text NOT NULL DEFAULT '{}';
+ALTER TABLE ""ExamAttempts"" ADD COLUMN IF NOT EXISTS ""AnswersJson"" text NOT NULL DEFAULT '{{}}';
 ALTER TABLE ""ExamAttempts"" ADD COLUMN IF NOT EXISTS ""Completed"" boolean NOT NULL DEFAULT true;
 ALTER TABLE ""ExamAttempts"" ADD COLUMN IF NOT EXISTS ""ExpiresAt"" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE ""ExamAttempts"" ADD COLUMN IF NOT EXISTS ""CompletedAt"" timestamp with time zone NULL;
