@@ -33,14 +33,6 @@ export default function Login() {
     document.documentElement.dataset.loginLights = lightsOn ? 'on' : 'off';
   }, [lightsOn]);
 
-  useEffect(() => {
-    // لا ننافس تسجيل الدخول بطلب شبكة عند فتح الصفحة، خصوصاً على الهاتف.
-    const timer = window.setTimeout(() => {
-      void api.warmup().catch(() => {});
-    }, 1500);
-    return () => window.clearTimeout(timer);
-  }, []);
-
   async function handleSubmit(e:FormEvent){
     e.preventDefault();
     if (busy) return;
