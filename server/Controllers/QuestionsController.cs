@@ -219,6 +219,10 @@ public class QuestionsController : ControllerBase
         if (question is null)
             return NotFound(new { message = "السؤال غير موجود." });
 
+        var currentImageHash = QuestionImagePromptBuilder.GetContentHash(question);
+        if (!string.Equals(image.ContentHash, currentImageHash, StringComparison.Ordinal))
+            return NotFound(new { message = "صورة AI قديمة لهذا السؤال وتم إبطالها." });
+
         var review = await _db.AiImageReviews
             .AsNoTracking()
             .SingleOrDefaultAsync(x => x.QuestionId == id, cancellationToken);
