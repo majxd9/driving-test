@@ -37,6 +37,17 @@ export interface Student {
   passCount: number;
 }
 
+export interface Account {
+  id: string;
+  userName: string;
+  fullName: string;
+  role: 'Admin' | 'Student';
+  isActive: boolean;
+  deviceBound: boolean;
+  accessExpiresAt: string | null;
+  createdAt: string;
+}
+
 export interface AuthLog {
   id: number;
   userId: string | null;
