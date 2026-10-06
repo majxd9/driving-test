@@ -748,6 +748,18 @@ public sealed class AiGenerationJobService
             if (images.TryGetValue(question.Id, out var image) &&
                 image.HasBytes)
             {
+                // Never expose an AI image generated from an older prompt/content revision.
+                // Older results can visually belong to a different question after the prompt-bank
+                // routing or question content changes.
+                var currentImageHash = QuestionImagePromptBuilder.GetContentHash(question);
+                var isCurrentImage = string.Equals(
+                    image.ContentHash,
+                    currentImageHash,
+                    StringComparison.Ordinal);
+
+                if (!isCurrentImage)
+                    continue;
+
                 var hasReview = imageReviews.TryGetValue(question.Id, out var review);
                 var canExposeImage = includeUnapprovedAiImages
                     ? (!hasReview || review!.Status != AiImageReviewStatus.Hidden)
