@@ -68,3 +68,233 @@
     color:rgba(255,255,255,.48)!important;
   }
 }
+
+
+/* Final visual pass: restore the frosted-glass language and tune exam media/options
+   without changing question content, navigation, or exam behavior. */
+
+:root{
+  --final-glass-bg:rgba(14,28,39,.70);
+  --final-glass-line:rgba(255,255,255,.14);
+  --final-glass-highlight:rgba(255,255,255,.075);
+  --final-glass-shadow:0 18px 55px rgba(0,0,0,.24);
+}
+
+.home-hero,
+.category-card,
+.home-exam,
+.model-card,
+.surface-panel,
+.result-hero,
+.result-section,
+.review-card,
+.admin-card,
+.stat-card,
+.login-v2-showcase,
+.login-v2-panel,
+.study-premium-card,
+.exam-card-v2{
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.012) 48%,rgba(45,212,191,.028)),
+    var(--final-glass-bg)!important;
+  border-color:var(--final-glass-line)!important;
+  box-shadow:var(--final-glass-shadow),inset 0 1px 0 var(--final-glass-highlight)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(135%)!important;
+  backdrop-filter:blur(14px) saturate(135%)!important;
+}
+
+.exam-topbar-v2,
+.study-premium-header,
+.admin-header,
+.exam-actions-v2,
+.study-premium-actions{
+  background:linear-gradient(180deg,rgba(31,47,58,.62),rgba(7,17,25,.84))!important;
+  border-color:rgba(255,255,255,.13)!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.08)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(140%)!important;
+  backdrop-filter:blur(16px) saturate(140%)!important;
+}
+
+.exam-question-counter,
+.exam-timer-v2,
+.study-premium-counter{
+  background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(9,24,33,.62))!important;
+  border-color:rgba(255,255,255,.14)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 8px 24px rgba(0,0,0,.18)!important;
+  -webkit-backdrop-filter:blur(12px) saturate(135%)!important;
+  backdrop-filter:blur(12px) saturate(135%)!important;
+}
+
+/* Larger, more useful image area. */
+.exam-image-slot-v2{
+  width:100%!important;
+  display:grid!important;
+  gap:10px!important;
+  margin:0 0 12px!important;
+}
+.exam-image-slot-v2:not(.has-two-images){
+  min-height:clamp(220px,30svh,360px)!important;
+}
+.exam-image-slot-v2:not(.has-two-images) .exam-question-image-frame{
+  min-height:clamp(220px,30svh,360px)!important;
+}
+.exam-image-slot-v2.has-two-images .exam-question-image-frame{
+  min-height:clamp(180px,26svh,310px)!important;
+}
+.exam-question-image-frame{
+  min-width:0!important;
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  padding:8px!important;
+  border-radius:22px!important;
+  border:1px solid rgba(255,255,255,.13)!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(5,15,22,.52))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.065),0 12px 30px rgba(0,0,0,.16)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(120%)!important;
+  backdrop-filter:blur(10px) saturate(120%)!important;
+}
+.exam-question-image-frame > div{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+}
+.exam-question-image-frame img{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+
+/* Smaller option boxes, but never clip their text. */
+.exam-answers-v2{
+  gap:7px!important;
+  margin-bottom:12px!important;
+}
+.exam-option-v2{
+  min-height:54px!important;
+  height:auto!important;
+  padding:8px 11px!important;
+  align-items:center!important;
+  border-radius:16px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(8,19,28,.44))!important;
+  border-color:rgba(255,255,255,.11)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 7px 20px rgba(0,0,0,.12)!important;
+  -webkit-backdrop-filter:blur(9px) saturate(125%)!important;
+  backdrop-filter:blur(9px) saturate(125%)!important;
+}
+.exam-option-v2.selected{
+  background:linear-gradient(145deg,rgba(45,212,191,.17),rgba(14,49,52,.44))!important;
+  border-color:rgba(45,212,191,.68)!important;
+}
+.exam-option-text-v2{
+  min-width:0!important;
+  display:block!important;
+  overflow:visible!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:anywhere!important;
+  -webkit-line-clamp:unset!important;
+  line-clamp:unset!important;
+  font-size:clamp(13px,1.55vw,15px)!important;
+  line-height:1.55!important;
+  text-align:right!important;
+}
+.exam-question-v2{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:anywhere!important;
+  -webkit-line-clamp:unset!important;
+  line-clamp:unset!important;
+  line-height:1.7!important;
+  padding:10px 6px 12px!important;
+}
+.exam-scroll-v2{
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  scrollbar-width:thin!important;
+  padding-bottom:5px!important;
+}
+
+.study-premium-image,
+.study-premium-option{
+  background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(5,15,22,.52))!important;
+  border-color:rgba(255,255,255,.13)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.065),0 12px 30px rgba(0,0,0,.16)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(120%)!important;
+  backdrop-filter:blur(10px) saturate(120%)!important;
+}
+.study-premium-option{
+  background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(8,19,28,.44))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 7px 20px rgba(0,0,0,.12)!important;
+  -webkit-backdrop-filter:blur(9px) saturate(125%)!important;
+  backdrop-filter:blur(9px) saturate(125%)!important;
+}
+.study-premium-option.is-correct{
+  background:linear-gradient(145deg,rgba(45,212,191,.17),rgba(14,49,52,.44))!important;
+  border-color:rgba(45,212,191,.68)!important;
+}
+
+@media(max-width:700px){
+  .exam-image-slot-v2:not(.has-two-images),
+  .exam-image-slot-v2:not(.has-two-images) .exam-question-image-frame{
+    min-height:clamp(180px,29svh,245px)!important;
+  }
+  .exam-image-slot-v2.has-two-images .exam-question-image-frame{
+    min-height:clamp(155px,25svh,215px)!important;
+    padding:6px!important;
+  }
+  .exam-question-image-frame{
+    border-radius:18px!important;
+    padding:6px!important;
+  }
+  .exam-option-v2{
+    min-height:50px!important;
+    padding:8px 9px!important;
+    align-items:flex-start!important;
+  }
+  .exam-option-text-v2{
+    font-size:13px!important;
+    line-height:1.5!important;
+  }
+  .exam-question-v2{
+    font-size:clamp(15px,4.2vw,18px)!important;
+    line-height:1.6!important;
+    padding:8px 4px 10px!important;
+  }
+  .exam-card-v2,
+  .exam-actions-v2{
+    -webkit-backdrop-filter:blur(14px) saturate(135%)!important;
+    backdrop-filter:blur(14px) saturate(135%)!important;
+  }
+}
+@media(max-width:430px){
+  .exam-image-slot-v2:not(.has-two-images),
+  .exam-image-slot-v2:not(.has-two-images) .exam-question-image-frame{
+    min-height:clamp(165px,26svh,215px)!important;
+  }
+  .exam-image-slot-v2.has-two-images .exam-question-image-frame{
+    min-height:clamp(145px,23svh,190px)!important;
+  }
+  .exam-option-v2{
+    min-height:48px!important;
+    padding:7px 8px!important;
+  }
+  .exam-option-text-v2{
+    font-size:12px!important;
+    line-height:1.48!important;
+  }
+  .exam-question-v2{
+    font-size:15px!important;
+    line-height:1.55!important;
+  }
+}
