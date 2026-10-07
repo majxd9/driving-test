@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   client:
@@ -22,26 +22,20 @@ jobs:
           node-version: 20.19.x
           cache: npm
           cache-dependency-path: client/package-lock.json
-      - run: npm install --package-lock-only --ignore-scripts --no-audit
-      - name: Refresh lockfile in repository
-        run: |
-          if [ "${{ github.event_name }}" != "push" ]; then
-            exit 0
-          fi
-          if git diff --quiet -- package-lock.json; then
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json
-          git commit -m "ci: refresh client lockfile"
-          git push origin HEAD:main
       - run: npm ci
+      - run: npm run audit:questions
       - run: npm run build
-      # Build tooling (Tailwind 3/chokidar) is a dev-only dependency tree.
-      # The deployed client does not ship node_modules, so audit runtime dependencies
-      # separately without blocking the release on a dev-only advisory.
-      - run: npm audit --omit=dev --audit-level=moderate
+      - name: Runtime dependency audit
+        run: npm audit --omit=dev --audit-level=moderate
+      - name: Full dependency audit report
+        run: npm audit --include=dev --json > npm-audit-full.json || true
+      - name: Upload npm dependency audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-dependency-audit
+          path: client/npm-audit-full.json
+          if-no-files-found: error
+          retention-days: 14
 
   server:
     runs-on: ubuntu-24.04
@@ -55,4 +49,19 @@ jobs:
           dotnet-version: 8.0.x
       - run: dotnet restore
       - run: dotnet build --configuration Release --no-restore
-      - run: dotnet list package --vulnerable --include-transitive
+      - name: NuGet vulnerability scan
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet list package --vulnerable --include-transitive | tee nuget-vulnerabilities.txt
+          if grep -Fq "has the following vulnerable packages" nuget-vulnerabilities.txt; then
+            echo "Vulnerable NuGet packages detected."
+            exit 1
+          fi
+      - name: Upload NuGet vulnerability report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-vulnerability-report
+          path: server/nuget-vulnerabilities.txt
+          if-no-files-found: error
+          retention-days: 14
