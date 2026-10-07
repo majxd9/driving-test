@@ -274,6 +274,10 @@ public class AdminController : ControllerBase
         if (user is null)
             return NotFound();
 
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+        if (!string.Equals(role, "Student", StringComparison.Ordinal))
+            return BadRequest(new { message = "هذا المسار مخصص لحسابات الطلاب فقط." });
+
         user.IsActive = request.IsActive;
 
         var result =
@@ -297,6 +301,10 @@ public class AdminController : ControllerBase
         if (user is null)
             return NotFound();
 
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+        if (!string.Equals(role, "Student", StringComparison.Ordinal))
+            return BadRequest(new { message = "هذا المسار مخصص لحسابات الطلاب فقط." });
+
         user.DeviceId = null;
 
         var result =
@@ -319,6 +327,10 @@ public class AdminController : ControllerBase
 
         if (user is null)
             return NotFound();
+
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+        if (!string.Equals(role, "Student", StringComparison.Ordinal))
+            return BadRequest(new { message = "لا يمكن حذف حساب Admin عبر مسار الطلاب." });
 
         var result =
             await _userManager.DeleteAsync(user);
