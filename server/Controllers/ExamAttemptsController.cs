@@ -264,6 +264,63 @@ public class ExamAttemptsController : ControllerBase
 
         await _db.SaveChangesAsync(cancellationToken);
 
+        return Ok(await BuildSubmissionResponseAsync(attempt, cancellationToken));
+    }
+
+    [HttpGet("{id:int}/result")]
+    public async Task<ActionResult<ExamSubmissionResponse>> GetResult(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var studentId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (studentId is null) return Unauthorized();
+
+        var attempt = await _db.ExamAttempts
+            .SingleOrDefaultAsync(x => x.Id == id && x.StudentId == studentId, cancellationToken);
+
+        if (attempt is null)
+            return NotFound(new { message = "جلسة الاختبار غير موجودة." });
+
+        if (!attempt.Completed)
+            return Conflict(new { message = "نتيجة الاختبار غير متاحة قبل الإنهاء." });
+
+        return Ok(await BuildSubmissionResponseAsync(attempt, cancellationToken));
+    }
+
+    private async Task<ExamSubmissionResponse> BuildSubmissionResponseAsync(
+        ExamAttempt attempt,
+        CancellationToken cancellationToken)
+    {
+        var answers = ParseAnswers(attempt.AnswersJson);
+
+        var questionRows = await _db.Questions.AsNoTracking()
+            .Where(q => attempt.QuestionIds.Contains(q.Id))
+            .ToListAsync(cancellationToken);
+
+        if (questionRows.Count != ExamQuestionCount)
+            throw new InvalidOperationException("Stored exam result no longer contains 30 valid questions.");
+
+        var questionById = questionRows.ToDictionary(q => q.Id);
+        var orderedQuestions = attempt.QuestionIds
+            .Select(questionId => questionById.TryGetValue(questionId, out var question) ? question : null)
+            .Where(q => q is not null)
+            .Cast<Question>()
+            .ToList();
+
+        if (orderedQuestions.Count != ExamQuestionCount)
+            throw new InvalidOperationException("Stored exam result no longer contains all 30 questions.");
+
+        if (answers.Any(pair =>
+            !questionById.TryGetValue(pair.Key, out var question) ||
+            pair.Value < 0 ||
+            pair.Value >= question.Options.Count))
+        {
+            throw new InvalidOperationException("Stored exam result contains an invalid answer.");
+        }
+
+        await _generationJobs.AttachStudentMediaUrlsAsync(
+            orderedQuestions, cancellationToken, includeUnapprovedAiImages: false);
+
         var review = orderedQuestions.Select(question =>
             new ExamReviewQuestionResponse(
                 question.Id,
@@ -279,9 +336,9 @@ public class ExamAttemptsController : ControllerBase
                 question.DiagramDescription,
                 question.AiImageUrl)).ToList();
 
-        return Ok(new ExamSubmissionResponse(
+        return new ExamSubmissionResponse(
             attempt.Id, attempt.ModelId, attempt.Correct, attempt.Total,
-            attempt.Answered, attempt.WrongQuestionIds, attempt.CreatedAt, review));
+            attempt.Answered, attempt.WrongQuestionIds, attempt.CreatedAt, review);
     }
 
     private static bool IsActiveAttemptConflict(DbUpdateException exception)
