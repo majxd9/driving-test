@@ -288,7 +288,7 @@
 المرجع التفصيلي: `PRODUCTION_AUDIT_30_45.md`
 
 - 30 Dependencies: 🟢 — release-check run `37697436882` على HEAD `2b1485c45c2854ee99ffd3e9e89b66155f679e71` نجح بالكامل؛ client/server dependency gates وbuilds نجحت.
-- 31 Secrets/history: 🟡 — current source review جيدة، لكن full historical secret scan غير مثبت.
+- 31 Secrets/history: 🟢 — full-history Gitleaks scan passed في run `37698530099`.
 - 32 CSRF/session: 🟡 — الحماية البرمجية موجودة؛ browser-level CSRF/replay tests pending.
 - 33 Rate limiting: 🟢 — login 8/min/IP + Identity lockout 5/15m.
 - 34 Health/observability: 🟢 — healthz + Render Health Check + 15-minute monitor.
@@ -297,10 +297,10 @@
 - 37 DB integrity/schema: 🟢 — live validation: 397 Questions, 397 QuestionAudios, invalid indices/options = 0، orphan checks = 0، RLS = 20/20.
 - 38 Media integrity: 🟢 — audio bytes فارغة = 0؛ 7 AI images بلا bytes وكلها Rejected.
 - 39 AI safety/quota: 🟢 — ImageEnabled=false، approval gate محفوظ، لا generation من Study/Exam.
-- 40 CI/CD hardening: 🟡 — code جاهز؛ waiting for successful run بعد hardening commit.
-- 41 Release build/artifact integrity: 🟡 — build/vulnerability gates موجودة؛ آخر run بعد التعديل غير مثبت بعد.
+- 40 CI/CD hardening: 🟢 — release-check run `37697436882` نجح بعد hardening.
+- 41 Release build/artifact integrity: 🟢 — build/vulnerability gates نجحت في run `37697436882`.
 - 42 Backend performance: 🟡 — compression/retry/cache موجودة؛ لا p50/p95/p99 موثوقة.
-- 43 Android wrapper: 🟡 — allowBackup=false وSSL handling صحيحان؛ live APK acceptance pending.
+- 43 Android wrapper: 🟢 — release APK build/upload passed في run `37698479329`، وartifact digest موثق في `PRODUCTION_AUDIT_30_45.md`.
 - 44 Documentation: 🟢 — `PRODUCTION_AUDIT_30_45.md` أنشئ كمرجع لهذه المرحلة.
 - 45 Final release gate: 🔴 CONDITIONAL — live E2E/UI/device/browser، backup/restore، dependency run، ثم release verification ما زالت مطلوبة.
 
