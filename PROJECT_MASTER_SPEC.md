@@ -287,7 +287,7 @@
 
 المرجع التفصيلي: `PRODUCTION_AUDIT_30_45.md`
 
-- 30 Dependencies: 🟡 — تم تشديد release-check في `f10b357bab7cb0bd0916573282c7d3438fb99bf0`; final clean CI run pending.
+- 30 Dependencies: 🟢 — release-check run `37697436882` على HEAD `2b1485c45c2854ee99ffd3e9e89b66155f679e71` نجح بالكامل؛ client/server dependency gates وbuilds نجحت.
 - 31 Secrets/history: 🟡 — current source review جيدة، لكن full historical secret scan غير مثبت.
 - 32 CSRF/session: 🟡 — الحماية البرمجية موجودة؛ browser-level CSRF/replay tests pending.
 - 33 Rate limiting: 🟢 — login 8/min/IP + Identity lockout 5/15m.
