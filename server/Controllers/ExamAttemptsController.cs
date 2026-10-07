@@ -7,6 +7,7 @@ using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace DrivingTestApi.Controllers;
 
@@ -100,7 +101,30 @@ public class ExamAttemptsController : ControllerBase
         };
 
         _db.ExamAttempts.Add(attempt);
-        await _db.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (IsActiveAttemptConflict(ex))
+        {
+            // A concurrent first-start request may have created the active session
+            // between our initial read and insert. Reuse that session rather than
+            // creating or exposing a second active exam.
+            _db.Entry(attempt).State = EntityState.Detached;
+
+            var concurrentActive = await _db.ExamAttempts
+                .Where(x => x.StudentId == studentId && !x.Completed)
+                .OrderByDescending(x => x.CreatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (concurrentActive is null)
+                return Conflict(new { message = "تعذر إنشاء جلسة اختبار واحدة بشكل آمن. أعد المحاولة." });
+
+            if (concurrentActive.ModelId != request.ModelId)
+                return Conflict(new { message = "لديك اختبار غير مكتمل. أكمل الاختبار الحالي أولاً أو عد إليه لاحقاً." });
+
+            return await BuildSessionResponseAsync(concurrentActive, cancellationToken);
+        }
 
         return Ok(new ExamSessionResponse(
             attempt.Id,
@@ -258,6 +282,13 @@ public class ExamAttemptsController : ControllerBase
         return Ok(new ExamSubmissionResponse(
             attempt.Id, attempt.ModelId, attempt.Correct, attempt.Total,
             attempt.Answered, attempt.WrongQuestionIds, attempt.CreatedAt, review));
+    }
+
+    private static bool IsActiveAttemptConflict(DbUpdateException exception)
+    {
+        return exception.InnerException is PostgresException postgres &&
+               string.Equals(postgres.SqlState, PostgresErrorCodes.UniqueViolation, StringComparison.Ordinal) &&
+               string.Equals(postgres.ConstraintName, "UX_ExamAttempts_StudentId_Active", StringComparison.Ordinal);
     }
 
     private async Task<ExamSessionResponse> BuildSessionResponseAsync(
