@@ -21,24 +21,12 @@ Build command: `npm run build`
 Build output directory: `dist`
 Environment variable: `VITE_API_URL=https://YOUR-API-DOMAIN`
 
-## GitHub — أسهل طريقة
-1. فك الضغط عن هذا الملف.
-2. ادخل إلى مجلد `driving-test-main`.
-3. افتح Git Bash / Terminal داخله ونفّذ:
+## GitHub — مسار الإصدار الحالي
 
-```bash
-git init
-git branch -M main
-git remote add origin https://github.com/majxd9/driving-test.git
-git add .
-git commit -m "complete driving test overhaul with bundled questions and optimized images"
-git push -u origin main --force
-```
-
-إذا كان المستودع مربوطاً مسبقاً ولا تريد إعادة ضبط الـhistory، استخدم فقط:
+المسار الإنتاجي المعتمد هو main مع Git commits عادية. لا تستخدم --force على main ولا تعيد تهيئة المستودع.
 
 ```bash
 git add .
-git commit -m "fix questions images and UI"
+git commit -m "describe the change"
 git push origin main
 ```
