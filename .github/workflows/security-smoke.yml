@@ -1,0 +1,53 @@
+name: Security Smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  csrf-cors-smoke:
+    name: CSRF/CORS production smoke test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      API_BASE_URL: https://driving-test-evd0.onrender.com
+      FRONTEND_ORIGIN: https://driving-test-7en.pages.dev
+    steps:
+      - name: Health endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          body="$(curl --fail --silent --show-error "$API_BASE_URL/api/healthz")"
+          echo "$body" | grep -F '"status":"ok"'
+          echo "$body" | grep -F '"database":"ok"'
+
+      - name: Reject hostile state-changing Origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}'             -X POST "$API_BASE_URL/api/auth/login"             -H 'Origin: https://evil.example'             -H 'Content-Type: application/x-www-form-urlencoded'             --data 'userName=__security_smoke__&password=invalid&deviceId=security-smoke')"
+          test "$status" = "403"
+
+      - name: Allow configured Origin through CSRF gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}'             -X POST "$API_BASE_URL/api/auth/login"             -H "Origin: $FRONTEND_ORIGIN"             -H 'Content-Type: application/x-www-form-urlencoded'             --data 'userName=__security_smoke__&password=invalid&deviceId=security-smoke')"
+          test "$status" != "403"
+
+      - name: Validate CORS allowlist
+        shell: bash
+        run: |
+          set -euo pipefail
+          allowed="$(curl --silent --show-error -i -X OPTIONS "$API_BASE_URL/api/auth/login"             -H "Origin: $FRONTEND_ORIGIN"             -H 'Access-Control-Request-Method: POST')"
+          echo "$allowed" | grep -i "^access-control-allow-origin: $FRONTEND_ORIGIN"
+
+          hostile="$(curl --silent --show-error -i -X OPTIONS "$API_BASE_URL/api/auth/login"             -H 'Origin: https://evil.example'             -H 'Access-Control-Request-Method: POST')"
+          if echo "$hostile" | grep -qi "^access-control-allow-origin:"; then
+            echo "Hostile origin unexpectedly received an ACAO header."
+            exit 1
+          fi
