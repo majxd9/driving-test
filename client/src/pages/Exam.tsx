@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, resolveApiUrl } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { ExamQuestion } from '../types';
+import { ExamSessionQuestion } from '../types';
 import DiagramRenderer from '../components/DiagramRenderer';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
@@ -25,7 +25,7 @@ export default function Exam() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isAdmin = user?.role === 'Admin';
-  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
+  const [questions, setQuestions] = useState<ExamSessionQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [current, setCurrent] = useState(0);
   const [seconds, setSeconds] = useState(DURATION);
@@ -37,7 +37,7 @@ export default function Exam() {
   const [jumpOpen, setJumpOpen] = useState(false);
   const [jumpValue, setJumpValue] = useState('1');
   const finishedRef = useRef(false);
-  const questionsRef = useRef<ExamQuestion[]>([]);
+  const questionsRef = useRef<ExamSessionQuestion[]>([]);
   const answersRef = useRef<Record<number, number>>({});
   const loadSequenceRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
