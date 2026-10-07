@@ -508,3 +508,151 @@ Render:
 7. لا تعتبر ملاحظة قديمة مكتملة بدون إعادة التحقق عند الحاجة.
 
 هذا الملف مخصص ليكون مرجع handoff عملي بين المحادثات المختلفة والحسابات المختلفة، بشرط أن يكون المستودع متاحاً للمحادثة الجديدة.
+
+
+---
+
+## 18. Production Audit Continuation — Tasks 21–30 — 2026-10-08
+
+> قاعدة هذه المرحلة: المهام 1–20 مثبتة كـ baseline ولا يعاد فتحها. لا تغيير في قرارات مجمدة، ولا تعديل على Exam UI/logic.
+
+### 21 Exam Integrity
+الحالة: 🟡 مثبتة برمجياً / live attack verification pending
+
+تم التحقق على main من:
+- Student authorization على ExamAttemptsController.
+- ملكية الجلسة مرتبطة بـ StudentId.
+- الإجابة لا تُحفظ إذا كان السؤال خارج QuestionIds للجلسة.
+- SelectedAnswerIndex يتحقق ضمن عدد الخيارات.
+- submit يعيد التحقق من membership ومن صلاحية index.
+- التصحيح يتم من CorrectAnswerIndex الخادمي، وليس من العميل.
+- يوجد قيد DB لمنع أكثر من active attempt للطالب مع معالجة race عند الإنشاء.
+- submit المتكرر يرفض الجلسة بعد Completed.
+
+المتبقي لإغلاق المهمة:
+- اختبار حي مصادق عليه لـ tampering/BOLA/IDOR وconcurrent submit/device scenarios.
+
+مرجع أمني خارجي:
+- OWASP Top 10:2025: Broken Access Control, Authentication Failures, Software/Data Integrity.
+- OWASP API Security Top 10:2023: API1 BOLA, API2 Broken Authentication, API5 Broken Function Level Authorization.
+
+### 22 Result System
+الحالة: 🟢 برمجياً بعد الإصلاح
+
+تمت إضافة result recovery خادمي:
+- endpoint: GET /api/exam-attempts/{id}/result
+- الوصول مقيد بملكية الطالب للجلسة وبحالة Completed.
+- النتيجة يعاد بناؤها من بيانات الخادم والأسئلة المرتبطة بالجلسة.
+- العميل يحفظ رقم attempt فقط في sessionStorage ويستعيد النتيجة من الخادم بعد refresh.
+- لا يتم تخزين النتيجة النهائية كاملة في المتصفح كمرجع للحقيقة.
+
+Code milestone:
+- 17714970a4c72cb52f08be187afa8fb286aacc36
+- 9fae495cd46bef0267150040a1f1e6f24bf56af3
+- a5b72faffc3725bc4caf0b1af5f538b80caa010b
+- 9b4b594896113e06e5e99a972638ef457c99c038
+
+CI evidence on 9b4b594:
+- Client build: success.
+- npm audit --omit=dev --audit-level=moderate: success.
+- Server build and Cloudflare deployment were still in progress at the moment of this documentation update.
+
+### 23 Study
+الحالة: 🟡
+
+تمت مراجعة state/data/audio flow على Study.tsx.
+- تحميل الأسئلة من API حسب category.
+- إدارة answer state واضحة.
+- الصوت click-to-play مع preloading فقط.
+- الصور التالية يتم preloaded دون autoplay للصوت.
+- لا تغييرات بصرية أو redesign في هذه المرحلة.
+- القبول البصري النهائي يبقى ضمن UI/device verification، وليس ضمن هذا التعديل.
+
+### 24 Models
+الحالة: 🟢 من ناحية policy/source verification
+
+- Models 1–8 موجودة.
+- Models 7–8 موسومة Advanced/Harder في الواجهة.
+- picker يستخدم modelId كـ seed مختلف، لكن لا يوجد algorithm منفصل مثبت لفرض صعوبة مختلفة.
+- لا تم تغيير policy أو محتوى Models 7–8.
+
+### 25 Admin
+الحالة: 🟢 authorization/account-management / 🟡 scalability follow-up
+
+تم التحقق من:
+- AdminController محمي بـ Authorize(Roles = "Admin").
+- إنشاء وتعديل الحسابات وإعادة ضبط الجهاز ضمن مسارات Admin.
+- منع آخر Admin نشط من السقوط.
+- عدم تعطيل/خفض صلاحية الأدمن الحالي من جلسته.
+
+المتابعة:
+- pagination/list performance عند نمو عدد الحسابات والطلاب؛ لا حاجة حالية لتغيير schema أو behavior.
+
+### 26 Media Upload
+الحالة: 🟢
+
+مسار AI ZIP الحالي ليس old public uploader.
+تم التحقق من:
+- امتداد ZIP.
+- حدود الحجم.
+- منع المسارات غير المسموحة داخل ZIP.
+- قبول WebP فقط.
+- أرقام الأسئلة محصورة في 1–397.
+- منع التكرار.
+- حد لكل صورة وحد إجمالي الحجم غير المضغوط.
+- التحقق من WebP magic bytes.
+- ContentHash لمنع إعادة استخدام صورة لسؤال آخر.
+- لا تم إرجاع uploader العام القديم.
+
+### 27 Accessibility
+الحالة: 🟡
+
+تم التحقق من وجود:
+- aria-label وrole=group/dialog في أجزاء رئيسية.
+- aria-hidden للعناصر الزخرفية.
+- reduced-motion CSS.
+
+المتبقي:
+- full keyboard traversal.
+- focus trap/restoration في جميع dialogs.
+- screen-reader pass حقيقي.
+- لا نعتبرها مكتملة من static inspection فقط.
+
+### 28 Mobile
+الحالة: 🟡
+
+- responsive breakpoints موجودة، منها 900px و600px و430px.
+- استخدام 100dvh/100svh في المسارات الحساسة.
+- لا تغييرات Exam/UI أثناء هذا التدقيق.
+
+المتبقي:
+- اختبار فعلي على Android/iOS وأحجام الشاشات المختلفة.
+
+### 29 Browser Compatibility
+الحالة: 🟡
+
+- Vite build target = es2020.
+- المشروع يستخدم APIs حديثة مثل crypto.randomUUID وfetch patterns.
+- لا يوجد browser matrix موثق كاختبار قبول كامل في هذا التدقيق.
+
+المتبقي:
+- تحديد browser floor صريح ثم اختبار Chrome/Edge/Firefox/Safari matrix.
+
+### 30 Dependencies
+الحالة: 🟡
+
+تم التحقق على commit 9b4b594:
+- client production build: success.
+- runtime npm audit (--omit=dev): success.
+- Dependabot موجود أسبوعياً لـ npm وNuGet.
+
+غير مغلق:
+- full dev dependency vulnerability review.
+- server dotnet list package --vulnerable --include-transitive كان ما يزال قيد التنفيذ لحظة التوثيق.
+- آخر baseline مسجل سابقاً كان 2 moderate + 6 high في dev tree؛ لا يتم إعادة اعتبارها "حالياً" قبل نتيجة الفحص الجديد.
+
+### Current evidence / blockers
+- لا يوجد account اختبار مصادق جاهز في هذه الجلسة لإغلاق live E2E الأمني.
+- لا يمكن تشغيل clone/build محلياً من هذه البيئة بسبب DNS إلى GitHub؛ الاعتماد الحالي هو CI.
+- لا توجد تغييرات في Exam UI, Exam logic, Study redesign, Device Binding policy أو Models 7–8 policy.
+- المهمة 30 لا تُغلق نهائياً حتى اكتمال فحص server/dependency الحالي.
