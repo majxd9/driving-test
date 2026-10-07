@@ -656,3 +656,35 @@ CI evidence on 9b4b594:
 - لا يمكن تشغيل clone/build محلياً من هذه البيئة بسبب DNS إلى GitHub؛ الاعتماد الحالي هو CI.
 - لا توجد تغييرات في Exam UI, Exam logic, Study redesign, Device Binding policy أو Models 7–8 policy.
 - المهمة 30 لا تُغلق نهائياً حتى اكتمال فحص server/dependency الحالي.
+
+
+## 19. Production Audit Continuation — Tasks 30–45 — 2026-10-08
+
+التفاصيل الكاملة في `PRODUCTION_AUDIT_30_45.md`.
+
+### نتيجة المرحلة
+- 30: 🟡 dependency CI hardened، clean final run pending.
+- 31: 🟡 historical secret scan pending.
+- 32: 🟡 CSRF/session browser tests pending.
+- 33: 🟢 login abuse controls verified statically.
+- 34: 🟢 health/monitoring configured.
+- 35: 🟡 real Supabase dump + restore drill pending.
+- 36: 🟢 capacity/cost policy preserved at $0.
+- 37: 🟢 live DB integrity checks passed.
+- 38: 🟢 media integrity checks passed; empty AI images are rejected records only.
+- 39: 🟢 AI generation disabled and approval gate preserved.
+- 40: 🟡 CI hardening commit `f10b357bab7cb0bd0916573282c7d3438fb99bf0`; run pending.
+- 41: 🟡 release validation after hardening pending.
+- 42: 🟡 performance telemetry insufficient for p50/p95/p99.
+- 43: 🟡 Android live build/release acceptance pending.
+- 44: 🟢 documentation updated.
+- 45: 🔴 CONDITIONAL; project is not Production-Cleared until the listed release gates are actually executed.
+
+### Latest CI hardening change
+- `release-check.yml` no longer needs repository write permission.
+- CI no longer auto-commits/pushes lockfile changes.
+- `npm ci` is the reproducible client install path.
+- Full npm audit is exported as an artifact; runtime audit remains a blocking gate.
+- NuGet transitive vulnerability detection is a blocking gate.
+
+تم التوقف عند المهمة 45.
