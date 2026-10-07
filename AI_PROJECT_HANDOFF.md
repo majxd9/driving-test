@@ -688,3 +688,28 @@ CI evidence on 9b4b594:
 - NuGet transitive vulnerability detection is a blocking gate.
 
 تم التوقف عند المهمة 45.
+
+## Production Audit Update — Tasks 46–65 — 2026-10-08
+
+### Current verified work
+- Container hardening: pinned .NET SDK/runtime images + non-root runtime user.
+- CI now builds the production Docker image and asserts runtime user UID 1654.
+- Rollback runbook added at `RELEASE_ROLLBACK_RUNBOOK.md`.
+- Supabase index usage rechecked directly; five advisor unused-index findings remain, but no deletion is justified without longer workload evidence.
+- Supabase installed-extension inventory rechecked: only `pg_stat_statements`, `pgcrypto`, `plpgsql`, `supabase_vault`, and `uuid-ossp` are actually installed.
+
+### Do not mark complete
+- AuthLog retention/purge: policy duration still needs owner decision.
+- Real PostgreSQL backup + restore drill: not executed.
+- Production latency p50/p95/p99: insufficient history.
+- Live security/E2E, browser CSRF/session, mobile/browser/accessibility: still pending.
+- Rollback drill: runbook exists, production drill not performed.
+- Final Production Gate: still conditional.
+
+### New repository references
+- `PRODUCTION_AUDIT_46_55.md`
+- `PRODUCTION_AUDIT_56_65.md`
+- `PROJECT_MASTER_SPEC.md`
+- `RELEASE_ROLLBACK_RUNBOOK.md`
+
+Rule for future continuation: read this handoff and the two audit files, check current `main` HEAD, then continue only the still-open evidence items. Do not reopen settled decisions.
