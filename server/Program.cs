@@ -356,6 +356,12 @@ for (var attempt = 1; attempt <= 5 && !schemaInitialized; attempt++)
         CREATE INDEX IF NOT EXISTS "IX_AiTestRuns_Status_CreatedAt"
             ON "AiTestRuns" ("Status", "CreatedAt");
 
+        -- Prevent two simultaneous first-time start requests from creating two active exams
+        -- for the same student. Existing active rows were verified empty before adding this guard.
+        CREATE UNIQUE INDEX IF NOT EXISTS "UX_ExamAttempts_StudentId_Active"
+            ON "ExamAttempts" ("StudentId")
+            WHERE "Completed" = FALSE;
+
         -- Existing AI images must enter manual review before they can ever be shown to students.
         INSERT INTO "AiImageReviews" ("QuestionId", "ContentHash", "Status", "CreatedAt", "ReviewedAt")
         SELECT "QuestionId", "ContentHash", 0, "CreatedAt", NULL
