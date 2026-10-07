@@ -305,3 +305,29 @@
 - 45 Final release gate: 🔴 CONDITIONAL — live E2E/UI/device/browser، backup/restore، dependency run، ثم release verification ما زالت مطلوبة.
 
 تم التوقف عند المهمة 45 كما طلب المالك.
+
+## 20. Production Audit Continuation — Tasks 46–65 — 2026-10-08
+
+تمت متابعة البنود غير المكتملة دون إعادة فتح القرارات المجمدة.
+
+### تم تنفيذ تغييرات فعلية
+- Task 47: `server/Dockerfile` أصبح يستخدم .NET 8 patch images pinned by digest، وتم تشغيل runtime كـnon-root عبر `USER $APP_UID`.
+- Task 47: `.github/workflows/release-check.yml` أصبح يبني Docker image ويفحص أن image user هو UID 1654.
+- Task 53: تم إنشاء `RELEASE_ROLLBACK_RUNBOOK.md` مع application/Render/DB rollback rules.
+- Task 61: تمت مراجعة installed PostgreSQL extensions مباشرة، واتضح أن installed فعلياً خمسة فقط؛ لا توجد قائمة كبيرة من extensions مفعلة كما أوحت القراءة السابقة لقائمة available extensions.
+
+### البنود التي بقيت عمداً غير مكتملة
+- Task 50: retention/purge لـAuthLogs يحتاج مدة احتفاظ معتمدة من المالك؛ لم يتم اختراع مدة retention.
+- Tasks 51–52: لا يوجد DB backup/restore drill فعلي في هذه الجلسة؛ يلزم DB credentials/connection string وهدف restore منفصل. Supabase يوصي بـ`supabase db dump` للـFree tier، وStorage objects تحتاج معالجة منفصلة.
+- Task 59: لا حذف للفهارس الخمسة ذات `idx_scan=0` دون workload evidence أطول.
+- Task 63: لا توجد latency history كافية لحساب p50/p95/p99.
+- Task 53: rollback drill لم ينفذ على production لأنه ليس اختباراً آمناً بلا incident.
+- Task 65: ما زال Conditional حتى إغلاق live E2E، browser/session security، backup/restore، latency، mobile/browser/accessibility، deployment verification والrollback evidence.
+
+### Security / product invariants preserved
+- Exam UI/logic لم يتغير.
+- Student one-device policy لم تتغير.
+- Audio click-to-play فقط.
+- AI images لا تنشر قبل approval.
+- AI generation لا يبدأ من Study/Exam.
+- لا خدمات مدفوعة جديدة.
