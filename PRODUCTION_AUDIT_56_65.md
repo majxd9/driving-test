@@ -87,3 +87,49 @@ Commit: `d2d77a2e28b338307fc660c6f4cdba4255660145`
 
 ## Stop Point
 تم الوصول إلى Task 65. لا يتم إعلان Production-Cleared حتى يتم إغلاق الأدلة المعلقة أعلاه.
+
+## Continuation Update — 2026-10-08
+
+### Task 59 — Database Performance Advisor
+الحالة: 🟡 — قرار الحذف غير آمن حالياً
+- Supabase Performance Advisor ما زال يعرض 5 unused-index notices.
+- `pg_stat_user_indexes` الحالي أكد `idx_scan=0` لهذه الفهارس:
+  - `IX_ExamAttempts_StudentId_Completed_ExpiresAt`
+  - `IX_AiTestRuns_QuestionId`
+  - `IX_AspNetRoleClaims_RoleId`
+  - `EmailIndex`
+  - `IX_QuestionAiImages_ImageHash`
+- لم يتم حذفها لأن صفر scans في نافذة المراقبة لا يثبت أن index غير مطلوب، خصوصاً مع مسارات نادرة/أمنية/إدارية.
+- الفهارس الأخرى ذات الاستخدام الفعلي ظهرت في نفس القياس، ومنها `IX_ExamAttempts_StudentId_CreatedAt` (48 scans)، ومؤشرات AI queue التي سجلت آلاف scans.
+- النتيجة: لا يوجد مبرر آمن لتغيير schema الآن؛ يلزم workload/production query evidence أطول قبل الحذف.
+
+### Task 61 — Extension Surface Review
+الحالة: 🟢
+- قائمة ما يمكن لـSupabase توفيره كبيرة، لكن installed extensions فعلياً على المشروع خمسة فقط:
+  - `pg_stat_statements` 1.11
+  - `pgcrypto` 1.3
+  - `plpgsql` 1.0
+  - `supabase_vault` 0.3.1
+  - `uuid-ossp` 1.1
+- لا يوجد في قاعدة البيانات inventory يشير إلى عشرات extensions مفعلة فعلياً؛ أغلب القائمة السابقة كانت available extensions وليست installed ones.
+- لم نحذف أي extension، لأن هذه الخمسة جزء من runtime/platform/DB functionality الحالية، وبعضها لديه objects dependent عليه.
+- هذا يغلق مراجعة extension surface من ناحية inventory. لا يوجد تغيير مطلوب في schema.
+
+### Task 63 — Runtime Capacity Evidence
+الحالة: 🟡
+- CPU/memory evidence موجودة، لكن latency history ليست كافية لاستخراج p50/p95/p99.
+- لا نعتبر القياس مغلقاً بمجرد health checks ناجحة؛ يلزم تاريخ latency حقيقي متعدد العينات.
+
+### Task 64 — CI / Release Regression Gate
+الحالة: 🟡 مؤقتاً
+- أضيف Docker build + non-root assertion إلى release-check.
+- يلزم نجاح run مرتبط بأحدث HEAD قبل إعادة الحالة إلى 🟢.
+
+### Tasks 51–52 / Backup + Restore
+الحالة: 🟡
+- التوثيق والتحقق الخارجي مكتملان.
+- التنفيذ الفعلي ما زال يتطلب DB URL/password أو token مناسباً وهدف restore منفصلاً؛ لم يتم إدخال هذه الأسرار إلى المستودع.
+
+### Task 65 — Extended Production Gate
+الحالة: 🔴 CONDITIONAL
+يبقى كما هو إلى حين إغلاق الأدلة الحية: E2E، CSRF/session browser، DB backup/restore، latency، mobile/browser/accessibility، deployment verification، وrollback drill.
