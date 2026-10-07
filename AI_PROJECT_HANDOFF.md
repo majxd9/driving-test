@@ -664,7 +664,7 @@ CI evidence on 9b4b594:
 
 ### نتيجة المرحلة
 - 30: 🟢 dependency CI hardened + clean final run verified (`37697436882`).
-- 31: 🟡 historical secret scan pending.
+- 31: 🟢 full-history Gitleaks scan passed (`37698530099`).
 - 32: 🟡 CSRF/session browser tests pending.
 - 33: 🟢 login abuse controls verified statically.
 - 34: 🟢 health/monitoring configured.
@@ -676,7 +676,7 @@ CI evidence on 9b4b594:
 - 40: 🟢 CI hardening commit `f10b357bab7cb0bd0916573282c7d3438fb99bf0`; run `37697436882` passed.
 - 41: 🟢 release validation after hardening passed on run `37697436882`.
 - 42: 🟡 performance telemetry insufficient for p50/p95/p99.
-- 43: 🟡 Android live build/release acceptance pending.
+- 43: 🟢 Android release APK build/upload verified (`37698479329`).
 - 44: 🟢 documentation updated.
 - 45: 🔴 CONDITIONAL; project is not Production-Cleared until the listed release gates are actually executed.
 
