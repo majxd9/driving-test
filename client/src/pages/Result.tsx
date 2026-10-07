@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import OptimizedImage from '../components/OptimizedImage';
-import { resolveApiUrl } from '../api/client';
+import { api, resolveApiUrl } from '../api/client';
 import DiagramRenderer from '../components/DiagramRenderer';
 
 type ReviewItem = {
@@ -23,14 +24,78 @@ type ReviewItem = {
 const PASS_SCORE = 25;
 
 export default function Result() {
-  const { state } = useLocation() as {
-    state: { correct: number; total: number; answered: number; reviewQuestions: ReviewItem[]; modelId: number } | null;
-  };
+  const location = useLocation();
   const navigate = useNavigate();
+  const locationState = location.state as
+    { attemptId?: number; correct: number; total: number; answered: number; reviewQuestions: ReviewItem[]; modelId: number } | null;
+  const [state, setState] = useState(locationState);
+  const [loading, setLoading] = useState(!locationState);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (locationState) {
+      try { sessionStorage.setItem('driving:last-result-attempt-id', String(locationState.attemptId ?? '')); } catch { /* storage may be unavailable */ }
+      return;
+    }
+
+    let active = true;
+    let rawId = '';
+    try { rawId = sessionStorage.getItem('driving:last-result-attempt-id') ?? ''; } catch { /* storage may be unavailable */ }
+    const attemptId = Number(rawId);
+
+    if (!Number.isInteger(attemptId) || attemptId <= 0) {
+      navigate('/app', { replace: true });
+      return;
+    }
+
+    void api.getExamResult(attemptId)
+      .then(submission => {
+        if (!active) return;
+        setState({
+          attemptId: submission.id,
+          correct: submission.correct,
+          total: submission.total,
+          answered: submission.answered,
+          reviewQuestions: submission.reviewQuestions.map(item => ({
+            question: {
+              id: item.id,
+              text: item.text,
+              options: item.options,
+              correctAnswerIndex: item.correctAnswerIndex,
+              explanation: item.explanation,
+              imageUrl: item.imageUrl,
+              aiImageUrl: item.aiImageUrl,
+              diagramType: item.diagramType,
+              diagramUrl: item.diagramUrl,
+              diagramTitle: item.diagramTitle,
+              diagramDescription: item.diagramDescription,
+            },
+            chosen: item.chosenAnswerIndex,
+          })),
+          modelId: submission.modelId,
+        });
+        setError(null);
+      })
+      .catch(err => {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : 'تعذر تحميل نتيجة الاختبار.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => { active = false; };
+  }, [locationState, navigate]);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center px-4"><p className="text-muted">جارِ تحميل نتيجة الاختبار...</p></div>;
+  }
 
   if (!state) {
-    navigate('/app');
-    return null;
+    return <div className="min-h-screen flex items-center justify-center px-4"><div className="surface-panel max-w-md w-full p-6 text-center" role="alert">
+      <p className="text-sm text-muted">{error ?? 'تعذر تحميل نتيجة الاختبار.'}</p>
+      <button type="button" className="primary-cta mt-5 w-full" onClick={() => navigate('/app', { replace: true })}>العودة إلى الصفحة الرئيسية</button>
+    </div></div>;
   }
 
   const { correct, total, answered, reviewQuestions = [], modelId } = state;
