@@ -86,6 +86,8 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ answers }),
     }),
+  getExamResult: (attemptId: number) =>
+    request<import('../types').ExamSubmission>(`/api/exam-attempts/${attemptId}/result`),
   admin: {
     listAccounts: () => request<import('../types').Account[]>('/api/admin/accounts'),
     createAccount: (data: { userName: string; fullName: string; password: string; role: 'Admin'|'Student'; accessExpiresAt: string | null }) => request<import('../types').Account>('/api/admin/accounts', { method: 'POST', body: JSON.stringify(data) }),
