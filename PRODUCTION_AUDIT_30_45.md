@@ -8,7 +8,7 @@ Baseline قبل هذه المرحلة: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2
 > هذه المرحلة لا تعيد فتح قرارات 1–29. لا تغيير على Exam UI/logic أو Question Bank أو Device Binding policy أو Models 7–8 أو Audio click-to-play أو AI approval gate.
 
 ## 30 — Dependencies / Supply Chain
-الحالة: 🟡
+الحالة: 🟢
 - تم فحص release-check الحالي.
 - تم تشديد CI في commit `f10b357bab7cb0bd0916573282c7d3438fb99bf0`.
 - تم إزالة `contents: write` من release-check.
@@ -17,7 +17,7 @@ Baseline قبل هذه المرحلة: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2
 - أصبح `npm audit --omit=dev --audit-level=moderate` فحصاً حاجزاً لـ runtime.
 - أضيف تقرير كامل للتبعيات dev عبر artifact.
 - أضيف فحص NuGet transitive مع فشل صريح عند اكتشاف حزم vulnerable.
-- الإغلاق النهائي يحتاج نجاح آخر run وقراراً على أي advisories في dev tree.
+- تم إغلاق المهمة بعد نجاح release-check run `37697436882` على HEAD `2b1485c45c2854ee99ffd3e9e89b66155f679e71`.
 
 ## 31 — Secrets / Secret History
 الحالة: 🟡
@@ -99,21 +99,21 @@ Baseline قبل هذه المرحلة: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2
 - usage المسجل للشهر الحالي = 703 توليدات في سجل الاستخدام التاريخي؛ لا يتم تحويل هذا الرقم إلى quota جديد دون قرار مالك المشروع.
 
 ## 40 — CI/CD Security Hardening
-الحالة: 🟡 → جاهز تقنياً، بانتظار run للتحقق
+الحالة: 🟢
 - release-check لا يملك write permission.
 - CI لم يعد يدفع تعديلات تلقائية إلى main.
 - install أصبح reproducible عبر `npm ci`.
 - Question-bank audit مضاف ضمن release-check.
 - dependency reports تحفظ كـartifacts قصيرة العمر.
 - آخر commit لهذا التحسين: `f10b357bab7cb0bd0916573282c7d3438fb99bf0`.
-- الإغلاق يتطلب نجاح workflow بعد هذا التغيير.
+- تم التحقق من workflow run `37697436882`: `success`، والـclient/server jobs كلاهما `success`.
 
 ## 41 — Release Build / Artifact Integrity
-الحالة: 🟡
+الحالة: 🟢
 - Frontend build command موجود داخل release-check.
 - Server Release build موجود داخل release-check.
 - NuGet vulnerability gate مضاف.
-- نجاح آخر run بعد التعديل لم يُثبت بعد داخل هذه الجلسة.
+- release-check run `37697436882` نجح على HEAD الحالي؛ frontend build وbackend Release build وruntime npm audit وNuGet vulnerability gate كلها نجحت.
 - لا يتم إعلان release green اعتماداً على وجود workflow file فقط.
 
 ## 42 — Runtime / Backend Performance
@@ -154,6 +154,7 @@ Baseline قبل هذه المرحلة: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2
 ### Current evidence snapshot
 - Latest documented main before this stage: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2`.
 - CI hardening commit: `f10b357bab7cb0bd0916573282c7d3438fb99bf0`.
+- Verified release-check: run `37697436882`, success.
 - Supabase project: `stwikgqvbadpwbqtfrpf`, ACTIVE_HEALTHY.
 - Questions = 397.
 - QuestionAudios = 397.
@@ -164,4 +165,4 @@ Baseline قبل هذه المرحلة: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2
 - No paid service was enabled.
 
 ## توقف هذه المرحلة
-تم الوصول إلى المهمة 45. لا توجد تغييرات إضافية ضمن هذا التسلسل قبل تنفيذ release gates المعلقة أعلاه.
+تم الوصول إلى المهمة 45. Tasks 30/40/41 أُغلقت بناءً على CI evidence؛ بقية release gates المعلقة ما زالت كما هي.
