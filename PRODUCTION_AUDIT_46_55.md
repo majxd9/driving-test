@@ -93,3 +93,29 @@ Branch: `main`
 
 ## Stop Point
 تم الوصول إلى المهمة 55. لا يتم إعلان Production-Cleared من هذا التدقيق وحده؛ البنود المعلقة أعلاه تبقى release gates.
+
+## Continuation Update — 2026-10-08
+
+### Task 47 — Container Hardening / Image Provenance
+الحالة: 🟡 تحسنت، بانتظار verification النهائي
+- تم تثبيت Docker base images على إصدارات patch محددة مع digests:
+  - SDK: `8.0.425-azurelinux3.0@sha256:12e35f59799cc0261b07d09db75c3e2a3f36883469633ee7a10bb1be4094aa70`
+  - ASP.NET runtime: `8.0.31-jammy@sha256:96d23abed8e9c7d05141a7e0336a1ff2cea2c5ffcb4aa676b0fc169db421cfdf`
+- تم تفعيل تشغيل runtime تحت user غير root عبر `USER $APP_UID` (UID 1654 في صورة .NET الرسمية).
+- تم إضافة Docker build إلى release-check مع assertion أن image user = 1654.
+- لا نغلق المهمة نهائياً قبل نجاح release-check الجديد والتأكد من deployment الفعلي على Render.
+- أحدث معلومات Microsoft المنشورة تؤكد أن .NET 8.0.31 هو patch الحالي في دورة سبتمبر 2026. citeturn133700search0turn133700search8
+
+### Task 53 — Rollback / Release Recovery
+الحالة: 🟡
+- تم إنشاء `RELEASE_ROLLBACK_RUNBOOK.md` بخطوات application rollback وRender rollback وقواعد DB rollback.
+- تم منع force-push كمسار rollback.
+- لم يتم تنفيذ rollback drill على الإنتاج؛ التنفيذ بدون incident سيغيّر production بلا داعٍ.
+
+### Current commits added during this continuation
+- `a11f6ed8e773833b143bec9692b36dc2f71978c0` — container hardening + pinned .NET images.
+- `aea6ad67209c47ed2c34ea452cda248fd2100b30` — rollback runbook.
+- `3ef1f2962de7f3845b038b5bd907e9f4bc67af52` — Docker build/non-root CI verification.
+
+### External backup baseline revalidated
+Supabase's current documentation recommends logical `supabase db dump` backups for Free-tier projects and notes that database backups do not include Storage objects. This confirms Tasks 51–52 still require a separately executed logical DB backup/restore drill. citeturn970742search1turn970742search3
