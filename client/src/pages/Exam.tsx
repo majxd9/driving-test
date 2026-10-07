@@ -107,6 +107,7 @@ export default function Exam() {
 
     try {
       const submission = await api.submitExamAttempt(currentAttemptId, currentAnswers);
+      try { sessionStorage.setItem('driving:last-result-attempt-id', String(submission.id)); } catch { /* storage may be unavailable */ }
       navigate('/result', {
         state: {
           correct: submission.correct,
