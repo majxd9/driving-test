@@ -1,5 +1,6 @@
 name: Build Android APK
 
+# Production audit verification: release APK build must stay independently reproducible and read-only.
 # Builds the "رخصتي" Android app in the cloud, so you don't need Android Studio.
 # Runs by itself when files inside android/ change, or by hand: Actions → Build Android APK → Run workflow.
 # The APK appears at the bottom of the run page, under "Artifacts".
