@@ -51,7 +51,8 @@ Baseline قبل هذه المرحلة: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2
 ## 35 — Database Backup / Restore
 الحالة: 🟡
 - workflow الحالي `project-backup.yml` هو source snapshot وليس PostgreSQL backup.
-- تم التحقق من مشروع Supabase الحالي: `stwikgqvbadpwbqtfrpf` وحالته ACTIVE_HEALTHY.
+- تم التحقق من مشروع Supabase الحالي: `stwikgqvbadpwbqtfrpf` وحالته ACTIVE_HEALTHY، والخطة الحالية Free.
+- وفق توثيق Supabase الحالي، مشاريع Free تعتمد على تصدير منطقي دوري عبر `supabase db dump`؛ النسخ اليومية المدارة متاحة للخطط المدفوعة فقط.
 - الإجراء الصحيح يتطلب dump roles + schema + data ثم restore إلى قاعدة/مشروع اختبار منفصل.
 - لا تم وضع database dump في GitHub repository أو artifact عام.
 - لا يمكن إغلاق restore drill دون secret/connection credentials وtarget مستقل مناسب للاختبار.
@@ -122,7 +123,8 @@ Baseline قبل هذه المرحلة: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2
 - Response compression موجود.
 - EF/Npgsql transient retry موجود.
 - MemoryCache مستخدم لحالة الجلسة.
-- لا توجد قياسات HTTP p50/p95/p99 حديثة موثوقة.
+- لا توجد قياسات HTTP p50/p95/p99 حديثة موثوقة؛ Render لم يُرجع سلسلة `http_latency` أو `http_request_count` في نافذة القياس المتاحة.
+- العينة المتاحة أظهرت memory تقريباً 177–211 MB وCPU ~0.026–0.027 في نقاط القياس، لكنها لا تكفي لحكم أداء production.
 - لا يتم إجراء refactor performance أو تغيير query/indexes استناداً إلى التخمين.
 - Supabase performance advisor أظهر 5 unused-index notices فقط؛ لا يتم حذف أي index دون workload evidence.
 
