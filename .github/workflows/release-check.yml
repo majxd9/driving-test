@@ -65,3 +65,11 @@ jobs:
           path: server/nuget-vulnerabilities.txt
           if-no-files-found: error
           retention-days: 14
+
+      - name: Build production Docker image
+        run: docker build --pull --file server/Dockerfile --tag driving-test-ci:$GITHUB_SHA server
+        working-directory: .
+      - name: Verify container is non-root
+        run: |
+          USER_ID=$(docker image inspect "driving-test-ci:$GITHUB_SHA" --format '{{.Config.User}}')
+          test "$USER_ID" = "1654"
