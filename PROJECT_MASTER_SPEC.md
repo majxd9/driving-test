@@ -189,3 +189,95 @@
 4. التحقق من CI/release للنشر الأخير.
 
 لا يوجد في هذه المهام سبب لتغيير أسئلة الاختبار أو الاختيارات أو منطق Models 7–8، ولا تغيير بنية الموقع أو التنقل.
+
+
+---
+
+## 21. Production Audit Tasks 21–30 — 2026-10-08
+
+هذه المرحلة تواصلت من baseline المهام 1–20 ولا تعيد فتح القرارات المثبتة.
+
+### 21 — Exam Integrity
+**الحالة: 🟡**
+- server-authoritative scoring مؤكد.
+- session ownership وquestion membership وanswer-index validation موجودة.
+- DB active-attempt uniqueness موجودة.
+- live authenticated tampering/BOLA/IDOR/E2E ما زال مطلوباً لإغلاق المهمة نهائياً.
+
+### 22 — Result System
+**الحالة: 🟢**
+تم إصلاح refresh robustness دون تغيير Exam UI/logic:
+- GET /api/exam-attempts/{id}/result يعيد النتيجة من الخادم للطالب المالك فقط وبعد اكتمال الجلسة.
+- العميل يحتفظ برقم attempt فقط ويستعيد النتيجة بعد refresh.
+- CI على commit 9b4b594896113e06e5e99a972638ef457c99c038: Client build نجح وnpm audit --omit=dev --audit-level=moderate نجح.
+
+### 23 — Study
+**الحالة: 🟡**
+- state/data/audio flow تمت مراجعته.
+- click-to-play محفوظ.
+- لا redesign.
+- visual/device acceptance تبقى معلقة.
+
+### 24 — Models
+**الحالة: 🟢**
+- Models 1–8 مثبتة.
+- 7–8 advanced في العرض.
+- لا algorithm منفصل مثبت لفرض difficulty مختلفة.
+- لا تغييرات على policy أو المحتوى.
+
+### 25 — Admin
+**الحالة: 🟢/🟡**
+- Admin authorization/account management/device reset مضبوط.
+- منع إسقاط آخر Admin نشط مثبت.
+- pagination/performance لقوائم كبيرة متابعة مستقبلية، وليست blocker حالياً.
+
+### 26 — Media Upload
+**الحالة: 🟢**
+- AI ZIP importer فقط ضمن المسار المقصود.
+- extension/path/size/count/WebP signature/hash validations موجودة.
+- old public uploader غير موجود.
+
+### 27 — Accessibility
+**الحالة: 🟡**
+- ARIA الأساسية وroles وreduced-motion موجودة.
+- keyboard/focus/screen-reader acceptance الكامل لم يُنفذ حياً.
+
+### 28 — Mobile
+**الحالة: 🟡**
+- responsive breakpoints وdvh/svh موجودة.
+- real device/browser matrix pending.
+- Exam UI frozen.
+
+### 29 — Browser Compatibility
+**الحالة: 🟡**
+- build target = es2020.
+- browser floor وmatrix غير مغلقين باختبار فعلي.
+
+### 30 — Dependencies
+**الحالة: 🟡**
+- runtime npm audit على commit 9b4b594 نجح.
+- Dependabot أسبوعي لـ npm/NuGet موجود.
+- full dev dependency review وserver transitive vulnerability result ما زالا غير مغلقين لحظة هذا التوثيق.
+
+### Evidence / Security baseline
+تدقيق الأمن في هذه المرحلة يعتمد على:
+- OWASP Top 10:2025.
+- OWASP API Security Top 10 (الإصدار المنشور الحالي المتاح للمشروع: 2023).
+
+### Production gate after 30
+المشروع **لم يصبح Production-Cleared بالكامل** من هذه المراجعة وحدها.
+المتبقي المؤكد:
+1. live authenticated E2E/security tampering tests.
+2. final UI/device/browser acceptance.
+3. backup/restore drill الحقيقي.
+4. إغلاق dependency/server vulnerability verification.
+5. final release gate بعد نجاح CI والنشر الأخير.
+
+لا تغيير في:
+- Exam UI/logic.
+- Study redesign.
+- Device Binding policy.
+- Models 7–8 policy.
+- Question bank/content.
+- Audio click-to-play behavior.
+- AI approval gate.
