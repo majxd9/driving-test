@@ -281,3 +281,27 @@
 - Question bank/content.
 - Audio click-to-play behavior.
 - AI approval gate.
+
+
+## 22. Production Audit Continuation — Tasks 30–45 — 2026-10-08
+
+المرجع التفصيلي: `PRODUCTION_AUDIT_30_45.md`
+
+- 30 Dependencies: 🟡 — تم تشديد release-check في `f10b357bab7cb0bd0916573282c7d3438fb99bf0`; final clean CI run pending.
+- 31 Secrets/history: 🟡 — current source review جيدة، لكن full historical secret scan غير مثبت.
+- 32 CSRF/session: 🟡 — الحماية البرمجية موجودة؛ browser-level CSRF/replay tests pending.
+- 33 Rate limiting: 🟢 — login 8/min/IP + Identity lockout 5/15m.
+- 34 Health/observability: 🟢 — healthz + Render Health Check + 15-minute monitor.
+- 35 Backup/restore: 🟡 — source snapshot موجود، أما PostgreSQL dump/restore الحقيقي فما زال release gate.
+- 36 Capacity/cost: 🟢 — لا ترقية أو تكلفة جديدة؛ سياسة $0 محفوظة.
+- 37 DB integrity/schema: 🟢 — live validation: 397 Questions, 397 QuestionAudios, invalid indices/options = 0، orphan checks = 0، RLS = 20/20.
+- 38 Media integrity: 🟢 — audio bytes فارغة = 0؛ 7 AI images بلا bytes وكلها Rejected.
+- 39 AI safety/quota: 🟢 — ImageEnabled=false، approval gate محفوظ، لا generation من Study/Exam.
+- 40 CI/CD hardening: 🟡 — code جاهز؛ waiting for successful run بعد hardening commit.
+- 41 Release build/artifact integrity: 🟡 — build/vulnerability gates موجودة؛ آخر run بعد التعديل غير مثبت بعد.
+- 42 Backend performance: 🟡 — compression/retry/cache موجودة؛ لا p50/p95/p99 موثوقة.
+- 43 Android wrapper: 🟡 — allowBackup=false وSSL handling صحيحان؛ live APK acceptance pending.
+- 44 Documentation: 🟢 — `PRODUCTION_AUDIT_30_45.md` أنشئ كمرجع لهذه المرحلة.
+- 45 Final release gate: 🔴 CONDITIONAL — live E2E/UI/device/browser، backup/restore، dependency run، ثم release verification ما زالت مطلوبة.
+
+تم التوقف عند المهمة 45 كما طلب المالك.
