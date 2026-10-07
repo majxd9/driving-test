@@ -20,11 +20,12 @@ Baseline قبل هذه المرحلة: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2
 - تم إغلاق المهمة بعد نجاح release-check run `37697436882` على HEAD `2b1485c45c2854ee99ffd3e9e89b66155f679e71`.
 
 ## 31 — Secrets / Secret History
-الحالة: 🟡
+الحالة: 🟢
 - المراجعة الحالية تؤكد اعتماد runtime secrets على environment/GitHub secrets في المسارات المعروفة.
 - لا توجد مفاتيح runtime مطلوبة داخل source configuration بحسب المراجعة الحالية.
-- لا يمكن إثبات full historical secret scan من واجهة GitHub المتاحة في هذه الجلسة.
-- الإغلاق النهائي يحتاج history-capable secret scan أو GitHub secret-scanning evidence.
+- أضيف workflow مستقل `.github/workflows/secret-scan.yml` يستخدم Gitleaks الرسمي مع `actions/checkout@v6` و`fetch-depth: 0` لمسح كامل Git history.
+- تم تشغيله بنجاح في run `37698530099` على commit `aa29aeeef547387612bb50e9eaab350da7802842`.
+- نتيجة Gitleaks: `success`، ولم يسجل secrets findings.
 
 ## 32 — CSRF / Session Security
 الحالة: 🟡
@@ -126,12 +127,14 @@ Baseline قبل هذه المرحلة: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2
 - Supabase performance advisor أظهر 5 unused-index notices فقط؛ لا يتم حذف أي index دون workload evidence.
 
 ## 43 — Android Wrapper / Release Safety
-الحالة: 🟡
+الحالة: 🟢
 - `android:allowBackup="false"` موجود.
 - WebView يحتاج third-party cookies عمداً لأن auth cookie تأتي من API على origin مختلف.
 - SSL error handler لا يسمح بالمتابعة عند certificate error.
 - APK workflow موجود.
-- build/release acceptance الحي للـAPK لم يُثبت في هذه الجلسة.
+- تم تشغيل workflow `Build Android APK` فعلياً على commit `41c6855bd9bb014d77bd9ba24f07c63fda6e68b2`.
+- run `37698479329` انتهى `success`؛ كل خطوات JDK/Gradle/build/upload نجحت.
+- Artifact `Rukhsati-APK` موجود، digest: `sha256:98e88f2d7e681f51d025ac9593afd4a4b68ffde94b95a836abed03df6a7db351`.
 
 ## 44 — Documentation / Continuity
 الحالة: 🟢
@@ -139,6 +142,10 @@ Baseline قبل هذه المرحلة: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2
 - سيتم ربطه من `PROJECT_MASTER_SPEC.md` و`AI_PROJECT_HANDOFF.md`.
 - current HEAD يجب أن يبقى المرجع في أي جلسة لاحقة.
 - المهام المعلقة التي تحتاج اختباراً يدوياً لا تُحوّل إلى 🟢 تلقائياً.
+
+### Result 30–45 summary
+- 31: 🟢 full-history Gitleaks scan passed (`37698530099`).
+- 43: 🟢 Android release APK build/upload verified (`37698479329`).
 
 ## 45 — Final Production Gate
 الحالة: 🔴 CONDITIONAL
