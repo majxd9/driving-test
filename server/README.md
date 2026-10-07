@@ -6,7 +6,7 @@ ASP.NET Core 8 Web API مع PostgreSQL وIdentity/JWT Cookie.
 - إدارة الطلاب والحالات وربط الجهاز.
 - CRUD كامل للأسئلة من لوحة الإدارة.
 - حقول Diagram اختيارية لكل سؤال: SVG / Image / Interactive.
-- Endpoint لرفع الصور إلى `wwwroot/uploads`.
+- لا يوجد uploader عام للصور؛ استيراد صور AI يتم عبر المسار الإداري المقيد الموثق في تدقيق الوسائط.
 - نتائج الاختبارات في جدول `ExamResults`.
 - Analytics endpoint للطلاب والأسئلة والاختبارات ومحاولات الدخول.
 - Static files لتقديم الصور المرفوعة.
@@ -21,7 +21,7 @@ ASP.NET Core 8 Web API مع PostgreSQL وIdentity/JWT Cookie.
 - `SeedAdmin__Password`
 
 ## ملاحظة التخزين
-رفع الصور إلى `wwwroot/uploads` مناسب للتجربة والاستضافة التي توفر قرصاً دائماً. إذا كانت الخدمة تستخدم filesystem مؤقتاً مثل بعض إعدادات Render، اربط endpoint الرفع لاحقاً بـ S3/Supabase Storage/Cloudinary حتى لا تختفي الملفات بعد إعادة التشغيل.
+الوسائط المنشورة الحالية تعتمد على الملفات المعتمدة ومسارات الوسائط الحالية. لا تعيد إدخال uploader عام أو تعتمد على filesystem مؤقت لتخزين وسائط الطلاب.
 
 ## التشغيل
 ```bash
