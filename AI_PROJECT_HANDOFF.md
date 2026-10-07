@@ -663,7 +663,7 @@ CI evidence on 9b4b594:
 التفاصيل الكاملة في `PRODUCTION_AUDIT_30_45.md`.
 
 ### نتيجة المرحلة
-- 30: 🟡 dependency CI hardened، clean final run pending.
+- 30: 🟢 dependency CI hardened + clean final run verified (`37697436882`).
 - 31: 🟡 historical secret scan pending.
 - 32: 🟡 CSRF/session browser tests pending.
 - 33: 🟢 login abuse controls verified statically.
@@ -673,8 +673,8 @@ CI evidence on 9b4b594:
 - 37: 🟢 live DB integrity checks passed.
 - 38: 🟢 media integrity checks passed; empty AI images are rejected records only.
 - 39: 🟢 AI generation disabled and approval gate preserved.
-- 40: 🟡 CI hardening commit `f10b357bab7cb0bd0916573282c7d3438fb99bf0`; run pending.
-- 41: 🟡 release validation after hardening pending.
+- 40: 🟢 CI hardening commit `f10b357bab7cb0bd0916573282c7d3438fb99bf0`; run `37697436882` passed.
+- 41: 🟢 release validation after hardening passed on run `37697436882`.
 - 42: 🟡 performance telemetry insufficient for p50/p95/p99.
 - 43: 🟡 Android live build/release acceptance pending.
 - 44: 🟢 documentation updated.
