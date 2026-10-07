@@ -108,7 +108,7 @@ Baseline قبل هذه المرحلة: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2
 - Question-bank audit مضاف ضمن release-check.
 - dependency reports تحفظ كـartifacts قصيرة العمر.
 - آخر commit لهذا التحسين: `f10b357bab7cb0bd0916573282c7d3438fb99bf0`.
-- تم التحقق من workflow run `37697436882`: `success`، والـclient/server jobs كلاهما `success`.
+- تم التحقق من workflow runs بنجاح؛ آخر `release-check` هو `37698689920` على HEAD الحالي.
 
 ## 41 — Release Build / Artifact Integrity
 الحالة: 🟢
@@ -161,7 +161,10 @@ Baseline قبل هذه المرحلة: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2
 7. Final release workflow + deployment verification.
 
 ### Current evidence snapshot
-- Latest documented main before this stage: `25ca884d5bbcacf86791d17b3c3dcce5cfaf4ff2`.
+- Latest verified `main`: `37725a7758f979e6cf10c3da83203f0b053da897`.
+- Latest `release-check`: run `37698689920` = `success`.
+- Latest `Secret History Scan`: run `37698689854` = `success`.
+- Latest `API Health Monitor`: run `37698689825` = `success`.
 - CI hardening commit: `f10b357bab7cb0bd0916573282c7d3438fb99bf0`.
 - Verified release-check: run `37697436882`, success.
 - Supabase project: `stwikgqvbadpwbqtfrpf`, ACTIVE_HEALTHY.
