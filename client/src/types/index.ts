@@ -64,22 +64,25 @@ export interface ExamSession {
   modelId: number;
   expiresAt: string;
   answers: Record<number, number>;
-  questions: ExamQuestion[];
+  questions: ExamSessionQuestion[];
 }
 
-export interface ExamQuestion {
+export interface ExamSessionQuestion {
   id: number;
   text: string;
   options: string[];
-  correctAnswerIndex: number;
-  explanation?: string | null;
-  imageUrl?: string;
+  imageUrl?: string | null;
   diagramType?: 'svg' | 'image' | 'interactive' | null;
   diagramUrl?: string | null;
   diagramTitle?: string | null;
   diagramDescription?: string | null;
   audioUrl?: string | null;
   aiImageUrl?: string | null;
+}
+
+export interface ExamQuestion extends ExamSessionQuestion {
+  correctAnswerIndex: number;
+  explanation?: string | null;
 }
 
 export interface ExamReviewQuestion {
@@ -209,7 +212,6 @@ export interface AiImageReviewItem {
   prompt: string;
   negativePrompt: string;
 }
-
 
 export type AiTestRunStatus = 'Pending'|'Processing'|'Succeeded'|'Failed'|'Approved'|'Rejected';
 export interface AiTestRun {
