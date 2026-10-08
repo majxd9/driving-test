@@ -353,3 +353,17 @@
 - Security Advisor: 20 INFO متوقعة لنموذج backend-only.
 - Performance Advisor: 5 unused indexes؛ لا حذف بدون workload evidence أطول.
 - Migration inventory متسق، ولا تغيير schema مطلوب من Task 50.
+
+
+
+## 23. Runtime hardening follow-up — 2026-10-08
+
+بعد استمرار التدقيق حتى المهمة 60، تم إصلاح مجموعة مشاكل runtime قابلة للإصلاح ظهرت في Render:
+- AI queue transactions now run under EF Core retry execution strategy.
+- raw SQL queue claims no longer trigger the EF Core `FirstOrDefault` warning.
+- backend no longer attempts HTTPS redirection behind Render's TLS-terminating edge.
+- unused backend StaticFileMiddleware was removed.
+- Data Protection is explicitly ephemeral/application-scoped because authentication is JWT-based and the current Render service has no persistent disk.
+
+هذه التعديلات لا تغير Exam UI/logic أو Device Binding أو محتوى الأسئلة أو سياسة الصوت/AI.
+الحالة: الكود على `main`، وآخر deployment جديد قيد المعالجة؛ يحتاج فقط live verification النهائي بعد النشر.
