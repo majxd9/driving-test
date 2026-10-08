@@ -751,3 +751,24 @@ Rule remains: do not consider production fully cleared until the live/manual rel
   - `9cfb84ae0b7e8c64a1bbfacc55d1071109158866`
 - Render بدأ نشر commit الإصلاح، لكن وقت هذا التوثيق لم يتم بعد تسجيل نهاية deployment الجديد؛ لذلك لا نعتبر هذا الإصلاح live-verified حتى يظهر deployment ناجحاً وتختفي exception من runtime logs.
 - هذا الخلل لا يتعلق بـAuthLog retention، ولا يغير Exam UI/logic أو Device Binding أو AI approval policy.
+
+
+
+## Runtime Cleanup Addendum — 2026-10-08
+
+During production revalidation after Task 50, the runtime logs exposed additional fixable issues. They were corrected without changing product behavior:
+
+1. AI queue transaction retry compatibility — fixed with EF Core execution strategies.
+2. EF Core raw SQL warning from `FirstOrDefaultAsync` over a `LIMIT 1`/locking query — fixed by materializing the one-row result then selecting in memory.
+3. Render backend `UseHttpsRedirection` warning — removed because Render terminates TLS before the container.
+4. Unused backend `StaticFileMiddleware` warning — removed; frontend owns the bundled static assets.
+5. ASP.NET Data Protection container persistence warning — explicitly switched to ephemeral, application-scoped Data Protection because current authentication is JWT-based and there is no persistent disk.
+
+Latest fix commits:
+- `3739a374b32deed9d501c580a58785564aab839c`
+- `9cfb84ae0b7e8c64a1bbfacc55d1071109158866`
+- `374c33ed6f34704ea08d5fa8a32b1907fce3130a`
+- `2b20c56a4759083841475b7823a090bf75966efb`
+- `5b5182b9bdd076a8f15de805ba99fa62dbd31f65`
+
+The previous AI transaction fix was live-verified. The newest warning-cleanup deployment is still being processed by Render at the time of this update; do not mark the final runtime verification closed until its deployment is Live and post-deploy logs are clean.
