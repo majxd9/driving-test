@@ -76,3 +76,22 @@ No change was made to:
 ## Decision
 
 The project is still not Production-Cleared. The code-level issues discovered in this continuation were fixed and documented; the remaining blockers are evidence/environment gates rather than unaddressed code defects.
+
+
+### Task 18 — Study viewport geometry
+Status: 🟢 code fix completed; live frontend/device visual acceptance remains external.
+
+Root cause found in the current CSS:
+- A late override at the end of `client/src/study-premium.css` forced the image area to fixed heights (210px desktop, 185px mobile), overriding the intended flexible layout.
+- This explained why the earlier responsive change did not visibly solve the reported Study layout.
+
+Fixed:
+- Removed the stale fixed-height override.
+- The image/no-image area now uses the remaining flexible row.
+- Question area remains fixed-height to prevent text reflow.
+- Answer area keeps a bounded fixed-height appropriate for the four-option layout.
+- Mobile and short-height breakpoints have dedicated geometry values.
+- No navigation or Exam layout was changed.
+
+Commit:
+- `d718261b04ff5aebe9222ab2c7bc1e5a52c0a2e`
