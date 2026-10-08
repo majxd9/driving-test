@@ -966,6 +966,8 @@ export default function PracticalInfo() {
   const [flashCount, setFlashCount] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const mobileSheetRef = useRef<HTMLDivElement | null>(null);
+  const mobileSheetPreviousFocusRef = useRef<HTMLElement | null>(null);
   const [oncoming, setOncoming] = useState(true);
   const [sceneFocusActive, setSceneFocusActive] = useState(false);
   const [handleMotionActive, setHandleMotionActive] = useState(false);
@@ -1180,9 +1182,47 @@ export default function PracticalInfo() {
     });
   };
 
+  const closeMobileSheet = useCallback(() => {
+    setMobileSheetOpen(false);
+    window.setTimeout(() => mobileSheetPreviousFocusRef.current?.focus(), 0);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileSheetOpen) return;
+    const sheet = mobileSheetRef.current;
+    if (!sheet) return;
+
+    const focusable = () => Array.from(sheet.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'));
+    focusable()[0]?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeMobileSheet();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = focusable();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [mobileSheetOpen, closeMobileSheet]);
+
   const chooseMain = (key: MainLightKey) => {
     playClick();
     stopHazardSoundLoop();
+    mobileSheetPreviousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setMainLight(key); setSignal(null); setFlashActive(false);
     setMobileSheetOpen(true);
     setOncoming(key === 'high');
@@ -1318,7 +1358,7 @@ export default function PracticalInfo() {
             <div className="safety-note"><b>مهم</b><span>المقبض الفعلي وترتيب الوظائف يختلفان بحسب الشركة والموديل. هذه الصفحة تشرح الفكرة الشائعة للتدريب ولا تستبدل دليل سيارة محددة.</span></div>
           </section>
 
-          {mobileSheetOpen && <div className="mobile-explanation" role="dialog" aria-label="شرح الوظيفة المختارة"><button type="button" aria-label="إغلاق الشرح" onClick={() => setMobileSheetOpen(false)}>×</button><ExplanationCard title={currentTitle} item={currentItem} signal={activeSignal}/></div>}
+          {mobileSheetOpen && <div ref={mobileSheetRef} className="mobile-explanation" role="dialog" aria-modal="true" aria-label="شرح الوظيفة المختارة"><button type="button" aria-label="إغلاق الشرح" onClick={closeMobileSheet}>×</button><ExplanationCard title={currentTitle} item={currentItem} signal={activeSignal}/></div>}
 
           <section id="scenes" className="scenes-section">
             <div className="section-title scenes-title"><div><span className="eyebrow">المشاهد التدريبية</span><h2>10 مشاهد تدريبية تغطي القواعد الأساسية.</h2><p>من الخروج من الدوّار وتغيير المسار إلى العالي والضباب والموضع والغماز والرباعي والضباب الخلفي والتجاوز.</p></div></div>
