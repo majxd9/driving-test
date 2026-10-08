@@ -11,12 +11,16 @@ function SiteGuide() {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const dialogRef = useRef<HTMLElement | null>(null);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
     if (!open) {
-      triggerRef.current?.focus();
+      if (wasOpenRef.current) triggerRef.current?.focus();
+      wasOpenRef.current = false;
       return;
     }
+
+    wasOpenRef.current = true;
 
     const dialog = dialogRef.current;
     if (!dialog) return;
