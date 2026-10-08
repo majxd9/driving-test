@@ -13,11 +13,13 @@ Branch: `main`
 - أصبح مسار الإصدار الموثق هو Git commits عادية إلى `main`.
 
 ## 47 — Container Hardening / Image Provenance
-الحالة: 🟡
+الحالة: 🟢
 - Docker build متعدد المراحل موجود.
 - runtime container يستخدم صورة ASP.NET 8 ويثبت ffmpeg عند build.
-- لم يتم تنفيذ non-root runtime hardening أو pin كامل بالـdigest لصورة base في هذه المرحلة؛ ذلك يتطلب اختبار container كامل قبل اعتماده.
-- لا يوجد تغيير لأن المخاطرة هنا supply-chain/runtime hardening وليست blocker وظيفياً.
+- base images مثبتة بإصدارات patch + digests.
+- runtime يعمل تحت user غير root عبر UID 1654.
+- release-check على HEAD الحالي نجح، وتضمن خطوات Build production Docker image وVerify container is non-root.
+- Render deployment للـhardening commit `a11f6ed8e773833b143bec9692b36dc2f71978c0` نجح ووصل إلى `live`.
 
 ## 48 — HTTP Security Headers / CORS
 الحالة: 🟢 برمجياً
@@ -119,3 +121,11 @@ Branch: `main`
 
 ### External backup baseline revalidated
 Supabase's current documentation recommends logical `supabase db dump` backups for Free-tier projects and notes that database backups do not include Storage objects. This confirms Tasks 51–52 still require a separately executed logical DB backup/restore drill. citeturn970742search1turn970742search3
+
+
+## Verification Update — 2026-10-08
+### Task 47
+- تم التحقق مباشرة من GitHub Actions على HEAD الحالي `6d40f85092076da8dab8bd157c5a36fe9c73ecfd`.
+- release-check run `37699994683` = success.
+- خطوات server تضمنت: .NET Release build، NuGet vulnerability scan، Build production Docker image، Verify container is non-root — وكلها success.
+- Render أكد deployment ناجح للـhardening commit `a11f6ed8e773833b143bec9692b36dc2f71978c0`.
