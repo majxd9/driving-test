@@ -367,3 +367,8 @@
 
 هذه التعديلات لا تغير Exam UI/logic أو Device Binding أو محتوى الأسئلة أو سياسة الصوت/AI.
 الحالة: الكود على `main`، وآخر deployment جديد قيد المعالجة؛ يحتاج فقط live verification النهائي بعد النشر.
+
+
+## Correction — 2026-10-08
+- Render build exposed that `SetApplicationName` is unavailable in the current Data Protection API surface; it was removed.
+- The supported `UseEphemeralDataProtectionProvider()` configuration remains.
