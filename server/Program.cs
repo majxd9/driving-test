@@ -114,7 +114,6 @@ builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = System
 builder.Services.AddAuthorization();
 builder.Services.AddMemoryCache();
 builder.Services.AddDataProtection()
-    .SetApplicationName("DrivingTestApi")
     .UseEphemeralDataProtectionProvider();
 builder.Services.AddSingleton<IClientIpResolver, ClientIpResolver>();
 builder.Services.AddRateLimiter(options =>
