@@ -96,34 +96,39 @@ public sealed class AiTestRunService
 
     public async Task<AiTestRun?> ClaimNextAsync(CancellationToken cancellationToken)
     {
-        await using var transaction =
-            await _db.Database.BeginTransactionAsync(cancellationToken);
+        var strategy = _db.Database.CreateExecutionStrategy();
 
-        var run = await _db.AiTestRuns
-            .FromSqlRaw("""
-                SELECT * FROM "AiTestRuns"
-                WHERE "Status" = 0
-                ORDER BY "CreatedAt" ASC
-                FOR UPDATE SKIP LOCKED
-                LIMIT 1
-                """)
-            .AsTracking()
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (run is null)
+        return await strategy.ExecuteAsync(async () =>
         {
-            await transaction.RollbackAsync(cancellationToken);
-            return null;
-        }
+            await using var transaction =
+                await _db.Database.BeginTransactionAsync(cancellationToken);
 
-        run.Status = AiTestRunStatus.Processing;
-        run.Attempts++;
-        run.StartedAt = DateTime.UtcNow;
-        run.UpdatedAt = DateTime.UtcNow;
+            var run = await _db.AiTestRuns
+                .FromSqlRaw("""
+                    SELECT * FROM "AiTestRuns"
+                    WHERE "Status" = 0
+                    ORDER BY "CreatedAt" ASC
+                    FOR UPDATE SKIP LOCKED
+                    LIMIT 1
+                    """)
+                .AsTracking()
+                .FirstOrDefaultAsync(cancellationToken);
 
-        await _db.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-        return run;
+            if (run is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return null;
+            }
+
+            run.Status = AiTestRunStatus.Processing;
+            run.Attempts++;
+            run.StartedAt = DateTime.UtcNow;
+            run.UpdatedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return run;
+        });
     }
 
     public async Task<AiTestRunView?> GetViewAsync(
