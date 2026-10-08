@@ -103,7 +103,7 @@ public sealed class AiTestRunService
             await using var transaction =
                 await _db.Database.BeginTransactionAsync(cancellationToken);
 
-            var run = await _db.AiTestRuns
+            var runs = await _db.AiTestRuns
                 .FromSqlRaw("""
                     SELECT * FROM "AiTestRuns"
                     WHERE "Status" = 0
@@ -112,7 +112,9 @@ public sealed class AiTestRunService
                     LIMIT 1
                     """)
                 .AsTracking()
-                .FirstOrDefaultAsync(cancellationToken);
+                .ToListAsync(cancellationToken);
+
+            var run = runs.FirstOrDefault();
 
             if (run is null)
             {
