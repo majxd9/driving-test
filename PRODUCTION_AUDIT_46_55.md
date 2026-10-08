@@ -179,3 +179,7 @@ Supabase's current documentation recommends logical `supabase db dump` backups f
 ### Live verification status
 - The previous transaction fix deployment became Live successfully, and the AuthLog retention worker executed successfully with `RetentionDays=90` and `Deleted=0`.
 - The latest warning-cleanup commits are now on `main`; Render has started processing the new deployment chain. Final runtime verification of the newest commit is still pending until that deployment is Live.
+
+
+## Correction — 2026-10-08
+- Render build of the runtime-warning cleanup exposed that `SetApplicationName` is unavailable in the current Data Protection API surface; it was removed. The supported `UseEphemeralDataProtectionProvider()` configuration remains.
