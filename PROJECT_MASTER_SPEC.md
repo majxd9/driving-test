@@ -376,3 +376,16 @@
 ## Correction — 2026-10-08
 - The attempted Data Protection provider override was removed because the current project dependencies do not expose the required provider API. No package was added merely to silence a startup warning.
 - Current JWT authentication remains unchanged and stateless.
+
+
+
+## 24. Final Runtime Hardening Verification — 2026-10-08
+
+تم تثبيت آخر حالة تشغيلية مستقرة:
+- Render deployment `dep-db3igeqjnfac738cu1n0` = **live**.
+- الكود التشغيلي المنشور = commit `66f9021c4696156f25517848380f5ab9d5b4cdf2`.
+- إصلاحات runtime الأخيرة: AI transaction retry strategy، إزالة تحذير EF raw query، إزالة StaticFileMiddleware غير المستخدم، وإزالة HTTPS redirection خلف Render edge.
+- بعد النشر: لا Exceptions runtime، ولا تحذير EF raw query، ولا WebRoot warning، ولا HTTPS redirect warning. تم أيضاً تأكيد AuthLog retention وstartup maintenance.
+- لم تتم إضافة أي حزمة جديدة فقط لإخفاء Data Protection warning؛ المصادقة الحالية JWT stateless، ولم يظهر Data Protection warning في نافذة التحقق الحالية.
+
+المشروع لا يزال Conditional وليس Production-Cleared بسبب بوابات الاختبار الخارجي/اليدوي المذكورة في هذا المستند.
