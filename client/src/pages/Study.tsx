@@ -39,11 +39,9 @@ export default function Study() {
   const activationPromptPendingRef = useRef(false);
   const activationPromptQuestionRef = useRef<string | null>(null);
   const audioModeRef = useRef<'question' | 'enabled-prompt' | null>(null);
-  const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
-  const firstEntryPromptPlayedRef = useRef(false);
   const [failedAiImageId, setFailedAiImageId] = useState<number | null>(null);
   const [adminImageBusy, setAdminImageBusy] = useState<'hide' | 'delete' | null>(null);
   const [adminImageToolsFor, setAdminImageToolsFor] = useState<'original' | 'ai' | null>(null);
@@ -53,8 +51,6 @@ export default function Study() {
 
     let active = true;
 
-    activationPromptPendingRef.current = false;
-    activationPromptQuestionRef.current = null;
     setSignalState('pending');
     setLoading(true);
     setError('');
@@ -169,59 +165,6 @@ export default function Study() {
   }, [currentAudioUrl, nextAudioUrl]);
 
 
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !audioEnabled || !audioReady || !currentAudioUrl) return;
-
-    if (!audio.paused) return;
-
-    void getQuestionAudioSource(currentAudioUrl)
-      .then(source => {
-        if (audio.src !== source) {
-          audio.src = source;
-          audio.preload = 'auto';
-          audio.load();
-        }
-        audio.currentTime = 0;
-        return audio.play();
-      })
-      .then(() => {
-        setAudioPlaying(true);
-        setAudioError(null);
-      })
-      .catch(() => {
-        setAudioPlaying(false);
-        setAudioError('اضغط زر التشغيل لاستئناف الصوت.');
-      });
-  }, [audioEnabled, audioReady, currentAudioUrl]);
-
-  useEffect(() => {
-    if (loading || error || firstEntryPromptPlayedRef.current || !questions.length) return;
-
-    let active = true;
-    const firstQuestion = questions[0];
-    const isVisualCategory = category === 'Ishara' || category === 'Mechanic';
-
-    const playFirstEntryPromptWhenReady = async () => {
-      // Wait for the initial original visual before the first-entry prompt.
-      // This prompt must not block navigation to the training page.
-      if (firstQuestion.imageUrl && (isVisualCategory || shouldShowQuestionImageBeforeAnswer(firstQuestion))) {
-        const imageUrl = resolveQuestionImageUrl(firstQuestion.imageUrl);
-        if (imageUrl) await preloadImage(imageUrl, 'auto');
-      }
-
-      if (!active || firstEntryPromptPlayedRef.current) return;
-      firstEntryPromptPlayedRef.current = true;
-      void playQuestionAudioPrompt('question-audio-first-entry');
-    };
-
-    void playFirstEntryPromptWhenReady();
-
-    return () => {
-      active = false;
-    };
-  }, [loading, error, questions]);
 
   useEffect(() => {
     const nextQuestion = questions[index + 1];
@@ -364,7 +307,6 @@ export default function Study() {
           className={"question-audio-nav__audio play " + (audioPlaying ? "playing" : "")}
           disabled={!currentAudioUrl}
           onClick={() => {
-            setAudioEnabled(true);
             setAudioError(null);
             activationPromptPendingRef.current = true;
             activationPromptQuestionRef.current = currentAudioUrl;
@@ -396,7 +338,6 @@ export default function Study() {
           type="button"
           className="question-audio-nav__audio stop"
           onClick={() => {
-            setAudioEnabled(false);
             setAudioError(null);
             activationPromptPendingRef.current = false;
             activationPromptQuestionRef.current = null;
