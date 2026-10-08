@@ -161,3 +161,21 @@ Supabase's current documentation recommends logical `supabase db dump` backups f
 
 ### Task 55
 🔴 CONDITIONAL — unchanged; production clearance still depends on manual E2E/browser/device, backup/restore, latency evidence, final deployment verification and rollback evidence.
+
+
+
+## Verification Addendum — 2026-10-08 — Runtime cleanup after Tasks 46–55
+
+### Additional fixes found and applied
+- Fixed AI queue transaction retries by executing the transaction inside EF Core's execution strategy:
+  - `server/Services/AiGenerationJobService.cs`
+  - `server/Services/AiTestRunService.cs`
+- Removed EF Core raw-SQL `FirstOrDefault` warnings by materializing the single `FOR UPDATE SKIP LOCKED LIMIT 1` row and selecting in memory.
+- Removed the unused backend `StaticFileMiddleware`; current static sign/mechanic assets are served by the frontend deployment and no server static directory was present.
+- Removed backend `UseHttpsRedirection` because TLS is terminated at Render's edge proxy; this removes the misleading backend HTTPS-port warning.
+- Made ASP.NET Core Data Protection explicitly ephemeral and application-scoped because the service uses stateless JWT authentication and has no persistent disk. This removes the warning about non-persistent/unprotected container key storage.
+- These changes do not modify Exam UI/logic, question content, Device Binding, audio click-to-play, or AI approval policy.
+
+### Live verification status
+- The previous transaction fix deployment became Live successfully, and the AuthLog retention worker executed successfully with `RetentionDays=90` and `Deleted=0`.
+- The latest warning-cleanup commits are now on `main`; Render has started processing the new deployment chain. Final runtime verification of the newest commit is still pending until that deployment is Live.
