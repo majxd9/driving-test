@@ -173,7 +173,6 @@ Supabase's current documentation recommends logical `supabase db dump` backups f
 - Removed EF Core raw-SQL `FirstOrDefault` warnings by materializing the single `FOR UPDATE SKIP LOCKED LIMIT 1` row and selecting in memory.
 - Removed the unused backend `StaticFileMiddleware`; current static sign/mechanic assets are served by the frontend deployment and no server static directory was present.
 - Removed backend `UseHttpsRedirection` because TLS is terminated at Render's edge proxy; this removes the misleading backend HTTPS-port warning.
-- Made ASP.NET Core Data Protection explicitly ephemeral and application-scoped because the service uses stateless JWT authentication and has no persistent disk. This removes the warning about non-persistent/unprotected container key storage.
 - These changes do not modify Exam UI/logic, question content, Device Binding, audio click-to-play, or AI approval policy.
 
 ### Live verification status
@@ -182,9 +181,13 @@ Supabase's current documentation recommends logical `supabase db dump` backups f
 
 
 ## Correction — 2026-10-08
-- Render build of the runtime-warning cleanup exposed that `SetApplicationName` is unavailable in the current Data Protection API surface; it was removed. The supported `UseEphemeralDataProtectionProvider()` configuration remains.
+- Render build of the runtime-warning cleanup exposed that `SetApplicationName` is unavailable in the current Data Protection API surface; it was removed. 
 
 
 ## Correction — 2026-10-08
 - Render build exposed that `SetApplicationName` is unavailable in the current Data Protection API surface; it was removed.
-- The supported `UseEphemeralDataProtectionProvider()` configuration remains.
+
+
+## Correction — 2026-10-08
+- The attempted Data Protection provider override was removed because the current project dependencies do not expose the required provider API. No package was added merely to silence a startup warning.
+- Current JWT authentication remains unchanged and stateless.
