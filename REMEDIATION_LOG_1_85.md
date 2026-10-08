@@ -95,3 +95,18 @@ Fixed:
 
 Commit:
 - `d718261b04ff5aebe9222ab2c7bc1e5a52c0a2e`
+
+
+### Task 27 — PracticalInfo mobile dialog accessibility
+Status: 🟢 code fix completed; real screen-reader/device acceptance remains external.
+
+Fixed in `client/src/pages/PracticalInfo.tsx`:
+- Added modal semantics with `aria-modal="true"`.
+- Added focus trap while the mobile explanation sheet is open.
+- Escape closes the sheet.
+- Focus returns to the element that opened the sheet.
+- No visual redesign and no change to the learning content.
+
+Commits:
+- `309796c9006f3c1973f8c83e8c361c3737533de7`
+- `49d4f79f4648534ec04ea221386078edac21f6ad`
