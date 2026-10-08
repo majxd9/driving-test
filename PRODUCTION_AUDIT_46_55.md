@@ -183,3 +183,8 @@ Supabase's current documentation recommends logical `supabase db dump` backups f
 
 ## Correction — 2026-10-08
 - Render build of the runtime-warning cleanup exposed that `SetApplicationName` is unavailable in the current Data Protection API surface; it was removed. The supported `UseEphemeralDataProtectionProvider()` configuration remains.
+
+
+## Correction — 2026-10-08
+- Render build exposed that `SetApplicationName` is unavailable in the current Data Protection API surface; it was removed.
+- The supported `UseEphemeralDataProtectionProvider()` configuration remains.
