@@ -738,3 +738,16 @@ Rule for future continuation: read this handoff and the two audit files, check c
 - `b21a93f8f1a207db35bf29f4d77e83746181d7cc` — register scheduled retention worker.
 
 Rule remains: do not consider production fully cleared until the live/manual release gates are completed.
+
+
+## Verification Addendum — 2026-10-08 — Runtime finding during Tasks 1–60 revalidation
+
+- أثناء التحقق الحي بعد نشر Task 50 ظهر خطأ runtime في مسارات AI queue التي تستخدم PostgreSQL transaction مع `NpgsqlRetryingExecutionStrategy`.
+- تم إصلاحه باستخدام `DbContext.Database.CreateExecutionStrategy()` حول transaction في:
+  - `server/Services/AiGenerationJobService.cs`
+  - `server/Services/AiTestRunService.cs`
+- commits الإصلاح:
+  - `3739a374b32deed9d501c580a58785564aab839c`
+  - `9cfb84ae0b7e8c64a1bbfacc55d1071109158866`
+- Render بدأ نشر commit الإصلاح، لكن وقت هذا التوثيق لم يتم بعد تسجيل نهاية deployment الجديد؛ لذلك لا نعتبر هذا الإصلاح live-verified حتى يظهر deployment ناجحاً وتختفي exception من runtime logs.
+- هذا الخلل لا يتعلق بـAuthLog retention، ولا يغير Exam UI/logic أو Device Binding أو AI approval policy.
