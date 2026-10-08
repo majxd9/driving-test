@@ -781,3 +781,34 @@ The previous AI transaction fix was live-verified. The newest warning-cleanup de
 ## Correction — 2026-10-08
 - The attempted Data Protection provider override was removed because the current project dependencies do not expose the required provider API. No package was added merely to silence a startup warning.
 - Current JWT authentication remains unchanged and stateless.
+
+
+
+## Final Runtime Verification — 2026-10-08
+
+The runtime-hardening pass is now stable in Render.
+
+### Live evidence
+- Stable deployment: `dep-db3igeqjnfac738cu1n0`
+- Live code commit: `66f9021c4696156f25517848380f5ab9d5b4cdf2`
+- Build/deploy: success/live.
+- Post-deploy logs:
+  - no InvalidOperationException,
+  - no EF raw-query First/FirstOrDefault warning,
+  - no missing WebRootPath warning,
+  - no HTTPS redirect/port warning,
+  - no Data Protection warning in the verification window,
+  - AuthLog retention cleanup confirmed,
+  - startup maintenance confirmed.
+
+### Important continuity note
+GitHub documentation commits after the deployed code commit only updated audit/handoff documents; they did not modify backend code and Render's configured root directory is `server`.
+
+### Remaining gates
+Do not mark the project Production-Cleared until the manual/externally required gates are completed:
+- live Student/Admin/Device E2E and tampering,
+- browser CSRF/session/replay,
+- real PostgreSQL backup + restore,
+- controlled rollback drill,
+- reliable production latency measurements,
+- mobile/browser/accessibility acceptance.
