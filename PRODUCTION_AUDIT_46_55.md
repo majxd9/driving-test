@@ -129,3 +129,35 @@ Supabase's current documentation recommends logical `supabase db dump` backups f
 - release-check run `37699994683` = success.
 - خطوات server تضمنت: .NET Release build، NuGet vulnerability scan، Build production Docker image، Verify container is non-root — وكلها success.
 - Render أكد deployment ناجح للـhardening commit `a11f6ed8e773833b143bec9692b36dc2f71978c0`.
+
+
+## Verification Update — 2026-10-08 — Tasks 46–55
+
+### Revalidation before continuing
+- Tasks 46–49 were rechecked against the current repository state and existing production evidence.
+- Task 46 documentation/configuration drift remains 🟢.
+- Task 47 container hardening remains 🟢 by the previously verified release-check and Render deployment evidence; the current code change is still awaiting final live deployment verification.
+- Task 48 security headers/CORS remains 🟢 programmatically; browser acceptance remains part of the manual gate in Task 32.
+- Task 49 authentication/session lifecycle remains 🟡 because replay/concurrent-session/device/browser checks require live authenticated E2E.
+
+### Task 50 — AuthLog retention / data minimization
+الحالة: 🟢 implementation complete; live-runtime verification in progress
+- Approved retention policy: **90 days** for AuthLogs only.
+- Added `server/Services/AuthLogRetentionService.cs` as an independent `BackgroundService`.
+- Cleanup runs once after service startup and then every 24 hours while the Render instance is running.
+- Deletion is bounded in batches of 5,000 IDs and uses EF Core `ExecuteDeleteAsync`; old rows are not loaded into application memory.
+- Retention can be overridden safely with `AuthLogs__RetentionDays`; valid range is 7–3650 days, otherwise the service falls back to 90 days.
+- Cleanup errors are logged and do not terminate the API.
+- Current database verification: 385 AuthLogs; oldest `2026-09-07 11:03:48.348184+00`; newest `2026-10-07 11:26:17.88123+00`; rows older than 90 days = 0. لذلك لا يوجد حذف مطلوب حالياً.
+- Render successfully compiled/published the new service; final live deployment and runtime cleanup log verification remain to be confirmed.
+
+### Tasks 51–53
+- Task 51 Backup Automation: 🟡 — source snapshot remains healthy, but this is not a PostgreSQL backup. A real logical DB export still requires a secure backup destination/credential path that is not available through the current connectors.
+- Task 52 Disaster Recovery/Restore: 🟡 — real restore drill is still required; no production mutation was performed merely for testing.
+- Task 53 Rollback/Release Recovery: 🟡 — runbook is complete and reviewed; no unsafe production rollback drill was executed.
+
+### Task 54
+🟢 monitoring/alerting baseline remains valid: Render health check + GitHub health monitor.
+
+### Task 55
+🔴 CONDITIONAL — unchanged; production clearance still depends on manual E2E/browser/device, backup/restore, latency evidence, final deployment verification and rollback evidence.
