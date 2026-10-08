@@ -399,3 +399,5 @@
 - Task 85: DB size = 194.12 MiB، connections = 11/60، وlatency percentiles غير مثبتة تاريخياً.
 - Task 86: Production Gate ما زال CONDITIONAL بسبب live E2E، browser session/CSRF replay، backup/restore، latency، mobile/browser/accessibility، وrollback drill.
 - Render live code: `66f9021c4696156f25517848380f5ab9d5b4cdf2`; main أحدث بستة commits docs-only.
+
+- Remediation log for post-audit fixes: `REMEDIATION_LOG_1_85.md` (latest code-level fixes affecting Tasks 20/23/49/6).
