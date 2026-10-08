@@ -110,3 +110,34 @@ Fixed in `client/src/pages/PracticalInfo.tsx`:
 Commits:
 - `309796c9006f3c1973f8c83e8c361c3737533de7`
 - `49d4f79f4648534ec04ea221386078edac21f6ad`
+
+
+## Deployment verification — 2026-10-08
+
+### Frontend
+Cloudflare Pages production deployment:
+- Project: `driving-test`
+- Canonical successful deployment: `ceb81bf4-6213-43f1-b697-7d403b16e546`
+- Source commit: `527a9e09adb8db3bff4850924c4a2f9a2de90175`
+- Build command: `npm run build`
+- Build/deploy stages: all success.
+- This deployment includes the SiteGuide focus fix, Study audio click-to-play fix, Study flexible image geometry fix, and PracticalInfo dialog focus fix because those commits are ancestors of the deployed commit.
+
+A later documentation commit `82fc5760826fadc0fd3412003e59240c37e94431` triggered another Pages deployment which is still queued; it does not introduce additional application code changes.
+
+### Backend
+Render remains:
+- Live deployment: `dep-db3igeqjnfac738cu1n0`
+- Live backend commit: `66f9021c4696156f25517848380f5ab9d5b4cdf2`
+- Health check: `/api/healthz`
+- Service: one Free instance, Docker, root `./server`.
+
+### Performance evidence recheck
+Render metrics over the inspected 24-hour window returned CPU and memory samples but no HTTP request-count or HTTP latency data, including p50/p95/p99. Therefore production latency remains unproven rather than guessed.
+
+## Current closure state of previously incomplete code items
+
+- Task 18 Study viewport geometry: code-level issue fixed; production frontend build/deploy verified. Real-device visual acceptance remains open.
+- Task 20 Site Guide focus handling: code-level accessibility gap fixed; production frontend build/deploy verified. Screen-reader acceptance remains open.
+- Task 23 Study audio flow: accidental navigation/first-entry autoplay removed; production frontend build/deploy verified. Real-device audio acceptance remains open.
+- Task 27 PracticalInfo mobile dialog focus: code-level accessibility gap fixed; production frontend build/deploy verified. Real-device/screen-reader acceptance remains open.
