@@ -331,3 +331,25 @@
 - AI images لا تنشر قبل approval.
 - AI generation لا يبدأ من Study/Exam.
 - لا خدمات مدفوعة جديدة.
+
+
+## 22. Production Audit Revalidation — 2026-10-08
+
+تمت إعادة التحقق من المهام 1–49 قدر الإمكان آلياً قبل الاستمرار إلى 60:
+- البنود البرمجية والأمنية وقاعدة البيانات وCI التي يمكن إثباتها من GitHub/Supabase/Render بقيت ضمن حالات الإغلاق السابقة.
+- البنود التي تتطلب حساباً مصادقاً أو متصفحاً/جهازاً فعلياً بقيت عمداً ضمن الاختبار اليدوي المجمع: CSRF/session replay، Student/Admin/Device E2E، mobile/browser/accessibility، وبعض اختبارات performance/rollback.
+- آخر release-check موثق قبل إضافة retention كان run `37730287662`، وكل من client/server نجحا.
+
+### Task 50 — AuthLog retention
+- سياسة الاحتفاظ المعتمدة: 90 يوماً لسجلات `AuthLogs` فقط.
+- تمت إضافة `AuthLogRetentionService` كعامل خلفي مستقل، ينفذ تنظيفاً عند startup ثم كل 24 ساعة.
+- الحذف يتم على دفعات، ولا يتم تحميل السجلات القديمة إلى الذاكرة.
+- إعداد قابل للتجاوز عبر `AuthLogs__RetentionDays` ضمن نطاق 7–3650 يوماً، مع fallback إلى 90 يوماً عند قيمة غير صالحة.
+- قياس قاعدة البيانات وقت التنفيذ: 385 سجلاً، و0 سجلات أقدم من 90 يوماً.
+
+### Tasks 51–60
+- Backup/restore الحقيقي ما زال يحتاج مسار DB آمن وهدف restore منفصل.
+- Rollback drill الحقيقي لم يُنفذ على الإنتاج بدون incident.
+- Security Advisor: 20 INFO متوقعة لنموذج backend-only.
+- Performance Advisor: 5 unused indexes؛ لا حذف بدون workload evidence أطول.
+- Migration inventory متسق، ولا تغيير schema مطلوب من Task 50.
