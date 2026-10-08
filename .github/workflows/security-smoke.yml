@@ -2,6 +2,9 @@ name: Security Smoke
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/security-smoke.yml"
   schedule:
     - cron: "30 3 * * 1"
 
