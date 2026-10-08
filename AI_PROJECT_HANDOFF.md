@@ -713,3 +713,28 @@ CI evidence on 9b4b594:
 - `RELEASE_ROLLBACK_RUNBOOK.md`
 
 Rule for future continuation: read this handoff and the two audit files, check current `main` HEAD, then continue only the still-open evidence items. Do not reopen settled decisions.
+
+
+## Production Audit Update — 2026-10-08 — Revalidation through Task 60
+
+### Revalidated
+- Tasks 1–49: تمت إعادة مراجعة الأدلة الآلية المتاحة. لا توجد إعادة فتح للقرارات المجمدة. اختبارات browser/device/authenticated E2E بقيت يدوية.
+- Task 50: مكتمل من ناحية التنفيذ — AuthLog retention = 90 days عبر `AuthLogRetentionService`، startup + daily cleanup، batch deletion، configurable via `AuthLogs__RetentionDays`.
+- Task 56: 🟢 token least privilege.
+- Task 57: 🟢 dependency automation.
+- Task 58: 🟢 security advisor، مع 20 INFO RLS-without-policy متوقعة.
+- Task 59: 🟡 unused indexes؛ لا حذف حالياً.
+- Task 60: 🟢 migration/schema drift.
+
+### Still intentionally open
+- Tasks 32/49: live browser CSRF/session/replay/device verification.
+- Tasks 35/51/52: real PostgreSQL backup + restore drill.
+- Task 53: controlled rollback drill.
+- Task 42/63: reliable production latency p50/p95/p99.
+- Manual Student/Admin/Device E2E + mobile/browser/accessibility acceptance.
+
+### Current code commits for Task 50
+- `d02e0974e0b9a87bfc5a9e36852ca6adad57623d` — add AuthLog retention service.
+- `b21a93f8f1a207db35bf29f4d77e83746181d7cc` — register scheduled retention worker.
+
+Rule remains: do not consider production fully cleared until the live/manual release gates are completed.
