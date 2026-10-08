@@ -389,3 +389,13 @@
 - لم تتم إضافة أي حزمة جديدة فقط لإخفاء Data Protection warning؛ المصادقة الحالية JWT stateless، ولم يظهر Data Protection warning في نافذة التحقق الحالية.
 
 المشروع لا يزال Conditional وليس Production-Cleared بسبب بوابات الاختبار الخارجي/اليدوي المذكورة في هذا المستند.
+
+
+## 25. Production Audit Tasks 66–86 — 2026-10-08
+- المرجع التفصيلي: `PRODUCTION_AUDIT_66_86.md`.
+- المهام 66–82: الأدلة البرمجية الرئيسية مثبتة، ولم يظهر patch آمن جديد مطلوب.
+- Task 83: source backup workflow موجود؛ ليس PostgreSQL backup.
+- Task 84: DB backup + restore drill ما زال blocker.
+- Task 85: DB size = 194.12 MiB، connections = 11/60، وlatency percentiles غير مثبتة تاريخياً.
+- Task 86: Production Gate ما زال CONDITIONAL بسبب live E2E، browser session/CSRF replay، backup/restore، latency، mobile/browser/accessibility، وrollback drill.
+- Render live code: `66f9021c4696156f25517848380f5ab9d5b4cdf2`; main أحدث بستة commits docs-only.
