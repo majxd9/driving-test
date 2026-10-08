@@ -776,4 +776,8 @@ The previous AI transaction fix was live-verified. The newest warning-cleanup de
 
 ## Correction — 2026-10-08
 - Render build exposed that `SetApplicationName` is unavailable in the current Data Protection API surface; it was removed.
-- The supported `UseEphemeralDataProtectionProvider()` configuration remains.
+
+
+## Correction — 2026-10-08
+- The attempted Data Protection provider override was removed because the current project dependencies do not expose the required provider API. No package was added merely to silence a startup warning.
+- Current JWT authentication remains unchanged and stateless.
