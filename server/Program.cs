@@ -140,6 +140,7 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<IAuthLogQueue, AuthLogQueue>();
 builder.Services.AddHostedService<AuthLogWriter>();
+builder.Services.AddHostedService<AuthLogRetentionService>();
 builder.Services.AddHostedService<StartupMaintenanceService>();
 builder.Services.AddScoped<AiGenerationJobService>();
 builder.Services.AddScoped<IGeminiService, GeminiService>();
