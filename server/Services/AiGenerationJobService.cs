@@ -1130,37 +1130,42 @@ public sealed class AiGenerationJobService
             control.ImageEnabled ? "TRUE" : "FALSE",
             (!string.Equals(control.ImageProvider, "none", StringComparison.OrdinalIgnoreCase) ? "TRUE" : "FALSE"));
 
-        await using var transaction =
-            await _db.Database.BeginTransactionAsync(cancellationToken);
+        var strategy = _db.Database.CreateExecutionStrategy();
 
-        var job = await _db.AiGenerationJobs
-            .FromSqlRaw(sql)
-            .AsTracking()
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (job is null)
+        return await strategy.ExecuteAsync(async () =>
         {
-            await transaction.RollbackAsync(cancellationToken);
-            return null;
-        }
+            await using var transaction =
+                await _db.Database.BeginTransactionAsync(cancellationToken);
 
-        var now = DateTime.UtcNow;
+            var job = await _db.AiGenerationJobs
+                .FromSqlRaw(sql)
+                .AsTracking()
+                .FirstOrDefaultAsync(cancellationToken);
 
-        job.Status = AiGenerationJobStatus.Processing;
-        job.Attempts++;
-        job.UpdatedAt = now;
-        job.StartedAt = now;
-        var lockMinutes = Math.Clamp(
-            _configuration.GetValue("AI_JOB_LOCK_MINUTES", 60),
-            5,
-            240);
+            if (job is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return null;
+            }
 
-        job.LockedUntil = now.AddMinutes(lockMinutes);
+            var now = DateTime.UtcNow;
 
-        await _db.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+            job.Status = AiGenerationJobStatus.Processing;
+            job.Attempts++;
+            job.UpdatedAt = now;
+            job.StartedAt = now;
+            var lockMinutes = Math.Clamp(
+                _configuration.GetValue("AI_JOB_LOCK_MINUTES", 60),
+                5,
+                240);
 
-        return job;
+            job.LockedUntil = now.AddMinutes(lockMinutes);
+
+            await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            return job;
+        });
     }
 
     public static int BackoffSeconds(int attempts) =>
