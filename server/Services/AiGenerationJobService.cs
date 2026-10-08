@@ -1137,10 +1137,12 @@ public sealed class AiGenerationJobService
             await using var transaction =
                 await _db.Database.BeginTransactionAsync(cancellationToken);
 
-            var job = await _db.AiGenerationJobs
+            var jobs = await _db.AiGenerationJobs
                 .FromSqlRaw(sql)
                 .AsTracking()
-                .FirstOrDefaultAsync(cancellationToken);
+                .ToListAsync(cancellationToken);
+
+            var job = jobs.FirstOrDefault();
 
             if (job is null)
             {
