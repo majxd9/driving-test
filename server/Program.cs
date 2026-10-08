@@ -113,6 +113,9 @@ builder.Services.Configure<BrotliCompressionProviderOptions>(o => o.Level = Syst
 builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = System.IO.Compression.CompressionLevel.Fastest);
 builder.Services.AddAuthorization();
 builder.Services.AddMemoryCache();
+builder.Services.AddDataProtection()
+    .SetApplicationName("DrivingTestApi")
+    .UseEphemeralDataProtectionProvider();
 builder.Services.AddSingleton<IClientIpResolver, ClientIpResolver>();
 builder.Services.AddRateLimiter(options =>
 {
@@ -426,19 +429,10 @@ app.Use(async (context, next) =>
 // لا نوقف جاهزية الـAPI بعمليات seed/repair أو قراءة عدد الأسئلة.
 // هذه الأعمال تُنفذ في الخلفية بعد بدء استقبال الطلبات.
 
-app.UseHttpsRedirection();
+// TLS is terminated by Render's edge proxy; the app itself receives proxied HTTP.
 app.UseRouting();
 app.UseRateLimiter();
 app.UseResponseCompression();
-app.UseStaticFiles(new StaticFileOptions
-{
-    OnPrepareResponse = context =>
-    {
-        var path = context.Context.Request.Path.Value ?? string.Empty;
-        if (path.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/signs/", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/mechanic/", StringComparison.OrdinalIgnoreCase))
-            context.Context.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
-    }
-});
 app.UseCors("Frontend");
 app.UseAuthentication();
 
