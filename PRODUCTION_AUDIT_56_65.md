@@ -148,3 +148,15 @@ Commit: `d2d77a2e28b338307fc660c6f4cdba4255660145`
 - `pg_stat_user_indexes` أكد `idx_scan=0` للفهرس الخمسة نفسها، لذلك لا يوجد أساس آمن لحذفها الآن.
 ### Task 63
 - Render metrics للفترة المفحوصة أعادت HTTP latency/request series فارغة؛ p50/p95/p99 ما زالت غير قابلة للإثبات.
+
+
+## Verification Update — 2026-10-08 — Tasks 56–60
+
+- Task 56 — GitHub Actions token least privilege: 🟢. `release-check.yml`, `secret-scan.yml`, and `health-monitor.yml` use `contents: read` only.
+- Task 57 — Dependency automation: 🟢. Dependabot weekly plus runtime dependency gates remain active. Latest verified release-check run `37730287662` completed successfully for client and server, including NuGet vulnerability scan and Docker/non-root checks, on the pre-retention documentation snapshot.
+- Task 58 — Database Security Advisor: 🟢 with known INFO note. Recheck still shows 20 `rls_enabled_no_policy` INFO findings; no public client policies were added because the application uses backend/server-side access.
+- Task 59 — Database Performance Advisor: 🟡. Recheck still shows 5 unused-index notices. No index was deleted; current evidence does not justify schema changes without longer workload evidence.
+- Task 60 — Migration/schema drift: 🟢. Supabase migration inventory currently contains `20261005155602_repair_audio_current_hashes`; no additional schema migration was needed for the AuthLog retention worker because it uses the existing Timestamp column and does not change DB schema.
+
+### Current boundary at Task 60
+The automatable evidence for Tasks 56–60 is revalidated. Tasks 51–53 remain release gates requiring a real backup/restore or controlled rollback exercise; Tasks 61–65 continue from the previously documented state.
