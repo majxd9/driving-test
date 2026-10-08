@@ -191,3 +191,39 @@ Supabase's current documentation recommends logical `supabase db dump` backups f
 ## Correction — 2026-10-08
 - The attempted Data Protection provider override was removed because the current project dependencies do not expose the required provider API. No package was added merely to silence a startup warning.
 - Current JWT authentication remains unchanged and stateless.
+
+
+
+## Final Verification — 2026-10-08 — Runtime hardening
+
+### Stable deployment
+- Render stable deployment: `dep-db3igeqjnfac738cu1n0`
+- Deployed code commit: `66f9021c4696156f25517848380f5ab9d5b4cdf2`
+- Render status: **live**
+- Build and deploy completed successfully.
+
+### Post-deploy runtime verification
+From the live instance after deployment:
+- `InvalidOperationException`: 0 matches.
+- EF Core `First/FirstOrDefault` raw-query warning: 0 matches.
+- `WebRootPath was not found`: 0 matches.
+- HTTPS redirect/port warning: 0 matches.
+- Data Protection warning: 0 matches in the post-deploy log window.
+- `AuthLog retention cleanup completed`: confirmed, RetentionDays=90, Deleted=0.
+- `Background startup maintenance completed`: confirmed.
+
+### Final code changes verified
+- AuthLog retention worker: 90 days, batch cleanup.
+- AI queue/test transactions use EF execution strategy correctly.
+- Raw SQL queue claims no longer trigger the EF `FirstOrDefault` warning.
+- Unused backend StaticFileMiddleware removed; frontend remains the owner of bundled static assets.
+- Backend HTTPS redirection removed because Render terminates TLS at the edge.
+
+### Data Protection decision
+- No new Data Protection package was added only to suppress the earlier container warning.
+- The attempted unsupported provider configuration was reverted after Render build verification.
+- Current authentication is stateless JWT in the existing HttpOnly/Secure cookie flow, and no direct Data Protection API usage was found in the application code.
+- No Data Protection warning appeared in the current stable deployment's post-startup verification window.
+
+### Task 55 impact
+Runtime hardening findings from this pass are resolved. The project is still **not Production-Cleared** because the remaining release gates are external/manual: live authenticated E2E, browser CSRF/session replay, real PostgreSQL backup+restore, rollback drill, reliable p50/p95/p99, and mobile/browser/accessibility acceptance.
