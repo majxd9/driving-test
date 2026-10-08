@@ -772,3 +772,8 @@ Latest fix commits:
 - `5b5182b9bdd076a8f15de805ba99fa62dbd31f65`
 
 The previous AI transaction fix was live-verified. The newest warning-cleanup deployment is still being processed by Render at the time of this update; do not mark the final runtime verification closed until its deployment is Live and post-deploy logs are clean.
+
+
+## Correction — 2026-10-08
+- Render build exposed that `SetApplicationName` is unavailable in the current Data Protection API surface; it was removed.
+- The supported `UseEphemeralDataProtectionProvider()` configuration remains.
