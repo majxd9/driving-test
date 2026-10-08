@@ -121,9 +121,11 @@ Commit: `d2d77a2e28b338307fc660c6f4cdba4255660145`
 - لا نعتبر القياس مغلقاً بمجرد health checks ناجحة؛ يلزم تاريخ latency حقيقي متعدد العينات.
 
 ### Task 64 — CI / Release Regression Gate
-الحالة: 🟡 مؤقتاً
-- أضيف Docker build + non-root assertion إلى release-check.
-- يلزم نجاح run مرتبط بأحدث HEAD قبل إعادة الحالة إلى 🟢.
+الحالة: 🟢
+- release-check run `37699994683` مرتبط مباشرة بـHEAD الحالي `6d40f85092076da8dab8bd157c5a36fe9c73ecfd`.
+- النتيجة: `success`.
+- server/client jobs كلاهما نجحا، بما فيها Docker build وnon-root assertion.
+- لم يحدث تغيير في application behavior نتيجة هذا التحقق.
 
 ### Tasks 51–52 / Backup + Restore
 الحالة: 🟡
@@ -133,3 +135,16 @@ Commit: `d2d77a2e28b338307fc660c6f4cdba4255660145`
 ### Task 65 — Extended Production Gate
 الحالة: 🔴 CONDITIONAL
 يبقى كما هو إلى حين إغلاق الأدلة الحية: E2E، CSRF/session browser، DB backup/restore، latency، mobile/browser/accessibility، deployment verification، وrollback drill.
+
+
+## Verification Update — 2026-10-08
+### Task 64
+- HEAD الحالي: `6d40f85092076da8dab8bd157c5a36fe9c73ecfd`.
+- release-check run: `37699994683` — success.
+- jobs: client = success، server = success.
+- server steps: Docker build = success، non-root verification = success.
+### Task 59
+- إعادة فحص Supabase Performance Advisor أبقت 5 unused-index notices.
+- `pg_stat_user_indexes` أكد `idx_scan=0` للفهرس الخمسة نفسها، لذلك لا يوجد أساس آمن لحذفها الآن.
+### Task 63
+- Render metrics للفترة المفحوصة أعادت HTTP latency/request series فارغة؛ p50/p95/p99 ما زالت غير قابلة للإثبات.
