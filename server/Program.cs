@@ -113,8 +113,6 @@ builder.Services.Configure<BrotliCompressionProviderOptions>(o => o.Level = Syst
 builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = System.IO.Compression.CompressionLevel.Fastest);
 builder.Services.AddAuthorization();
 builder.Services.AddMemoryCache();
-builder.Services.AddDataProtection()
-    .UseEphemeralDataProtectionProvider();
 builder.Services.AddSingleton<IClientIpResolver, ClientIpResolver>();
 builder.Services.AddRateLimiter(options =>
 {
