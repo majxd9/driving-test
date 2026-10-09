@@ -1,4 +1,4 @@
-import { useEffect, useState, FormEvent, CSSProperties, lazy, Suspense } from 'react';
+import { useEffect, useState, FormEvent, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
@@ -7,8 +7,6 @@ import OptimizedImage from '../components/OptimizedImage';
 import SiteGuide from '../components/SiteGuide';
 import SpiritLights from '../components/SpiritLights';
 import SpiritHorn from '../components/SpiritHorn';
-
-const InteractiveNebulaShader = lazy(() => import('../components/ui/liquid-shader'));
 
 const SAMPLE_QUESTIONS = [
   { text: 'ما معنى هذه الإشارة؟', imageUrl: '/signs/sign_03.webp', options: ['منحدر خطر','طريق ضيق من جهتين','طريق زلقة','منعطف مزدوج، الأول باتجاه اليسار'], correct: 3, explanation: 'تحذّر الإشارة من منعطفين متتاليين، الأول باتجاه اليسار.' },
@@ -65,7 +63,6 @@ export default function Login() {
   const carMoving = typed > 0 && !loginSuccess;
 
   return <div className={`login-v2 ${lightsOn ? "login-lights-on" : ""}`} dir="rtl">
-    <Suspense fallback={null}><InteractiveNebulaShader className="login-nebula-bg" /></Suspense>
     <div className="login-v2-glow one"/><div className="login-v2-glow two"/>
     <main className="login-v2-wrap">
       <section className="login-v2-showcase">
