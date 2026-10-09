@@ -27,4 +27,5 @@
   Cache-Control: public, max-age=86400
 
 /car-explorer/challenger-1970.glb.gzdata
+  Content-Encoding: gzip
   Cache-Control: public, max-age=86400
