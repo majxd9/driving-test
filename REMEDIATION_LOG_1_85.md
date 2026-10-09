@@ -202,3 +202,15 @@ Still not safely closable with the available evidence: authenticated Student/Adm
 - Render logs contained three PostgreSQL connection errors with no HTTP request correlation. Npgsql transient retry is already configured; root cause for the original student-side error is not proven.
 - Latest release-check passed; latest Secret History Scan flagged Cloudflare's public deployment UUID as a `cloudflare-api-key` false positive. The UUID was removed from the updated continuity lines; final closure depends on the new scan result.
 - Remaining manual gates are gathered in Task 99 of `PRODUCTION_AUDIT_87_100.md`. Overall release gate remains CONDITIONAL.
+
+## Authoritative revalidation after PR #78 — Tasks 1–100 — 2026-10-09
+
+File name retained for links; latest all-task register: PRODUCTION_AUDIT_1_100_REVALIDATION.md.
+
+- Latest code/UI baseline reviewed: f2ec2ce46451829877961fe29ae6ea1e0c0d6d6e. PR #78 changes the Home/Study/Exam presentation only; no scoring/API/database change was declared in its PR description. Manual UI acceptance is required against this current production frontend.
+- Current release-check 37910063018, Gitleaks scan 37910062975, and Health Monitor 37910063012 passed. Cloudflare production deployment for f2ec2ce is success.
+- Current live data: 397 valid questions, 397 non-empty QuestionAudios, 305 AI image rows (298 non-empty), reviews 273 pending / 25 approved / 7 rejected, October AiGenerationUsage=709, DB ~206 MB, connections 24/60, active ExamAttempts=0, expired-incomplete=1.
+- Integrity: invalid question core=0; orphan audio/images/reviews/jobs=0; image header errors=0; review/image content-hash mismatches=0; duplicate image hash groups=0; Approved image empty=0; AuthLogs older than 90 days=0.
+- RLS 20/20 public tables enabled; direct grants to anon/authenticated=0. Security Advisor has 20 INFO findings and Performance Advisor 3 unused-index INFO findings; none were silenced or auto-deleted.
+- npm full development audit has 7 current findings (5 High, 2 Moderate, 0 Critical). Runtime-only npm audit passes; the full development tree is not yet fully clean.
+- Overall release decision stays NOT RELEASE-READY / CONDITIONAL until the master audit's manual gates and post-checks finish.

@@ -428,3 +428,12 @@
 - الإصدار البرمجي على commit التطبيق السابق اجتاز release-check. فشل Secret History Scan بسبب UUID علني لتشغيل Cloudflare طابق قاعدة cloudflare-api-key؛ تم حذف UUID من خطوط التوثيق المتأثرة، ويجب اعتماد نتيجة إعادة الفحص بعد هذا التحديث.
 - Performance p50/p95/p99 غير قابلة للإثبات لأن سلسلة HTTP latency لا تُرجع بيانات. فحص الاعتماديات التشغيلية ينجح؛ شجرة dev dependency ما زالت بها نتائج مفتوحة.
 - Task 100: Production-Cleared لم يُعلن. تبقى بوابة الإصدار مشروطة إلى أن تُغلق المهام اليدوية المحددة في Task 99.
+
+## 29. Authoritative task-by-task revalidation — 2026-10-09
+
+Latest master audit: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It includes one row for every Task 1–100, a live Supabase snapshot, current CI links, and M1–M9 manual release gates.
+
+- Current main before this doc-only checkpoint: f2ec2ce46451829877961fe29ae6ea1e0c0d6d6e; revalidation report commit: 75d6f6087c5a6e1d7b5bb07bbefa235a5ae1af5f.
+- Current release-check 37910063018, Secret History Scan 37910062975 and API Health Monitor 37910063012 passed. Cloudflare production deploy for frontend commit f2ec2ce succeeded.
+- Latest DB snapshot: 397 valid questions, 397 non-empty audios, 273 pending / 25 approved / 7 rejected AI image reviews, usage counter 709, DB ~206 MB, connections 24/60, 20/20 public tables RLS-enabled, direct grants to anon/authenticated = 0.
+- Do not mark the project Production-Cleared until M1–M9 and the final checks in the master report are closed with evidence.

@@ -4,6 +4,8 @@
 > اقرأه قبل أي تغيير، ثم ارجع إلى `PROJECT_MASTER_SPEC.md` للتفاصيل الأوسع.
 >
 > آخر تحديث موثق: 2026-10-09
+> **المصدر الحالي لتدقيق الإنتاج:** [PRODUCTION_AUDIT_1_100_REVALIDATION.md](PRODUCTION_AUDIT_1_100_REVALIDATION.md).
+> هذا التقرير يحتوي الحالة الأحدث لكل مهمة 1–100 وقائمة الإغلاق اليدوية. الأعداد والنتائج الأقدم أدناه تاريخية، ولا يجوز استخدامها لإعلان Production-Cleared.
 
 ---
 
@@ -867,3 +869,17 @@ The CSRF/CORS smoke test is now evidenced as passing from GitHub-hosted CI; auth
 - Render سجّل ثلاثة أخطاء اتصال DB بلا request log يربطها بخطأ العميل. تم التأكد من وجود retry في الكود؛ لا ندعي أن سبب خطأ الطالب حُسم.
 - فشل Secret History Scan على التوثيق السابق بسبب false positive لمعرّف نشر Cloudflare العام؛ حُذف UUID من السطرين المتأثرين. لا يعتبر ماسح الأسرار مغلقاً حتى ينجح تشغيله الجديد.
 - Production Gate لا يزال CONDITIONAL. الأعمال التي تحتاج حسابات، أجهزة، restore أو rollback مجمعّة في Task 99 من `PRODUCTION_AUDIT_87_100.md`.
+
+---
+
+## 20. Latest authoritative revalidation — Tasks 1–100 — 2026-10-09
+
+Read first: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It supersedes older task status/count snapshots.
+
+- Current main checked: 75d6f6087c5a6e1d7b5bb07bbefa235a5ae1af5f (documentation-only revalidation commit, parent application baseline f2ec2ce46451829877961fe29ae6ea1e0c0d6d6e).
+- Frontend baseline in production: Cloudflare Pages reports the f2ec2ce frontend commit as successful. PR #78 changed Home/Study/Exam presentation, so visual and device acceptance is open again.
+- Current CI on f2ec2ce: release-check 37910063018, Secret History Scan 37910062975, and API Health Monitor 37910063012 all passed.
+- Supabase live counts at 2026-10-09 09:39 UTC: 397 Questions, 397 non-empty QuestionAudios, 305 AI image rows / 298 non-empty, 273 pending / 25 approved / 7 rejected, October AI usage counter 709, DB ~206 MB, connections 24/60, RLS enabled on 20 public tables and zero direct grants to anon/authenticated.
+- Image generation remains disabled. The effective AI monthly limit is not confirmed; do not change provider, queue, quota, or production configuration without a recorded decision.
+- Render deploy/logs/metrics were not queried in this revalidation because the owner must confirm the target workspace named My Workspace first.
+- The project is NOT RELEASE-READY / CONDITIONAL until the manual gates and final automated release verification in the master audit are complete.

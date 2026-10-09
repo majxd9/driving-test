@@ -116,3 +116,15 @@
 - public base tables: 20; RLS disabled: 0; direct grants to anon/authenticated: 0.
 - AI controls: Audio enabled / Image disabled; October usage counter: 704 (must not be read as paid requests without verifying the effective provider and configured limit).
 - Render recorded three DB connection errors; their association with the user's former client error is unconfirmed.
+
+---
+
+## Latest live recheck — 2026-10-09 09:39 UTC
+
+Use PRODUCTION_AUDIT_1_100_REVALIDATION.md as the current authoritative status across all 100 tasks. The live snapshot in this file is now historical where counts differ.
+
+- main application baseline: f2ec2ce46451829877961fe29ae6ea1e0c0d6d6e; current docs audit commit parent is this baseline.
+- CI on baseline: release-check 37910063018 success, Secret History Scan 37910062975 success, API Health Monitor 37910063012 success.
+- Current database: 397 questions; 397 audios non-empty; AI images 305 / 298 non-empty; reviews 273 Pending / 25 Approved / 7 Rejected; October usage 709; size 206,072,979 bytes; connections 24/60.
+- Quality checks: invalid question core 0; option count correct 397/397; orphan media/reviews/jobs 0; no duplicate image hash groups or review/image hash mismatch; no approved empty images.
+- Current release status remains CONDITIONAL. Manual release tasks and exact closure tests live in M1–M9 of the all-task master report.
