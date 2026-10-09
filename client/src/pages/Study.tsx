@@ -46,6 +46,7 @@ export default function Study() {
   const [showDiagram, setShowDiagram] = useState(true);
   const [introAudioPlaying, setIntroAudioPlaying] = useState(false);
   const [introAudioMessage, setIntroAudioMessage] = useState<string | null>(null);
+  const welcomePromptAttemptedRef = useRef(false);
   const [adminImageBusy, setAdminImageBusy] = useState<'hide' | 'delete' | null>(null);
   const [adminImageToolsFor, setAdminImageToolsFor] = useState<'original' | 'ai' | null>(null);
 
@@ -238,6 +239,28 @@ export default function Study() {
     goTo(requested - 1);
   }, [goTo, jumpValue, questions.length]);
 
+  // Speak the short first-entry audio prompt as soon as the actual question/audio controls appear.
+  // If the browser blocks audible autoplay, the existing speaker button remains available.
+  useEffect(() => {
+    if (loading || !questions.length || welcomePromptAttemptedRef.current) return;
+    welcomePromptAttemptedRef.current = true;
+    let active = true;
+    const timer = window.setTimeout(() => {
+      void playQuestionAudioPrompt('question-audio-first-entry', () => {
+        if (!active) return;
+        setIntroAudioPlaying(false);
+      }).then(played => {
+        if (!active) return;
+        setIntroAudioPlaying(played);
+        setIntroAudioMessage(played ? null : 'إذا لم يبدأ الصوت تلقائياً، اضغط زر التشغيل للاستماع.');
+      });
+    }, 160);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [loading, questions.length]);
+
   const playIntroAudio = () => {
     setIntroAudioMessage(null);
     void playQuestionAudioPrompt('question-audio-first-entry', () => {
@@ -366,6 +389,7 @@ export default function Study() {
           disabled={!currentAudioUrl || !audioReady}
           onClick={() => {
             stopQuestionAudioPrompt();
+            setIntroAudioMessage(null);
             setAudioError(null);
             if (audioContinuousRef.current) {
               void playCurrentQuestionAudio(currentAudioUrl);
@@ -400,8 +424,8 @@ export default function Study() {
         >
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="m4 4 16 16"/></svg>
         </button>
-        <div className={"question-audio-nav__status " + (audioError ? "error" : audioPlaying ? "ready" : "prompt")}>
-          {audioError ? audioError : audioPlaying ? (audioModeRef.current === 'disabled-prompt' ? "جارٍ تشغيل رسالة الإيقاف" : "الصوت سيبقى شغال حتى تضغط إيقاف") : audioEnabled ? "الصوت مفعّل وسيعمل مع السؤال التالي" : "اضغط زر التشغيل للاستماع"}
+        <div className={"question-audio-nav__status " + (introAudioMessage ? "error" : introAudioPlaying || audioPlaying ? "ready" : audioError ? "error" : "prompt")}>
+          {introAudioPlaying ? "جارٍ تشغيل تعليمات الصوت" : introAudioMessage ? introAudioMessage : audioError ? audioError : audioPlaying ? (audioModeRef.current === 'disabled-prompt' ? "جارٍ تشغيل رسالة الإيقاف" : "الصوت سيبقى شغال حتى تضغط إيقاف") : audioEnabled ? "الصوت مفعّل وسيعمل مع السؤال التالي" : "اضغط زر التشغيل للاستماع"}
         </div>
         <audio
           ref={audioRef}

@@ -1,0 +1,528 @@
+/* Final responsive layout fixes — loaded last after older visual overrides. */
+
+/* Subtle shader background on the login screen only. */
+.login-v2 {
+  isolation: isolate !important;
+  background: radial-gradient(ellipse at 50% 32%, rgba(12, 73, 86, .38), transparent 58%), #090d12 !important;
+}
+.login-nebula-bg {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  opacity: .26 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  mix-blend-mode: screen;
+  background: radial-gradient(ellipse at 48% 36%, rgba(20, 116, 129, .14), transparent 58%), #071018 !important;
+}
+.login-nebula-bg canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+.login-v2-glow { z-index: 1 !important; }
+.login-v2-wrap { position: relative !important; z-index: 2 !important; }
+.login-v2-showcase {
+  background: linear-gradient(145deg, rgba(21,26,32,.86), rgba(13,16,21,.91) 70%) !important;
+}
+.login-v2-panel { background: rgba(17,20,26,.91) !important; }
+@media (prefers-reduced-motion: reduce) {
+  .login-nebula-bg { opacity: .14 !important; }
+}
+
+/* Training header: compact title row + a dedicated compact sound-control row. */
+.study-premium {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+}
+.study-premium-header {
+  flex: 0 0 92px !important;
+  height: 92px !important;
+  min-height: 92px !important;
+  max-height: 92px !important;
+  display: grid !important;
+  grid-template-columns: 36px minmax(0, 1fr) auto !important;
+  grid-template-rows: 44px 38px !important;
+  align-items: center !important;
+  gap: 3px 8px !important;
+  padding: 5px 8px !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+.study-premium-header > .study-premium-back {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  width: 34px !important;
+  height: 34px !important;
+  align-self: center !important;
+}
+.study-premium-header > .study-premium-brand {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  min-width: 0 !important;
+  gap: 0 !important;
+}
+.study-premium-brand strong {
+  font-size: clamp(12px, 3.7vw, 15px) !important;
+  line-height: 1.2 !important;
+}
+.study-premium-brand small { font-size: 8px !important; }
+.study-premium-header > .study-premium-counter-wrap {
+  grid-column: 3 !important;
+  grid-row: 1 !important;
+}
+.study-premium-counter {
+  height: 38px !important;
+  min-width: 66px !important;
+  padding: 4px 8px !important;
+}
+.study-premium-counter b { font-size: 18px !important; }
+.study-premium-header > .question-audio-nav.study-top {
+  grid-column: 1 / -1 !important;
+  grid-row: 2 !important;
+  justify-self: center !important;
+  align-self: center !important;
+  width: max-content !important;
+  margin: 0 auto !important;
+  padding: 1px 4px !important;
+  gap: 4px !important;
+  z-index: 5 !important;
+}
+.study-premium-header > .question-audio-nav.study-top .question-audio-nav__audio {
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  flex-basis: 32px !important;
+  border-radius: 9px !important;
+}
+.study-premium-header > .question-audio-nav.study-top .question-audio-nav__status {
+  max-width: min(47vw, 180px) !important;
+  font-size: 8.5px !important;
+}
+
+/* Keep the question as a normal grid row, never absolutely overlaid on the image.
+   The answers use the free card height, so there is no dead area underneath them. */
+.study-premium-stage {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  padding: 5px !important;
+  overflow: hidden !important;
+}
+.study-premium-card {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: 18px clamp(100px, 17dvh, 132px) minmax(60px, auto) minmax(0, 1fr) auto !important;
+  gap: 5px !important;
+  padding: 6px !important;
+}
+.study-premium-meta {
+  grid-row: 1 !important;
+  min-height: 0 !important;
+  height: 18px !important;
+  max-height: 18px !important;
+}
+.study-premium-images,
+.study-premium-no-image {
+  grid-row: 2 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+.study-premium-images {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 5px !important;
+}
+.study-premium-images.has-two-images,
+.study-premium-images.has-three-media {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+.study-premium-image {
+  position: relative !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  aspect-ratio: auto !important;
+  padding: 4px !important;
+  border-radius: 12px !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+.study-premium-image > div,
+.study-premium-image-inner-admin,
+.study-premium-image-el,
+.study-premium-image img,
+.study-premium-image picture {
+  position: relative;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  mix-blend-mode: normal !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+.study-premium-no-image {
+  border: 0 !important;
+  background: transparent !important;
+}
+.study-premium-question {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  grid-row: 3 !important;
+  align-self: stretch !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 60px !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 5px 9px !important;
+  overflow: visible !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  font-size: clamp(14px, 3.9vw, 18px) !important;
+  line-height: 1.45 !important;
+  font-weight: 900 !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+  box-sizing: border-box !important;
+}
+.study-premium-answers {
+  grid-row: 4 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: hidden !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: repeat(var(--option-count, 4), minmax(44px, 1fr)) !important;
+  align-content: stretch !important;
+  gap: 5px !important;
+  margin: 0 !important;
+}
+.study-premium-option {
+  min-width: 0 !important;
+  min-height: 44px !important;
+  height: auto !important;
+  padding: 6px 9px !important;
+  overflow: visible !important;
+}
+.study-premium-option-text {
+  min-width: 0 !important;
+  font-size: clamp(12px, 3.5vw, 14px) !important;
+  line-height: 1.42 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+}
+.study-premium-explanation { grid-row: 5 !important; }
+
+/* Exam: short title row, balanced media footprint, fully readable question/options. */
+.exam-page-v2 {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+}
+.exam-topbar-v2 {
+  flex: 0 0 62px !important;
+  height: 62px !important;
+  min-height: 62px !important;
+  max-height: 62px !important;
+  display: grid !important;
+  grid-template-columns: 36px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 5px 8px !important;
+  overflow: visible !important;
+}
+.exam-back-v2 {
+  width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+}
+.exam-title-v2 {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  overflow: visible !important;
+}
+.exam-title-v2 > strong {
+  min-width: 0 !important;
+  font-size: clamp(12px, 3.4vw, 16px) !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+}
+.exam-question-counter {
+  min-height: 36px !important;
+  height: 36px !important;
+  padding: 3px 7px !important;
+  gap: 3px !important;
+  border-radius: 11px !important;
+}
+.exam-counter-label,
+.exam-counter-jump { font-size: 8px !important; }
+.exam-counter-current,
+.exam-counter-total { font-size: 14px !important; }
+.exam-timer-v2 {
+  min-width: 58px !important;
+  height: 36px !important;
+  padding: 5px 7px !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+.exam-progress-v2 {
+  flex: 0 0 2px !important;
+  width: 100% !important;
+  height: 2px !important;
+  min-height: 2px !important;
+  max-height: 2px !important;
+}
+.exam-stage-v2 {
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 5px !important;
+  overflow: hidden !important;
+}
+.exam-card-v2 {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  padding: 6px !important;
+  overflow: hidden !important;
+}
+.question-audio-nav.exam-inside {
+  flex: 0 0 auto !important;
+  margin: 0 0 5px !important;
+  min-height: 36px !important;
+}
+.exam-scroll-v2 {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding-bottom: 4px !important;
+}
+.exam-image-slot-v2 {
+  width: 100% !important;
+  margin: 0 0 7px !important;
+  gap: 6px !important;
+}
+.exam-image-slot-v2:not(.has-two-images) {
+  min-height: clamp(145px, 21svh, 220px) !important;
+}
+.exam-image-slot-v2:not(.has-two-images) .exam-question-image-frame {
+  min-height: clamp(145px, 21svh, 220px) !important;
+}
+.exam-image-slot-v2.has-two-images .exam-question-image-frame {
+  min-height: clamp(125px, 18svh, 190px) !important;
+}
+.exam-question-v2 {
+  position: relative !important;
+  flex: 0 0 auto !important;
+  height: auto !important;
+  min-height: 54px !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 6px 5px 9px !important;
+  line-height: 1.55 !important;
+  font-size: clamp(14px, 3.6vw, 18px) !important;
+  overflow: visible !important;
+  display: block !important;
+  white-space: normal !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+}
+.exam-answers-v2 {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: none !important;
+  grid-auto-rows: minmax(50px, auto) !important;
+  gap: 7px !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+.exam-option-v2 {
+  min-width: 0 !important;
+  min-height: 50px !important;
+  height: auto !important;
+  padding: 8px 10px !important;
+  gap: 9px !important;
+  overflow: visible !important;
+}
+.exam-option-text-v2 {
+  min-width: 0 !important;
+  font-size: clamp(13px, 3.4vw, 15px) !important;
+  line-height: 1.5 !important;
+  overflow: visible !important;
+  display: block !important;
+  white-space: normal !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+  overflow-wrap: anywhere !important;
+}
+
+/* Images remain sharp. Tools stay hidden until an admin taps the relevant image. */
+.exam-question-image-frame,
+.study-premium-image {
+  position: relative !important;
+}
+.exam-question-image-frame img,
+.exam-question-image-frame picture,
+.study-premium-image img,
+.study-premium-image picture {
+  opacity: 1 !important;
+  filter: none !important;
+  visibility: visible !important;
+  mix-blend-mode: normal !important;
+  -webkit-filter: none !important;
+}
+.exam-question-image-frame.original-frame,
+.exam-question-image-frame.ai-frame,
+.study-premium-image,
+.study-premium-image-inner-admin {
+  cursor: pointer;
+}
+.exam-admin-ai-tools,
+.study-admin-ai-tools {
+  z-index: 12 !important;
+  position: absolute !important;
+  top: 8px !important;
+  inset-inline-end: 8px !important;
+  max-width: calc(100% - 16px) !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-start !important;
+  gap: 5px !important;
+  padding: 5px !important;
+  border: 1px solid rgba(255,255,255,.25) !important;
+  border-radius: 10px !important;
+  background: rgba(4,12,18,.96) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.4) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(8px) !important;
+}
+.exam-admin-ai-tools button,
+.study-admin-ai-tools button {
+  min-height: 28px !important;
+  padding: 4px 8px !important;
+  font-size: 10px !important;
+  border-radius: 7px !important;
+}
+
+.study-premium-image.ai-secondary .ai-image-label,
+.exam-question-image-frame.ai-frame .ai-image-label {
+  top: 7px !important;
+  inset-inline-end: 7px !important;
+  z-index: 8 !important;
+  min-height: 20px !important;
+  width: auto !important;
+  padding: 2px 7px !important;
+  margin: 0 !important;
+  border: 1px solid rgba(255,255,255,.28) !important;
+  border-radius: 999px !important;
+  background: rgba(4,12,18,.8) !important;
+  color: #e7fbf7 !important;
+  box-shadow: none !important;
+  font-size: 8px !important;
+  line-height: 1.3 !important;
+  font-weight: 800 !important;
+  pointer-events: none !important;
+  text-shadow: none !important;
+}
+
+@media (max-height: 700px) and (max-width: 700px) {
+  .study-premium-header {
+    flex-basis: 88px !important;
+    height: 88px !important;
+    min-height: 88px !important;
+    max-height: 88px !important;
+    grid-template-rows: 42px 36px !important;
+  }
+  .study-premium-card {
+    grid-template-rows: 18px clamp(92px, 15dvh, 108px) minmax(56px, auto) minmax(0, 1fr) auto !important;
+    gap: 4px !important;
+  }
+  .study-premium-actions,
+  .study-premium-actions .study-premium-action {
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+  }
+  .exam-topbar-v2 {
+    flex-basis: 56px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+  }
+  .exam-image-slot-v2:not(.has-two-images),
+  .exam-image-slot-v2:not(.has-two-images) .exam-question-image-frame {
+    min-height: clamp(130px, 19svh, 175px) !important;
+  }
+}
+@media (max-width: 360px) {
+  .study-premium-header {
+    grid-template-columns: 30px minmax(0, 1fr) auto !important;
+    gap: 2px 5px !important;
+    padding-inline: 5px !important;
+  }
+  .study-premium-brand strong { font-size: 11px !important; }
+  .study-premium-counter { min-width: 58px !important; }
+  .study-premium-header > .question-audio-nav.study-top .question-audio-nav__status {
+    max-width: 42vw !important;
+    font-size: 8px !important;
+  }
+  .exam-title-v2 { gap: 4px !important; }
+  .exam-title-v2 > strong { font-size: 11px !important; }
+  .exam-question-counter { padding-inline: 5px !important; }
+}
+
+
+/* Collapse the unused explanation row before an answer is selected. */
+.study-premium-explanation.is-empty {
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+}
