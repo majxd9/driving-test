@@ -44,6 +44,9 @@ export default function Study() {
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [failedAiImageId, setFailedAiImageId] = useState<number | null>(null);
+  const [showExplanatoryImage, setShowExplanatoryImage] = useState(true);
+  const [introAudioPlaying, setIntroAudioPlaying] = useState(false);
+  const [introAudioMessage, setIntroAudioMessage] = useState<string | null>(null);
   const [adminImageBusy, setAdminImageBusy] = useState<'hide' | 'delete' | null>(null);
   const [adminImageToolsFor, setAdminImageToolsFor] = useState<'original' | 'ai' | null>(null);
 
@@ -87,6 +90,7 @@ export default function Study() {
     setFailedAiImageId(null);
     setAdminImageBusy(null);
     setAdminImageToolsFor(null);
+    setShowExplanatoryImage(true);
   }, [index]);
 
   const currentAudioPath = questions[index]?.audioUrl ?? null;
@@ -241,8 +245,22 @@ export default function Study() {
     goTo(requested - 1);
   }, [goTo, jumpValue, questions.length]);
 
-  if (loading) return <div className="study-premium-loading">جارِ تجهيز التدريب...</div>;
-  if (error) return <div className="study-premium-loading">{error}</div>;
+  const playIntroAudio = () => {
+    firstEntryPromptPlayedRef.current = true;
+    setIntroAudioMessage(null);
+    void playQuestionAudioPrompt('question-audio-first-entry').then(played => {
+      setIntroAudioPlaying(played);
+      if (!played) setIntroAudioMessage('تعذر تشغيل الإرشادات الصوتية. جرّب تشغيل الصوت مرة أخرى.');
+    });
+  };
+  const stopIntroAudio = () => {
+    stopQuestionAudioPrompt();
+    setIntroAudioPlaying(false);
+    setIntroAudioMessage('تم إيقاف الصوت. يمكنك تشغيله مجدداً.');
+  };
+
+  if (loading) return <div className="ui-audio-welcome" dir="rtl"><section className="ui-audio-welcome__panel" aria-labelledby="study-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true">ر</span><p className="ui-audio-welcome__eyebrow">{theme.name}</p><h1 id="study-audio-welcome-title">أهلاً بك في التدريب</h1><p className="ui-audio-welcome__copy">اضغط تشغيل الصوت للاستماع إلى إرشادات البدء، وستظهر الأسئلة تلقائياً.</p><div className="ui-audio-welcome__controls"><button type="button" className="ui-audio-welcome__play" onClick={playIntroAudio}>▶ تشغيل الصوت</button><button type="button" className="ui-audio-welcome__stop" onClick={stopIntroAudio}>■ إيقاف الصوت</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'تعمل الآن إرشادات البدء الصوتية.' : 'يمكنك تشغيل الإرشادات أو الانتظار حتى تظهر الأسئلة.')}</p></section></div>;
+  if (error) return <div className="study-premium-loading" role="alert">{error}</div>;
 
   const q = questions[index];
   if (!q) return <div className="study-premium-loading">لا توجد أسئلة بهذا القسم.</div>;
@@ -262,7 +280,8 @@ export default function Study() {
   const isLast = index === questions.length - 1;
   const explanationNeeded = chosen !== undefined && Boolean(q.explanation);
   const showOriginalImage = Boolean(q.imageUrl && showImage);
-  const showAiImageForStudent = Boolean(q.aiImageUrl && failedAiImageId !== q.id);
+  const hasExplanatoryImage = Boolean(q.aiImageUrl && failedAiImageId !== q.id);
+  const showAiImageForStudent = hasExplanatoryImage && showExplanatoryImage;
 
   const hideAiImageForAdmin = async () => {
     if (!q.aiImageUrl || adminImageBusy) return;
@@ -381,7 +400,7 @@ export default function Study() {
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="m4 4 16 16"/></svg>
         </button>
         <div className={"question-audio-nav__status " + (audioError ? "error" : audioPlaying ? "ready" : "prompt")}>
-          {audioError ? audioError : audioPlaying ? (audioModeRef.current === 'disabled-prompt' ? "جارٍ تشغيل رسالة الإيقاف" : "الصوت سيبقى شغال حتى تضغط إيقاف") : audioEnabled ? "الصوت مفعّل وسيعمل مع السؤال التالي" : audioReady ? "اضغط زر التشغيل للاستماع" : "جارٍ تجهيز الصوت…"}
+          {audioError ? audioError : audioPlaying ? (audioModeRef.current === 'disabled-prompt' ? "جارٍ تشغيل رسالة الإيقاف" : "الصوت سيبقى شغال حتى تضغط إيقاف") : audioEnabled ? "الصوت مفعّل وسيعمل مع السؤال التالي" : "اضغط زر التشغيل للاستماع"}
         </div>
         <audio
           ref={audioRef}
@@ -455,8 +474,9 @@ export default function Study() {
             <span>{chosen === undefined ? 'اختر إجابة' : 'تمت الإجابة'}</span>
           </div>
 
-          {(showOriginalImage || showAiImageForStudent) ? (
-            <div className={`study-premium-images ${showOriginalImage && showAiImageForStudent ? 'has-two-images' : ''}`}>
+          {(showOriginalImage || hasExplanatoryImage) ? (
+            <div className={`study-premium-images ${showOriginalImage && hasExplanatoryImage ? 'has-two-images' : ''}`}>
+              {hasExplanatoryImage && <button type="button" className="question-image-toggle" onClick={() => setShowExplanatoryImage(value => !value)} aria-pressed={showExplanatoryImage}>{showExplanatoryImage ? 'إخفاء الصورة التوضيحية' : 'إظهار الصورة التوضيحية'}</button>}
               {showOriginalImage && (
                 <div className="study-premium-image">
                   <div
@@ -517,6 +537,7 @@ export default function Study() {
                   )}
                 </div>
               )}
+              {!showAiImageForStudent && hasExplanatoryImage && <div className="study-premium-image ai-secondary-hidden" aria-hidden="true"><span>الصورة التوضيحية مخفية</span></div>}
             </div>
           ) : (
             <div className="study-premium-no-image" aria-hidden="true" />
