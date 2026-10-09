@@ -513,3 +513,16 @@
   .exam-title-v2 > strong { font-size: 11px !important; }
   .exam-question-counter { padding-inline: 5px !important; }
 }
+
+
+/* Collapse the unused explanation row before an answer is selected. */
+.study-premium-explanation.is-empty {
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+}
