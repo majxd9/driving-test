@@ -40,3 +40,14 @@
 
 /car-explorer/assets/*
   Cache-Control: public, max-age=31536000, immutable
+/car-explorer/vendor/*
+  Cache-Control: public, max-age=604800
+
+/car-explorer/challenger-1970.glb
+  Cache-Control: public, max-age=86400
+
+/car-explorer/viewer.js
+  Cache-Control: public, max-age=86400
+
+/car-explorer/viewer-boot.js
+  Cache-Control: public, max-age=86400
