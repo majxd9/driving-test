@@ -40,7 +40,7 @@
 
   window.setTimeout(() => {
     const heading = document.getElementById("loadTitle");
-    if (!isLoaded() && heading && heading.textContent === "يتم تجهيز السيارة") {
+    if (!isLoaded() && heading && heading.textContent.startsWith("يتم تجهيز ")) {
       showFailure("استغرق تحميل السيارة وقتًا أطول من المعتاد. افحص الاتصال ثم اضغط «إعادة المحاولة».", "التحميل تأخر");
     }
   }, 75000);

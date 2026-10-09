@@ -45,6 +45,8 @@ assert.ok(html.includes('type="module" src="./viewer.js"'), 'Viewer module is no
 assert.ok(html.includes('href="./viewer-premium.css"'), 'Premium viewer CSS is not linked');
 assert.ok(premiumCss.includes('@media(max-width:850px)'), 'Mobile layout is missing');
 assert.ok(viewer.includes('mainPartDefinitions'), 'Human-readable main part list is missing');
+assert.ok(viewer.includes('id:"engine",label:"المحرك",category:"engine"'), 'Engine category is missing from the main part list');
+assert.ok(viewer.includes('chosenById.set(def.id, []);'), 'Unknown parts must not be randomly labeled as a different main part');
 assert.ok(viewer.includes('buildMainPartEntries()'), 'Main part grouping is missing');
 assert.ok(!viewer.includes('list.slice(0, 300)'), 'Technical mesh list must not be exposed');
 assert.ok(html.includes('id="retryLoad"'), 'Retry button is missing');

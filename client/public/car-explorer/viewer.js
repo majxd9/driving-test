@@ -80,6 +80,7 @@ const cleanName = (raw, index) => {
 const mainPartDefinitions = [
  {id:"body",label:"الهيكل",category:"exterior",keywords:/(bodywork|car.?body|chassis|shell|frame|carrosserie|车身|车体|车壳)/i,max:4,filter:d=>d.longSize>.28&&d.footprint>.05&&d.vertical>.12&&d.vertical<.82,score:d=>d.footprint*2+d.volume},
  {id:"hood",label:"غطاء المحرك",category:"exterior",keywords:/(hood|bonnet|engine.?cover|motor.?cover|机盖|发动机罩)/i,max:3,filter:d=>Math.abs(d.longPos)>.43&&d.vertical>.27&&d.vertical<.84&&d.sideAbs<.92,score:d=>d.footprint/(.015+d.volume)+Math.abs(d.longPos)*.2},
+ {id:"engine",label:"المحرك",category:"engine",keywords:/(engine|motor|power.?unit|发动机|引擎|动力总成)/i,max:6,filter:d=>d.vertical>.14&&d.vertical<.58&&d.sideAbs<.48&&Math.abs(d.longPos)>.12,score:d=>(1-d.sideAbs)+(1-d.vertical)*.8+Math.abs(d.longPos)*.25+d.volume},
  {id:"doors",label:"الأبواب",category:"exterior",keywords:/(door|car.?door|侧门|车门)/i,max:6,filter:d=>Math.abs(d.longPos)<.56&&d.sideAbs>.36&&d.vertical>.18&&d.vertical<.78,score:d=>d.sideAbs+d.footprint*2-Math.abs(d.longPos)*.3},
  {id:"wheels",label:"العجلات",category:"wheels",keywords:/(wheel|tyre|tire|rim|hubcap|轮胎|车轮|轮毂)/i,max:8,filter:d=>d.vertical<.29&&d.sideAbs>.27&&Math.abs(d.longPos)>.2,score:d=>d.sideAbs+Math.abs(d.longPos)+Math.max(d.size.x,d.size.z)},
  {id:"lights",label:"المصابيح",category:"lights",keywords:/(head.?light|tail.?light|lamp|light.?assembly|headlamp|taillight|车灯|大灯|尾灯|灯组)/i,max:8,filter:d=>Math.abs(d.longPos)>.56&&d.vertical>.20&&d.vertical<.8&&d.sideAbs>.08,score:d=>Math.abs(d.longPos)+.25/(.02+d.volume)},
@@ -122,16 +123,19 @@ function buildMainPartEntries() {
  }
  for (const def of priority) {
   if (chosenById.has(def.id)) continue;
-  let candidates = descriptors.filter(d=>!used.has(d.mesh)&&def.filter(d)).sort((a,b)=>def.score(b)-def.score(a));
-  if (!candidates.length) candidates = descriptors.filter(d=>!used.has(d.mesh)).sort((a,b)=>def.score(b)-def.score(a));
-  if (!candidates.length) candidates = [...descriptors].sort((a,b)=>def.score(b)-def.score(a));
-  const group = candidates.slice(0,Math.min(def.max, Math.max(1,def.id==="wheels"?4:2))).map(d=>d.mesh);
-  group.forEach(m=>used.add(m)); chosenById.set(def.id,group);
+  const candidates = descriptors.filter(d=>!used.has(d.mesh)&&def.filter(d)).sort((a,b)=>def.score(b)-def.score(a));
+  if (!candidates.length) {
+   chosenById.set(def.id, []);
+   continue;
+  }
+  const fallbackLimit = def.id==="wheels" ? 4 : def.id==="engine" ? 4 : 2;
+  const group = candidates.slice(0,Math.min(def.max,fallbackLimit)).map(d=>d.mesh);
+  group.forEach(m=>used.add(m));
+  chosenById.set(def.id,group);
  }
  const bodyDef = mainPartDefinitions.find(p=>p.id==="body");
  let bodyMeshes = descriptors.filter(d=>bodyDef.keywords.test(d.name)&&!used.has(d.mesh));
  if (!bodyMeshes.length) bodyMeshes = descriptors.filter(d=>!used.has(d.mesh)&&bodyDef.filter(d));
- if (!bodyMeshes.length) bodyMeshes = [...descriptors];
  bodyMeshes.sort((a,b)=>bodyDef.score(b)-bodyDef.score(a));
  chosenById.set("body",bodyMeshes.slice(0,bodyDef.max).map(d=>d.mesh));
  return mainPartDefinitions.map(def=>({...def,meshes:chosenById.get(def.id)||[]}));
@@ -347,6 +351,7 @@ function renderParts() {
  const query = $("search").value.trim().toLowerCase();
  const active = document.querySelector("#categories .cat.active")?.dataset.cat || "all";
  const list = mainPartEntries.filter(entry =>
+  entry.meshes.length > 0 &&
   entry.meshes.some(mesh=>mesh.visible) &&
   (active === "all" || entry.category === active) &&
   (!query || entry.label.toLowerCase().includes(query))
@@ -372,8 +377,8 @@ canvas.addEventListener("pointerup",(event) => {
  if (!model || event.button !== 0) return;
  const rect=canvas.getBoundingClientRect(); pointer.x=((event.clientX-rect.left)/rect.width)*2-1; pointer.y=-((event.clientY-rect.top)/rect.height)*2+1;
  raycaster.setFromCamera(pointer,camera);
- const hit=raycaster.intersectObjects(meshes.filter(m=>m.visible),false)[0];
- if(hit) setSelected(hit.object);
+ const hit=raycaster.intersectObjects(meshes.filter(m=>m.visible&&mainPartEntries.some(p=>p.meshes.includes(m))),false)[0];
+ if(hit) setSelected(hit.object,mainPartEntries.find(p=>p.meshes.includes(hit.object))||null);
 });
 function tween(fn, duration=260) {
  const start=performance.now();
@@ -400,7 +405,9 @@ $("explode").addEventListener("click",()=>{
 });
 $("inside").addEventListener("click",()=>{
  inside=!inside;
- meshes.forEach(m=>{m.visible=!inside||!exteriorPattern.test(String(m.name||""));});
+ const cabinMeshes = new Set(mainPartEntries.filter(p=>p.category==="cabin").flatMap(p=>p.meshes));
+ if (cabinMeshes.size) meshes.forEach(m=>{m.visible=!inside||cabinMeshes.has(m);});
+ else meshes.forEach(m=>{m.visible=!inside||!exteriorPattern.test(String(m.name||""));});
  if (inside) {
   const interiorTarget = modelCenter.clone().add(new THREE.Vector3(0, 0.12, 0));
   controls.minDistance = 0.25;
