@@ -36,6 +36,8 @@ import './question-media-final.css';
 import './study-preview.css';
 // Final compact shared styling for Study and Exam; presentation only.
 import './compact-study-exam-ui.css';
+// Final fixed-viewport corrections for Study, Exam, and Home.
+import './fixed-layout-ui.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
