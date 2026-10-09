@@ -47,7 +47,6 @@ export default function Exam() {
   const audioContinuousRef = useRef(false);
   const audioModeRef = useRef<'question' | 'enabled-prompt' | 'disabled-prompt' | null>(null);
   const [adminImageBusy, setAdminImageBusy] = useState<'approve' | 'reject' | 'hide' | 'delete' | null>(null);
-  const [showExplanatoryImage, setShowExplanatoryImage] = useState(true);
   const [showDiagram, setShowDiagram] = useState(true);
   const [adminImageToolsFor, setAdminImageToolsFor] = useState<'original' | 'ai' | null>(null);
   const [introAudioPlaying, setIntroAudioPlaying] = useState(false);
@@ -304,18 +303,21 @@ export default function Exam() {
 
   const playIntroAudio = () => {
     setIntroAudioMessage(null);
-    void playQuestionAudioPrompt('question-audio-first-entry').then(played => {
+    void playQuestionAudioPrompt('question-audio-first-entry', () => {
+      setIntroAudioPlaying(false);
+      setIntroAudioMessage(null);
+    }).then(played => {
       setIntroAudioPlaying(played);
-      if (!played) setIntroAudioMessage('تعذر تشغيل الإرشادات الصوتية. يمكنك المتابعة عند اكتمال التحميل.');
+      if (!played) setIntroAudioMessage('تعذر تشغيل الصوت. اضغط الزر للمحاولة مجدداً.');
     });
   };
   const stopIntroAudio = () => {
     stopQuestionAudioPrompt();
     setIntroAudioPlaying(false);
-    setIntroAudioMessage('تم إيقاف الإرشادات. سيظهر الاختبار تلقائياً عند اكتمال التحميل.');
+    setIntroAudioMessage(null);
   };
 
-  if (loading) return <div className="ui-audio-welcome is-exam" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel" aria-labelledby="exam-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4"/><path d="M4.9 8.5 9.8 11M19.1 8.5 14.2 11M12 14.4v5.3"/></svg></span><p className="ui-audio-welcome__eyebrow">اختبار القيادة</p><h1 id="exam-audio-welcome-title">نجهّز نموذج الاختبار</h1><p className="ui-audio-welcome__copy">يمكنك تشغيل إرشادات الصوت أثناء تجهيز الأسئلة. ستفتح صفحة الاختبار تلقائياً فور اكتمال التحميل، دون الحاجة إلى الضغط للمتابعة.</p><div className="ui-audio-welcome__controls"><button type="button" className="ui-audio-welcome__play" onClick={playIntroAudio}>▶ تشغيل الإرشادات الصوتية</button><button type="button" className="ui-audio-welcome__stop" onClick={stopIntroAudio}>■ إيقاف الإرشادات</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'تعمل الآن إرشادات البدء الصوتية.' : 'هذه الشاشة مؤقتة وستختفي تلقائياً.')}</p></section></div>;
+  if (loading) return <div className="ui-audio-welcome is-exam" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel" aria-labelledby="exam-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></span><p className="ui-audio-welcome__eyebrow">اختبار القيادة</p><h1 id="exam-audio-welcome-title">جاهز للانطلاق؟</h1><p className="ui-audio-welcome__copy">اضغط تشغيل الصوت إذا رغبت بسماع إرشادات قصيرة قبل البدء.</p><div className="ui-audio-welcome__controls"><button type="button" className={`ui-audio-welcome__play ${introAudioPlaying ? 'is-playing' : 'is-pulsing'}`} onClick={introAudioPlaying ? stopIntroAudio : playIntroAudio} aria-pressed={introAudioPlaying}>{introAudioPlaying ? '■ إيقاف الصوت' : '▶ تشغيل الصوت'}</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'يتم تشغيل الإرشادات الصوتية الآن.' : 'اضغط الزر للاستماع.')}</p></section></div>;
 
   if(loadError||!questions.length)return <div className="page-shell flex items-center justify-center px-5"><div className="surface-panel w-full max-w-md text-center p-7"><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-xl font-black mb-2">تعذر تحضير الاختبار</h1><p className="text-muted text-sm leading-relaxed">{loadError??'لم يتم العثور على أسئلة.'}</p><button onClick={loadExam} className="primary-cta mt-5 w-full">إعادة المحاولة</button></div></div>;
 
@@ -488,7 +490,6 @@ export default function Exam() {
           </div>
       <div className="exam-scroll-v2">
         <div className={`exam-image-slot-v2 ${mediaLayoutClass}`}>
-          {q.aiImageUrl && <button type="button" className="question-image-toggle" onClick={() => setShowExplanatoryImage(value => !value)} aria-pressed={showExplanatoryImage}>{showExplanatoryImage ? 'إخفاء الصورة التوضيحية' : 'إظهار الصورة التوضيحية'}</button>}
           {showOriginalQuestionImage ? (
             <div
               className={`exam-question-image-frame original-frame ${isAdmin && adminImageToolsFor === 'original' ? 'admin-tools-open' : ''}`}
@@ -521,7 +522,7 @@ export default function Exam() {
           ) : q.imageUrl ? (
             <div className="exam-question-image-frame original-image-pending" aria-hidden="true"><span>الصورة مخفية حتى لا تكشف الإجابة</span></div>
           ) : null}
-          {q.aiImageUrl && showExplanatoryImage ? (
+          {q.aiImageUrl ? (
             <div
               className={`exam-question-image-frame ai-frame ${isAdmin && adminImageToolsFor === 'ai' ? 'admin-tools-open' : ''}`}
               onClick={() => { if (isAdmin) setAdminImageToolsFor(currentTools => currentTools === 'ai' ? null : 'ai'); }}
@@ -560,8 +561,6 @@ export default function Exam() {
                 </div>
               )}
             </div>
-          ) : q.aiImageUrl ? (
-            <div className="exam-question-image-frame ai-frame ai-frame-hidden" aria-hidden="true"><span>الصورة التوضيحية مخفية</span></div>
           ) : null}
           {hasDiagram && (
             <div className="exam-question-image-frame exam-diagram-frame">
