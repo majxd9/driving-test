@@ -583,12 +583,13 @@ html:has(.exam-page-v2) #root {
 }
 .study-premium .study-premium-explanation {
   position: absolute !important;
-  top: auto !important;
-  bottom: calc(54px + env(safe-area-inset-bottom,0px)) !important;
+  top: 38px !important;
+  bottom: auto !important;
   inset-inline-start: 10px !important;
   inset-inline-end: auto !important;
-  width: min(48%, 420px) !important;
-  max-height: clamp(48px, 8dvh, 72px) !important;
+  width: min(42%, 360px) !important;
+  max-height: clamp(42px, 7dvh, 64px) !important;
+  padding: 5px 7px !important;
   overflow: hidden !important;
   z-index: 25 !important;
   pointer-events: none !important;
