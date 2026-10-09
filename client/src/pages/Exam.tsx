@@ -94,7 +94,6 @@ export default function Exam() {
   useEffect(() => { void loadExam(); }, [loadExam]);
 
   useEffect(() => {
-    setShowExplanatoryImage(true);
     setShowDiagram(true);
     setAdminImageToolsFor(null);
   }, [current]);
