@@ -1,6 +1,6 @@
-import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import * as THREE from "./vendor/three.module.js";
+import { OrbitControls } from "./vendor/OrbitControls.js";
+import { GLTFLoader } from "./vendor/GLTFLoader.js";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("stage");
@@ -68,22 +68,30 @@ const resize = () => {
 const ro = new ResizeObserver(resize); ro.observe(canvas);
 window.addEventListener("resize", resize, {passive:true});
 const setLoadError = (message) => {
- $("loadTitle").textContent = "تعذر تحميل نموذج السيارة";
+ $("loadTitle").textContent = "تعذّر تحميل نموذج السيارة";
  $("loadMessage").textContent = message;
- $("status").textContent = "الملف غير متاح";
+ $("status").textContent = "فشل تحميل الملف";
  $("progress").style.width = "0%";
+ if (window.__carViewerShowError) window.__carViewerShowError(message, "تعذّر تحميل نموذج السيارة");
 };
 const loader = new GLTFLoader();
 loader.load("./challenger-1970.glb", (gltf) => {
  model = gltf.scene;
  const box = new THREE.Box3().setFromObject(model);
- modelCenter.copy(box.getCenter(new THREE.Vector3()));
+ const originalCenter = box.getCenter(new THREE.Vector3());
  const size = box.getSize(new THREE.Vector3());
  const maxDim = Math.max(size.x, size.y, size.z) || 1;
- model.scale.setScalar(4.2 / maxDim);
- model.position.sub(modelCenter.multiplyScalar(model.scale.x));
+ const scaleFactor = 4.2 / maxDim;
+ model.scale.setScalar(scaleFactor);
+ // Center the body horizontally and place its lowest point on the floor.
+ model.position.set(-originalCenter.x * scaleFactor, -box.min.y * scaleFactor, -originalCenter.z * scaleFactor);
  model.updateMatrixWorld(true);
+ const groundedBox = new THREE.Box3().setFromObject(model);
+ modelCenter.copy(groundedBox.getCenter(new THREE.Vector3()));
  scene.add(model);
+ camera.position.set(modelCenter.x + 4.8, modelCenter.y + 1.3, modelCenter.z + 5.8);
+ controls.target.copy(modelCenter);
+ controls.update();
  model.traverse((obj) => {
   if (!obj.isMesh) return;
   obj.castShadow = false; obj.receiveShadow = false;
@@ -92,6 +100,8 @@ loader.load("./challenger-1970.glb", (gltf) => {
   originalPositions.set(obj, obj.position.clone());
   meshes.push(obj);
  });
+ window.__carViewerModelLoaded = true;
+ $("retryLoad").hidden = true;
  $("count").textContent = meshes.length + " قطعة";
  $("status").textContent = "تم تحميل النموذج";
  $("loadTitle").textContent = "اكتمل تحميل السيارة";
@@ -105,7 +115,7 @@ loader.load("./challenger-1970.glb", (gltf) => {
  $("status").textContent = "تحميل " + (xhr.total > 0 ? Math.round(xhr.loaded/xhr.total*100) + "%" : "…");
 }, (err) => {
  console.error(err);
- setLoadError("ملف النموذج challenger-1970.glb لم يُعثر عليه أو تعذر قراءته. يجب إضافة ملف Blender المحوّل إلى مجلد public/car-explorer قبل نشر هذه الصفحة.");
+ setLoadError("تعذّر تنزيل ملف السيارة أو قراءة محتواه. تأكد من الاتصال بالإنترنت ثم أعد المحاولة.");
 });
 function restoreMaterial(mesh) { if (mesh) mesh.material = mesh.userData.baseMaterial; }
 function setSelected(mesh) {
@@ -177,9 +187,6 @@ $("inside").addEventListener("click",()=>{
  if(selected&&!selected.visible)setSelected(null);
  renderParts();requestRender();
 });
-$("backBtn").addEventListener("click",()=>{
- if(window.parent!==window)window.parent.postMessage({type:"CAR_EXPLORER_CLOSE"},window.location.origin);
- else if(history.length>1)history.back();else window.location.href="/practical-info";
-});
+$("backBtn").addEventListener("click",()=>{ window.location.href="/practical-info"; });
 $("helpBtn").addEventListener("click",()=>alert("اسحب المشهد لتدوير السيارة، واستخدم التكبير لإظهار التفاصيل. اختر أي قطعة من النموذج أو القائمة، واستخدم «تفكيك بصري» لفصل الأجزاء مؤقتاً. عرض الداخل يعتمد على أسماء أجزاء المجسّم الأصلية."));
 resize();
