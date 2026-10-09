@@ -125,14 +125,25 @@ async function readResponseBytes(response) {
  return bytes;
 }
 
+async function parseModelBuffer(buffer) {
+ return new Promise((resolve, reject) => {
+  loader.parse(buffer, new URL("./", window.location.href).href, resolve, reject);
+ });
+}
+
 async function loadCarModel() {
  try {
-  $("status").textContent = "تنزيل ملف السيارة المضغوط…";
-  let response = await fetch("./challenger-1970.glb.gzdata", {cache: "force-cache"});
   let modelBuffer;
-  if (response.ok) {
+  let usedFallback = false;
+  let gltf;
+
+  // Prefer the smaller gzip asset, but do not make the viewer depend on native gzip support.
+  try {
+   $("status").textContent = "تنزيل ملف السيارة المضغوط…";
+   const response = await fetch("./challenger-1970.glb.gzdata", {cache: "force-cache"});
+   if (!response.ok) throw new Error("ملف السيارة المضغوط غير متاح (HTTP " + response.status + ").");
    if (typeof DecompressionStream !== "function") {
-    throw new Error("متصفحك لا يدعم فك ضغط ملف السيارة. حدّث Chrome أو افتح الموقع بمتصفح حديث.");
+    throw new Error("المتصفح لا يدعم فك ضغط gzip المدمج.");
    }
    const compressed = await readResponseBytes(response);
    $("status").textContent = "فك ضغط السيارة…";
@@ -140,54 +151,72 @@ async function loadCarModel() {
    const decompressed = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("gzip"));
    modelBuffer = await new Response(decompressed).arrayBuffer();
    $("progress").style.width = "72%";
-  } else {
-   // In Vite development mode the original model is available; production publishes only the compressed asset.
-   response = await fetch("./challenger-1970.glb", {cache: "force-cache"});
-   if (!response.ok) throw new Error("تعذّر العثور على ملف السيارة المضغوط (HTTP " + response.status + ").");
-   modelBuffer = await response.arrayBuffer();
+  } catch (compressedError) {
+   usedFallback = true;
+   console.warn("Compressed Challenger model unavailable; trying original GLB:", compressedError);
+   $("status").textContent = "تحميل النسخة الاحتياطية…";
+   $("loadMessage").textContent = "تعذّر استخدام النسخة السريعة، يجري تحميل نسخة التوافق.";
+   const fallback = await fetch("./challenger-1970.glb", {cache: "force-cache"});
+   if (!fallback.ok) {
+    throw new Error("فشل تحميل النسخة المضغوطة (" +
+      (compressedError instanceof Error ? compressedError.message : "خطأ غير معروف") +
+      ") ونسخة التوافق (HTTP " + fallback.status + ").");
+   }
+   modelBuffer = await fallback.arrayBuffer();
    $("progress").style.width = "70%";
   }
+
   $("status").textContent = "تجهيز المجسّم ثلاثي الأبعاد…";
   await new Promise((resolve) => requestAnimationFrame(resolve));
-  loader.parse(modelBuffer, new URL("./", window.location.href).href, (gltf) => {
- model = gltf.scene;
- const box = new THREE.Box3().setFromObject(model);
- const originalCenter = box.getCenter(new THREE.Vector3());
- const size = box.getSize(new THREE.Vector3());
- const maxDim = Math.max(size.x, size.y, size.z) || 1;
- const scaleFactor = 4.2 / maxDim;
- model.scale.setScalar(scaleFactor);
- // Center the body horizontally and place its lowest point on the floor.
- model.position.set(-originalCenter.x * scaleFactor, -box.min.y * scaleFactor, -originalCenter.z * scaleFactor);
- model.updateMatrixWorld(true);
- const groundedBox = new THREE.Box3().setFromObject(model);
- modelCenter.copy(groundedBox.getCenter(new THREE.Vector3()));
- scene.add(model);
- camera.position.set(modelCenter.x + 4.8, modelCenter.y + 1.3, modelCenter.z + 5.8);
- controls.target.copy(modelCenter);
- controls.update();
- model.traverse((obj) => {
-  if (!obj.isMesh) return;
-  obj.castShadow = false; obj.receiveShadow = false;
-  obj.userData.baseMaterial = obj.material;
-  obj.userData.baseVisible = obj.visible;
-  originalPositions.set(obj, obj.position.clone());
-  meshes.push(obj);
- });
- window.__carViewerModelLoaded = true;
- $("retryLoad").hidden = true;
- $("count").textContent = meshes.length + " قطعة";
- $("status").textContent = "تم تحميل النموذج";
- $("loadTitle").textContent = "اكتمل تحميل السيارة";
- $("progress").style.width = "100%";
- homeCamera = {position:camera.position.clone(), target:controls.target.clone()};
- renderParts();
- setTimeout(() => $("load").classList.add("hidden"), 250);
- requestRender();
-  }, (err) => {
-   console.error("Challenger GLB parse error:", err);
-   setLoadError("تم تنزيل ملف السيارة لكن تعذّرت قراءة المجسّم. أعد المحاولة، وإذا تكررت المشكلة أرسل صورة الخطأ.");
+
+  try {
+   gltf = await parseModelBuffer(modelBuffer);
+  } catch (compressedParseError) {
+   if (usedFallback) throw compressedParseError;
+   usedFallback = true;
+   console.warn("Compressed Challenger model could not be parsed; retrying original GLB:", compressedParseError);
+   $("status").textContent = "إعادة محاولة تحميل السيارة…";
+   const fallback = await fetch("./challenger-1970.glb", {cache: "force-cache"});
+   if (!fallback.ok) {
+    throw new Error("تعذّرت قراءة الملف المضغوط، وفشل تحميل نسخة التوافق (HTTP " + fallback.status + ").");
+   }
+   gltf = await parseModelBuffer(await fallback.arrayBuffer());
+  }
+
+  model = gltf.scene;
+  const box = new THREE.Box3().setFromObject(model);
+  const originalCenter = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z) || 1;
+  const scaleFactor = 4.2 / maxDim;
+  model.scale.setScalar(scaleFactor);
+  // Center the body horizontally and place its lowest point on the floor.
+  model.position.set(-originalCenter.x * scaleFactor, -box.min.y * scaleFactor, -originalCenter.z * scaleFactor);
+  model.updateMatrixWorld(true);
+  const groundedBox = new THREE.Box3().setFromObject(model);
+  modelCenter.copy(groundedBox.getCenter(new THREE.Vector3()));
+  scene.add(model);
+  camera.position.set(modelCenter.x + 4.8, modelCenter.y + 1.3, modelCenter.z + 5.8);
+  controls.target.copy(modelCenter);
+  controls.update();
+  model.traverse((obj) => {
+   if (!obj.isMesh) return;
+   obj.castShadow = false; obj.receiveShadow = false;
+   obj.userData.baseMaterial = obj.material;
+   obj.userData.baseVisible = obj.visible;
+   originalPositions.set(obj, obj.position.clone());
+   meshes.push(obj);
   });
+  window.__carViewerModelLoaded = true;
+  $("retryLoad").hidden = true;
+  $("count").textContent = meshes.length + " قطعة";
+  $("status").textContent = usedFallback ? "تم التحميل بوضع التوافق" : "تم تحميل النموذج";
+  $("loadTitle").textContent = "اكتمل تحميل السيارة";
+  $("progress").style.width = "100%";
+  homeCamera = {position:camera.position.clone(), target:controls.target.clone()};
+  renderParts();
+  setTimeout(() => $("load").classList.add("hidden"), 250);
+  requestRender();
  } catch (err) {
   console.error("Challenger model load error:", err);
   setLoadError(err instanceof Error ? err.message : "تعذّر تنزيل ملف السيارة. افحص الاتصال ثم أعد المحاولة.");
