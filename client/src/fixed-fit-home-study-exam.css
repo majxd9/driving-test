@@ -1607,7 +1607,7 @@ html:has(.home-page) #root {
     line-height: 1.3 !important;
   }
 
-  .home-page .home-page main {
+  .home-page main {
     gap: 4px !important;
   }
 }
