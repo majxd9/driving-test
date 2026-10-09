@@ -424,7 +424,7 @@ export default function Study() {
         >
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="m4 4 16 16"/></svg>
         </button>
-        <div className={"question-audio-nav__status " + (audioError ? "error" : audioPlaying ? "ready" : "prompt")}>
+        <div className={"question-audio-nav__status " + (introAudioMessage ? "error" : introAudioPlaying || audioPlaying ? "ready" : audioError ? "error" : "prompt")}>
           {introAudioPlaying ? "جارٍ تشغيل تعليمات الصوت" : introAudioMessage ? introAudioMessage : audioError ? audioError : audioPlaying ? (audioModeRef.current === 'disabled-prompt' ? "جارٍ تشغيل رسالة الإيقاف" : "الصوت سيبقى شغال حتى تضغط إيقاف") : audioEnabled ? "الصوت مفعّل وسيعمل مع السؤال التالي" : "اضغط زر التشغيل للاستماع"}
         </div>
         <audio
