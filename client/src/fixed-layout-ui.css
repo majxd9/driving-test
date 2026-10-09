@@ -1712,3 +1712,53 @@ html:has(.home-page) #root {
     scroll-behavior: auto !important;
   }
 }
+
+
+/* Final geometry corrections: reserve the fixed Study controls and let Exam
+   distribute the available content height instead of leaving dead space. */
+.study-premium .study-premium-stage {
+  padding-bottom: 42px !important;
+}
+@media (max-width: 760px) {
+  .study-premium .study-premium-stage {
+    padding-bottom: 36px !important;
+  }
+}
+@media (max-height: 680px) {
+  .study-premium .study-premium-stage {
+    padding-bottom: 34px !important;
+  }
+}
+.exam-page-v2 .exam-scroll-v2 {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+}
+.exam-page-v2 .exam-scroll-v2 > .exam-image-slot-v2 {
+  flex: 0 0 clamp(132px, 22dvh, 218px) !important;
+}
+.exam-page-v2 .exam-scroll-v2 > .exam-question-v2 {
+  flex: 0 0 auto !important;
+}
+.exam-page-v2 .exam-scroll-v2 > .exam-answers-v2 {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+.exam-page-v2 .exam-scroll-v2 > .diagram-card {
+  flex: 0 1 auto !important;
+  min-height: 0 !important;
+  max-height: clamp(0px, 6dvh, 54px) !important;
+  overflow: hidden !important;
+}
+@media (max-width: 760px) {
+  .exam-page-v2 .exam-scroll-v2 > .exam-image-slot-v2 {
+    flex-basis: clamp(110px, 19dvh, 160px) !important;
+  }
+}
+@media (max-height: 680px) {
+  .exam-page-v2 .exam-scroll-v2 > .exam-image-slot-v2 {
+    flex-basis: clamp(92px, 17dvh, 132px) !important;
+  }
+}
