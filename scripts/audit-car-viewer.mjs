@@ -45,6 +45,14 @@ assert.ok(viewer.includes('./vendor/GLTFLoader.js'), 'GLTFLoader must be local')
 assert.ok(viewer.includes('challenger-1970.glb.gzdata'), 'Viewer must prefer the compressed model');
 assert.ok(viewer.includes('qualityProfiles ='), 'Graphics quality profiles are missing');
 assert.ok(viewer.includes('qualitySelect.addEventListener("change"'), 'Graphics quality selector is not wired');
+assert.ok(html.includes('id="carSelect"'), 'Vehicle selector is missing');
+assert.ok(html.includes('<option value="mclaren" selected>McLaren Senna GTR</option>'), 'McLaren must be the default vehicle');
+assert.ok(html.includes('<option value="mustang">Ford Mustang GT</option>'), 'Ford Mustang must be the second vehicle option');
+assert.ok(viewer.includes('let currentQuality = "medium"'), 'Medium graphics quality must be the default');
+assert.ok(viewer.includes('urlForQuality') && viewer.includes('mclaren-senna-gtr-'), 'McLaren quality-specific assets are not wired');
+assert.ok(viewer.includes('mustang-2005.glb'), 'Ford Mustang model source is missing');
+assert.ok(html.includes('data-move="x:-1"') && viewer.includes('button.dataset.move'), 'Individual mesh movement controls are missing');
+assert.ok(viewer.includes('controls.minDistance = 0.25'), 'Interior camera zoom support is missing');
 assert.ok(html.includes('id="qualitySelect"'), 'Graphics quality selector is missing from the UI');
 assert.ok(html.includes('<option value="low">اقتصادية</option>') && html.includes('<option value="medium">متوسطة</option>') && html.includes('<option value="high">عالية</option>'), 'All three graphics quality levels must be available');
 assert.ok(headers.includes("Content-Encoding: gzip"), "Compressed model must be browser-decompressed via HTTP Content-Encoding");
