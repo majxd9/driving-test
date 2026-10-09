@@ -89,7 +89,6 @@ export default function Study() {
     setFailedAiImageId(null);
     setAdminImageBusy(null);
     setAdminImageToolsFor(null);
-    setShowExplanatoryImage(true);
     setShowDiagram(true);
   }, [index]);
 
