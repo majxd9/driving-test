@@ -1,34 +1,21 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 /**
- * Loads the standalone viewer only when opened. The large 3D model is not
- * imported into the React bundle or fetched by the lighting page.
+ * The standalone viewer is intentionally opened as a top-level document.
+ * This keeps the site's strict frame-ancestors 'none' / X-Frame-Options: DENY
+ * protection intact instead of embedding a page that those protections block.
  */
 export default function CarExplorer() {
-  const navigate = useNavigate();
-
   useEffect(() => {
-    const onMessage = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-      if (event.data?.type === 'CAR_EXPLORER_CLOSE') navigate('/practical-info');
-    };
-    window.addEventListener('message', onMessage);
-    return () => window.removeEventListener('message', onMessage);
-  }, [navigate]);
+    window.location.replace('/car-explorer/index.html');
+  }, []);
 
   return (
-    <main aria-label="مستكشف السيارة ثلاثي الأبعاد" style={{
-      position: 'fixed', inset: 0, width: '100%', height: '100dvh',
-      overflow: 'hidden', background: '#0b0d11', zIndex: 200
+    <main role="status" aria-live="polite" style={{
+      position: 'fixed', inset: 0, display: 'grid', placeItems: 'center',
+      background: '#0b0d11', color: '#f1f3f7', fontFamily: 'system-ui, sans-serif'
     }}>
-      <iframe
-        title="مستكشف Dodge Challenger 1970 ثلاثي الأبعاد"
-        src="/car-explorer/index.html"
-        allow="fullscreen"
-        referrerPolicy="same-origin"
-        style={{ display: 'block', width: '100%', height: '100%', border: 0 }}
-      />
+      جارٍ فتح مستكشف السيارة ثلاثي الأبعاد…
     </main>
   );
 }

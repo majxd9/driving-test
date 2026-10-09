@@ -29,3 +29,5 @@ jobs:
         run: npm ci
       - name: TypeScript + Vite build
         run: npm run build
+      - name: 3D car viewer path and CSP audit
+        run: node ../scripts/audit-car-viewer.mjs
