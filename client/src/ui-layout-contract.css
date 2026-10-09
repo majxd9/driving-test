@@ -1762,3 +1762,18 @@ html:has(.exam-page-v2) #root {
     animation: none !important;
   }
 }
+
+
+/* Honor the existing mobile GPU budget: keep the glass effect through translucent fills,
+   borders and highlights, not live backdrop filters on the Home screen. */
+@media (max-width: 760px) {
+  .home-page .site-header,
+  .home-page .home-hero,
+  .home-page .category-card,
+  .home-page .home-exam,
+  .home-page .home-practical-card,
+  .home-page .home-car-viewer-card {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
