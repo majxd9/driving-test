@@ -34,13 +34,13 @@ try {
   runNodeScript('node_modules/vite/bin/vite.js', ['build']);
 
   if (!existsSync(distCompressed)) throw new Error('Vite output is missing the compressed Challenger model.');
-  if (!existsSync(distModel)) throw new Error('Vite output is missing the original Challenger model fallback.');
-  if (statSync(distModel).size !== original.byteLength) throw new Error('Original model size changed during the build.');
+  // Do not publish the 21.5 MB uncompressed duplicate. Modern browsers support
+  // DecompressionStream; the viewer intentionally uses only the smaller asset.
+  if (existsSync(distModel)) unlinkSync(distModel);
   const publishedBytes = statSync(distCompressed).size;
   if (publishedBytes !== compressed.byteLength) throw new Error('Compressed model size changed during the build.');
-  console.log('Production model assets: compressed ' + publishedBytes.toLocaleString() +
-    ' bytes (preferred), original ' + original.byteLength.toLocaleString() +
-    ' bytes (downloaded only as a compatibility fallback).');
+  console.log('Production model asset: compressed ' + publishedBytes.toLocaleString() +
+    ' bytes; removed the uncompressed ' + original.byteLength.toLocaleString() + ' byte duplicate.');
 } catch (error) {
   console.error(error);
   process.exitCode = 1;
