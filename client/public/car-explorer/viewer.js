@@ -96,92 +96,56 @@ const setLoadError = (message) => {
 };
 const loader = new GLTFLoader();
 
-async function readResponseBytes(response) {
- const reader = response.body?.getReader();
- if (!reader) return new Uint8Array(await response.arrayBuffer());
- const total = Number(response.headers.get("content-length") || 0);
- const chunks = [];
- let loaded = 0;
- while (true) {
-  const result = await reader.read();
-  if (result.done) break;
-  chunks.push(result.value);
-  loaded += result.value.byteLength;
-  if (total > 0) {
-   const pct = Math.min(100, loaded / total * 100);
-   $("progress").style.width = (pct * 0.55) + "%";
-   $("status").textContent = "تنزيل الملف المضغوط " + Math.round(pct) + "%";
-  } else {
-   $("status").textContent = "تنزيل الملف (" + (loaded / 1048576).toFixed(1) + " MB)";
-  }
- }
- const bytes = new Uint8Array(loaded);
- let offset = 0;
- for (const chunk of chunks) {
-  bytes.set(chunk, offset);
-  offset += chunk.byteLength;
- }
- $("progress").style.width = "55%";
- return bytes;
-}
-
-async function parseModelBuffer(buffer) {
+// Use the browser's native HTTP gzip decoding instead of buffering and inflating the
+// entire model in JavaScript. Cloudflare sends Content-Encoding: gzip; the browser
+// decodes it while receiving the bytes, then GLTFLoader parses the GLB.
+function loadGltf(url, statusLabel, progressStart = 0, progressSpan = 64) {
  return new Promise((resolve, reject) => {
-  loader.parse(buffer, new URL("./", window.location.href).href, resolve, reject);
+  loader.load(url, resolve, (event) => {
+   if (event && event.total > 0) {
+    const pct = Math.max(0, Math.min(100, event.loaded / event.total * 100));
+    $("status").textContent = statusLabel + " " + Math.round(pct) + "%";
+    $("progress").style.width = (progressStart + progressSpan * pct / 100) + "%";
+   } else if (event && event.loaded > 0) {
+    $("status").textContent = statusLabel + " (" + (event.loaded / 1048576).toFixed(1) + " MB)";
+   } else {
+    $("status").textContent = statusLabel;
+   }
+  }, reject);
  });
 }
 
 async function loadCarModel() {
  try {
-  let modelBuffer;
   let usedFallback = false;
   let gltf;
+  let compressedError = null;
 
-  // Prefer the smaller gzip asset, but do not make the viewer depend on native gzip support.
+  // Prefer the compressed asset. The browser performs gzip decoding natively
+  // because the matching Cloudflare Pages header declares Content-Encoding: gzip.
   try {
-   $("status").textContent = "تنزيل ملف السيارة المضغوط…";
-   const response = await fetch("./challenger-1970.glb.gzdata", {cache: "force-cache"});
-   if (!response.ok) throw new Error("ملف السيارة المضغوط غير متاح (HTTP " + response.status + ").");
-   if (typeof DecompressionStream !== "function") {
-    throw new Error("المتصفح لا يدعم فك ضغط gzip المدمج.");
-   }
-   const compressed = await readResponseBytes(response);
-   $("status").textContent = "فك ضغط السيارة…";
-   $("loadMessage").textContent = "تم تنزيل الملف المضغوط. يجري الآن فك الضغط وتجهيز المجسّم.";
-   const decompressed = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("gzip"));
-   modelBuffer = await new Response(decompressed).arrayBuffer();
-   $("progress").style.width = "72%";
-  } catch (compressedError) {
+   $("status").textContent = "تحميل السيارة المضغوطة…";
+   $("loadMessage").textContent = "يجري تنزيل النسخة المحسّنة، ويفك المتصفح ضغطها تلقائياً أثناء التحميل.";
+   gltf = await loadGltf("./challenger-1970.glb.gzdata", "تحميل النسخة السريعة", 0, 66);
+  } catch (err) {
+   compressedError = err;
    usedFallback = true;
-   console.warn("Compressed Challenger model unavailable; trying original GLB:", compressedError);
+   console.warn("Compressed Challenger model unavailable; trying original GLB:", err);
    $("status").textContent = "تحميل النسخة الاحتياطية…";
-   $("loadMessage").textContent = "تعذّر استخدام النسخة السريعة، يجري تحميل نسخة التوافق.";
-   const fallback = await fetch("./challenger-1970.glb", {cache: "force-cache"});
-   if (!fallback.ok) {
-    throw new Error("فشل تحميل النسخة المضغوطة (" +
-      (compressedError instanceof Error ? compressedError.message : "خطأ غير معروف") +
-      ") ونسخة التوافق (HTTP " + fallback.status + ").");
+   $("loadMessage").textContent = "تعذّر فتح النسخة السريعة، يجري تحميل ملف التوافق الأصلي.";
+   try {
+    gltf = await loadGltf("./challenger-1970.glb", "تحميل النسخة الاحتياطية", 0, 68);
+   } catch (fallbackError) {
+    const first = compressedError instanceof Error ? compressedError.message : "خطأ غير معروف";
+    const second = fallbackError instanceof Error ? fallbackError.message : "خطأ غير معروف";
+    throw new Error("فشل تحميل النسخة السريعة (" + first + ") والنسخة الاحتياطية (" + second + ").");
    }
-   modelBuffer = await fallback.arrayBuffer();
-   $("progress").style.width = "70%";
   }
 
-  $("status").textContent = "تجهيز المجسّم ثلاثي الأبعاد…";
+  $("status").textContent = "تجهيز المشهد ثلاثي الأبعاد…";
+  $("loadMessage").textContent = "اكتمل التنزيل. يجري تجهيز المجسّم والخامات للعرض.";
+  $("progress").style.width = "78%";
   await new Promise((resolve) => requestAnimationFrame(resolve));
-
-  try {
-   gltf = await parseModelBuffer(modelBuffer);
-  } catch (compressedParseError) {
-   if (usedFallback) throw compressedParseError;
-   usedFallback = true;
-   console.warn("Compressed Challenger model could not be parsed; retrying original GLB:", compressedParseError);
-   $("status").textContent = "إعادة محاولة تحميل السيارة…";
-   const fallback = await fetch("./challenger-1970.glb", {cache: "force-cache"});
-   if (!fallback.ok) {
-    throw new Error("تعذّرت قراءة الملف المضغوط، وفشل تحميل نسخة التوافق (HTTP " + fallback.status + ").");
-   }
-   gltf = await parseModelBuffer(await fallback.arrayBuffer());
-  }
 
   model = gltf.scene;
   const box = new THREE.Box3().setFromObject(model);

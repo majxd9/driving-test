@@ -24,6 +24,7 @@ for (const file of required) assert.ok(existsSync(path.join(root, file)), `Missi
 
 const html = read('client/public/car-explorer/index.html');
 const viewer = read('client/public/car-explorer/viewer.js');
+const buildScript = read('scripts/build-client.mjs');
 const boot = read('client/public/car-explorer/viewer-boot.js');
 const orbit = read('client/public/car-explorer/vendor/OrbitControls.js');
 const gltf = read('client/public/car-explorer/vendor/GLTFLoader.js');
@@ -46,11 +47,15 @@ assert.ok(viewer.includes('qualityProfiles ='), 'Graphics quality profiles are m
 assert.ok(viewer.includes('qualitySelect.addEventListener("change"'), 'Graphics quality selector is not wired');
 assert.ok(html.includes('id="qualitySelect"'), 'Graphics quality selector is missing from the UI');
 assert.ok(html.includes('<option value="low">اقتصادية</option>') && html.includes('<option value="medium">متوسطة</option>') && html.includes('<option value="high">عالية</option>'), 'All three graphics quality levels must be available');
-assert.ok(viewer.includes('new DecompressionStream("gzip")'), 'Viewer must decompress the compressed model');
-assert.ok(viewer.includes('loader.parse(buffer, new URL("./", window.location.href).href, resolve, reject)'), 'Model buffers must be parsed through the awaitable helper');
-assert.ok(viewer.includes('fetch("./challenger-1970.glb"'), 'Production compatibility fallback for the original model is missing');
-assert.ok(viewer.includes('Compressed Challenger model unavailable; trying original GLB'), 'Compressed model failures must activate the fallback');
-assert.ok(viewer.includes('new Promise((resolve, reject) =>'), 'GLB parsing must be awaitable so a parse failure can trigger the fallback');
+assert.ok(headers.includes("Content-Encoding: gzip"), "Compressed model must be browser-decompressed via HTTP Content-Encoding");
+assert.ok(viewer.includes('loader.load(url, resolve'), "GLTFLoader must load the URL directly instead of buffering the full file");
+assert.ok(viewer.includes('loadGltf("./challenger-1970.glb.gzdata"'), "Viewer must prefer the compressed model");
+assert.ok(viewer.includes('loadGltf("./challenger-1970.glb"'), "Production compatibility fallback for the original model is missing");
+assert.ok(viewer.includes('Compressed Challenger model unavailable; trying original GLB'), "Compressed model failures must activate the fallback");
+assert.ok(!viewer.includes("DecompressionStream") && !viewer.includes("readResponseBytes"), "Manual JavaScript decompression and chunk buffering must remain removed");
+assert.ok(buildScript.includes("@gltf-transform/cli@4.5.1"), "Build-time glTF texture optimization must be pinned to a known version");
+assert.ok(buildScript.includes("'--texture-compress', 'webp'") && buildScript.includes("'--texture-size', '1024'"), "Web-first WebP texture compression and resizing must be enabled");
+assert.ok(buildScript.includes("'--flatten', 'false'") && buildScript.includes("'--join', 'false'"), "Optimization must preserve separate model parts for the interactive sidebar");
 assert.ok(viewer.includes('-box.min.y * scaleFactor'), 'Model should be grounded at the floor');
 for (const [file, source] of [['OrbitControls', orbit], ['GLTFLoader', gltf], ['BufferGeometryUtils', buffer]]) {
   assert.ok(!/from\s+['"]three(?:\/[^'"]*)?['"]/.test(source), `${file} still has a bare Three.js import`);
@@ -69,9 +74,11 @@ assert.ok(!headers.includes('cdn.jsdelivr.net') && !headers.includes("! Content-
 const modelSize = statSync(path.join(root, 'client/public/car-explorer/challenger-1970.glb')).size;
 const sourceCompressed = path.join(root, 'client/public/car-explorer/challenger-1970.glb.gzdata');
 const distModel = path.join(root, 'client/dist/car-explorer/challenger-1970.glb');
+const distOptimized = path.join(root, 'client/dist/car-explorer/challenger-1970.optimized.glb');
 const distCompressed = path.join(root, 'client/dist/car-explorer/challenger-1970.glb.gzdata');
 assert.ok(existsSync(distCompressed), 'Production build is missing the compressed model asset');
 assert.ok(existsSync(distModel), 'Production build must publish the original model as a fallback asset');
+assert.ok(!existsSync(distOptimized), 'Temporary optimization intermediate must not be shipped in production');
 assert.equal(statSync(distModel).size, modelSize, 'Fallback GLB must match the original source model size');
 assert.ok(!existsSync(sourceCompressed), 'Build should clean up its temporary compressed source file');
 const compressedSize = statSync(distCompressed).size;
