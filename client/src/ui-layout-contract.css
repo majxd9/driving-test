@@ -499,6 +499,9 @@ html:has(.exam-page-v2) #root {
   object-fit: contain !important;
   object-position: center !important;
 }
+.study-premium .study-premium-no-image {
+  flex: 0 0 clamp(118px, 21dvh, 218px) !important;
+}
 .study-premium .study-premium-no-image::after {
   content: "لا توجد صورة لهذا السؤال" !important;
   color: rgba(165,189,204,.3) !important;
@@ -976,6 +979,9 @@ html:has(.exam-page-v2) #root {
     min-height: clamp(108px, 19dvh, 158px) !important;
     max-height: clamp(108px, 19dvh, 158px) !important;
   }
+  .study-premium .study-premium-no-image {
+    flex: 0 0 clamp(108px, 19dvh, 158px) !important;
+  }
   .study-premium .study-premium-images { gap: 5px !important; }
   .study-premium .study-premium-question,
   .exam-page-v2 .exam-question-v2 {
@@ -1051,6 +1057,9 @@ html:has(.exam-page-v2) #root {
     min-height: clamp(100px, 17dvh, 150px) !important;
     max-height: clamp(100px, 17dvh, 150px) !important;
   }
+  .study-premium .study-premium-no-image {
+    flex: 0 0 clamp(100px, 17dvh, 150px) !important;
+  }
   .study-premium .study-premium-card,
   .exam-page-v2 .exam-card-v2 {
     gap: 4px !important;
@@ -1097,6 +1106,9 @@ html:has(.exam-page-v2) #root {
     height: clamp(72px, 22dvh, 98px) !important;
     min-height: clamp(72px, 22dvh, 98px) !important;
     max-height: clamp(72px, 22dvh, 98px) !important;
+  }
+  .study-premium .study-premium-no-image {
+    flex: 0 0 clamp(72px, 22dvh, 98px) !important;
   }
   .study-premium .study-premium-meta { flex-basis: 16px !important; height: 16px !important; min-height: 16px !important; max-height: 16px !important; }
   .study-premium .study-premium-question,
