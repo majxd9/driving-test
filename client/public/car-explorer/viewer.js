@@ -163,7 +163,7 @@ async function loadCarModel() {
  homeCamera = {position:camera.position.clone(), target:controls.target.clone()};
  renderParts();
  setTimeout(() => $("load").classList.add("hidden"), 250);
-
+ requestRender();
   }, (err) => {
    console.error("Challenger GLB parse error:", err);
    setLoadError("تم تنزيل ملف السيارة لكن تعذّرت قراءة المجسّم. أعد المحاولة، وإذا تكررت المشكلة أرسل صورة الخطأ.");
