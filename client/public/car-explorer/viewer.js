@@ -96,33 +96,35 @@ const setLoadError = (message) => {
 };
 const loader = new GLTFLoader();
 
-async function readResponseBytes(response) {
- const reader = response.body?.getReader();
- if (!reader) return new Uint8Array(await response.arrayBuffer());
- const total = Number(response.headers.get("content-length") || 0);
+async function readDecompressedModel(response) {
+ const totalCompressed = Number(response.headers.get("content-length") || 0);
+ if (!response.body || typeof DecompressionStream !== "function") {
+  throw new Error("متصفحك لا يدعم تحميل النموذج المضغوط. حدّث المتصفح وحاول مجدداً.");
+ }
+ const stream = response.body.pipeThrough(new DecompressionStream("gzip"));
+ const reader = stream.getReader();
  const chunks = [];
  let loaded = 0;
  while (true) {
-  const result = await reader.read();
-  if (result.done) break;
-  chunks.push(result.value);
-  loaded += result.value.byteLength;
-  if (total > 0) {
-   const pct = Math.min(100, loaded / total * 100);
-   $("progress").style.width = (pct * 0.55) + "%";
-   $("status").textContent = "تنزيل الملف المضغوط " + Math.round(pct) + "%";
-  } else {
-   $("status").textContent = "تنزيل الملف (" + (loaded / 1048576).toFixed(1) + " MB)";
-  }
+  const { value, done } = await reader.read();
+  if (done) break;
+  chunks.push(value);
+  loaded += value.byteLength;
+  // The model's uncompressed size is roughly 21.5 MB; report progress without
+  // buffering a second copy of the compressed download.
+  const estimated = Math.min(99, loaded / (21.6 * 1024 * 1024) * 100);
+  $("progress").style.width = (55 + estimated * 0.17) + "%";
+  $("status").textContent = "فك ضغط وتجهيز بيانات السيارة " + Math.round(estimated) + "%";
  }
- const bytes = new Uint8Array(loaded);
+ const buffer = new Uint8Array(loaded);
  let offset = 0;
  for (const chunk of chunks) {
-  bytes.set(chunk, offset);
+  buffer.set(chunk, offset);
   offset += chunk.byteLength;
  }
- $("progress").style.width = "55%";
- return bytes;
+ if (!loaded) throw new Error("ملف السيارة فارغ.");
+ if (totalCompressed > 0) console.info("Challenger compressed download:", totalCompressed, "bytes");
+ return buffer.buffer;
 }
 
 async function parseModelBuffer(buffer) {
@@ -133,55 +135,16 @@ async function parseModelBuffer(buffer) {
 
 async function loadCarModel() {
  try {
-  let modelBuffer;
-  let usedFallback = false;
-  let gltf;
-
-  // Prefer the smaller gzip asset, but do not make the viewer depend on native gzip support.
-  try {
-   $("status").textContent = "تنزيل ملف السيارة المضغوط…";
-   const response = await fetch("./challenger-1970.glb.gzdata", {cache: "force-cache"});
-   if (!response.ok) throw new Error("ملف السيارة المضغوط غير متاح (HTTP " + response.status + ").");
-   if (typeof DecompressionStream !== "function") {
-    throw new Error("المتصفح لا يدعم فك ضغط gzip المدمج.");
-   }
-   const compressed = await readResponseBytes(response);
-   $("status").textContent = "فك ضغط السيارة…";
-   $("loadMessage").textContent = "تم تنزيل الملف المضغوط. يجري الآن فك الضغط وتجهيز المجسّم.";
-   const decompressed = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("gzip"));
-   modelBuffer = await new Response(decompressed).arrayBuffer();
-   $("progress").style.width = "72%";
-  } catch (compressedError) {
-   usedFallback = true;
-   console.warn("Compressed Challenger model unavailable; trying original GLB:", compressedError);
-   $("status").textContent = "تحميل النسخة الاحتياطية…";
-   $("loadMessage").textContent = "تعذّر استخدام النسخة السريعة، يجري تحميل نسخة التوافق.";
-   const fallback = await fetch("./challenger-1970.glb", {cache: "force-cache"});
-   if (!fallback.ok) {
-    throw new Error("فشل تحميل النسخة المضغوطة (" +
-      (compressedError instanceof Error ? compressedError.message : "خطأ غير معروف") +
-      ") ونسخة التوافق (HTTP " + fallback.status + ").");
-   }
-   modelBuffer = await fallback.arrayBuffer();
-   $("progress").style.width = "70%";
-  }
-
-  $("status").textContent = "تجهيز المجسّم ثلاثي الأبعاد…";
+  $("status").textContent = "تنزيل ملف السيارة المضغوط…";
+  $("loadMessage").textContent = "يتم تنزيل نسخة مضغوطة لتقليل حجم النقل، ثم تجهيز المجسّم.";
+  const response = await fetch("./challenger-1970.glb.gzdata", { cache: "force-cache" });
+  if (!response.ok) throw new Error("ملف السيارة غير متاح (HTTP " + response.status + ").");
+  const modelBuffer = await readDecompressedModel(response);
+  $("progress").style.width = "73%";
+  $("status").textContent = "تحليل المجسّم ثلاثي الأبعاد…";
+  $("loadMessage").textContent = "اكتمل التنزيل. يجري تحليل المجسّم وتجهيز القطع للعرض.";
   await new Promise((resolve) => requestAnimationFrame(resolve));
-
-  try {
-   gltf = await parseModelBuffer(modelBuffer);
-  } catch (compressedParseError) {
-   if (usedFallback) throw compressedParseError;
-   usedFallback = true;
-   console.warn("Compressed Challenger model could not be parsed; retrying original GLB:", compressedParseError);
-   $("status").textContent = "إعادة محاولة تحميل السيارة…";
-   const fallback = await fetch("./challenger-1970.glb", {cache: "force-cache"});
-   if (!fallback.ok) {
-    throw new Error("تعذّرت قراءة الملف المضغوط، وفشل تحميل نسخة التوافق (HTTP " + fallback.status + ").");
-   }
-   gltf = await parseModelBuffer(await fallback.arrayBuffer());
-  }
+  const gltf = await parseModelBuffer(modelBuffer);
 
   model = gltf.scene;
   const box = new THREE.Box3().setFromObject(model);
@@ -190,7 +153,6 @@ async function loadCarModel() {
   const maxDim = Math.max(size.x, size.y, size.z) || 1;
   const scaleFactor = 4.2 / maxDim;
   model.scale.setScalar(scaleFactor);
-  // Center the body horizontally and place its lowest point on the floor.
   model.position.set(-originalCenter.x * scaleFactor, -box.min.y * scaleFactor, -originalCenter.z * scaleFactor);
   model.updateMatrixWorld(true);
   const groundedBox = new THREE.Box3().setFromObject(model);
@@ -210,7 +172,7 @@ async function loadCarModel() {
   window.__carViewerModelLoaded = true;
   $("retryLoad").hidden = true;
   $("count").textContent = meshes.length + " قطعة";
-  $("status").textContent = usedFallback ? "تم التحميل بوضع التوافق" : "تم تحميل النموذج";
+  $("status").textContent = "تم تحميل النموذج";
   $("loadTitle").textContent = "اكتمل تحميل السيارة";
   $("progress").style.width = "100%";
   homeCamera = {position:camera.position.clone(), target:controls.target.clone()};
