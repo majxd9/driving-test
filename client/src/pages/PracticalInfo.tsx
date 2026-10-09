@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode, type PointerEvent as ReactPointerEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../car-explorer-entry.css';
 
 type MainLightKey = 'off' | 'position' | 'auto' | 'low' | 'high' | 'frontFog' | 'rearFog';
 type SignalKey = 'left' | 'right' | 'hazard';
@@ -1374,6 +1375,19 @@ export default function PracticalInfo() {
           </section>
 
           <AutomaticLights/>
+
+          <section className="car-explorer-entry" aria-labelledby="car-explorer-entry-title">
+            <div className="car-explorer-entry-copy">
+              <span className="eyebrow">04 · استكشاف تفاعلي</span>
+              <h2 id="car-explorer-entry-title">شاهد السيارة كقطع حقيقية مترابطة.</h2>
+              <p>بعد تعلّم أضواء السيارة، استكشف نموذج Dodge Challenger ثلاثي الأبعاد، ودوّره، واختر القطع، وافتح العرض المفكك لفهم أماكن المكونات.</p>
+            </div>
+            <button type="button" className="car-explorer-entry-button" onClick={() => navigate('/car-viewer')}>
+              <span className="car-explorer-entry-icon" aria-hidden="true">3D</span>
+              <span><strong>افتح مستكشف السيارة</strong><small>تجربة تفاعلية منفصلة لا تؤثر على محاكي الإضاءة</small></span>
+              <span className="car-explorer-entry-arrow" aria-hidden="true">←</span>
+            </button>
+          </section>
         </section>
 
         <footer className="page-footer-note"><b>تذكّر</b><span>الأيقونة تساعدك على الحفظ، لكن دليل السيارة وقواعد الطريق هما المرجع عند قيادة مركبة محددة.</span></footer>
