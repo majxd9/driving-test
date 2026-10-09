@@ -812,3 +812,23 @@ Do not mark the project Production-Cleared until the manual/externally required 
 - controlled rollback drill,
 - reliable production latency measurements,
 - mobile/browser/accessibility acceptance.
+
+
+## Continuation checkpoint — 2026-10-09
+
+Read this checkpoint together with `PRODUCTION_AUDIT_66_86.md` and `REMEDIATION_LOG_1_85.md` before resuming work. They contain the detailed latest evidence and avoid repeating completed fixes.
+
+### Latest read-only verification
+- The application-code baseline inspected for the live recheck was `7faf3ff0e52adc1d9c7536f7e889789e2271bb95`; commits after it in this continuation are documentation-only.
+- GitHub `release-check`, `Secret History Scan`, and `API Health Monitor` had successful runs `37788431001`, `37788431063`, and `37850950257`.
+- Production DB recheck: Questions 397; non-empty QuestionAudios 397; invalid question core 0; orphan audio/images/reviews 0; active attempts 0; stale AuthLogs older than 90 days 0; duplicate non-empty image hashes 0.
+- Seven empty AI image records are rejected reviews only. Do not delete or repair them by inventing media.
+- Database size about 194 MB; 11/60 connections, 1 active. All 20 public tables have RLS enabled; no direct table grants to `anon` or `authenticated`.
+- Keep `AudioEnabled=true`, `ImageEnabled=false`, one-device Student policy, click-to-play audio, AI approval gate, question bank, Models 1–8, and frozen Exam UI/logic unchanged.
+
+### Items that are still open
+- Full npm development dependency audit has 8 findings (6 high, 2 moderate); runtime-only npm audit passes. Tailwind CSS 3.4.19 is the existing v3 line, and the current `braces` advisory has no patched package version. Do not force a Tailwind v4 major migration or hand-edit dependencies without an actual successful build/test; the local clone attempt in this session was blocked by DNS.
+- Four current Supabase performance INFO findings concern indexes with zero scans in the current stats window. `IX_QuestionAiImages_ImageHash` has one scan; no index was removed. Do not add public RLS policies to silence the 20 INFO lints while direct grants remain absent.
+- Still required for a fully cleared production release: authenticated Student/Admin/device E2E, browser session/CSRF replay, real off-repository PostgreSQL backup plus isolated restore, reliable Render p50/p95/p99, real browser/mobile/accessibility acceptance, and a controlled rollback drill.
+- Task 86 remains CONDITIONAL. Do not mark it complete until the external evidence is genuinely collected.
+- Render service-level tools require explicit confirmation of the target workspace before access. The available workspace is named `My Workspace`; ask the owner to confirm it before querying Render metrics or deploy resources.
