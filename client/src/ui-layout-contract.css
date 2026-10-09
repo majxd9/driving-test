@@ -1131,3 +1131,18 @@ html:has(.exam-page-v2) #root {
   .study-premium .question-audio-nav__status,
   .exam-page-v2 .question-audio-nav__status { font-size: 9px !important; line-height: 1.25 !important; }
 }
+
+.study-premium .original-image-pending {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  border: 1px dashed rgba(151,180,198,.22) !important;
+  background: linear-gradient(145deg, rgba(16,30,40,.9), rgba(8,17,24,.96)) !important;
+  color: #90a6b4 !important;
+}
+.study-premium .original-image-pending span {
+  padding: 8px !important;
+  font-size: 10px !important;
+  line-height: 1.6 !important;
+}
