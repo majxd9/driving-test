@@ -54,3 +54,15 @@
 
 /car-explorer/challenger-1970.glb.gzdata
   Cache-Control: public, max-age=86400
+
+/car-explorer/mclaren-senna-gtr-low.glb.gz
+  Content-Encoding: gzip
+  Cache-Control: public, max-age=86400
+
+/car-explorer/mclaren-senna-gtr-medium.glb.gz
+  Content-Encoding: gzip
+  Cache-Control: public, max-age=86400
+
+/car-explorer/mclaren-senna-gtr-high.glb.gz
+  Content-Encoding: gzip
+  Cache-Control: public, max-age=86400

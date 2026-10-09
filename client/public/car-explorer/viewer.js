@@ -14,7 +14,14 @@ const qualityProfiles = {
  medium: { label: "متوسطة", pixelRatio: (dpr) => Math.min(dpr, 1.25) },
  high: { label: "عالية", pixelRatio: (dpr) => Math.min(dpr * 1.25, 1.8) },
 };
-let currentQuality = matchMedia("(max-width: 700px)").matches ? "low" : "medium";
+const vehicleModels = {
+ mclaren: { label: "McLaren Senna GTR", description: "نموذج سيارة حلبة؛ جودة المجسّم تتغير مع اختيار الجودة.", urlForQuality: (quality) => "./mclaren-senna-gtr-" + quality + ".glb.gz" },
+ mustang: { label: "Ford Mustang GT · 2005", description: "نموذج Mustang GT لعام 2005. تُحفظ نسبة العمل لصاحب النموذج في رابط الترخيص.", url: "https://raw.githubusercontent.com/nesdesignco/FormDrive/e2f861630035385adacd1c5fcdeae5258557cce6/public/models/mustang-2005.glb", attribution: true },
+ challenger: { label: "Dodge Challenger 1970 R/T", description: "نموذج احتياطي متوفر داخل المستودع.", url: "./challenger-1970.glb.gzdata", fallbackUrl: "./challenger-1970.glb" },
+};
+let activeVehicleId = "mclaren";
+let loadSequence = 0;
+let currentQuality = "medium";
 const pixelRatioFor = (quality) => qualityProfiles[quality].pixelRatio(Math.max(1, window.devicePixelRatio || 1));
 renderer.setPixelRatio(pixelRatioFor(currentQuality));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -81,8 +88,19 @@ if (qualitySelect) {
  qualitySelect.value = currentQuality;
  qualitySelect.addEventListener("change", () => {
   const next = qualityProfiles[qualitySelect.value] ? qualitySelect.value : "medium";
+  if (next === currentQuality) return;
   currentQuality = next;
   resize();
+  loadCarModel(activeVehicleId);
+ });
+}
+const carSelect = $("carSelect");
+if (carSelect) {
+ carSelect.value = activeVehicleId;
+ carSelect.addEventListener("change", () => {
+  const next = vehicleModels[carSelect.value] ? carSelect.value : "mclaren";
+  activeVehicleId = next;
+  loadCarModel(next);
  });
 }
 const ro = new ResizeObserver(resize); ro.observe(canvas);
@@ -115,38 +133,78 @@ function loadGltf(url, statusLabel, progressStart = 0, progressSpan = 64) {
  });
 }
 
-async function loadCarModel() {
+function disposeScene(root) {
+ if (!root) return;
+ root.traverse((obj) => {
+  if (obj.geometry) obj.geometry.dispose();
+  if (!obj.material) return;
+  const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+  materials.forEach((mat) => {
+   for (const value of Object.values(mat)) if (value && value.isTexture) value.dispose();
+   mat.dispose();
+  });
+ });
+}
+function updatePartControls() {
+ document.querySelectorAll("[data-move]").forEach((button) => { button.disabled = !selected; });
+ const label = $("selectedPartName");
+ if (label) label.textContent = selected ? cleanName(selected.name, meshes.indexOf(selected)) : "اختر قطعة أولاً";
+}
+function clearLoadedModel() {
+ if (model) { scene.remove(model); disposeScene(model); }
+ model = null; meshes = []; selected = null; exploded = false; inside = false;
+ originalPositions.clear();
+ updatePartControls();
+}
+function updateVehicleDetails(vehicleId, backupMode = false) {
+ const spec = vehicleModels[vehicleId];
+ $("vehicleName").textContent = spec.label;
+ $("vehicleDescription").textContent = backupMode
+  ? "تعذّر تحميل السيارة المختارة؛ عُرضت السيارة الاحتياطية الموجودة داخل المستودع حتى يتوفر ملف النموذج."
+  : spec.description;
+ const attribution = $("modelAttribution");
+ if (attribution) attribution.hidden = !spec.attribution;
+}
+async function loadCarModel(vehicleId = "mclaren", backupMode = false) {
+ const token = ++loadSequence;
+ const spec = vehicleModels[vehicleId] || vehicleModels.mclaren;
+ activeVehicleId = vehicleId;
+ clearLoadedModel();
+ $("load").classList.remove("hidden");
+ $("loadTitle").textContent = "يتم تجهيز " + spec.label;
+ $("loadMessage").textContent = "يجري تحميل المجسّم والخامات حسب جودة العرض المحددة.";
+ $("progress").style.width = "0%";
+ $("status").textContent = "بدء التحميل…";
+ if (carSelect && carSelect.value !== vehicleId) carSelect.value = vehicleId;
  try {
-  let usedFallback = false;
-  let gltf;
-  let compressedError = null;
-
-  // Prefer the compressed asset. The browser performs gzip decoding natively
-  // because the matching Cloudflare Pages header declares Content-Encoding: gzip.
-  try {
-   $("status").textContent = "تحميل السيارة المضغوطة…";
-   $("loadMessage").textContent = "يجري تنزيل النسخة المحسّنة، ويفك المتصفح ضغطها تلقائياً أثناء التحميل.";
-   gltf = await loadGltf("./challenger-1970.glb.gzdata", "تحميل النسخة السريعة", 0, 66);
-  } catch (err) {
-   compressedError = err;
-   usedFallback = true;
-   console.warn("Compressed Challenger model unavailable; trying original GLB:", err);
-   $("status").textContent = "تحميل النسخة الاحتياطية…";
-   $("loadMessage").textContent = "تعذّر فتح النسخة السريعة، يجري تحميل ملف التوافق الأصلي.";
+  let gltf, usedFallback = false;
+  if (vehicleId === "challenger") {
+   let compressedError = null;
    try {
-    gltf = await loadGltf("./challenger-1970.glb", "تحميل النسخة الاحتياطية", 0, 68);
-   } catch (fallbackError) {
-    const first = compressedError instanceof Error ? compressedError.message : "خطأ غير معروف";
-    const second = fallbackError instanceof Error ? fallbackError.message : "خطأ غير معروف";
-    throw new Error("فشل تحميل النسخة السريعة (" + first + ") والنسخة الاحتياطية (" + second + ").");
+    $("status").textContent = "تحميل السيارة المضغوطة…";
+    gltf = await loadGltf("./challenger-1970.glb.gzdata", "تحميل النسخة السريعة", 0, 66);
+   } catch (err) {
+    compressedError = err; usedFallback = true;
+    console.warn("Compressed Challenger model unavailable; trying original GLB:", err);
+    $("status").textContent = "تحميل النسخة الاحتياطية…";
+    try {
+     gltf = await loadGltf("./challenger-1970.glb", "تحميل النسخة الاحتياطية", 0, 68);
+    } catch (fallbackError) {
+     const first = compressedError instanceof Error ? compressedError.message : "خطأ غير معروف";
+     const second = fallbackError instanceof Error ? fallbackError.message : "خطأ غير معروف";
+     throw new Error("فشل تحميل النسخة السريعة (" + first + ") والنسخة الاحتياطية (" + second + ").");
+    }
    }
+  } else {
+   const url = vehicleId === "mclaren" ? spec.urlForQuality(currentQuality) : spec.url;
+   gltf = await loadGltf(url, "تحميل " + spec.label, 0, 66);
   }
-
+  if (token !== loadSequence) { disposeScene(gltf.scene); return; }
   $("status").textContent = "تجهيز المشهد ثلاثي الأبعاد…";
   $("loadMessage").textContent = "اكتمل التنزيل. يجري تجهيز المجسّم والخامات للعرض.";
   $("progress").style.width = "78%";
   await new Promise((resolve) => requestAnimationFrame(resolve));
-
+  if (token !== loadSequence) { disposeScene(gltf.scene); return; }
   model = gltf.scene;
   const box = new THREE.Box3().setFromObject(model);
   const originalCenter = box.getCenter(new THREE.Vector3());
@@ -154,7 +212,6 @@ async function loadCarModel() {
   const maxDim = Math.max(size.x, size.y, size.z) || 1;
   const scaleFactor = 4.2 / maxDim;
   model.scale.setScalar(scaleFactor);
-  // Center the body horizontally and place its lowest point on the floor.
   model.position.set(-originalCenter.x * scaleFactor, -box.min.y * scaleFactor, -originalCenter.z * scaleFactor);
   model.updateMatrixWorld(true);
   const groundedBox = new THREE.Box3().setFromObject(model);
@@ -162,6 +219,7 @@ async function loadCarModel() {
   scene.add(model);
   camera.position.set(modelCenter.x + 4.8, modelCenter.y + 1.3, modelCenter.z + 5.8);
   controls.target.copy(modelCenter);
+  controls.minDistance = 1.2;
   controls.update();
   model.traverse((obj) => {
    if (!obj.isMesh) return;
@@ -174,19 +232,26 @@ async function loadCarModel() {
   window.__carViewerModelLoaded = true;
   $("retryLoad").hidden = true;
   $("count").textContent = meshes.length + " قطعة";
-  $("status").textContent = usedFallback ? "تم التحميل بوضع التوافق" : "تم تحميل النموذج";
-  $("loadTitle").textContent = "اكتمل تحميل السيارة";
+  $("status").textContent = backupMode ? "تم تحميل النموذج الاحتياطي" : usedFallback ? "تم التحميل بوضع التوافق" : "تم تحميل النموذج";
+  $("loadTitle").textContent = "اكتمل تحميل " + spec.label;
   $("progress").style.width = "100%";
   homeCamera = {position:camera.position.clone(), target:controls.target.clone()};
+  updateVehicleDetails(vehicleId, backupMode);
   renderParts();
-  setTimeout(() => $("load").classList.add("hidden"), 250);
+  updatePartControls();
+  setTimeout(() => { if (token === loadSequence) $("load").classList.add("hidden"); }, 250);
   requestRender();
  } catch (err) {
-  console.error("Challenger model load error:", err);
+  if (token !== loadSequence) return;
+  console.error(spec.label + " model load error:", err);
+  if (vehicleId !== "challenger" && !backupMode) {
+   $("loadMessage").textContent = "لم يتوفر ملف هذه السيارة بعد؛ يجري فتح النموذج الاحتياطي حتى لا يتعطل العارض.";
+   return loadCarModel("challenger", true);
+  }
   setLoadError(err instanceof Error ? err.message : "تعذّر تنزيل ملف السيارة. افحص الاتصال ثم أعد المحاولة.");
  }
 }
-loadCarModel();
+loadCarModel("mclaren");
 
 function restoreMaterial(mesh) { if (mesh) mesh.material = mesh.userData.baseMaterial; }
 function setSelected(mesh) {
@@ -197,7 +262,7 @@ function setSelected(mesh) {
   const hi = (mat) => { const m = mat.clone(); if (m.emissive) { m.emissive.set("#6b4215"); m.emissiveIntensity = .55; } return m; };
   selected.material = Array.isArray(selected.userData.baseMaterial) ? selected.userData.baseMaterial.map(hi) : hi(selected.userData.baseMaterial);
  }
- renderParts(); requestRender();
+ renderParts(); updatePartControls(); requestRender();
 }
 function renderParts() {
  const query = $("search").value.trim().toLowerCase();
@@ -235,7 +300,7 @@ function tween(fn, duration=260) {
 }
 $("zoomIn").addEventListener("click",()=>{const delta=camera.position.clone().sub(controls.target).multiplyScalar(.17);camera.position.sub(delta);requestRender();});
 $("zoomOut").addEventListener("click",()=>{const delta=camera.position.clone().sub(controls.target).multiplyScalar(.2);camera.position.add(delta);requestRender();});
-$("reset").addEventListener("click",()=>{if(!homeCamera)return;camera.position.copy(homeCamera.position);controls.target.copy(homeCamera.target);exploded=false;inside=false;meshes.forEach(m=>{m.position.copy(originalPositions.get(m));m.visible=true;});$("explode").textContent="تفكيك بصري";$("inside").textContent="كشف الداخل";setSelected(null);requestRender();});
+$("reset").addEventListener("click",()=>{if(!homeCamera)return;camera.position.copy(homeCamera.position);controls.target.copy(homeCamera.target);controls.minDistance=1.2;exploded=false;inside=false;meshes.forEach(m=>{m.position.copy(originalPositions.get(m));m.visible=true;});$("explode").textContent="تفكيك بصري";$("inside").textContent="عرض المقصورة";setSelected(null);requestRender();});
 $("explode").addEventListener("click",()=>{
  if(!model)return;
  exploded=!exploded;
@@ -254,9 +319,29 @@ $("explode").addEventListener("click",()=>{
 $("inside").addEventListener("click",()=>{
  inside=!inside;
  meshes.forEach(m=>{m.visible=!inside||!exteriorPattern.test(String(m.name||""));});
- $("inside").textContent=inside?"إظهار الهيكل":"كشف الداخل";
+ if (inside) {
+  const interiorTarget = modelCenter.clone().add(new THREE.Vector3(0, 0.12, 0));
+  controls.minDistance = 0.25;
+  controls.target.copy(interiorTarget);
+  camera.position.copy(interiorTarget).add(new THREE.Vector3(0.28, 0.2, 0.72));
+ } else if (homeCamera) {
+  controls.minDistance = 1.2;
+  camera.position.copy(homeCamera.position);
+  controls.target.copy(homeCamera.target);
+ }
+ $("inside").textContent=inside?"إظهار الهيكل":"عرض المقصورة";
  if(selected&&!selected.visible)setSelected(null);
  renderParts();requestRender();
+});
+document.querySelectorAll("[data-move]").forEach((button) => {
+ button.addEventListener("click", () => {
+  if (!selected) return;
+  const [axis, direction] = button.dataset.move.split(":");
+  const delta = Number(direction) * 0.06;
+  if (!["x", "y", "z"].includes(axis) || !Number.isFinite(delta)) return;
+  selected.position[axis] += delta;
+  requestRender();
+ });
 });
 $("backBtn").addEventListener("click",()=>{ window.location.href="/practical-info"; });
 $("helpBtn").addEventListener("click",()=>alert("اسحب المشهد لتدوير السيارة، واستخدم التكبير لإظهار التفاصيل. اختر أي قطعة من النموذج أو القائمة، واستخدم «تفكيك بصري» لفصل الأجزاء مؤقتاً. عرض الداخل يعتمد على أسماء أجزاء المجسّم الأصلية."));
