@@ -34,12 +34,13 @@ try {
   runNodeScript('node_modules/vite/bin/vite.js', ['build']);
 
   if (!existsSync(distCompressed)) throw new Error('Vite output is missing the compressed Challenger model.');
-  if (existsSync(distModel)) unlinkSync(distModel);
-  if (existsSync(distModel)) throw new Error('Could not remove the uncompressed model from production output.');
+  if (!existsSync(distModel)) throw new Error('Vite output is missing the original Challenger model fallback.');
+  if (statSync(distModel).size !== original.byteLength) throw new Error('Original model size changed during the build.');
   const publishedBytes = statSync(distCompressed).size;
   if (publishedBytes !== compressed.byteLength) throw new Error('Compressed model size changed during the build.');
-  console.log('Production model asset: ' + publishedBytes.toLocaleString() +
-    ' bytes; uncompressed GLB excluded from deployment output.');
+  console.log('Production model assets: compressed ' + publishedBytes.toLocaleString() +
+    ' bytes (preferred), original ' + original.byteLength.toLocaleString() +
+    ' bytes (downloaded only as a compatibility fallback).');
 } catch (error) {
   console.error(error);
   process.exitCode = 1;
