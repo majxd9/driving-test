@@ -1,0 +1,79 @@
+/* High-specificity overrides for the legacy mobile rules that hid the training question. */
+.study-premium .study-premium-card{
+  display:flex!important; flex-direction:column!important; align-items:stretch!important;
+  gap:clamp(4px,.6dvh,7px)!important; overflow:hidden!important; overflow-y:hidden!important;
+}
+.study-premium .study-premium-card .study-premium-meta{
+  position:relative!important; inset:auto!important; order:0!important; flex:0 0 18px!important; width:100%!important;
+}
+.study-premium .study-premium-card .study-premium-images,
+.study-premium .study-premium-card .study-premium-no-image{
+  position:relative!important; inset:auto!important; order:1!important;
+  flex:0 0 clamp(122px,18dvh,176px)!important; width:100%!important;
+  height:clamp(122px,18dvh,176px)!important; min-height:clamp(122px,18dvh,176px)!important;
+  max-height:clamp(122px,18dvh,176px)!important; margin:0!important;
+}
+.study-premium .study-premium-card.no-explanation .study-premium-question,
+.study-premium .study-premium-card.has-explanation .study-premium-question{
+  position:relative!important; inset:auto!important; top:auto!important; right:auto!important; bottom:auto!important; left:auto!important;
+  order:2!important; flex:0 0 auto!important; width:100%!important; height:auto!important;
+  min-height:54px!important; max-height:none!important; margin:0!important; padding:7px 8px!important;
+  overflow:visible!important; display:block!important; z-index:auto!important;
+  font-size:clamp(14px,3.8vw,18px)!important; line-height:1.48!important; text-align:right!important;
+  white-space:normal!important; -webkit-line-clamp:unset!important; line-clamp:unset!important;
+}
+.study-premium .study-premium-card .study-premium-answers{
+  position:relative!important; inset:auto!important; top:auto!important; right:auto!important; bottom:auto!important; left:auto!important;
+  order:3!important; flex:0 0 auto!important; width:100%!important; height:auto!important;
+  min-height:0!important; max-height:none!important; margin:0!important; padding:0!important;
+  overflow:visible!important; display:grid!important; grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:none!important; grid-auto-rows:minmax(40px,auto)!important;
+  gap:clamp(4px,.55dvh,7px)!important; z-index:auto!important;
+}
+.study-premium .study-premium-card .study-premium-option{
+  flex:0 0 auto!important; min-height:clamp(38px,4.6dvh,46px)!important;
+  height:auto!important; max-height:none!important; padding:6px 9px!important; overflow:visible!important;
+}
+.study-premium .study-premium-card .study-premium-option-text{
+  display:block!important; min-width:0!important; max-height:none!important; overflow:visible!important;
+  white-space:normal!important; -webkit-line-clamp:unset!important; line-clamp:unset!important;
+}
+.study-premium .study-premium-card .study-premium-explanation.is-empty{display:none!important;}
+.study-premium .study-premium-card .study-premium-explanation:not(.is-empty){order:4!important;}
+.study-premium .study-premium-card .study-premium-diagram-tile{order:5!important;}
+@media(max-height:700px) and (max-width:700px){
+  .study-premium .study-premium-card .study-premium-images,
+  .study-premium .study-premium-card .study-premium-no-image{
+    flex-basis:clamp(108px,15dvh,132px)!important; height:clamp(108px,15dvh,132px)!important;
+    min-height:clamp(108px,15dvh,132px)!important; max-height:clamp(108px,15dvh,132px)!important;
+  }
+  .study-premium .study-premium-card .study-premium-question{min-height:48px!important;font-size:14px!important;}
+  .study-premium .study-premium-card .study-premium-option{min-height:34px!important;padding-block:4px!important;}
+}
+
+/* WebGL nebula belongs on the Home hero, not the login screen. */
+.login-v2{background:#090b0f!important;isolation:auto!important;}
+.login-nebula-bg{display:none!important;}
+.home-page .home-hero{position:relative!important;isolation:isolate!important;}
+.home-page .home-nebula-fallback{
+  position:absolute!important;inset:0!important;z-index:0!important;pointer-events:none!important;
+  background:radial-gradient(ellipse at 20% 20%,rgba(45,212,191,.16),transparent 42%),
+    radial-gradient(ellipse at 77% 72%,rgba(79,132,245,.13),transparent 45%)!important;
+}
+.home-page .home-nebula-bg{
+  position:absolute!important;inset:0!important;z-index:0!important;width:100%!important;height:100%!important;
+  pointer-events:none!important;opacity:.24!important;overflow:hidden!important;background:transparent!important;
+}
+.home-page .home-nebula-bg canvas{display:block!important;width:100%!important;height:100%!important;}
+.home-page .home-hero-copy,.home-page .home-score{position:relative!important;z-index:2!important;}
+@media(max-width:899px),(prefers-reduced-motion:reduce){.home-page .home-nebula-bg{display:none!important;}}
+/* Reduce costly background blur and transitions on mobile study/exam. */
+@media(max-width:700px){
+  .study-premium .study-premium-card,.exam-page-v2 .exam-card-v2{
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 8px 24px rgba(0,0,0,.15)!important;
+  }
+  .study-premium .study-premium-image,.exam-page-v2 .exam-question-image-frame{
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  }
+  .study-premium .study-premium-option,.exam-page-v2 .exam-option-v2{transition:none!important;}
+}
