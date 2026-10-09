@@ -11,7 +11,7 @@ import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
-import { getCachedQuestionAudioPromptSource, playQuestionAudioPrompt, preloadQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { getCachedQuestionAudioPromptSource, playQuestionAudioPrompt, preloadQuestionAudioPrompt, stopQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -36,9 +36,10 @@ export default function Study() {
   const [jumpValue, setJumpValue] = useState('1');
   const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const activationPromptPendingRef = useRef(false);
-  const activationPromptQuestionRef = useRef<string | null>(null);
-  const audioModeRef = useRef<'question' | 'enabled-prompt' | null>(null);
+  const audioContinuousRef = useRef(false);
+  const firstEntryPromptPlayedRef = useRef(false);
+  const audioModeRef = useRef<'question' | 'enabled-prompt' | 'disabled-prompt' | null>(null);
+  const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
@@ -100,7 +101,7 @@ export default function Study() {
       getCachedQuestionAudioPromptSource(key) ??
       resolveApiUrl(`/api/questions/audio-prompt/${key}`);
 
-    audioModeRef.current = key === 'question-audio-enabled' ? 'enabled-prompt' : null;
+    audioModeRef.current = key === 'question-audio-enabled' ? 'enabled-prompt' : 'disabled-prompt';
     audio.pause();
     audio.src = source;
     audio.preload = 'auto';
@@ -122,6 +123,36 @@ export default function Study() {
 
   const nextAudioPath = questions[index + 1]?.audioUrl ?? null;
   const nextAudioUrl = nextAudioPath ? resolveApiUrl(nextAudioPath) : null;
+
+  const playCurrentQuestionAudio = useCallback(async (url: string | null) => {
+    const audio = audioRef.current;
+    if (!audio || !url || !audioContinuousRef.current || url !== currentAudioUrl) return false;
+    try {
+      const source = await getQuestionAudioSource(url);
+      if (!audioContinuousRef.current || url !== currentAudioUrl) return false;
+      if (audio.src !== source) {
+        audio.src = source;
+        audio.preload = 'auto';
+        audio.load();
+      }
+      audio.currentTime = 0;
+      audioModeRef.current = 'question';
+      await audio.play();
+      setAudioPlaying(true);
+      setAudioError(null);
+      return true;
+    } catch (error) {
+      setAudioPlaying(false);
+      setAudioError(error instanceof Error ? error.message : 'تعذر تشغيل ملف صوت السؤال.');
+      return false;
+    }
+  }, [currentAudioUrl]);
+
+  useEffect(() => {
+    if (loading || error || !questions.length || firstEntryPromptPlayedRef.current) return;
+    firstEntryPromptPlayedRef.current = true;
+    void playQuestionAudioPrompt('question-audio-first-entry');
+  }, [loading, error, questions.length]);
 
   useEffect(() => {
 
@@ -145,6 +176,13 @@ export default function Study() {
           audio.preload = 'auto';
           audio.load();
           setAudioReady(true);
+          if (audioContinuousRef.current) {
+            audioModeRef.current = 'question';
+            audio.currentTime = 0;
+            void audio.play()
+              .then(() => { setAudioPlaying(true); setAudioError(null); })
+              .catch(error => { setAudioPlaying(false); setAudioError(error instanceof Error ? error.message : 'تعذر تشغيل ملف صوت السؤال.'); });
+          }
         })
         .catch(error => {
           if (!active) return;
@@ -305,29 +343,17 @@ export default function Study() {
         <button
           type="button"
           className={"question-audio-nav__audio play " + (audioPlaying ? "playing" : "")}
-          disabled={!currentAudioUrl}
+          disabled={!currentAudioUrl || !audioReady}
           onClick={() => {
+            stopQuestionAudioPrompt();
             setAudioError(null);
-            activationPromptPendingRef.current = true;
-            activationPromptQuestionRef.current = currentAudioUrl;
-            const audio = audioRef.current;
-            if (!audio || !currentAudioUrl) return;
-            audioModeRef.current = 'question';
-            void getQuestionAudioSource(currentAudioUrl)
-              .then(source => {
-                if (audio.src !== source) {
-                  audio.src = source;
-                  audio.preload = 'auto';
-                  audio.load();
-                }
-                audio.currentTime = 0;
-                return audio.play();
-              })
-              .then(() => {
-                setAudioPlaying(true);
-                setAudioError(null);
-              })
-              .catch(error => setAudioError(error instanceof Error ? error.message : 'تعذر تشغيل الصوت.'));
+            if (audioContinuousRef.current) {
+              void playCurrentQuestionAudio(currentAudioUrl);
+              return;
+            }
+            audioContinuousRef.current = true;
+            setAudioEnabled(true);
+            void playSystemPromptOnMainAudio('question-audio-enabled');
           }}
           aria-label="تشغيل الصوت"
           title="تشغيل الصوت"
@@ -338,9 +364,10 @@ export default function Study() {
           type="button"
           className="question-audio-nav__audio stop"
           onClick={() => {
+            stopQuestionAudioPrompt();
+            audioContinuousRef.current = false;
+            setAudioEnabled(false);
             setAudioError(null);
-            activationPromptPendingRef.current = false;
-            activationPromptQuestionRef.current = null;
             audioModeRef.current = null;
             const audio = audioRef.current;
             audio?.pause();
@@ -354,7 +381,7 @@ export default function Study() {
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="m4 4 16 16"/></svg>
         </button>
         <div className={"question-audio-nav__status " + (audioError ? "error" : audioPlaying ? "ready" : "prompt")}>
-          {audioError ? audioError : audioPlaying ? "الصوت سيبقى شغال حتى تضغط إيقاف" : audioReady ? "اضغط زر التشغيل للاستماع" : "جارٍ تجهيز الصوت…"}
+          {audioError ? audioError : audioPlaying ? (audioModeRef.current === 'disabled-prompt' ? "جارٍ تشغيل رسالة الإيقاف" : "الصوت سيبقى شغال حتى تضغط إيقاف") : audioEnabled ? "الصوت مفعّل وسيعمل مع السؤال التالي" : audioReady ? "اضغط زر التشغيل للاستماع" : "جارٍ تجهيز الصوت…"}
         </div>
         <audio
           ref={audioRef}
@@ -362,26 +389,17 @@ export default function Study() {
           onEnded={() => {
             if (audioModeRef.current === 'enabled-prompt') {
               audioModeRef.current = null;
+              if (audioContinuousRef.current) void playCurrentQuestionAudio(currentAudioUrl);
+              else setAudioPlaying(false);
+              return;
+            }
+            if (audioModeRef.current === 'disabled-prompt') {
+              audioModeRef.current = null;
               setAudioPlaying(false);
               return;
             }
-
+            audioModeRef.current = null;
             setAudioPlaying(false);
-
-            const shouldPlayActivationPrompt =
-              audioModeRef.current === 'question' &&
-              activationPromptPendingRef.current &&
-              activationPromptQuestionRef.current === currentAudioUrl;
-
-            activationPromptPendingRef.current = false;
-            activationPromptQuestionRef.current = null;
-
-            if (!shouldPlayActivationPrompt) {
-              audioModeRef.current = null;
-              return;
-            }
-
-            void playSystemPromptOnMainAudio('question-audio-enabled');
           }}
           onError={() => {
             setAudioPlaying(false);

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { unlockQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 import DriftCarArt from '../components/DriftCarArt';
 import SpiritDrift from '../components/SpiritDrift';
 
@@ -115,7 +116,7 @@ export default function Models() {
 
         <div className="models-grid">
           {MODELS.map((model) => (
-            <button key={model.id} onPointerEnter={preloadExam} onFocus={preloadExam} onClick={() => navigate(`/exam/${model.id}`)} className={`model-card ${model.advanced ? 'advanced' : ''}`} type="button">
+            <button key={model.id} onPointerEnter={preloadExam} onFocus={preloadExam} onClick={() => { unlockQuestionAudioPrompt('question-audio-first-entry'); navigate(`/exam/${model.id}`); }} className={`model-card ${model.advanced ? 'advanced' : ''}`} type="button">
               <span className="flex items-center justify-between gap-4">
                 <span className={`model-number ${model.advanced ? 'advanced' : ''}`}>{model.id}</span>
                 <span aria-hidden="true" className="text-xl text-muted">←</span>
