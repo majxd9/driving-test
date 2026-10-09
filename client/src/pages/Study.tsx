@@ -41,7 +41,7 @@ export default function Study() {
   const audioModeRef = useRef<'question' | 'enabled-prompt' | 'disabled-prompt' | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const [, setAudioReady] = useState(false);
+  const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [failedAiImageId, setFailedAiImageId] = useState<number | null>(null);
   const [showExplanatoryImage, setShowExplanatoryImage] = useState(true);
