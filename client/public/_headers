@@ -14,3 +14,12 @@
 
 /mechanic/*
   Cache-Control: public, max-age=31536000, immutable
+
+# The 3D viewer needs its pinned Three.js modules and must be embeddable by this site's same-origin React page.
+/car-explorer/index.html
+  ! Content-Security-Policy
+  ! X-Frame-Options
+
+/car-explorer/index.html
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-Eda625L1hDYxmKU49o9KIhGcIT0EK85ObuRX/qfmQo/x0yo23o4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https://driving-test-evd0.onrender.com data: blob:; media-src 'self' blob:; connect-src 'self' https:; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests
