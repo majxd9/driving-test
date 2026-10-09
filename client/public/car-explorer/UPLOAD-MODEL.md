@@ -1,20 +1,26 @@
-# مستكشف Dodge Challenger 1970
+# عارض السيارات ثلاثي الأبعاد
 
-ملف المجسّم الأصلي موجود داخل المستودع في:
+## السيارات المتاحة
 
-`client/public/car-explorer/challenger-1970.glb`
+- **McLaren Senna GTR** — السيارة الافتراضية. يحتاج العارض ملفات الجودة المضغوطة في المسارات التالية:
+  - `client/public/car-explorer/mclaren-senna-gtr-low.glb.gz`
+  - `client/public/car-explorer/mclaren-senna-gtr-medium.glb.gz`
+  - `client/public/car-explorer/mclaren-senna-gtr-high.glb.gz`
+- **Ford Mustang GT (2005)** — ملف GLB من مصدر عام مرخّص CC BY 4.0؛ راجع `MUSTANG-LICENSE.md`. يحمّله العارض من مصدره المثبّت على commit محدد.
+- **Dodge Challenger 1970 R/T** — نموذج احتياطي محلي موجود مسبقاً في المستودع.
 
-ويُقدَّم بعد النشر من المسار:
+## ضغط ملفات McLaren
 
-`/car-explorer/challenger-1970.glb`
+ملفات `.glb.gz` هي ملفات GLB مضغوطة بـ gzip. يجب إبقاء قواعد `Content-Encoding: gzip` في:
+- `client/public/_headers`
+- `client/_headers`
 
-يحمّل العارض الملف بمسار نسبي من نفس مجلد `index.html`. لا تنقل الملف إلى مجلد `assets` إلا إذا غيّرت مسار التحميل والاختبار الآلي معًا.
+لا تعِد ضغط ملف `.glb.gz`، ولا تفك ضغطه قبل النشر؛ المتصفح يفك ضغط HTTP تلقائياً ثم يمرر بيانات GLB إلى GLTFLoader.
 
-## كيف يعمل العارض
+## الفحوص
 
-- يفتح زر قسم الإضاءة المسار المحمي `/car-viewer`، ثم ينتقل كصفحة كاملة إلى `/car-explorer/index.html`. لا يُستخدم `iframe` كي تبقى حماية منع التضمين فعّالة.
-- ملفات Three.js وOrbitControls وGLTFLoader موجودة محليًا تحت `vendor/`. لا يعتمد تشغيل المجسّم على CDN خارجي أو على import map داخل الصفحة.
-- عند فشل تشغيل JavaScript أو WebGL أو تحميل ملف المجسّم، تعرض الصفحة رسالة قابلة للفهم وزر «إعادة المحاولة».
-- عند تعديل ملفات العارض، تحقّق من فحص `audit-car-viewer.mjs` ومن فحوصات البناء قبل النشر.
+- شغّل `node scripts/audit-car-viewer.mjs` من جذر المستودع.
+- شغّل بناء الواجهة من مجلد `client` عبر `npm run build`.
+- افحص الصفحة المنشورة على الحاسوب والهاتف، وجرّب تبديل السيارة ومستوى الجودة وتحريك قطعة محددة وتكبير المقصورة.
 
-النسخة المحلية من Three.js هي r168 وتُرفق معها رخصة MIT في `vendor/THREE-LICENSE.txt`.
+تنبيه حالة الملفات: الشيفرة تشير إلى ملفات McLaren المضغوطة بالأسماء أعلاه، لكن هذه الملفات الثنائية لم تُضمّن في هذا التعديل؛ يلزم إضافتها إلى الفرع قبل أن يظهر نموذج McLaren فعلياً. عند غيابها يفتح العارض نموذج Challenger الاحتياطي بدلاً من التعطل.
