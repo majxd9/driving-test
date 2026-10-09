@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d11">
+<title>مستكشف Dodge Challenger 1970</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.168.0/examples/jsm/"}}</script>
+<style>
+:root{color-scheme:dark;--bg:#0b0d11;--panel:#11151c;--line:#29313d;--text:#f1f3f7;--muted:#a0a8b5;--gold:#e8ad5c;--teal:#83d7c8}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif}button,input{font:inherit}button{cursor:pointer;color:inherit;touch-action:manipulation}button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.app{height:100dvh;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);background:radial-gradient(ellipse at 38% 40%,#222832 0%,#10141a 48%,#090b0e 100%)}
+header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:1px solid #ffffff12;background:#0c0f14dc;min-height:67px}.brand{display:grid;gap:2px}.eyebrow{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:.09em}.brand strong{font-size:15px}.brand small{font-size:10px;color:var(--muted)}.header-actions{display:flex;gap:7px;margin-inline-start:auto}.btn{border:1px solid var(--line);background:#ffffff07;border-radius:10px;padding:9px 12px;font-size:11px}.btn:hover{border-color:#84919e;background:#ffffff0c}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:12px;padding:12px;min-height:0;direction:ltr}.viewport,.sidebar{direction:rtl;position:relative;min-width:0;min-height:0;border:1px solid #ffffff12;border-radius:18px;overflow:hidden;background:linear-gradient(150deg,#181d25bd,#0a0d12cb)}.viewport{isolation:isolate}.viewport:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,transparent 25%,#090b10a6 100%)}canvas{width:100%;height:100%;display:block;touch-action:none;outline:none}.viewport-head{position:absolute;z-index:2;top:15px;left:16px;right:16px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}.viewport-head strong{display:block;font-size:15px}.viewport-head small{display:block;margin-top:4px;color:#adb6c2;font-size:11px}.status{background:#0d1118d9;border:1px solid #ffffff18;border-radius:10px;padding:8px 10px;font-size:10px;height:max-content;color:#cbd2db}.controls{position:absolute;z-index:3;bottom:14px;left:14px;right:14px;display:flex;flex-wrap:wrap;gap:7px}.controls .btn{background:#0b0e14e8;backdrop-filter:blur(12px)}.load{position:absolute;z-index:5;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,#202733,#0b0d11 72%);text-align:center;padding:24px;transition:opacity .3s}.load.hidden{opacity:0;pointer-events:none}.load-inner{width:min(360px,100%);display:grid;gap:12px;justify-items:center}.load h2{font-size:17px;margin:0}.load p{margin:0;color:var(--muted);font-size:12px;line-height:1.9}.progress{width:100%;height:4px;border-radius:20px;overflow:hidden;background:#ffffff16}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#b77834,#ffd49a);transition:width .12s}.sidebar{display:flex;flex-direction:column;background:#10141aeb}.vehicle{padding:16px;border-bottom:1px solid #ffffff0e}.vehicle .model{font-size:19px;font-weight:700;line-height:1.5}.vehicle p{margin:7px 0 0;color:var(--muted);font-size:11px;line-height:1.8}.side-title{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 13px 8px}.side-title h2{margin:0;font-size:13px}.count{font:11px ui-monospace,monospace;color:var(--gold)}.search{display:block;margin:0 10px 8px}.search input{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px;color:var(--text);background:#090c11;font-size:12px;outline-offset:0}.categories{display:flex;gap:5px;overflow:auto;padding:0 10px 9px;scrollbar-width:thin}.cat{white-space:nowrap;border:1px solid var(--line);border-radius:8px;background:#ffffff04;color:#afb8c6;padding:6px 9px;font-size:10px}.cat.active{border-color:#e8ad5c65;color:#ffdaaa;background:#e8ad5c13}.parts{overflow:auto;min-height:0;padding:0 8px 10px;overscroll-behavior:contain}.part{display:flex;align-items:center;gap:9px;width:100%;padding:9px 8px;border:1px solid transparent;border-radius:10px;background:transparent;text-align:right}.part:hover{background:#ffffff08}.part.active{border-color:#e8ad5c50;background:#e8ad5c0c}.part-mark{width:29px;height:29px;display:grid;place-items:center;border-radius:8px;background:#ffffff07;color:var(--gold);font-size:11px}.part-copy{flex:1;min-width:0;display:grid;gap:2px}.part-copy strong{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.part-copy small{color:var(--muted);font-size:9px}.empty{padding:18px 12px;color:var(--muted);font-size:11px;line-height:1.8}.tip{border-top:1px solid #ffffff0d;padding:10px 13px;color:#9da6b4;font-size:10px;line-height:1.8}
+@media(max-width:850px){html,body{overflow:auto}.app{height:100dvh;min-height:620px}.header-actions .desktop-only{display:none}.workspace{position:relative;display:block;padding:7px}.viewport{height:100%;min-height:0;border-radius:14px}.viewport-head{top:11px;left:11px;right:11px}.viewport-head strong{font-size:13px}.viewport-head small{font-size:10px;max-width:230px}.status{font-size:9px;padding:6px 7px}.controls{left:8px;right:8px;bottom:8px;gap:5px}.controls .btn{padding:8px 9px;font-size:10px}.sidebar{position:absolute;z-index:4;left:7px;right:7px;bottom:7px;top:auto;max-height:43%;border-radius:14px;background:#10141af5;backdrop-filter:blur(18px)}.vehicle{display:none}.side-title{padding:10px 11px 7px}.search{margin:0 9px 7px}.search input{padding:8px 10px}.categories{padding-bottom:7px}.parts{max-height:calc(43dvh - 100px)}.tip{display:none}}
+@media(max-width:480px){header{min-height:57px;padding:8px 10px}.brand strong{font-size:13px}.brand small{font-size:9px}.header-actions{gap:4px}.btn{padding:8px 9px}.workspace{padding:5px}.viewport{border-radius:12px}.viewport-head strong{font-size:12px}.viewport-head small{max-width:185px;font-size:9px}.sidebar{left:5px;right:5px;bottom:5px;max-height:40%}.parts{max-height:calc(40dvh - 100px)}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand"><span class="eyebrow">3D CAR LAB</span><strong>مستكشف قطع السيارة</strong><small>Dodge Challenger 1970 R/T</small></div><div class="header-actions"><button class="btn desktop-only" id="helpBtn">طريقة الاستخدام</button><button class="btn" id="backBtn">العودة للإضاءة ←</button></div></header>
+<main class="workspace">
+<section class="viewport" aria-label="عارض السيارة ثلاثي الأبعاد">
+<canvas id="stage" aria-label="اسحب لتدوير السيارة وانقر على القطع"></canvas>
+<div class="viewport-head"><div><strong>جولة حول السيارة</strong><small>اسحب لتدوير المجسم · قرّب لرؤية التفاصيل · اختر قطعة من القائمة أو المجسم</small></div><span class="status" id="status">جاهز للتحميل</span></div>
+<div class="controls"><button class="btn" id="zoomIn">تكبير +</button><button class="btn" id="zoomOut">تصغير −</button><button class="btn" id="reset">إعادة ضبط</button><button class="btn" id="explode">تفكيك بصري</button><button class="btn" id="inside">كشف الداخل</button></div>
+<div class="load" id="load"><div class="load-inner"><h2 id="loadTitle">يتم تجهيز السيارة</h2><p id="loadMessage">تحميل النموذج الأصلي والخامات المضمّنة. قد يحتاج التحميل الأول بعض الوقت حسب اتصالك.</p><div class="progress"><span id="progress"></span></div></div></div>
+</section>
+<aside class="sidebar" aria-label="قائمة أجزاء السيارة">
+<div class="vehicle"><span class="eyebrow">VEHICLE PROFILE</span><div class="model">Dodge Challenger<br>1970 R/T</div><p>استكشف الهيكل والمقصورة والمكونات التي يحتوي عليها الملف الأصلي. ليست كل الأجزاء الميكانيكية موجودة كقطع مستقلة في النموذج.</p></div>
+<div class="side-title"><h2>قطع ومكونات السيارة</h2><span class="count" id="count">—</span></div>
+<label class="search"><input type="search" id="search" placeholder="ابحث عن قطعة…" autocomplete="off" aria-label="ابحث عن قطعة"></label>
+<div class="categories" id="categories"><button class="cat active" data-cat="all">الكل</button><button class="cat" data-cat="exterior">الهيكل</button><button class="cat" data-cat="engine">المحرك والحركة</button><button class="cat" data-cat="cabin">المقصورة</button><button class="cat" data-cat="lights">الإضاءة</button><button class="cat" data-cat="wheels">العجلات</button></div>
+<div class="parts" id="parts"><div class="empty">تظهر القطع هنا بعد تحميل النموذج.</div></div>
+<div class="tip">يمكنك تدوير السيارة بإصبع واحد، والتكبير أو التصغير بإصبعين على الهاتف. اضغط على قطعة لإظهار اسمها وتحديدها.</div>
+</aside>
+</main>
+</div>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+const $ = (id) => document.getElementById(id);
+const canvas = $("stage");
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#0b0d11");
+const camera = new THREE.PerspectiveCamera(34, 1, 0.01, 500);
+camera.position.set(4.8, 3.0, 5.8);
+const renderer = new THREE.WebGLRenderer({canvas, antialias: !matchMedia("(max-width: 700px)").matches, alpha: false, powerPreference: "high-performance"});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.65));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = 0.075;
+controls.enablePan = true;
+controls.minDistance = 1.2;
+controls.maxDistance = 18;
+controls.target.set(0, 0.2, 0);
+const hemi = new THREE.HemisphereLight(0xdceaff, 0x26242a, 2.2);
+scene.add(hemi);
+const key = new THREE.DirectionalLight(0xffe6c7, 3.1); key.position.set(4, 7, 5); scene.add(key);
+const fill = new THREE.DirectionalLight(0x9ec9ff, 1.8); fill.position.set(-5, 3, -4); scene.add(fill);
+const rim = new THREE.DirectionalLight(0xffc77f, 1.7); rim.position.set(0, 4, -7); scene.add(rim);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(200,200), new THREE.MeshStandardMaterial({color:0x11151c, roughness:0.88, metalness:0.08}));
+floor.rotation.x = -Math.PI/2; floor.position.y = -0.03; scene.add(floor);
+const grid = new THREE.GridHelper(20, 40, 0x353b46, 0x262b34); grid.position.y = -0.019; scene.add(grid);
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let model = null, meshes = [], selected = null, exploded = false, inside = false, renderQueued = false, modelCenter = new THREE.Vector3(), homeCamera = null;
+const originalPositions = new Map();
+const exteriorPattern = /(body|hood|bonnet|door|fender|wing|roof|bumper|trunk|boot|quarter|grille|grill|windshield|windscreen|window|glass|exterior|shell|front.?clip|rear.?clip)/i;
+const categoryFor = (mesh) => {
+ const n = String(mesh.name || "").toLowerCase();
+ if (/(wheel|tire|tyre|rim|hub|brake.?rotor)/i.test(n)) return "wheels";
+ if (/(engine|motor|gear|transmission|exhaust|suspension|axle|driveshaft|radiator|carb|alternator|battery)/i.test(n)) return "engine";
+ if (/(seat|dash|dashboard|steer|interior|console|carpet|door.?panel|cabin)/i.test(n)) return "cabin";
+ if (/(light|lamp|headlight|taillight|indicator|signal)/i.test(n)) return "lights";
+ return "exterior";
+};
+const categoryLabel = {all:"الكل", exterior:"الهيكل", engine:"المحرك والحركة", cabin:"المقصورة", lights:"الإضاءة", wheels:"العجلات"};
+const cleanName = (raw, index) => {
+ let n = String(raw || "").replace(/[_-]+/g," ").replace(/\s+/g," ").trim();
+ n = n.replace(/\.\d{3}$/,"");
+ if (!n || /^(mesh|object|cube|sphere|plane)(\s*\d*)?$/i.test(n)) return "قطعة من السيارة " + (index + 1);
+ const map = [
+  [/(hood|bonnet)/i,"غطاء المحرك"],[/(front.?bumper)/i,"الصدام الأمامي"],[/(rear.?bumper)/i,"الصدام الخلفي"],
+  [/(wheel|tire|tyre)/i,"العجلة / الإطار"],[/(head.?light|headlamp)/i,"المصباح الأمامي"],[/(tail.?light|rear.?lamp)/i,"المصباح الخلفي"],
+  [/(wind.?screen|windshield)/i,"الزجاج الأمامي"],[/(door)/i,"باب السيارة"],[/(seat)/i,"المقعد"],[/(steer)/i,"عجلة القيادة"],
+  [/(engine|motor)/i,"مجموعة المحرك"],[/(exhaust)/i,"أنبوب العادم"],[/(dashboard|dash)/i,"لوحة القيادة"],[/(grille|grill)/i,"شبك الواجهة"]
+ ];
+ for (const [re, label] of map) if (re.test(n)) return label;
+ return n.length > 46 ? n.slice(0,43) + "…" : n;
+};
+const requestRender = () => {
+ if (renderQueued) return;
+ renderQueued = true;
+ requestAnimationFrame(() => { renderQueued = false; controls.update(); renderer.render(scene, camera); });
+};
+controls.addEventListener("change", requestRender);
+const resize = () => {
+ const w = Math.max(1, canvas.clientWidth), h = Math.max(1, canvas.clientHeight);
+ camera.aspect = w/h; camera.updateProjectionMatrix(); renderer.setSize(w,h,false); requestRender();
+};
+const ro = new ResizeObserver(resize); ro.observe(canvas);
+window.addEventListener("resize", resize, {passive:true});
+const setLoadError = (message) => {
+ $("loadTitle").textContent = "تعذر تحميل نموذج السيارة";
+ $("loadMessage").textContent = message;
+ $("status").textContent = "الملف غير متاح";
+ $("progress").style.width = "0%";
+};
+const loader = new GLTFLoader();
+loader.load("./assets/challenger-1970.glb", (gltf) => {
+ model = gltf.scene;
+ const box = new THREE.Box3().setFromObject(model);
+ modelCenter.copy(box.getCenter(new THREE.Vector3()));
+ const size = box.getSize(new THREE.Vector3());
+ const maxDim = Math.max(size.x, size.y, size.z) || 1;
+ model.scale.setScalar(4.2 / maxDim);
+ model.position.sub(modelCenter.multiplyScalar(model.scale.x));
+ model.updateMatrixWorld(true);
+ scene.add(model);
+ model.traverse((obj) => {
+  if (!obj.isMesh) return;
+  obj.castShadow = false; obj.receiveShadow = false;
+  obj.userData.baseMaterial = obj.material;
+  obj.userData.baseVisible = obj.visible;
+  originalPositions.set(obj, obj.position.clone());
+  meshes.push(obj);
+ });
+ $("count").textContent = meshes.length + " قطعة";
+ $("status").textContent = "تم تحميل النموذج";
+ $("loadTitle").textContent = "اكتمل تحميل السيارة";
+ $("progress").style.width = "100%";
+ homeCamera = {position:camera.position.clone(), target:controls.target.clone()};
+ renderParts();
+ setTimeout(() => $("load").classList.add("hidden"), 250);
+ requestRender();
+}, (xhr) => {
+ if (xhr.total > 0) $("progress").style.width = Math.min(100, (xhr.loaded/xhr.total)*100) + "%";
+ $("status").textContent = "تحميل " + (xhr.total > 0 ? Math.round(xhr.loaded/xhr.total*100) + "%" : "…");
+}, (err) => {
+ console.error(err);
+ setLoadError("ملف النموذج assets/challenger-1970.glb لم يُعثر عليه أو تعذر قراءته. يجب إضافة ملف Blender المحوّل إلى مجلد public/car-explorer/assets قبل نشر هذه الصفحة.");
+});
+function restoreMaterial(mesh) { if (mesh) mesh.material = mesh.userData.baseMaterial; }
+function setSelected(mesh) {
+ if (selected === mesh) return;
+ restoreMaterial(selected);
+ selected = mesh;
+ if (selected) {
+  const hi = (mat) => { const m = mat.clone(); if (m.emissive) { m.emissive.set("#6b4215"); m.emissiveIntensity = .55; } return m; };
+  selected.material = Array.isArray(selected.userData.baseMaterial) ? selected.userData.baseMaterial.map(hi) : hi(selected.userData.baseMaterial);
+ }
+ renderParts(); requestRender();
+}
+function renderParts() {
+ const query = $("search").value.trim().toLowerCase();
+ const active = document.querySelector(".cat.active")?.dataset.cat || "all";
+ const list = meshes.filter((m) => {
+  const n = cleanName(m.name, meshes.indexOf(m));
+  return (active === "all" || categoryFor(m) === active) && (!query || n.toLowerCase().includes(query) || String(m.name).toLowerCase().includes(query));
+ });
+ $("parts").replaceChildren();
+ $("count").textContent = list.length + " / " + meshes.length;
+ if (!list.length) { const e = document.createElement("div"); e.className="empty"; e.textContent="لا توجد قطع مطابقة للبحث أو التصنيف."; $("parts").append(e); return; }
+ list.slice(0, 300).forEach((mesh) => {
+  const i = meshes.indexOf(mesh), b = document.createElement("button");
+  b.type="button"; b.className="part" + (mesh === selected ? " active" : "");
+  const mark = document.createElement("span"); mark.className="part-mark"; mark.textContent=String(i+1).padStart(2,"0");
+  const copy = document.createElement("span"); copy.className="part-copy";
+  const strong = document.createElement("strong"); strong.textContent=cleanName(mesh.name,i);
+  const small = document.createElement("small"); small.textContent=categoryLabel[categoryFor(mesh)] || "مكوّن";
+  copy.append(strong,small); b.append(mark,copy); b.addEventListener("click",()=>setSelected(mesh)); $("parts").append(b);
+ });
+}
+$("search").addEventListener("input",renderParts);
+$("categories").addEventListener("click",(e)=>{const b=e.target.closest("button[data-cat]");if(!b)return;document.querySelectorAll(".cat").forEach(x=>x.classList.toggle("active",x===b));renderParts();});
+canvas.addEventListener("pointerup",(event) => {
+ if (!model || event.button !== 0) return;
+ const rect=canvas.getBoundingClientRect(); pointer.x=((event.clientX-rect.left)/rect.width)*2-1; pointer.y=-((event.clientY-rect.top)/rect.height)*2+1;
+ raycaster.setFromCamera(pointer,camera);
+ const hit=raycaster.intersectObjects(meshes.filter(m=>m.visible),false)[0];
+ if(hit) setSelected(hit.object);
+});
+function tween(fn, duration=260) {
+ const start=performance.now();
+ const tick=(now)=>{const p=Math.min(1,(now-start)/duration);fn(p);requestRender();if(p<1)requestAnimationFrame(tick);};
+ requestAnimationFrame(tick);
+}
+$("zoomIn").addEventListener("click",()=>{const delta=camera.position.clone().sub(controls.target).multiplyScalar(.17);camera.position.sub(delta);requestRender();});
+$("zoomOut").addEventListener("click",()=>{const delta=camera.position.clone().sub(controls.target).multiplyScalar(.2);camera.position.add(delta);requestRender();});
+$("reset").addEventListener("click",()=>{if(!homeCamera)return;camera.position.copy(homeCamera.position);controls.target.copy(homeCamera.target);exploded=false;inside=false;meshes.forEach(m=>{m.position.copy(originalPositions.get(m));m.visible=true;});$("explode").textContent="تفكيك بصري";$("inside").textContent="كشف الداخل";setSelected(null);requestRender();});
+$("explode").addEventListener("click",()=>{
+ if(!model)return;
+ exploded=!exploded;
+ meshes.forEach((m)=>{
+  const base=originalPositions.get(m);
+  if(!exploded){m.position.copy(base);return;}
+  const wp=new THREE.Vector3();m.getWorldPosition(wp);
+  const direction=wp.clone().sub(modelCenter).normalize();
+  if(direction.lengthSq()<.01)direction.set(0,1,0);
+  const p=base.clone().add(direction.multiplyScalar(.42));
+  tween((t)=>{m.position.lerpVectors(exploded?base:p,exploded?p:base,t);},360);
+ });
+ $("explode").textContent=exploded?"إرجاع القطع":"تفكيك بصري";
+ requestRender();
+});
+$("inside").addEventListener("click",()=>{
+ inside=!inside;
+ meshes.forEach(m=>{m.visible=!inside||!exteriorPattern.test(String(m.name||""));});
+ $("inside").textContent=inside?"إظهار الهيكل":"كشف الداخل";
+ if(selected&&!selected.visible)setSelected(null);
+ renderParts();requestRender();
+});
+$("backBtn").addEventListener("click",()=>{
+ if(window.parent!==window)window.parent.postMessage({type:"CAR_EXPLORER_CLOSE"},window.location.origin);
+ else if(history.length>1)history.back();else window.location.href="/practical-info";
+});
+$("helpBtn").addEventListener("click",()=>alert("اسحب المشهد لتدوير السيارة، واستخدم التكبير لإظهار التفاصيل. اختر أي قطعة من النموذج أو القائمة، واستخدم «تفكيك بصري» لفصل الأجزاء مؤقتاً. عرض الداخل يعتمد على أسماء أجزاء المجسّم الأصلية."));
+resize();
+</script>
+</body>
+</html>
