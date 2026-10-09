@@ -51,3 +51,6 @@
 
 /car-explorer/viewer-boot.js
   Cache-Control: public, max-age=86400
+
+/car-explorer/challenger-1970.glb.gzdata
+  Cache-Control: public, max-age=86400

@@ -41,7 +41,10 @@ assert.ok(html.includes('id="retryLoad"'), 'Retry button is missing');
 assert.ok(viewer.includes('./vendor/three.module.js'), 'Three.js core must be local');
 assert.ok(viewer.includes('./vendor/OrbitControls.js'), 'OrbitControls must be local');
 assert.ok(viewer.includes('./vendor/GLTFLoader.js'), 'GLTFLoader must be local');
-assert.ok(viewer.includes('loader.load("./challenger-1970.glb"'), 'Model URL must resolve next to index.html');
+assert.ok(viewer.includes('challenger-1970.glb.gzdata'), 'Viewer must prefer the compressed model');
+assert.ok(viewer.includes('new DecompressionStream("gzip")'), 'Viewer must decompress the compressed model');
+assert.ok(viewer.includes('loader.parse(modelBuffer'), 'The decompressed buffer must be parsed');
+assert.ok(viewer.includes('fetch("./challenger-1970.glb"'), 'Development fallback for the original model is missing');
 assert.ok(viewer.includes('-box.min.y * scaleFactor'), 'Model should be grounded at the floor');
 for (const [file, source] of [['OrbitControls', orbit], ['GLTFLoader', gltf], ['BufferGeometryUtils', buffer]]) {
   assert.ok(!/from\s+['"]three(?:\/[^'"]*)?['"]/.test(source), `${file} still has a bare Three.js import`);
@@ -58,9 +61,18 @@ assert.ok(headers.includes("script-src 'self'"), 'Restrictive same-origin script
 assert.ok(!headers.includes('cdn.jsdelivr.net') && !headers.includes("! Content-Security-Policy"), 'Obsolete external-CDN or conflicting CSP override remains');
 
 const modelSize = statSync(path.join(root, 'client/public/car-explorer/challenger-1970.glb')).size;
+const sourceCompressed = path.join(root, 'client/public/car-explorer/challenger-1970.glb.gzdata');
+const distModel = path.join(root, 'client/dist/car-explorer/challenger-1970.glb');
+const distCompressed = path.join(root, 'client/dist/car-explorer/challenger-1970.glb.gzdata');
+assert.ok(existsSync(distCompressed), 'Production build is missing the compressed model asset');
+assert.ok(!existsSync(distModel), 'Production build must not publish the uncompressed model');
+assert.ok(!existsSync(sourceCompressed), 'Build should clean up its temporary compressed source file');
+const compressedSize = statSync(distCompressed).size;
+assert.ok(compressedSize < modelSize * 0.75, `Compressed model size is unexpectedly high: ${compressedSize} bytes`);
 assert.ok(modelSize > 1_000_000, `Model file unexpectedly small: ${modelSize} bytes`);
 assert.ok(boot.includes('window.__carViewerShowError') && boot.includes('retryLoad'), 'Visible error/retry behavior is missing');
 
 console.log('3D viewer audit passed.');
-console.log(`Model file: ${modelSize.toLocaleString('en-US')} bytes`);
+console.log(`Source GLB: ${modelSize.toLocaleString('en-US')} bytes`);
+console.log(`Production compressed model: ${compressedSize.toLocaleString('en-US')} bytes (${(100 - compressedSize / modelSize * 100).toFixed(1)}% smaller)`);
 console.log('Local module imports, model path, strict CSP, top-level navigation, and retry UI verified.');
