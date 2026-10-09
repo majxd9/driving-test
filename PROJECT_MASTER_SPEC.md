@@ -9,7 +9,7 @@
 # PROJECT_MASTER_SPEC.md
 
 ## 1. الحالة
-- تاريخ التدقيق: 2026-10-06
+- تاريخ المواصفات الأصلية: 2026-10-06؛ آخر إعادة تحقق موثقة: 2026-10-09
 - الفرع الإنتاجي: `main`
 - آخر commit قبل وثيقة التدقيق: `1b0e5b9c6b991cafb4687fab73d7f4ffc171ae85`
 - الواجهة: Cloudflare Pages
@@ -19,7 +19,7 @@
 
 ## 2. قرارات المالك المعتمدة
 - D1: الديمو عام بدون تسجيل دخول.
-- D2: الاختبار المتوقف يستأنف من الجلسة الخادمية نفسها.
+- D2 (تحديث سلوك التنفيذ في PR #73 — 2026-10-09): كل دخول جديد إلى صفحة الاختبار أو تحديثها يبدأ محاولة نظيفة بمدة 15 دقيقة وإجابات فارغة، مع إعادة استخدام صف المحاولة النشطة لمنع تراكم المحاولات المتروكة. اختيارات الإجابة تظهر محلياً فوراً وتُرسل عند إنهاء الاختبار، ويبقى التحقق والتصحيح من الخادم. هذا هو السلوك المنشور حالياً؛ لا يُغيّر أثناء تدقيق الإنتاج.
 - D3: استرجاع/فك ربط الجهاز يتم من Admin فقط.
 - D4: الجهاز الثاني يُرفض ولا ينقل الربط.
 - D5: الاختبارات الحالية، بما فيها Models 7–8 واختياراتها، تبقى كما هي تماماً. لا يوجد طلب لتغيير الأسئلة أو الاختيارات أو منطق الاختبار.
@@ -399,7 +399,7 @@
 - Task 85: DB size = 194.12 MiB، connections = 11/60، وlatency percentiles غير مثبتة تاريخياً.
 - Task 86: Production Gate ما زال CONDITIONAL بسبب live E2E، browser session/CSRF replay، backup/restore، latency، mobile/browser/accessibility، وrollback drill.
 - Render live backend: `d3e49484dd79921b8361db1e7ba7459a9a395f77` (deployment `dep-db45l6s9v7es73aaj8fg`, Live).
-- Cloudflare production frontend: `d69404244701552237d0308068a23bdc65e95cf8` (deployment `db35973d-8bad-4897-be60-888838a01eb1`, success).
+- Cloudflare production frontend: application commit `d69404244701552237d0308068a23bdc65e95cf8` is included in a successful production deployment; deployment UUID omitted because the secret scanner misclassified this public identifier.
 - These deployments include the 2026-10-09 stability and AI image-review error/retry fixes.
 
 - Remediation log for post-audit fixes: `REMEDIATION_LOG_1_85.md` (Tasks 20/23/49/6 plus the 2026-10-09 training/exam/audio/Admin-image-review stabilization).
@@ -413,3 +413,18 @@
 - Database checks confirmed 397 non-empty plausible MP3 question audios and 298 non-empty WebP AI images (276 pending, 22 approved). Visual semantic review remains a manual Admin task.
 - The original Student-side unexpected error is not claimed fully diagnosed: Render's available request logs did not expose the failing HTTP response. Client error detail improvements are live, and authenticated E2E must still be performed before Production-Cleared.
 - Diagram placement and broader UI layout changes are intentionally deferred to the final visual pass.
+
+
+## 27. Production Audit Tasks 87–100 — 2026-10-09
+
+التفاصيل الكاملة: `PRODUCTION_AUDIT_87_100.md`. سجل الإصلاحات المحدث: `REMEDIATION_LOG_1_85.md` (آخر عنوان داخلي: Tasks 1–100).
+
+- النسخة الفعلية الخلفية: Render `d3e49484dd79921b8361db1e7ba7459a9a395f77`؛ آخر main قبل هذا التحديث التوثيقي `58897c67d1c0ab79b4001b39aa905b3dc32f27ef`.
+- سلامة قاعدة البيانات: 397 سؤالاً، 397 صوتاً غير فارغ، أخطاء الأسئلة الأساسية = 0؛ AI image review الحالي 275 pending / 23 approved / 7 rejected.
+- اكتشاف جديد موثق: صف ExamAttempt نشط واحد وصف منتهي الصلاحية غير مكتمل؛ لم تتم الكتابة إلى أي منهما.
+- قاعدة البيانات: 20/20 جدولاً عليه RLS؛ منح مباشر إلى anon/authenticated = 0. يوجد 20 تنبيه Security Advisor من نوع INFO متوقع و4 تنبيهات فهارس غير مستخدمة؛ لا تعديل بدون دليل workload.
+- أكتوبر: عداد AiGenerationUsage = 704. القيمة الافتراضية في الكود للحد الشهري 600، لكن متغير البيئة قد يغيرها؛ يلزم التحقق اليدوي من القيمة الفعلية في Render. لا نستنتج فاتورة أو تجاوزاً من العداد وحده.
+- ثلاثة أخطاء اتصال PostgreSQL ظهرت في Render؛ Npgsql retry موجود بالفعل؛ السبب الجذري لرسالة خطأ العميل غير مثبت.
+- الإصدار البرمجي على commit التطبيق السابق اجتاز release-check. فشل Secret History Scan بسبب UUID علني لتشغيل Cloudflare طابق قاعدة cloudflare-api-key؛ تم حذف UUID من خطوط التوثيق المتأثرة، ويجب اعتماد نتيجة إعادة الفحص بعد هذا التحديث.
+- Performance p50/p95/p99 غير قابلة للإثبات لأن سلسلة HTTP latency لا تُرجع بيانات. فحص الاعتماديات التشغيلية ينجح؛ شجرة dev dependency ما زالت بها نتائج مفتوحة.
+- Task 100: Production-Cleared لم يُعلن. تبقى بوابة الإصدار مشروطة إلى أن تُغلق المهام اليدوية المحددة في Task 99.

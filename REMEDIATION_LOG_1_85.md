@@ -1,4 +1,4 @@
-# Remediation Log — Tasks 1–85 — 2026-10-08
+# Remediation Log — Tasks 1–100 — 2026-10-09
 
 ## New fixes completed after the 66–86 audit
 
@@ -189,3 +189,16 @@ Still not safely closable with the available evidence: authenticated Student/Adm
 - The 276 pending images have not all been visually checked for whether they accurately depict their question. Use the one-image-at-a-time Admin review queue; approve only correct images and reject unsuitable ones.
 - Diagram placement in the Exam page (currently rendered after the answer options) and other visual-layout issues remain intentionally deferred until the final UI pass, as requested.
 - Task 86 / Production Gate remains CONDITIONAL pending authenticated E2E, browser/session replay, isolated PostgreSQL backup/restore, controlled rollback, trustworthy latency percentiles, and mobile/browser/accessibility acceptance.
+
+
+## Tasks 87–100 — Revalidation checkpoint (2026-10-09)
+تفاصيل كل مهمة في `PRODUCTION_AUDIT_87_100.md`. هذه المرحلة أعادت فحوصات القراءة فقط بعد PR #73/#74، ولا تدّعي إغلاق الأدلة التي تحتاج حساباً أو جهازاً فعلياً.
+
+- Latest pre-update main: `58897c67d1c0ab79b4001b39aa905b3dc32f27ef`; Render live app commit: `d3e49484dd79921b8361db1e7ba7459a9a395f77`; Cloudflare production deploy of frontend fixes succeeded (deployment UUID intentionally omitted after a Gitleaks false positive).
+- Live database: 397 Questions; 397 non-empty QuestionAudios; invalid question-core rows 0; AI image rows 305 (298 with bytes); latest review state 275 pending / 23 approved / 7 rejected.
+- Latest read-only check found 1 active exam attempt and 1 expired-incomplete attempt; no duplicate active student groups. Neither row was modified.
+- RLS: all 20 public tables enabled, 0 direct table grants to anon/authenticated; Security Advisor has 20 expected INFO notices. Performance Advisor has four unused-index INFO notices; indexes preserved.
+- October `AiGenerationUsage` counter = 704. Source default `AI_MONTHLY_GENERATION_LIMIT` is 600 but runtime can override it; effective environment value needs manual confirmation. Audio generation remains enabled and image generation disabled.
+- Render logs contained three PostgreSQL connection errors with no HTTP request correlation. Npgsql transient retry is already configured; root cause for the original student-side error is not proven.
+- Latest release-check passed; latest Secret History Scan flagged Cloudflare's public deployment UUID as a `cloudflare-api-key` false positive. The UUID was removed from the updated continuity lines; final closure depends on the new scan result.
+- Remaining manual gates are gathered in Task 99 of `PRODUCTION_AUDIT_87_100.md`. Overall release gate remains CONDITIONAL.

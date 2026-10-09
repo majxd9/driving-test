@@ -3,7 +3,7 @@
 > هذا الملف هو مرجع الاستمرارية العملي لأي محادثة أو AI agent يعمل على المشروع.
 > اقرأه قبل أي تغيير، ثم ارجع إلى `PROJECT_MASTER_SPEC.md` للتفاصيل الأوسع.
 >
-> آخر تحديث موثق: 2026-10-08
+> آخر تحديث موثق: 2026-10-09
 
 ---
 
@@ -847,8 +847,23 @@ The CSRF/CORS smoke test is now evidenced as passing from GitHub-hosted CI; auth
 
 ### Stabilization checkpoint — 2026-10-09 (after PR #73 and #74)
 - Render production backend: `d3e49484dd79921b8361db1e7ba7459a9a395f77` / deployment `dep-db45l6s9v7es73aaj8fg` (live).
-- Cloudflare production frontend: `d69404244701552237d0308068a23bdc65e95cf8` / deployment `db35973d-8bad-4897-be60-888838a01eb1` (success).
+- Cloudflare production frontend: application commit `d69404244701552237d0308068a23bdc65e95cf8` is included in the successful production deployment; deployment UUID omitted because the secret scanner misclassified this public identifier.
 - Exam supports Admin and Student, fresh-start-on-entry resets the active attempt, answers remain local until Finish, and server-side scoring remains authoritative.
 - API errors now show meaningful HTTP/network details. If the Student-side failure recurs, capture the exact new status/message; no passwords or tokens are needed.
 - Admin AI-image review shows a recoverable error/retry on image fetch failure. The review queue remains manual, one image at a time; no mass approval/generation occurred.
 - See `REMEDIATION_LOG_1_85.md` for verified deployment metadata, database integrity counts, and outstanding manual gates.
+
+
+---
+
+## 19. Latest continuity checkpoint — Tasks 87–100 — 2026-10-09
+
+مرجع المهام الجديدة: `PRODUCTION_AUDIT_87_100.md`. سجل الإصلاحات المحدث: `REMEDIATION_LOG_1_85.md` (العنوان الداخلي محدث حتى المهمة 100).
+
+- لا يوجد code patch جديد مطلوب بأمان من الفحص الساكن وحده؛ لم تتغير أسئلة أو Exam UI أو إعدادات الإنتاج خلال هذا التدقيق.
+- آخر كود Render حي هو `d3e49484dd79921b8361db1e7ba7459a9a395f77`. إصلاحات التدريب/الاختبار والصوت وصور مراجعة AI منشورة. آخر تحديث main السابق للتوثيق كان `58897c67d1c0ab79b4001b39aa905b3dc32f27ef`.
+- إعادة فحص قاعدة البيانات: 397 سؤالاً و397 ملف صوت غير فارغ؛ 305 AI-image rows (298 صورة غير فارغة)؛ 275 صورة Pending / 23 Approved / 7 Rejected. يوجد صف محاولة اختبار نشطة واحد وصف منتهي الصلاحية غير مكتمل؛ لم تُعدّل المحاولات.
+- الصور معطلة في التحكم الحالي والصوت مفعّل. عداد الشهر 704؛ تحقق يدوياً من `AI_MONTHLY_GENERATION_LIMIT` الفعلي في Render لأن القيمة الافتراضية في المصدر 600 وقد يكون هناك override. لا تشارك أسرار البيئة ولا تبدّل المزود/الحصص دون موافقة.
+- Render سجّل ثلاثة أخطاء اتصال DB بلا request log يربطها بخطأ العميل. تم التأكد من وجود retry في الكود؛ لا ندعي أن سبب خطأ الطالب حُسم.
+- فشل Secret History Scan على التوثيق السابق بسبب false positive لمعرّف نشر Cloudflare العام؛ حُذف UUID من السطرين المتأثرين. لا يعتبر ماسح الأسرار مغلقاً حتى ينجح تشغيله الجديد.
+- Production Gate لا يزال CONDITIONAL. الأعمال التي تحتاج حسابات، أجهزة، restore أو rollback مجمعّة في Task 99 من `PRODUCTION_AUDIT_87_100.md`.
