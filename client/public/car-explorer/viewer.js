@@ -75,7 +75,61 @@ const setLoadError = (message) => {
  if (window.__carViewerShowError) window.__carViewerShowError(message, "تعذّر تحميل نموذج السيارة");
 };
 const loader = new GLTFLoader();
-loader.load("./challenger-1970.glb", (gltf) => {
+
+async function readResponseBytes(response) {
+ const reader = response.body?.getReader();
+ if (!reader) return new Uint8Array(await response.arrayBuffer());
+ const total = Number(response.headers.get("content-length") || 0);
+ const chunks = [];
+ let loaded = 0;
+ while (true) {
+  const result = await reader.read();
+  if (result.done) break;
+  chunks.push(result.value);
+  loaded += result.value.byteLength;
+  if (total > 0) {
+   const pct = Math.min(100, loaded / total * 100);
+   $("progress").style.width = (pct * 0.55) + "%";
+   $("status").textContent = "تنزيل الملف المضغوط " + Math.round(pct) + "%";
+  } else {
+   $("status").textContent = "تنزيل الملف (" + (loaded / 1048576).toFixed(1) + " MB)";
+  }
+ }
+ const bytes = new Uint8Array(loaded);
+ let offset = 0;
+ for (const chunk of chunks) {
+  bytes.set(chunk, offset);
+  offset += chunk.byteLength;
+ }
+ $("progress").style.width = "55%";
+ return bytes;
+}
+
+async function loadCarModel() {
+ try {
+  $("status").textContent = "تنزيل ملف السيارة المضغوط…";
+  let response = await fetch("./challenger-1970.glb.gzdata", {cache: "force-cache"});
+  let modelBuffer;
+  if (response.ok) {
+   if (typeof DecompressionStream !== "function") {
+    throw new Error("متصفحك لا يدعم فك ضغط ملف السيارة. حدّث Chrome أو افتح الموقع بمتصفح حديث.");
+   }
+   const compressed = await readResponseBytes(response);
+   $("status").textContent = "فك ضغط السيارة…";
+   $("loadMessage").textContent = "تم تنزيل الملف المضغوط. يجري الآن فك الضغط وتجهيز المجسّم.";
+   const decompressed = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("gzip"));
+   modelBuffer = await new Response(decompressed).arrayBuffer();
+   $("progress").style.width = "72%";
+  } else {
+   // In Vite development mode the original model is available; production publishes only the compressed asset.
+   response = await fetch("./challenger-1970.glb", {cache: "force-cache"});
+   if (!response.ok) throw new Error("تعذّر العثور على ملف السيارة المضغوط (HTTP " + response.status + ").");
+   modelBuffer = await response.arrayBuffer();
+   $("progress").style.width = "70%";
+  }
+  $("status").textContent = "تجهيز المجسّم ثلاثي الأبعاد…";
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  loader.parse(modelBuffer, new URL("./", window.location.href).href, (gltf) => {
  model = gltf.scene;
  const box = new THREE.Box3().setFromObject(model);
  const originalCenter = box.getCenter(new THREE.Vector3());
@@ -109,14 +163,18 @@ loader.load("./challenger-1970.glb", (gltf) => {
  homeCamera = {position:camera.position.clone(), target:controls.target.clone()};
  renderParts();
  setTimeout(() => $("load").classList.add("hidden"), 250);
- requestRender();
-}, (xhr) => {
- if (xhr.total > 0) $("progress").style.width = Math.min(100, (xhr.loaded/xhr.total)*100) + "%";
- $("status").textContent = "تحميل " + (xhr.total > 0 ? Math.round(xhr.loaded/xhr.total*100) + "%" : "…");
-}, (err) => {
- console.error(err);
- setLoadError("تعذّر تنزيل ملف السيارة أو قراءة محتواه. تأكد من الاتصال بالإنترنت ثم أعد المحاولة.");
-});
+
+  }, (err) => {
+   console.error("Challenger GLB parse error:", err);
+   setLoadError("تم تنزيل ملف السيارة لكن تعذّرت قراءة المجسّم. أعد المحاولة، وإذا تكررت المشكلة أرسل صورة الخطأ.");
+  });
+ } catch (err) {
+  console.error("Challenger model load error:", err);
+  setLoadError(err instanceof Error ? err.message : "تعذّر تنزيل ملف السيارة. افحص الاتصال ثم أعد المحاولة.");
+ }
+}
+loadCarModel();
+
 function restoreMaterial(mesh) { if (mesh) mesh.material = mesh.userData.baseMaterial; }
 function setSelected(mesh) {
  if (selected === mesh) return;
