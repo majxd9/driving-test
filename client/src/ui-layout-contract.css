@@ -1067,3 +1067,67 @@ html:has(.exam-page-v2) #root {
     transition-duration: .01ms !important;
   }
 }
+/* Keep the diagram as an optional compact footer, never before the question text. */
+.exam-page-v2 .exam-scroll-v2 > .diagram-card {
+  order: 4 !important;
+}
+
+/* Extra compact geometry for short landscape screens; do not re-enable scrolling. */
+@media (max-height: 520px) and (max-width: 760px) {
+  .study-premium .study-premium-header,
+  .exam-page-v2 .exam-topbar-v2 {
+    min-height: 45px !important;
+    height: 45px !important;
+    flex-basis: 45px !important;
+    padding-block: 3px !important;
+  }
+  .study-premium .study-premium-stage {
+    padding: 3px 5px calc(40px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  .study-premium .study-premium-card,
+  .exam-page-v2 .exam-card-v2 {
+    padding: 4px !important;
+    gap: 3px !important;
+  }
+  .study-premium .study-premium-images,
+  .study-premium .study-premium-no-image,
+  .exam-page-v2 .exam-image-slot-v2 {
+    flex-basis: clamp(72px, 22dvh, 98px) !important;
+    height: clamp(72px, 22dvh, 98px) !important;
+    min-height: clamp(72px, 22dvh, 98px) !important;
+    max-height: clamp(72px, 22dvh, 98px) !important;
+  }
+  .study-premium .study-premium-meta { flex-basis: 16px !important; height: 16px !important; min-height: 16px !important; max-height: 16px !important; }
+  .study-premium .study-premium-question,
+  .exam-page-v2 .exam-question-v2 {
+    -webkit-line-clamp: 2 !important;
+    max-height: 2.9em !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+  }
+  .study-premium .study-premium-option-text,
+  .exam-page-v2 .exam-option-text-v2 {
+    -webkit-line-clamp: 2 !important;
+    max-height: 2.7em !important;
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+  }
+  .study-premium .study-premium-actions.study-navigation-portal {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    bottom: calc(3px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  .study-premium .study-premium-action {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    padding-block: 3px !important;
+  }
+  .exam-page-v2 .exam-actions-v2 { height: 32px !important; min-height: 32px !important; max-height: 32px !important; }
+  .exam-page-v2 .exam-action-v2 { height: 28px !important; min-height: 28px !important; max-height: 28px !important; padding-block: 2px !important; }
+  .study-premium .study-premium-diagram,
+  .exam-page-v2 .exam-scroll-v2 .diagram-card { height: 16px !important; max-height: 16px !important; }
+  .study-premium .question-audio-nav__status,
+  .exam-page-v2 .question-audio-nav__status { font-size: 9px !important; line-height: 1.25 !important; }
+}
