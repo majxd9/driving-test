@@ -36,6 +36,8 @@ import './question-media-final.css';
 import './study-preview.css';
 // Final compact shared styling for Study and Exam; presentation only.
 import './compact-study-exam-ui.css';
+// Latest fixed-fit corrections for Study, Exam and Home layouts.
+import './fixed-fit-home-study-exam.css';
 // Final fixed-viewport corrections for Study, Exam, and Home.
 import './fixed-layout-ui.css';
 
