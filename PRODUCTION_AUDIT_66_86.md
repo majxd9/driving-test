@@ -266,3 +266,14 @@ Branch: `main`
 6. rollback drill مضبوط.
 
 لم يتم إجراء backup إلى GitHub أو artifact عام، ولم تُنفذ عملية rollback على الإنتاج، ولم يتم إنشاء بيانات دخول أو تجاوز غياب جلسة اختبار فعلية. يبقى Task 86 = CONDITIONAL حتى تُغلق الأدلة أعلاه. لقراءة بيانات Render أو قياس latency، يلزم تأكيد المستخدم لاستخدام مساحة Render المسماة `My Workspace` قبل أي استدعاء لأدوات موارد Render.
+
+
+## Follow-up verification — Security Smoke and release CI — 2026-10-09
+
+بعد تحديث workflow في commit `e922b72b0cca15aac08794633817491a02c8e02d` لتحديد مهلة اتصال 10 ثوانٍ ومهلة طلب 30 ثانية لكل طلب curl، اكتملت الاختبارات الآلية التالية بنجاح على نفس commit:
+- [Security Smoke run 37872654346](https://github.com/majxd9/driving-test/actions/runs/37872654346): نجح فحص `/api/healthz`، رُفض POST ذو Origin غير موثوق برمز 403، مرّ Origin الموثوق عبر فحص CSRF (ولم يرجع 403 مع بيانات دخول اختبارية غير صحيحة)، نجح CORS preflight للمصدر المسموح، ولم يحصل المصدر العدائي على `Access-Control-Allow-Origin`.
+- [release-check run 37872654323](https://github.com/majxd9/driving-test/actions/runs/37872654323): نجح عميل الواجهة وخادم .NET، بما في ذلك بناء Vite/TypeScript وفحص السؤال والبناء وNuGet وDocker/non-root.
+- [Secret History Scan run 37872654763](https://github.com/majxd9/driving-test/actions/runs/37872654763): success.
+- [API Health Monitor run 37872654330](https://github.com/majxd9/driving-test/actions/runs/37872654330): success.
+
+هذه الأدلة تُغلق الفحص البرمجي الآلي الحالي لـCSRF/CORS، لكنها لا تستبدل اختبار المتصفح المصادق أو session replay/concurrent session، ولا تغلق backup/restore أو rollback أو قياسات latency أو قبول الأجهزة. لا تغيّر نتيجة Task 86: تبقى CONDITIONAL.

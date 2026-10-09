@@ -819,7 +819,7 @@ Do not mark the project Production-Cleared until the manual/externally required 
 Read this checkpoint together with `PRODUCTION_AUDIT_66_86.md` and `REMEDIATION_LOG_1_85.md` before resuming work. They contain the detailed latest evidence and avoid repeating completed fixes.
 
 ### Latest read-only verification
-- The application-code baseline inspected for the live recheck was `7faf3ff0e52adc1d9c7536f7e889789e2271bb95`; commits after it in this continuation are documentation-only.
+- The application-code baseline inspected for the live recheck was `7faf3ff0e52adc1d9c7536f7e889789e2271bb95`; commits after it in this continuation are documentation-only, plus a bounded-timeout update to `.github/workflows/security-smoke.yml`; no application runtime behavior changed.
 - GitHub `release-check`, `Secret History Scan`, and `API Health Monitor` had successful runs `37788431001`, `37788431063`, and `37850950257`.
 - Production DB recheck: Questions 397; non-empty QuestionAudios 397; invalid question core 0; orphan audio/images/reviews 0; active attempts 0; stale AuthLogs older than 90 days 0; duplicate non-empty image hashes 0.
 - Seven empty AI image records are rejected reviews only. Do not delete or repair them by inventing media.
@@ -832,3 +832,12 @@ Read this checkpoint together with `PRODUCTION_AUDIT_66_86.md` and `REMEDIATION_
 - Still required for a fully cleared production release: authenticated Student/Admin/device E2E, browser session/CSRF replay, real off-repository PostgreSQL backup plus isolated restore, reliable Render p50/p95/p99, real browser/mobile/accessibility acceptance, and a controlled rollback drill.
 - Task 86 remains CONDITIONAL. Do not mark it complete until the external evidence is genuinely collected.
 - Render service-level tools require explicit confirmation of the target workspace before access. The available workspace is named `My Workspace`; ask the owner to confirm it before querying Render metrics or deploy resources.
+
+
+### CI result after the workflow timeout guard — 2026-10-09
+- Security Smoke run [37872654346](https://github.com/majxd9/driving-test/actions/runs/37872654346): all checks passed.
+- Release check [37872654323](https://github.com/majxd9/driving-test/actions/runs/37872654323): client and server jobs passed.
+- Secret History Scan [37872654763](https://github.com/majxd9/driving-test/actions/runs/37872654763): passed.
+- API Health Monitor [37872654330](https://github.com/majxd9/driving-test/actions/runs/37872654330): passed.
+
+The CSRF/CORS smoke test is now evidenced as passing from GitHub-hosted CI; authenticated user-session/browser replay, E2E/device acceptance, backup/restore, rollback, and p50/p95/p99 remain external gates.
