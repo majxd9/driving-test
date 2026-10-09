@@ -41,7 +41,7 @@ export default function Study() {
   const audioModeRef = useRef<'question' | 'enabled-prompt' | 'disabled-prompt' | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const [audioReady, setAudioReady] = useState(false);
+  const [, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [failedAiImageId, setFailedAiImageId] = useState<number | null>(null);
   const [showExplanatoryImage, setShowExplanatoryImage] = useState(true);
@@ -280,6 +280,7 @@ export default function Study() {
   const isLast = index === questions.length - 1;
   const explanationNeeded = chosen !== undefined && Boolean(q.explanation);
   const showOriginalImage = Boolean(q.imageUrl && showImage);
+  const hasOriginalImage = Boolean(q.imageUrl);
   const hasExplanatoryImage = Boolean(q.aiImageUrl && failedAiImageId !== q.id);
   const showAiImageForStudent = hasExplanatoryImage && showExplanatoryImage;
 
@@ -475,7 +476,7 @@ export default function Study() {
           </div>
 
           {(showOriginalImage || hasExplanatoryImage) ? (
-            <div className={`study-premium-images ${showOriginalImage && hasExplanatoryImage ? 'has-two-images' : ''}`}>
+            <div className={`study-premium-images ${hasOriginalImage && hasExplanatoryImage ? 'has-two-images' : ''}`}>
               {hasExplanatoryImage && <button type="button" className="question-image-toggle" onClick={() => setShowExplanatoryImage(value => !value)} aria-pressed={showExplanatoryImage}>{showExplanatoryImage ? 'إخفاء الصورة التوضيحية' : 'إظهار الصورة التوضيحية'}</button>}
               {showOriginalImage && (
                 <div className="study-premium-image">
@@ -507,6 +508,7 @@ export default function Study() {
                   </div>
                 </div>
               )}
+              {!showOriginalImage && hasOriginalImage && hasExplanatoryImage && <div className="study-premium-image original-image-pending" aria-hidden="true"><span>تظهر الصورة الأصلية بعد الإجابة</span></div>}
               {showAiImageForStudent && (
                 <div
                   className={`study-premium-image ai-secondary ${isAdmin && adminImageToolsFor === 'ai' ? 'admin-tools-open' : ''}`}
