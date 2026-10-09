@@ -39,6 +39,30 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 </aside>
 </main>
 </div>
-<script type="module" src="./viewer.js"></script>
+<script>
+(() => {
+  const showError = (message) => {
+    const load = document.getElementById("load");
+    const title = document.getElementById("loadTitle");
+    const body = document.getElementById("loadMessage");
+    const status = document.getElementById("status");
+    if (title) title.textContent = "تعذّر تشغيل عارض السيارة";
+    if (body) body.textContent = message;
+    if (status) status.textContent = "تعذّر تشغيل العارض";
+    if (load) load.classList.remove("hidden");
+  };
+  window.addEventListener("error", (event) => {
+    if (event.target instanceof HTMLScriptElement && event.target.id === "viewer-script") {
+      showError("تعذّر تحميل مكتبات العرض ثلاثي الأبعاد. تأكد من اتصال الإنترنت ثم حدّث الصفحة. إذا تكررت المشكلة، فقد تكون خدمة مكتبات العرض محجوبة على اتصالك.");
+    } else if (event instanceof ErrorEvent && event.message) {
+      console.error("3D viewer error:", event.message);
+    }
+  }, true);
+  window.addEventListener("unhandledrejection", (event) => {
+    console.error("3D viewer promise error:", event.reason);
+  });
+})();
+</script>
+<script id="viewer-script" type="module" src="./viewer.js"></script>
 </body>
 </html>
