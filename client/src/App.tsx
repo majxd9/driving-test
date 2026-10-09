@@ -6,6 +6,7 @@ import { RulesPage, TrafficSignsPage, DrivingTestSyriaPage, AboutPage, NotFoundP
 const Login = lazy(() => import('./pages/Login'));
 const Home = lazy(() => import('./pages/Home'));
 const PracticalInfo = lazy(() => import('./pages/PracticalInfo'));
+const CarExplorer = lazy(() => import('./pages/CarExplorer'));
 const Study = lazy(() => import('./pages/Study'));
 const Models = lazy(() => import('./pages/Models'));
 const Exam = lazy(() => import('./pages/Exam'));
@@ -41,6 +42,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <PracticalInfo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/car-viewer"
+          element={
+            <ProtectedRoute>
+              <CarExplorer />
             </ProtectedRoute>
           }
         />
