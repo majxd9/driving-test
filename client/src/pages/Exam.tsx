@@ -48,6 +48,9 @@ export default function Exam() {
   const firstEntryPromptPlayedRef = useRef(false);
   const audioModeRef = useRef<'question' | 'enabled-prompt' | 'disabled-prompt' | null>(null);
   const [adminImageBusy, setAdminImageBusy] = useState<'approve' | 'reject' | 'hide' | 'delete' | null>(null);
+  const [showExplanatoryImage, setShowExplanatoryImage] = useState(true);
+  const [introAudioPlaying, setIntroAudioPlaying] = useState(false);
+  const [introAudioMessage, setIntroAudioMessage] = useState<string | null>(null);
 
   questionsRef.current = questions;
   answersRef.current = answers;
@@ -89,6 +92,8 @@ export default function Exam() {
   }, [modelId]);
 
   useEffect(() => { void loadExam(); }, [loadExam]);
+
+  useEffect(() => { setShowExplanatoryImage(true); }, [current]);
 
   useEffect(() => {
     preloadQuestionAudioPrompt('question-audio-first-entry');
@@ -298,7 +303,21 @@ export default function Exam() {
     return () => window.clearInterval(timer);
   }, [loading, expiresAt, finish]);
 
-  if(loading)return <div className="page-shell flex items-center justify-center px-4"><div className="surface-panel w-full max-w-xl p-5"><div className="skeleton h-44 rounded-2xl"/><p className="text-center text-muted text-sm mt-4">جارِ تجهيز الاختبار...</p></div></div>;
+  const playIntroAudio = () => {
+    firstEntryPromptPlayedRef.current = true;
+    setIntroAudioMessage(null);
+    void playQuestionAudioPrompt('question-audio-first-entry').then(played => {
+      setIntroAudioPlaying(played);
+      if (!played) setIntroAudioMessage('تعذر تشغيل الإرشادات الصوتية. جرّب تشغيل الصوت مرة أخرى.');
+    });
+  };
+  const stopIntroAudio = () => {
+    stopQuestionAudioPrompt();
+    setIntroAudioPlaying(false);
+    setIntroAudioMessage('تم إيقاف الصوت. يمكنك تشغيله مجدداً.');
+  };
+
+  if(loading)return <div className="ui-audio-welcome is-exam" dir="rtl"><section className="ui-audio-welcome__panel" aria-labelledby="exam-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true">ر</span><p className="ui-audio-welcome__eyebrow">اختبار القيادة</p><h1 id="exam-audio-welcome-title">أهلاً بك في الاختبار</h1><p className="ui-audio-welcome__copy">اضغط تشغيل الصوت للاستماع إلى إرشادات البدء، وستظهر أسئلة الاختبار تلقائياً.</p><div className="ui-audio-welcome__controls"><button type="button" className="ui-audio-welcome__play" onClick={playIntroAudio}>▶ تشغيل الصوت</button><button type="button" className="ui-audio-welcome__stop" onClick={stopIntroAudio}>■ إيقاف الصوت</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'تعمل الآن إرشادات البدء الصوتية.' : 'يمكنك تشغيل الإرشادات أو الانتظار حتى تظهر الأسئلة.')}</p></section></div>;
   if(loadError||!questions.length)return <div className="page-shell flex items-center justify-center px-5"><div className="surface-panel w-full max-w-md text-center p-7"><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-xl font-black mb-2">تعذر تحضير الاختبار</h1><p className="text-muted text-sm leading-relaxed">{loadError??'لم يتم العثور على أسئلة.'}</p><button onClick={loadExam} className="primary-cta mt-5 w-full">إعادة المحاولة</button></div></div>;
 
   const q=questions[current]; const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
@@ -414,7 +433,7 @@ export default function Exam() {
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="m4 4 16 16"/></svg>
             </button>
             <div className={"question-audio-nav__status " + (audioError ? "error" : audioPlaying ? "ready" : "prompt")}>
-              {audioError ? audioError : audioPlaying ? (audioModeRef.current === 'disabled-prompt' ? "جارٍ تشغيل رسالة الإيقاف" : "الصوت سيبقى شغال حتى تضغط إيقاف") : audioEnabled ? "الصوت مفعّل وسيعمل مع السؤال التالي" : audioReady ? "اضغط زر التشغيل للاستماع" : "جارٍ تجهيز الصوت…"}
+              {audioError ? audioError : audioPlaying ? (audioModeRef.current === 'disabled-prompt' ? "جارٍ تشغيل رسالة الإيقاف" : "الصوت سيبقى شغال حتى تضغط إيقاف") : audioEnabled ? "الصوت مفعّل وسيعمل مع السؤال التالي" : "اضغط زر التشغيل للاستماع"}
             </div>
             <audio
               ref={audioRef}
@@ -442,6 +461,7 @@ export default function Exam() {
           </div>
       <div className="exam-scroll-v2">
         <div className={`exam-image-slot-v2 ${q.aiImageUrl && shouldShowQuestionImageBeforeAnswer(q) ? 'has-two-images' : ''}`}>
+          {q.aiImageUrl && <button type="button" className="question-image-toggle" onClick={() => setShowExplanatoryImage(value => !value)} aria-pressed={showExplanatoryImage}>{showExplanatoryImage ? 'إخفاء الصورة التوضيحية' : 'إظهار الصورة التوضيحية'}</button>}
           {shouldShowQuestionImageBeforeAnswer(q) && (
             <div className="exam-question-image-frame">
               <OptimizedImage
@@ -454,7 +474,7 @@ export default function Exam() {
               />
             </div>
           )}
-          {q.aiImageUrl && (
+          {q.aiImageUrl && showExplanatoryImage && (
             <div className="exam-question-image-frame ai-frame">
               <div className="ai-image-label" aria-label="صورة توضيحية">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m5 17 4-4 3 3 3-4 4 5"/></svg>
@@ -486,12 +506,13 @@ export default function Exam() {
               )}
             </div>
           )}
+          {q.aiImageUrl && !showExplanatoryImage && <div className="exam-question-image-frame ai-frame ai-frame-hidden" aria-hidden="true"><span>الصورة التوضيحية مخفية</span></div>}
           {!shouldShowQuestionImageBeforeAnswer(q) && !q.aiImageUrl && (
             <div className="exam-image-placeholder-v2" aria-hidden="true"/>
           )}
         </div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
-        <div className="exam-answers-v2">{q.options.map((opt,i)=><button key={i} type="button" onClick={() => void chooseAnswer(i)} disabled={finishedRef.current} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{OPTION_NUMBERS[i] ?? String(i + 1)}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
+        <div className="exam-answers-v2" style={{ '--option-count': q.options.length } as React.CSSProperties}>{q.options.map((opt,i)=><button key={i} type="button" onClick={() => void chooseAnswer(i)} disabled={finishedRef.current} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{OPTION_NUMBERS[i] ?? String(i + 1)}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
         <DiagramRenderer question={q}/>
       </div>
       <div className="exam-actions-v2">
