@@ -24,7 +24,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          body="$(curl --fail --silent --show-error "$API_BASE_URL/api/healthz")"
+          body="$(curl --connect-timeout 10 --max-time 30 --fail --silent --show-error "$API_BASE_URL/api/healthz")"
           echo "$body" | grep -F '"status":"ok"'
           echo "$body" | grep -F '"database":"ok"'
 
@@ -32,24 +32,24 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}'             -X POST "$API_BASE_URL/api/auth/login"             -H 'Origin: https://evil.example'             -H 'Content-Type: application/x-www-form-urlencoded'             --data 'userName=__security_smoke__&password=invalid&deviceId=security-smoke')"
+          status="$(curl --connect-timeout 10 --max-time 30 --silent --show-error --output /dev/null --write-out '%{http_code}'             -X POST "$API_BASE_URL/api/auth/login"             -H 'Origin: https://evil.example'             -H 'Content-Type: application/x-www-form-urlencoded'             --data 'userName=__security_smoke__&password=invalid&deviceId=security-smoke')"
           test "$status" = "403"
 
       - name: Allow configured Origin through CSRF gate
         shell: bash
         run: |
           set -euo pipefail
-          status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}'             -X POST "$API_BASE_URL/api/auth/login"             -H "Origin: $FRONTEND_ORIGIN"             -H 'Content-Type: application/x-www-form-urlencoded'             --data 'userName=__security_smoke__&password=invalid&deviceId=security-smoke')"
+          status="$(curl --connect-timeout 10 --max-time 30 --silent --show-error --output /dev/null --write-out '%{http_code}'             -X POST "$API_BASE_URL/api/auth/login"             -H "Origin: $FRONTEND_ORIGIN"             -H 'Content-Type: application/x-www-form-urlencoded'             --data 'userName=__security_smoke__&password=invalid&deviceId=security-smoke')"
           test "$status" != "403"
 
       - name: Validate CORS allowlist
         shell: bash
         run: |
           set -euo pipefail
-          allowed="$(curl --silent --show-error -i -X OPTIONS "$API_BASE_URL/api/auth/login"             -H "Origin: $FRONTEND_ORIGIN"             -H 'Access-Control-Request-Method: POST')"
+          allowed="$(curl --connect-timeout 10 --max-time 30 --silent --show-error -i -X OPTIONS "$API_BASE_URL/api/auth/login"             -H "Origin: $FRONTEND_ORIGIN"             -H 'Access-Control-Request-Method: POST')"
           echo "$allowed" | grep -i "^access-control-allow-origin: $FRONTEND_ORIGIN"
 
-          hostile="$(curl --silent --show-error -i -X OPTIONS "$API_BASE_URL/api/auth/login"             -H 'Origin: https://evil.example'             -H 'Access-Control-Request-Method: POST')"
+          hostile="$(curl --connect-timeout 10 --max-time 30 --silent --show-error -i -X OPTIONS "$API_BASE_URL/api/auth/login"             -H 'Origin: https://evil.example'             -H 'Access-Control-Request-Method: POST')"
           if echo "$hostile" | grep -qi "^access-control-allow-origin:"; then
             echo "Hostile origin unexpectedly received an ACAO header."
             exit 1
