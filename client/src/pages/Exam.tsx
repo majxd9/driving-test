@@ -42,7 +42,7 @@ export default function Exam() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const [, setAudioReady] = useState(false);
+  const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const audioContinuousRef = useRef(false);
   const firstEntryPromptPlayedRef = useRef(false);
