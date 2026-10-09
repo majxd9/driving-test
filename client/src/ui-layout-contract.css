@@ -1189,3 +1189,26 @@ html:has(.exam-page-v2) #root {
   font-size: 10px !important;
   line-height: 1.6 !important;
 }
+
+/* Higher-specificity overrides cancel legacy hover motion in earlier stylesheets. */
+.study-premium .study-premium-option:not(:disabled):hover,
+.study-premium .study-premium-option:hover,
+.study-premium .question-audio-nav__audio:hover:not(:disabled),
+.study-premium .study-premium-action:hover:not(:disabled),
+.exam-page-v2 .exam-option-v2:hover,
+.exam-page-v2 .exam-action-v2:hover:not(:disabled) {
+  transform: none !important;
+  scale: 1 !important;
+  translate: none !important;
+  animation: none !important;
+  transition-property: border-color, background-color, color, box-shadow, opacity !important;
+}
+.study-premium .study-premium-option:not(:disabled):active,
+.study-premium .question-audio-nav__audio:active:not(:disabled),
+.study-premium .study-premium-action:active:not(:disabled),
+.exam-page-v2 .exam-option-v2:active,
+.exam-page-v2 .exam-action-v2:active:not(:disabled) {
+  transform: none !important;
+  scale: 1 !important;
+  translate: none !important;
+}
