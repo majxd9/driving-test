@@ -138,7 +138,6 @@ function buildMainPartEntries() {
 }
 const labelForMesh = (mesh) => mainPartEntries.find(p=>p.meshes.includes(mesh))?.label || cleanName(mesh?.name,meshes.indexOf(mesh));
 
-};
 const requestRender = () => {
  if (renderQueued) return;
  renderQueued = true;
