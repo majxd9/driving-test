@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { QuestionCategory } from '../types';
@@ -7,6 +7,8 @@ import SpiritDriveScene from '../components/SpiritDriveScene';
 import SpiritNitro from '../components/SpiritNitro';
 import { preloadQuestionAudioPrompt, unlockQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 import { api } from '../api/client';
+
+const InteractiveNebulaShader = lazy(() => import('../components/ui/liquid-shader'));
 
 const Icon = ({type}:{type:'rules'|'signs'|'mechanic'|'arrow'}) => {
  const common={width:24,height:24,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.9,strokeLinecap:'round' as const,strokeLinejoin:'round' as const};
@@ -29,6 +31,7 @@ const categories:{key:QuestionCategory;title:string;subtitle:string;path:string;
 
 export default function Home(){
  const {user,logout}=useAuth();const navigate=useNavigate();const [total,setTotal]=useState<number|null>(user?.questionCount ?? null);
+ const [showNebula,setShowNebula]=useState(false);
 
  const openStudy = (path: string) => {
   // Unlock audio from the user's tap without playing the prompt audibly.
@@ -37,14 +40,22 @@ export default function Home(){
  };
 
  useEffect(() => {
+  // Only warm the welcome prompt here; per-question/enable/disable sounds load on demand.
   preloadQuestionAudioPrompt('question-audio-first-entry');
-  preloadQuestionAudioPrompt('question-audio-enabled');
-  preloadQuestionAudioPrompt('question-audio-disabled');
  }, []);
 
  useEffect(()=>{
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
  },[]);
+
+ useEffect(() => {
+  // Phones and reduced-motion devices use only a static gradient.
+  // Load the optional WebGL scene after the Home page has settled on capable desktops.
+  const canAnimate = window.matchMedia('(min-width: 900px) and (pointer: fine) and (prefers-reduced-motion: no-preference)').matches;
+  if (!canAnimate) return;
+  const timer = window.setTimeout(() => setShowNebula(true), 1800);
+  return () => window.clearTimeout(timer);
+ }, []);
 
  useEffect(()=>{
   const count = user?.questionCount;
@@ -59,6 +70,8 @@ export default function Home(){
   </div></header>
   <main className="max-w-6xl mx-auto px-5 pb-12">
    <section className="home-hero">
+    <div className="home-nebula-fallback" aria-hidden="true" />
+    {showNebula && <Suspense fallback={null}><InteractiveNebulaShader className="home-nebula-bg" /></Suspense>}
     <SpiritDriveScene large variant="front" className="home-spirit-scene" />
     <div className="home-hero-copy"><div className="home-greeting"><span className="student-name-plate" aria-label="اسم الطالب"><span className="student-name-kicker">هويّتك على الطريق</span><span className="student-name-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.8 15 6l3.7.8.8 3.7L21 13.5l-1.5 3.1-3.7.8L13 19.6 12 21l-1-1.4-2.8-2.2-3.7-.8L3 13.5l1.5-3-0.8-3.7L7.4 6 10 3.8 12 3z"></path><circle cx="12" cy="11.2" r="2.7"></circle><path d="M7.9 17.3c.9-2 2.3-3 4.1-3s3.2 1 4.1 3"></path></svg></span><span className="student-name-copy"><small>سائق</small><strong>{firstName || 'طالبنا'}</strong></span><span className="student-name-road" aria-hidden="true"><i></i><i></i><i></i></span><span className="student-name-glow" aria-hidden="true"></span></span></div><h1>تدرّب جيداً، راجع أخطاءك، وادخل الاختبار بثقة.</h1><p>اختر القسم الذي تريد مراجعته أو انتقل مباشرة إلى محاكاة اختبار الرخصة. الأسئلة والصور والنتائج مرتبة لتكون المراجعة أسرع وأوضح.</p><div className="flex flex-wrap gap-3 mt-6"><button onPointerEnter={()=>prefetchStudyData('Ser')} onFocus={()=>prefetchStudyData('Ser')} onPointerDown={()=>prefetchStudyData('Ser')} onClick={()=>openStudy('/study/Ser')} className="primary-cta">ابدأ التدريب <Icon type="arrow"/></button><SiteGuide/></div></div>
     <div className="home-score">

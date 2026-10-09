@@ -37,6 +37,7 @@ import './study-preview.css';
 // Final layout contract: loaded last to neutralize legacy overlapping UI overrides.
 import './ui-layout-contract.css';
 import './question-ui-final-fixes.css';
+import './study-performance-hotfix.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -12,6 +12,7 @@ const promptPlaybackAudio =
   typeof window === 'undefined' ? null : new Audio();
 
 let promptPlaybackEndedListener: (() => void) | null = null;
+let promptPlaybackGeneration = 0;
 
 function clearPromptPlaybackEndedListener() {
   if (promptPlaybackAudio && promptPlaybackEndedListener) {
@@ -93,6 +94,7 @@ export function getCachedQuestionAudioPromptSource(
 }
 
 export function stopQuestionAudioPrompt() {
+  promptPlaybackGeneration += 1;
   clearPromptPlaybackEndedListener();
   const audio = promptPlaybackAudio;
   if (!audio) return;
@@ -106,23 +108,28 @@ export function unlockQuestionAudioPrompt(key: QuestionAudioPromptKey = 'questio
   if (!audio) return;
 
   // The training button is a real user gesture. Briefly starting the same
-  // audio element muted unlocks playback for the delayed, post-navigation prompt.
+  // audio element muted unlocks playback for the post-navigation prompt.
+  // A generation guard prevents this unlock promise from pausing a real prompt
+  // that started immediately after navigation.
+  const generation = promptPlaybackGeneration;
   try {
     audio.pause();
     audio.muted = true;
-    audio.src = promptSourceCache.get(key) ?? resolveApiUrl(
+    const unlockSource = promptSourceCache.get(key) ?? resolveApiUrl(
       `/api/questions/audio-prompt/${key}`
     );
+    audio.src = new URL(unlockSource, window.location.href).href;
     audio.preload = 'auto';
     audio.currentTime = 0;
     const promise = audio.play();
     if (promise) {
       void promise.then(() => {
+        if (generation !== promptPlaybackGeneration) return;
         audio.pause();
         audio.currentTime = 0;
         audio.muted = false;
       }).catch(() => {
-        audio.muted = false;
+        if (generation === promptPlaybackGeneration) audio.muted = false;
       });
     }
   } catch {
@@ -143,8 +150,10 @@ export function playQuestionAudioPrompt(
   );
 
   try {
+    promptPlaybackGeneration += 1;
     clearPromptPlaybackEndedListener();
     audio.pause();
+    audio.muted = false;
     audio.src = cachedSource || directSource;
     audio.preload = 'auto';
     audio.currentTime = 0;

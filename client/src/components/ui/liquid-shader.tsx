@@ -46,7 +46,7 @@ export function InteractiveNebulaShader({
       return;
     }
 
-    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.25);
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 0.8);
     renderer.setPixelRatio(pixelRatio);
     renderer.setClearColor(0x071018, 1);
     renderer.domElement.setAttribute('aria-hidden', 'true');
@@ -95,7 +95,7 @@ export function InteractiveNebulaShader({
         vec3 col = vec3(0.0);
         float d = 2.5;
 
-        for (int i = 0; i <= 5; i++) {
+        for (int i = 0; i <= 4; i++) {
           vec3 p = vec3(0.0, 0.0, 5.0) + normalize(vec3(uv, -1.0)) * d;
           float rz = map(p);
           float f = clamp((rz - map(p + 0.1)) * 0.5, -0.1, 1.0);
@@ -167,7 +167,7 @@ export function InteractiveNebulaShader({
     const renderFrame = () => {
       if (document.hidden) return;
       const elapsed = clock.getElapsedTime();
-      if (!reducedMotion && elapsed - lastRenderTime < 1 / 30) return;
+      if (!reducedMotion && elapsed - lastRenderTime < 1 / 18) return;
       lastRenderTime = elapsed;
       uniforms.iTime.value = reducedMotion ? 0 : elapsed;
       renderer.render(scene, camera);
