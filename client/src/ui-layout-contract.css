@@ -750,6 +750,17 @@ html:has(.exam-page-v2) #root {
   line-height: 1.6 !important;
 }
 
+/* All buttons on these two pages stay geometrically still on hover/press. */
+.study-premium button:hover,
+.study-premium button:active,
+.exam-page-v2 button:hover,
+.exam-page-v2 button:active {
+  transform: none !important;
+  scale: 1 !important;
+  translate: none !important;
+  transition-property: border-color, background-color, color, box-shadow, opacity !important;
+}
+
 /* No hover/active transforms in Training or Exam: controls never jump or scale. */
 .study-premium .study-premium-option:hover,
 .study-premium .study-premium-option:active,
