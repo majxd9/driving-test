@@ -31,6 +31,9 @@ import './content-protection.css';
 import './question-audio.css';
 import './ai-generation.css';
 import './question-media-final.css';
+// Isolated, presentation-only redesign for the training page. Keep last so it
+// safely overrides legacy training layout rules without touching exam screens.
+import './study-preview.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
