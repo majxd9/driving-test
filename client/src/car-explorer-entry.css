@@ -1,0 +1,17 @@
+.car-explorer-entry{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.82fr);align-items:center;gap:22px;
+  margin:24px 0 4px;padding:clamp(18px,3vw,30px);border:1px solid rgba(130,226,213,.2);
+  border-radius:22px;background:radial-gradient(ellipse at 8% 0%,rgba(98,210,194,.12),transparent 52%),linear-gradient(135deg,#0d1a20,#10161c 60%,#111b20);
+  box-shadow:0 18px 45px rgba(0,0,0,.14)
+}
+.car-explorer-entry-copy{min-width:0}.car-explorer-entry-copy h2{margin:7px 0 9px;color:#effaf8;font-size:clamp(19px,2.4vw,27px);line-height:1.45;letter-spacing:-.025em}
+.car-explorer-entry-copy p{margin:0;max-width:66ch;color:#a8bbb9;font-size:13px;line-height:1.9}
+.car-explorer-entry-button{display:flex;align-items:center;gap:12px;width:100%;min-height:82px;padding:14px;border:1px solid rgba(115,230,213,.28);border-radius:16px;color:#f3fffd;text-align:right;background:linear-gradient(115deg,rgba(48,119,115,.27),rgba(21,34,40,.84));transition:transform .18s ease,border-color .18s ease,background .18s ease}
+.car-explorer-entry-button:hover{transform:translateY(-2px);border-color:rgba(115,230,213,.62);background:linear-gradient(115deg,rgba(48,119,115,.37),rgba(21,34,40,.96))}
+.car-explorer-entry-button:focus-visible{outline:2px solid #73e6d5;outline-offset:3px}
+.car-explorer-entry-icon{display:grid;place-items:center;flex:0 0 47px;height:47px;border-radius:13px;background:rgba(115,230,213,.12);border:1px solid rgba(115,230,213,.24);color:#8eecde;font:800 14px ui-monospace,monospace;direction:ltr}
+.car-explorer-entry-button>span:nth-child(2){display:grid;gap:5px;min-width:0;flex:1}
+.car-explorer-entry-button strong{font-size:14px;line-height:1.5}.car-explorer-entry-button small{color:#9aadaa;font-size:11px;line-height:1.7}
+.car-explorer-entry-arrow{font-size:22px;color:#8eecde}
+@media(max-width:760px){.car-explorer-entry{grid-template-columns:minmax(0,1fr);gap:16px;margin:18px 0;padding:18px;border-radius:18px}.car-explorer-entry-button{min-height:76px}.car-explorer-entry-copy p{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.car-explorer-entry-button{transition:none}.car-explorer-entry-button:hover{transform:none}}
