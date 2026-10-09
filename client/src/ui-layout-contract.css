@@ -1,0 +1,1069 @@
+/* UI layout contract — keep this file imported LAST from main.tsx.
+   Rules: Home may scroll naturally; Study and Exam use fixed viewport layouts with no inner scroll.
+   Keep image slots and answer rows stable, center Study navigation, and keep explanatory-image
+   toggles absolute so visibility changes never push text or options around. */
+
+/* HOME: separate the hero, study choices, feature cards and exam entry into readable sections. */
+html:has(.home-page),
+html:has(.home-page) body,
+html:has(.home-page) #root {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  background: #080d13 !important;
+}
+.home-page {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 100svh !important;
+  max-height: none !important;
+  overflow: visible !important;
+  background: #080d13 !important;
+}
+.home-page main {
+  flex: 0 0 auto !important;
+  width: min(1180px, 100%) !important;
+  max-width: 1180px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: clamp(16px, 2.4vh, 26px) !important;
+  margin: 0 auto !important;
+  padding: clamp(18px, 2.8vh, 28px) clamp(14px, 2.5vw, 28px) 36px !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+.home-page main > * {
+  flex: 0 0 auto !important;
+  grid-row: auto !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+}
+.home-page main > .home-hero {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) clamp(170px, 22vw, 240px) !important;
+  align-items: center !important;
+  gap: clamp(18px, 3vw, 36px) !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: clamp(300px, 42vh, 430px) !important;
+  max-height: none !important;
+  padding: clamp(22px, 3vw, 36px) !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(174,202,220,.16) !important;
+  border-radius: 22px !important;
+  background: linear-gradient(148deg, rgba(23,34,44,.98), rgba(15,24,33,.99) 72%) !important;
+  box-shadow: 0 18px 48px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.025) !important;
+  box-sizing: border-box !important;
+}
+.home-page .home-hero-copy {
+  gap: clamp(9px, 1.2vh, 14px) !important;
+  justify-content: center !important;
+}
+.home-page .home-hero h1 {
+  max-width: 760px !important;
+  margin: 0 !important;
+  font-size: clamp(23px, 2.5vw, 34px) !important;
+  line-height: 1.45 !important;
+  letter-spacing: -.015em !important;
+  overflow-wrap: anywhere !important;
+}
+.home-page .home-hero-copy > p {
+  max-width: 680px !important;
+  margin: 0 !important;
+  font-size: clamp(13px, 1vw, 15px) !important;
+  line-height: 1.9 !important;
+  color: #adbdc8 !important;
+}
+.home-page .home-hero-copy > .flex {
+  gap: 10px !important;
+  margin-top: 8px !important;
+}
+.home-page .primary-cta,
+.home-page .home-hero-copy .guide-button {
+  min-height: 44px !important;
+  padding: 10px 17px !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+.home-page .home-score {
+  align-self: stretch !important;
+  justify-content: center !important;
+  padding: clamp(14px, 2vw, 24px) !important;
+  border-radius: 18px !important;
+}
+.home-page .home-score-copy span,
+.home-page .home-score-copy small {
+  font-size: clamp(11px, .9vw, 13px) !important;
+  line-height: 1.8 !important;
+}
+.home-page .home-score-main > strong {
+  font-size: clamp(36px, 4.5vw, 54px) !important;
+  margin: 12px 0 !important;
+}
+.home-page main > section:nth-of-type(2) {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+.home-page .section-heading {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: end !important;
+  justify-content: space-between !important;
+  gap: 8px 18px !important;
+  margin: 0 !important;
+}
+.home-page .section-heading .eyebrow {
+  margin: 0 0 5px !important;
+  font-size: 11px !important;
+}
+.home-page .section-heading h2 {
+  margin: 0 !important;
+  font-size: clamp(19px, 1.8vw, 24px) !important;
+  line-height: 1.5 !important;
+}
+.home-page .section-hint {
+  max-width: 48% !important;
+  font-size: 12px !important;
+  line-height: 1.7 !important;
+  text-align: start !important;
+}
+.home-page main > section:nth-of-type(2) > .grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-template-rows: auto !important;
+  gap: clamp(10px, 1.4vw, 16px) !important;
+  width: 100% !important;
+  height: auto !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+}
+.home-page .category-card {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 128px !important;
+  max-height: none !important;
+  padding: clamp(14px, 1.7vw, 20px) !important;
+  gap: 12px !important;
+  border-radius: 16px !important;
+  align-items: center !important;
+  overflow: hidden !important;
+}
+.home-page .category-card .category-icon {
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+}
+.home-page .category-card h3 {
+  font-size: clamp(13px, 1.05vw, 15px) !important;
+  line-height: 1.6 !important;
+}
+.home-page .category-card p {
+  font-size: 11px !important;
+  line-height: 1.7 !important;
+}
+.home-page .home-feature-row {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: clamp(10px, 1.4vw, 16px) !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.home-page .home-feature-row .home-practical-card,
+.home-page .home-feature-row .home-car-viewer-card {
+  position: relative !important;
+  grid-row: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 132px !important;
+  max-height: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: clamp(16px, 2vw, 22px) !important;
+  display: grid !important;
+  grid-template-columns: 42px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 13px !important;
+  border: 1px solid rgba(174,202,220,.16) !important;
+  border-radius: 17px !important;
+  background: linear-gradient(145deg, rgba(22,39,49,.94), rgba(12,21,29,.98)) !important;
+  color: #eef5f8 !important;
+  text-align: right !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  transition: border-color .16s ease, background .16s ease !important;
+}
+.home-page .home-feature-row .home-practical-card:hover,
+.home-page .home-feature-row .home-car-viewer-card:hover {
+  border-color: rgba(45,212,191,.42) !important;
+  background: linear-gradient(145deg, rgba(24,48,56,.98), rgba(12,24,31,.99)) !important;
+}
+.home-page .home-feature-row .home-practical-icon,
+.home-page .home-car-viewer-icon {
+  width: 42px !important;
+  height: 42px !important;
+  flex: 0 0 42px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid rgba(45,212,191,.22) !important;
+  border-radius: 13px !important;
+  background: rgba(45,212,191,.08) !important;
+  color: #75e7d6 !important;
+}
+.home-page .home-feature-row .home-practical-icon svg,
+.home-page .home-car-viewer-icon svg {
+  width: 29px !important;
+  height: 29px !important;
+}
+.home-page .home-car-viewer-icon {
+  position: relative !important;
+}
+.home-page .home-car-viewer-icon small {
+  position: absolute !important;
+  inset-inline-end: -5px !important;
+  bottom: -5px !important;
+  padding: 1px 4px !important;
+  border-radius: 5px !important;
+  background: #10241f !important;
+  color: #94f4e4 !important;
+  font-size: 8px !important;
+  font-weight: 900 !important;
+}
+.home-page .home-car-viewer-copy,
+.home-page .home-feature-row .home-practical-copy {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+.home-page .home-feature-row .home-practical-copy small,
+.home-page .home-car-viewer-copy small {
+  color: #97a9b8 !important;
+  font-size: 10px !important;
+  line-height: 1.5 !important;
+}
+.home-page .home-feature-row .home-practical-copy strong,
+.home-page .home-car-viewer-copy strong {
+  font-size: clamp(13px, 1.1vw, 16px) !important;
+  line-height: 1.55 !important;
+  overflow-wrap: anywhere !important;
+}
+.home-page .home-feature-row .home-practical-copy em,
+.home-page .home-car-viewer-copy em {
+  font-size: 11px !important;
+  line-height: 1.6 !important;
+  font-style: normal !important;
+  color: #aab9c2 !important;
+}
+.home-page .home-practical-cta,
+.home-page .home-car-viewer-arrow {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  min-width: 36px !important;
+  min-height: 32px !important;
+  padding: 6px 8px !important;
+  border: 1px solid rgba(45,212,191,.2) !important;
+  border-radius: 9px !important;
+  background: rgba(45,212,191,.07) !important;
+  color: #c7fff5 !important;
+  font-size: 10px !important;
+  line-height: 1.3 !important;
+}
+.home-page main > .home-exam {
+  min-width: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 132px !important;
+  max-height: none !important;
+  padding: clamp(18px, 2.4vw, 26px) !important;
+  gap: 18px !important;
+  border-radius: 17px !important;
+  cursor: pointer !important;
+}
+.home-page .home-exam .exam-action {
+  flex: 0 0 auto !important;
+  min-height: 42px !important;
+  padding: 11px 16px !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+  white-space: nowrap !important;
+}
+
+/* Desktop Login: readable line spacing at wide/maximized window sizes. */
+@media (min-width: 768px) {
+  .login-v2-panel {
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(151,169,184,.25) transparent !important;
+  }
+  .login-v2-panel-head {
+    margin-bottom: clamp(18px, 2.4vh, 26px) !important;
+    line-height: 1.8 !important;
+  }
+  .login-v2-title {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: clamp(9px, 1.3vh, 14px) !important;
+    margin: 0 0 clamp(18px, 2.5vh, 28px) !important;
+  }
+  .login-v2-title > span {
+    display: block !important;
+    margin: 0 !important;
+    line-height: 1.8 !important;
+  }
+  .login-v2-title h2 {
+    margin: 0 !important;
+    font-size: clamp(27px, 2.2vw, 34px) !important;
+    line-height: 1.38 !important;
+  }
+  .login-v2-title p {
+    max-width: 38ch !important;
+    margin: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.95 !important;
+  }
+  .login-v2-form {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 19px !important;
+  }
+  .login-v2-form label {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 9px !important;
+    line-height: 1.85 !important;
+  }
+  .login-v2-form input {
+    margin-top: 0 !important;
+  }
+  .login-v2-divider {
+    margin-top: 18px !important;
+    margin-bottom: 11px !important;
+  }
+  .login-v2-trial {
+    margin-top: 4px !important;
+  }
+}
+
+/* Training and Exam: same fixed geometry and no scrolling inside the question area. */
+html:has(.study-premium),
+html:has(.study-premium) body,
+html:has(.study-premium) #root,
+html:has(.exam-page-v2),
+html:has(.exam-page-v2) body,
+html:has(.exam-page-v2) #root {
+  width: 100% !important;
+  height: 100svh !important;
+  min-height: 0 !important;
+  max-height: 100svh !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  background: #080d13 !important;
+}
+.study-premium,
+.exam-page-v2 {
+  position: relative !important;
+  width: 100% !important;
+  height: 100svh !important;
+  min-height: 0 !important;
+  max-height: 100svh !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+.study-premium .study-premium-stage,
+.exam-page-v2 .exam-stage-v2 {
+  flex: 1 1 0 !important;
+  width: 100% !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+.study-premium .study-premium-stage {
+  max-width: 1160px !important;
+  padding: 7px clamp(8px, 1.8vw, 20px) calc(58px + env(safe-area-inset-bottom, 0px)) !important;
+}
+.exam-page-v2 .exam-stage-v2 {
+  padding: 6px clamp(7px, 1.4vw, 18px) 4px !important;
+}
+.study-premium .study-premium-card,
+.exam-page-v2 .exam-card-v2 {
+  position: relative !important;
+  display: flex !important;
+  flex: 1 1 0 !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  width: min(1120px, 100%) !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 auto !important;
+  padding: clamp(7px, 1vh, 12px) clamp(8px, 1.3vw, 15px) !important;
+  gap: clamp(5px, .8vh, 8px) !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(174,202,220,.16) !important;
+  border-radius: 17px !important;
+  background: linear-gradient(148deg, rgba(23,34,44,.98), rgba(15,24,33,.99) 72%) !important;
+  box-shadow: 0 18px 48px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.025) !important;
+  box-sizing: border-box !important;
+}
+.study-premium .study-premium-meta {
+  order: 0 !important;
+  flex: 0 0 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  margin: 0 !important;
+  padding: 0 3px !important;
+}
+.study-premium .study-premium-images,
+.study-premium .study-premium-no-image,
+.exam-page-v2 .exam-image-slot-v2 {
+  position: relative !important;
+  flex: 0 0 clamp(118px, 21dvh, 218px) !important;
+  width: 100% !important;
+  height: clamp(118px, 21dvh, 218px) !important;
+  min-height: clamp(118px, 21dvh, 218px) !important;
+  max-height: clamp(118px, 21dvh, 218px) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+.study-premium .study-premium-images {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  grid-template-rows: minmax(0,1fr) !important;
+  gap: 8px !important;
+}
+.study-premium .study-premium-images.has-two-images,
+.exam-page-v2 .exam-image-slot-v2.has-two-images {
+  grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+}
+.study-premium .study-premium-image,
+.study-premium .study-premium-no-image,
+.exam-page-v2 .exam-question-image-frame,
+.exam-page-v2 .exam-image-placeholder-v2 {
+  position: relative !important;
+  display: flex !important;
+  flex: 1 1 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 4px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(174,202,220,.14) !important;
+  border-radius: 12px !important;
+  background: rgba(8,17,24,.9) !important;
+  box-sizing: border-box !important;
+}
+.study-premium .study-premium-image > div,
+.study-premium .study-premium-image img,
+.study-premium .study-premium-image-el,
+.exam-page-v2 .exam-question-image-frame > div,
+.exam-page-v2 .exam-question-image-frame img,
+.exam-page-v2 .exam-question-image-frame picture {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+.study-premium .study-premium-no-image::after {
+  content: "لا توجد صورة لهذا السؤال" !important;
+  color: rgba(165,189,204,.3) !important;
+  font-size: 11px !important;
+}
+.study-premium .study-premium-question,
+.exam-page-v2 .exam-question-v2 {
+  order: 2 !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: 4.25em !important;
+  margin: 0 !important;
+  padding: 2px 4px !important;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 3 !important;
+  overflow: hidden !important;
+  color: #f1f6f8 !important;
+  font-size: clamp(13px, 1.3vw, 19px) !important;
+  line-height: 1.42 !important;
+  font-weight: 850 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  box-sizing: border-box !important;
+}
+.exam-page-v2 .exam-question-v2 { order: 1 !important; }
+.study-premium .study-premium-answers,
+.exam-page-v2 .exam-answers-v2 {
+  order: 3 !important;
+  position: relative !important;
+  flex: 1 1 0 !important;
+  width: 100% !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  grid-template-rows: repeat(var(--option-count, 4), minmax(0,1fr)) !important;
+  grid-auto-rows: minmax(0,1fr) !important;
+  align-content: stretch !important;
+  gap: clamp(4px, .65vh, 7px) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+.study-premium .study-premium-option,
+.exam-page-v2 .exam-option-v2 {
+  position: relative !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 5px 9px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  overflow: hidden !important;
+  white-space: normal !important;
+  transform: none !important;
+  transition: border-color .16s ease, background .16s ease !important;
+  box-sizing: border-box !important;
+}
+.study-premium .study-premium-option-text,
+.exam-page-v2 .exam-option-text-v2 {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 3 !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-height: 4em !important;
+  overflow: hidden !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  font-size: clamp(11px, .95vw, 14px) !important;
+  line-height: 1.35 !important;
+}
+.study-premium .study-premium-explanation {
+  position: absolute !important;
+  top: auto !important;
+  bottom: calc(54px + env(safe-area-inset-bottom,0px)) !important;
+  inset-inline-start: 10px !important;
+  inset-inline-end: auto !important;
+  width: min(48%, 420px) !important;
+  max-height: clamp(48px, 8dvh, 72px) !important;
+  overflow: hidden !important;
+  z-index: 25 !important;
+  pointer-events: none !important;
+}
+.study-premium .study-premium-diagram,
+.exam-page-v2 .exam-scroll-v2 .diagram-card {
+  flex: 0 0 auto !important;
+  height: 24px !important;
+  max-height: 24px !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+.study-premium .study-premium-diagram:empty {
+  display: none !important;
+}
+.exam-page-v2 .exam-scroll-v2 {
+  display: flex !important;
+  flex: 1 1 0 !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 1px !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+.exam-page-v2 .exam-image-slot-v2 {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  grid-template-rows: minmax(0,1fr) !important;
+  gap: 8px !important;
+  margin: 0 0 5px !important;
+}
+.exam-page-v2 .exam-question-v2 .exam-question-label {
+  display: inline !important;
+  margin-inline-end: 7px !important;
+}
+.exam-page-v2 .exam-answers-v2 {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+}
+.exam-page-v2 .exam-actions-v2 {
+  flex: 0 0 auto !important;
+  min-height: 44px !important;
+  height: 44px !important;
+  max-height: 44px !important;
+  margin: 0 !important;
+  padding: 2px 0 calc(2px + env(safe-area-inset-bottom,0px)) !important;
+  display: grid !important;
+  grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+  gap: 7px !important;
+  overflow: hidden !important;
+}
+.exam-page-v2 .exam-action-v2 {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  max-height: 38px !important;
+  padding: 5px 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+.exam-page-v2 .exam-action-v2 span {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.study-premium .study-premium-actions.study-navigation-portal {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: calc(8px + env(safe-area-inset-bottom,0px)) !important;
+  top: auto !important;
+  transform: translate3d(-50%,0,0) !important;
+  transform-origin: center !important;
+  z-index: 2147483000 !important;
+  width: min(500px, calc(100vw - 24px)) !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  max-height: 46px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  direction: rtl !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+.study-premium .study-premium-action {
+  width: 100% !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  max-height: 46px !important;
+  margin: 0 !important;
+  padding: 8px 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+.question-image-toggle {
+  position: absolute !important;
+  z-index: 50 !important;
+  inset-inline-start: 8px !important;
+  inset-inline-end: auto !important;
+  bottom: 8px !important;
+  top: auto !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 28px !important;
+  max-width: calc(100% - 16px) !important;
+  margin: 0 !important;
+  padding: 5px 10px !important;
+  border: 1px solid rgba(45,212,191,.38) !important;
+  border-radius: 999px !important;
+  background: rgba(6,16,22,.92) !important;
+  color: #d1fff5 !important;
+  font-size: 10px !important;
+  line-height: 1.35 !important;
+  font-weight: 850 !important;
+  text-align: center !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,.22) !important;
+  cursor: pointer !important;
+}
+.study-premium .ai-secondary-hidden,
+.exam-page-v2 .ai-frame-hidden {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  color: #90a6b4 !important;
+  background: linear-gradient(145deg, rgba(16,30,40,.9), rgba(8,17,24,.96)) !important;
+  border: 1px dashed rgba(151,180,198,.22) !important;
+}
+.study-premium .ai-secondary-hidden span,
+.exam-page-v2 .ai-frame-hidden span {
+  font-size: 11px !important;
+  line-height: 1.6 !important;
+}
+
+/* Audio guidance screen replaces loading copy with clear Play/Stop controls. */
+.ui-audio-welcome {
+  --welcome-accent: #2dd4bf;
+  display: grid !important;
+  place-items: center !important;
+  width: 100% !important;
+  min-height: 100svh !important;
+  height: 100svh !important;
+  padding: 22px !important;
+  overflow: hidden !important;
+  color: #eef5f8 !important;
+  background: radial-gradient(ellipse at 50% 0, rgba(45,212,191,.12), transparent 48%), #080d13 !important;
+  box-sizing: border-box !important;
+  font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif !important;
+}
+.ui-audio-welcome.is-exam { --welcome-accent: #60a5fa; }
+.ui-audio-welcome__panel {
+  width: min(520px, 100%) !important;
+  padding: clamp(24px, 4vw, 38px) !important;
+  border: 1px solid rgba(174,202,220,.17) !important;
+  border-radius: 24px !important;
+  background: linear-gradient(145deg, rgba(23,34,44,.98), rgba(10,18,26,.99)) !important;
+  box-shadow: 0 22px 60px rgba(0,0,0,.3) !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+.ui-audio-welcome__mark {
+  display: grid !important;
+  place-items: center !important;
+  width: 56px !important;
+  height: 56px !important;
+  margin: 0 auto 16px !important;
+  border: 1px solid color-mix(in srgb, var(--welcome-accent) 38%, transparent) !important;
+  border-radius: 17px !important;
+  background: color-mix(in srgb, var(--welcome-accent) 11%, transparent) !important;
+  color: var(--welcome-accent) !important;
+  font-size: 28px !important;
+  font-weight: 900 !important;
+}
+.ui-audio-welcome__eyebrow {
+  margin: 0 0 8px !important;
+  color: var(--welcome-accent) !important;
+  font-size: 12px !important;
+  line-height: 1.7 !important;
+  font-weight: 850 !important;
+}
+.ui-audio-welcome__panel h1 {
+  margin: 0 0 14px !important;
+  color: #f1f7f9 !important;
+  font-size: clamp(24px, 3vw, 32px) !important;
+  line-height: 1.5 !important;
+  font-weight: 900 !important;
+}
+.ui-audio-welcome__copy {
+  max-width: 38ch !important;
+  margin: 0 auto 22px !important;
+  color: #b2c2cd !important;
+  font-size: 14px !important;
+  line-height: 2 !important;
+}
+.ui-audio-welcome__controls {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+}
+.ui-audio-welcome__controls button {
+  min-height: 44px !important;
+  padding: 10px 16px !important;
+  border: 1px solid rgba(174,202,220,.19) !important;
+  border-radius: 12px !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  line-height: 1.5 !important;
+  cursor: pointer !important;
+}
+.ui-audio-welcome__play {
+  background: var(--welcome-accent) !important;
+  border-color: transparent !important;
+  color: #06211c !important;
+}
+.ui-audio-welcome__stop {
+  background: rgba(255,255,255,.04) !important;
+  color: #d6e1e7 !important;
+}
+.ui-audio-welcome__status {
+  min-height: 1.8em !important;
+  margin: 18px 0 0 !important;
+  color: #8fa4b3 !important;
+  font-size: 11px !important;
+  line-height: 1.8 !important;
+}
+.ui-audio-welcome__controls button:focus-visible,
+.question-image-toggle:focus-visible,
+.home-car-viewer-card:focus-visible {
+  outline: 2px solid var(--welcome-accent, #2dd4bf) !important;
+  outline-offset: 3px !important;
+}
+
+@media (max-width: 760px) {
+  .home-page main {
+    gap: 17px !important;
+    padding: 14px 12px 28px !important;
+  }
+  .home-page main > .home-hero {
+    grid-template-columns: minmax(0, 1fr) !important;
+    min-height: 0 !important;
+    padding: 19px !important;
+    gap: 17px !important;
+  }
+  .home-page .home-hero-copy {
+    gap: 11px !important;
+  }
+  .home-page .home-hero h1 {
+    font-size: clamp(22px, 6vw, 29px) !important;
+    line-height: 1.5 !important;
+  }
+  .home-page .home-hero-copy > p {
+    font-size: 13px !important;
+    line-height: 1.9 !important;
+  }
+  .home-page .home-score {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    text-align: right !important;
+    padding: 12px 14px !important;
+  }
+  .home-page .home-score-main {
+    flex-direction: row !important;
+    gap: 12px !important;
+  }
+  .home-page .home-score-main > strong {
+    margin: 0 !important;
+    font-size: clamp(28px, 8vw, 38px) !important;
+  }
+  .home-page main > section:nth-of-type(2) {
+    gap: 10px !important;
+  }
+  .home-page .section-hint {
+    max-width: 100% !important;
+  }
+  .home-page main > section:nth-of-type(2) > .grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+  .home-page .category-card {
+    min-height: 90px !important;
+    padding: 14px 15px !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    text-align: right !important;
+    gap: 12px !important;
+  }
+  .home-page .category-card .flex-1 {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    text-align: right !important;
+  }
+  .home-page .category-card .category-icon {
+    width: 36px !important;
+    height: 36px !important;
+    flex-basis: 36px !important;
+  }
+  .home-page .category-card .arrow {
+    position: static !important;
+    margin-inline-start: auto !important;
+  }
+  .home-page .home-feature-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+  .home-page .home-feature-row .home-practical-card,
+  .home-page .home-feature-row .home-car-viewer-card {
+    min-height: 108px !important;
+    padding: 14px !important;
+    grid-template-columns: 36px minmax(0,1fr) auto !important;
+    gap: 10px !important;
+  }
+  .home-page .home-feature-row .home-practical-icon,
+  .home-page .home-car-viewer-icon {
+    width: 36px !important;
+    height: 36px !important;
+    flex-basis: 36px !important;
+  }
+  .home-page .home-feature-row .home-practical-copy em,
+  .home-page .home-car-viewer-copy em {
+    font-size: 10px !important;
+  }
+  .home-page main > .home-exam {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 13px !important;
+    min-height: 0 !important;
+    padding: 18px !important;
+  }
+  .home-page .home-exam h2 {
+    font-size: 20px !important;
+  }
+  .home-page .home-exam p {
+    font-size: 12px !important;
+    line-height: 1.7 !important;
+  }
+  .home-page .home-exam .exam-action {
+    justify-content: center !important;
+    min-height: 42px !important;
+  }
+  .login-v2-panel {
+    overflow-y: visible !important;
+  }
+  .study-premium .study-premium-stage {
+    padding: 5px 6px calc(58px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  .study-premium .study-premium-card,
+  .exam-page-v2 .exam-card-v2 {
+    padding: 6px !important;
+    gap: 4px !important;
+    border-radius: 13px !important;
+  }
+  .study-premium .study-premium-images,
+  .study-premium .study-premium-no-image,
+  .exam-page-v2 .exam-image-slot-v2 {
+    flex-basis: clamp(108px, 19dvh, 158px) !important;
+    height: clamp(108px, 19dvh, 158px) !important;
+    min-height: clamp(108px, 19dvh, 158px) !important;
+    max-height: clamp(108px, 19dvh, 158px) !important;
+  }
+  .study-premium .study-premium-images { gap: 5px !important; }
+  .study-premium .study-premium-question,
+  .exam-page-v2 .exam-question-v2 {
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+    max-height: 4.2em !important;
+  }
+  .study-premium .study-premium-option,
+  .exam-page-v2 .exam-option-v2 {
+    padding: 4px 6px !important;
+    gap: 6px !important;
+  }
+  .study-premium .study-premium-option-text,
+  .exam-page-v2 .exam-option-text-v2 {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+    -webkit-line-clamp: 3 !important;
+  }
+  .study-premium .study-premium-diagram,
+  .exam-page-v2 .exam-scroll-v2 .diagram-card {
+    height: 20px !important;
+    max-height: 20px !important;
+  }
+  .study-premium .study-premium-actions.study-navigation-portal {
+    bottom: calc(6px + env(safe-area-inset-bottom,0px)) !important;
+    width: min(420px, calc(100vw - 18px)) !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    gap: 8px !important;
+  }
+  .study-premium .study-premium-action {
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    font-size: 12px !important;
+  }
+  .exam-page-v2 .exam-actions-v2 {
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+  }
+  .exam-page-v2 .exam-action-v2 {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    font-size: 10px !important;
+  }
+  .question-image-toggle {
+    inset-inline-start: 5px !important;
+    bottom: 5px !important;
+    min-height: 25px !important;
+    padding: 4px 7px !important;
+    font-size: 9px !important;
+  }
+  .ui-audio-welcome {
+    padding: 14px !important;
+  }
+  .ui-audio-welcome__panel {
+    padding: 23px 18px !important;
+    border-radius: 19px !important;
+  }
+  .ui-audio-welcome__copy {
+    font-size: 13px !important;
+  }
+}
+@media (max-height: 680px) and (min-width: 761px) {
+  .study-premium .study-premium-images,
+  .study-premium .study-premium-no-image,
+  .exam-page-v2 .exam-image-slot-v2 {
+    flex-basis: clamp(100px, 17dvh, 150px) !important;
+    height: clamp(100px, 17dvh, 150px) !important;
+    min-height: clamp(100px, 17dvh, 150px) !important;
+    max-height: clamp(100px, 17dvh, 150px) !important;
+  }
+  .study-premium .study-premium-card,
+  .exam-page-v2 .exam-card-v2 {
+    gap: 4px !important;
+    padding-block: 5px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-page *,
+  .study-premium *,
+  .exam-page-v2 *,
+  .ui-audio-welcome * {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
