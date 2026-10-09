@@ -750,6 +750,25 @@ html:has(.exam-page-v2) #root {
   line-height: 1.6 !important;
 }
 
+/* No hover/active transforms in Training or Exam: controls never jump or scale. */
+.study-premium .study-premium-option:hover,
+.study-premium .study-premium-option:active,
+.study-premium .study-premium-action:hover:not(:disabled),
+.study-premium .study-premium-action:active:not(:disabled),
+.study-premium .study-premium-counter:hover,
+.study-premium .study-premium-counter:active,
+.exam-page-v2 .exam-option-v2:hover,
+.exam-page-v2 .exam-option-v2:active,
+.exam-page-v2 .exam-action-v2:hover:not(:disabled),
+.exam-page-v2 .exam-action-v2:active:not(:disabled),
+.exam-page-v2 .exam-question-counter:hover,
+.exam-page-v2 .exam-question-counter:active {
+  transform: none !important;
+  scale: 1 !important;
+  translate: none !important;
+  animation: none !important;
+  transition-property: border-color, background-color, color, box-shadow !important;
+}
 /* Audio guidance screen replaces loading copy with clear Play/Stop controls. */
 .ui-audio-welcome {
   --welcome-accent: #2dd4bf;
