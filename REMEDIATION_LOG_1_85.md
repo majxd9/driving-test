@@ -141,3 +141,17 @@ Render metrics over the inspected 24-hour window returned CPU and memory samples
 - Task 20 Site Guide focus handling: code-level accessibility gap fixed; production frontend build/deploy verified. Screen-reader acceptance remains open.
 - Task 23 Study audio flow: accidental navigation/first-entry autoplay removed; production frontend build/deploy verified. Real-device audio acceptance remains open.
 - Task 27 PracticalInfo mobile dialog focus: code-level accessibility gap fixed; production frontend build/deploy verified. Real-device/screen-reader acceptance remains open.
+
+
+## Live Revalidation — 2026-10-09 (Tasks 1–85)
+
+The detailed task-66–86 recheck is recorded in `PRODUCTION_AUDIT_66_86.md`. This addendum records the latest evidence without claiming external gates as complete.
+
+- GitHub on current main before this documentation update: `release-check` run `37788431001` passed both client and server jobs; `Secret History Scan` run `37788431063` passed; `API Health Monitor` run `37850950257` passed.
+- Read-only Supabase checks: 397 Questions; 397 non-empty QuestionAudios; 0 orphan QuestionAudios; 0 invalid question-core rows; 0 orphan AI images/reviews; 0 duplicate non-empty image hashes; 0 active ExamAttempts; 0 AuthLogs older than 90 days. All 20 public tables have RLS enabled and direct table grants to `anon`/`authenticated` remain absent.
+- Seven empty AI-image byte/hash records are all `Rejected` reviews. No repair/delete was performed because those rows are rejected, not published.
+- Current database use: about 194 MB; 11 of 60 connections, one active. AI controls remain Audio enabled / Image disabled.
+- Current Performance Advisor lists four unused-index INFO findings. `IX_QuestionAiImages_ImageHash` is now observed with one scan; no index or extension was removed.
+- The full npm development-tree report has 8 findings (6 high, 2 moderate), while the production/runtime-only npm audit passes. Most offered remediation requires moving from Tailwind CSS 3 to major version 4; the `braces` advisory currently has no patched package release. No major upgrade or hand-edited lockfile was applied without a reproducible local build. Treat full development dependency hygiene as still open.
+
+Still not safely closable with the available evidence: authenticated Student/Admin/device E2E, browser session/CSRF replay, real PostgreSQL backup plus restore to an isolated target, controlled production rollback drill, credible Render p50/p95/p99, and real-device/browser/screen-reader acceptance. See `PRODUCTION_AUDIT_66_86.md`; Task 86 remains CONDITIONAL.
