@@ -155,3 +155,37 @@ The detailed task-66–86 recheck is recorded in `PRODUCTION_AUDIT_66_86.md`. Th
 - The full npm development-tree report has 8 findings (6 high, 2 moderate), while the production/runtime-only npm audit passes. Most offered remediation requires moving from Tailwind CSS 3 to major version 4; the `braces` advisory currently has no patched package release. No major upgrade or hand-edited lockfile was applied without a reproducible local build. Treat full development dependency hygiene as still open.
 
 Still not safely closable with the available evidence: authenticated Student/Admin/device E2E, browser session/CSRF replay, real PostgreSQL backup plus restore to an isolated target, controlled production rollback drill, credible Render p50/p95/p99, and real-device/browser/screen-reader acceptance. See `PRODUCTION_AUDIT_66_86.md`; Task 86 remains CONDITIONAL.
+
+
+
+## Incident Stabilization — 2026-10-09 (PR #73 / PR #74)
+
+### Production versions and checks
+- PR #73: https://github.com/majxd9/driving-test/pull/73
+- Code commit: `d3e49484dd79921b8361db1e7ba7459a9a395f77`.
+- Render deployment: `dep-db45l6s9v7es73aaj8fg`, status `live`; this is the current backend code commit.
+- PR #73 release-check run `37877871537`: client and server jobs passed. API Health Monitor run `37877871548`: passed. Secret History Scan run `37877871535`: passed.
+- PR #74: https://github.com/majxd9/driving-test/pull/74
+- Frontend commit: `d69404244701552237d0308068a23bdc65e95cf8`.
+- Cloudflare Pages production deployment: `db35973d-8bad-4897-be60-888838a01eb1`, build and deploy stages succeeded.
+- The post-deployment Render app-log window from 2026-10-09 03:09–03:20 UTC showed no error-level application logs. HTTP request logs were not exposed by the available Render log query, so this does not substitute for authenticated E2E testing.
+
+### Exam, training and audio fixes now live
+- Exam session routes allow `Student` and `Admin`, matching the Admin support/test UI. Each attempt still belongs only to the authenticated identity.
+- Entering or refreshing an exam sends `restart: true`; the server resets the one active attempt in place (new expiry/question IDs, empty answers) instead of restoring answers or accumulating abandoned active attempts.
+- Exam answer taps update local state immediately. The client submits the answer map once on Finish; the server still validates question membership/answer indices and calculates the result from the database.
+- Client API failures now preserve server messages and show meaningful status messages for 401/403/404/409/429/5xx/network failures instead of collapsing all failures to «حدث خطأ غير متوقع».
+- The Study/Exam first-entry message is restored. Pressing Play activates the enabled message and continuous question audio; after activation, the next question's audio plays during navigation until Stop is pressed. Stop pauses question audio and plays the disabled message. Browser/device audio acceptance remains external.
+- Data integrity check: all 397/397 question audio rows are non-empty and have a plausible MP3 header. The three system prompts are non-empty and have an ID3 header.
+
+### AI-image review and management
+- The image-review panel now uses `cache: no-store`, validates HTTP status/content type/non-empty bytes, times out after 15 seconds, and shows a useful error plus an explicit Retry action instead of leaving «جارٍ تحميل الصورة…» indefinitely.
+- Database integrity snapshot: 305 AI-image rows; 298 non-empty WebP images; 276 Pending and 22 Approved with valid RIFF/WEBP signatures and review/image hashes matching; 7 Rejected rows have empty image bytes. These 7 remain rejected; do not repair/delete them or generate replacements without an explicit image review decision.
+- Existing Admin controls are present for approve/reject, hide/delete AI images, and hide/remove original images. No images were auto-approved, rejected, deleted, or regenerated during this stabilization.
+
+### Still open — do not misreport as passed
+- Authenticated Student/Admin end-to-end testing on a real browser is still required. The exact original Student-side “unexpected error” could not be traced to a specific HTTP status because Render HTTP request logs were unavailable. The UI now reveals the real status/detail if it recurs; the Admin exam authorization gap is fixed.
+- Real-device testing of first-entry/enable/disable audio and continuous playback is still required.
+- The 276 pending images have not all been visually checked for whether they accurately depict their question. Use the one-image-at-a-time Admin review queue; approve only correct images and reject unsuitable ones.
+- Diagram placement in the Exam page (currently rendered after the answer options) and other visual-layout issues remain intentionally deferred until the final UI pass, as requested.
+- Task 86 / Production Gate remains CONDITIONAL pending authenticated E2E, browser/session replay, isolated PostgreSQL backup/restore, controlled rollback, trustworthy latency percentiles, and mobile/browser/accessibility acceptance.

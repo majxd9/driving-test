@@ -264,12 +264,13 @@ Render:
   - غير مؤكدة → اسأل.
   - غير موجودة بالمصدر المعتمد → لا تخترع بديلاً من نفسك.
 
-### Audio
+### Audio — آخر تحديث معتمد 2026-10-09
 
-- click-to-play.
-- لا autoplay.
-- لا continuous autoplay بعد navigation.
-- لا تغيير سلوك الصوت بدون موافقة.
+- عند دخول Study/Exam من زر داخل الموقع، تظهر/تُشغّل رسالة الدخول الأولى.
+- ضغط Play هو تفعيل الصوت؛ بعد رسالة «الصوت سيبقى شغال حتى تضغط إيقاف» يستمر صوت السؤال تلقائياً عند الانتقال بين الأسئلة إلى أن يضغط المستخدم Stop.
+- Stop يوقف صوت الأسئلة ويشغّل رسالة «الصوت متوقف».
+- فشل التشغيل أو حظر autoplay من المتصفح لا يجوز أن يعطل تحميل التدريب/الاختبار أو اختيار الإجابات؛ يجب إبقاء بديل Play ورسالة خطأ مفهومة.
+- لا توليد صوت جديد من Study/Exam ولا تغيير provider/الحصص دون موافقة.
 
 ---
 
@@ -841,3 +842,13 @@ Read this checkpoint together with `PRODUCTION_AUDIT_66_86.md` and `REMEDIATION_
 - API Health Monitor [37872654330](https://github.com/majxd9/driving-test/actions/runs/37872654330): passed.
 
 The CSRF/CORS smoke test is now evidenced as passing from GitHub-hosted CI; authenticated user-session/browser replay, E2E/device acceptance, backup/restore, rollback, and p50/p95/p99 remain external gates.
+
+
+
+### Stabilization checkpoint — 2026-10-09 (after PR #73 and #74)
+- Render production backend: `d3e49484dd79921b8361db1e7ba7459a9a395f77` / deployment `dep-db45l6s9v7es73aaj8fg` (live).
+- Cloudflare production frontend: `d69404244701552237d0308068a23bdc65e95cf8` / deployment `db35973d-8bad-4897-be60-888838a01eb1` (success).
+- Exam supports Admin and Student, fresh-start-on-entry resets the active attempt, answers remain local until Finish, and server-side scoring remains authoritative.
+- API errors now show meaningful HTTP/network details. If the Student-side failure recurs, capture the exact new status/message; no passwords or tokens are needed.
+- Admin AI-image review shows a recoverable error/retry on image fetch failure. The review queue remains manual, one image at a time; no mass approval/generation occurred.
+- See `REMEDIATION_LOG_1_85.md` for verified deployment metadata, database integrity counts, and outstanding manual gates.

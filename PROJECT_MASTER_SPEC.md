@@ -23,7 +23,7 @@
 - D3: استرجاع/فك ربط الجهاز يتم من Admin فقط.
 - D4: الجهاز الثاني يُرفض ولا ينقل الربط.
 - D5: الاختبارات الحالية، بما فيها Models 7–8 واختياراتها، تبقى كما هي تماماً. لا يوجد طلب لتغيير الأسئلة أو الاختيارات أو منطق الاختبار.
-- D6: صوت الأسئلة click-to-play فقط؛ لا autoplay بعد الانتقال.
+- D6 (updated 2026-10-09): رسالة الدخول الأولى تُعرض عند الدخول من زر داخل الموقع. ضغط Play يفعّل الصوت المستمر، ويُشغّل صوت كل سؤال عند الانتقال حتى Stop؛ فشل الصوت لا يجوز أن يمنع التدريب/الاختبار أو اختيار الإجابات.
 - D7: إصلاحات أخطاء/أداء/استقرار UI آمنة مسموحة، أما إعادة التصميم أو تغيير التنقل أو بنية الصفحات فتحتاج موافقة.
 - إدارة الحسابات: يوجد تبويب **حسابات واحد** يجمع الطلاب والأدمن. الأدمن فقط يضيف ويعدّل حسابات الطلاب والأدمن، بما في ذلك اسم المستخدم، الاسم، كلمة المرور، الصلاحية، الحالة ومدة الوصول. لا يوجد endpoint إداري متاح للطالب.
 - Models 7–8: لا يوجد حالياً تغيير مطلوب في الاختيارات أو مستوى الصعوبة؛ يتم الحفاظ على الاختبارات الحالية كما هي.
@@ -80,7 +80,7 @@
 
 ## 7. الأمان
 - كل مسارات Admin محمية بـ Admin role.
-- مسارات الاختبار محمية بـ Student role.
+- مسارات جلسة الاختبار تسمح بـ Student وAdmin للاختبار/الدعم؛ الجلسة مرتبطة بهوية الحساب الحالي، والخادم يبقى مصدر الحقيقة للتصحيح.
 - state-changing cookie requests تتحقق من Origin/Referer مقابل frontend origin.
 - healthz يفحص اتصال PostgreSQL فعلياً بمهلة قصيرة.
 - login عليه rate limiting.
@@ -398,6 +398,18 @@
 - Task 84: DB backup + restore drill ما زال blocker.
 - Task 85: DB size = 194.12 MiB، connections = 11/60، وlatency percentiles غير مثبتة تاريخياً.
 - Task 86: Production Gate ما زال CONDITIONAL بسبب live E2E، browser session/CSRF replay، backup/restore، latency، mobile/browser/accessibility، وrollback drill.
-- Render live code: `66f9021c4696156f25517848380f5ab9d5b4cdf2`; main أحدث بستة commits docs-only.
+- Render live backend: `d3e49484dd79921b8361db1e7ba7459a9a395f77` (deployment `dep-db45l6s9v7es73aaj8fg`, Live).
+- Cloudflare production frontend: `d69404244701552237d0308068a23bdc65e95cf8` (deployment `db35973d-8bad-4897-be60-888838a01eb1`, success).
+- These deployments include the 2026-10-09 stability and AI image-review error/retry fixes.
 
-- Remediation log for post-audit fixes: `REMEDIATION_LOG_1_85.md` (latest code-level fixes affecting Tasks 20/23/49/6).
+- Remediation log for post-audit fixes: `REMEDIATION_LOG_1_85.md` (Tasks 20/23/49/6 plus the 2026-10-09 training/exam/audio/Admin-image-review stabilization).
+
+
+
+## 26. Stabilization checkpoint — 2026-10-09
+- Exam attempts now accept Student/Admin for test/support usage, restart active practice state on fresh page entry, and keep answer taps local until Finish. Server validation and scoring were preserved.
+- Audio activation/continuity/Stop prompts were restored without changing the question bank.
+- AI image-review fetch failures no longer remain on a spinner; they show status/error and offer retry.
+- Database checks confirmed 397 non-empty plausible MP3 question audios and 298 non-empty WebP AI images (276 pending, 22 approved). Visual semantic review remains a manual Admin task.
+- The original Student-side unexpected error is not claimed fully diagnosed: Render's available request logs did not expose the failing HTTP response. Client error detail improvements are live, and authenticated E2E must still be performed before Production-Cleared.
+- Diagram placement and broader UI layout changes are intentionally deferred to the final visual pass.
