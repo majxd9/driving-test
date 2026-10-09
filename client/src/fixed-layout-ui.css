@@ -1,0 +1,1714 @@
+/* Fixed viewport refinement for Study, Exam and Home.
+   Keep application logic untouched; content geometry is fixed independently of media size. */
+:root {
+  --rk-bg: #080d13;
+  --rk-panel: #121b24;
+  --rk-panel-raised: #17232e;
+  --rk-line: rgba(174,202,220,.16);
+  --rk-text: #eef5f8;
+  --rk-muted: #97a9b8;
+  --rk-accent: #2dd4bf;
+}
+
+/* Global guard: these three screens are fitted to the viewport, not the document. */
+html:has(.study-premium),
+html:has(.study-premium) body,
+html:has(.study-premium) #root,
+html:has(.exam-page-v2),
+html:has(.exam-page-v2) body,
+html:has(.exam-page-v2) #root,
+html:has(.home-page),
+html:has(.home-page) body,
+html:has(.home-page) #root {
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  background: var(--rk-bg) !important;
+}
+
+/* ================================ STUDY ================================ */
+.study-premium {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  max-height: 100dvh !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  background: var(--rk-bg) !important;
+  color: var(--rk-text) !important;
+}
+
+.study-premium .study-premium-header {
+  flex: 0 0 auto !important;
+  min-height: 54px !important;
+  height: auto !important;
+  max-height: none !important;
+  padding: 5px clamp(8px, 1.8vw, 18px) !important;
+  gap: 7px !important;
+  border-bottom: 1px solid var(--rk-line) !important;
+  background: rgba(10,16,23,.94) !important;
+}
+
+.study-premium .study-premium-back {
+  width: 34px !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+}
+
+.study-premium .study-premium-brand strong {
+  font-size: clamp(13px, 1.3vw, 16px) !important;
+  line-height: 1.15 !important;
+}
+
+.study-premium .study-premium-brand small {
+  font-size: 8px !important;
+  line-height: 1.2 !important;
+}
+
+.study-premium .study-premium-kicker {
+  font-size: 8px !important;
+  line-height: 1.15 !important;
+}
+
+.study-premium .study-premium-counter {
+  min-width: 64px !important;
+  height: 35px !important;
+  padding: 4px 7px !important;
+  border-radius: 11px !important;
+}
+
+.study-premium .study-premium-counter b {
+  font-size: 17px !important;
+}
+
+.study-premium .study-premium-progress {
+  flex: 0 0 3px !important;
+  height: 3px !important;
+  min-height: 3px !important;
+}
+
+.study-premium .study-premium-stage {
+  flex: 1 1 0 !important;
+  width: 100% !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 5px 8px 0 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.study-premium .study-premium-card {
+  position: relative !important;
+  isolation: isolate !important;
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: clamp(4px, .65vh, 7px) !important;
+  width: min(1160px, 100%) !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 auto !important;
+  padding: clamp(6px, .85vh, 10px) clamp(8px, 1.2vw, 14px) !important;
+  border: 1px solid var(--rk-line) !important;
+  border-radius: 16px !important;
+  background: linear-gradient(148deg, rgba(23,34,44,.98), rgba(15,24,33,.99) 72%) !important;
+  overflow: hidden !important;
+}
+
+.study-premium .study-premium-card > .spirit-question-signal,
+.study-premium .study-premium-card > .spirit-traffic-signal,
+.study-premium .study-premium-card > [class*="traffic-signal"] {
+  position: absolute !important;
+  top: 7px !important;
+  inset-inline-end: 8px !important;
+  z-index: 25 !important;
+  pointer-events: none !important;
+  transform: scale(.84) !important;
+  transform-origin: top right !important;
+}
+
+.study-premium .study-premium-meta {
+  order: 0 !important;
+  flex: 0 0 18px !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  max-height: 18px !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+  line-height: 18px !important;
+  font-size: 9px !important;
+}
+
+.study-premium .study-premium-images {
+  order: 1 !important;
+  position: relative !important;
+  flex: 0 0 clamp(82px, 13.2dvh, 132px) !important;
+  width: 100% !important;
+  height: clamp(82px, 13.2dvh, 132px) !important;
+  min-height: clamp(82px, 13.2dvh, 132px) !important;
+  max-height: clamp(82px, 13.2dvh, 132px) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  gap: 7px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.study-premium .study-premium-images.has-two-images {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.study-premium .study-premium-image {
+  position: relative !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  aspect-ratio: auto !important;
+  margin: 0 !important;
+  padding: 3px !important;
+  border: 1px solid rgba(174,202,220,.15) !important;
+  border-radius: 11px !important;
+  background: rgba(8,17,24,.9) !important;
+  overflow: hidden !important;
+}
+
+.study-premium .study-premium-image-inner-admin,
+.study-premium .study-premium-image-el,
+.study-premium .study-premium-image img,
+.study-premium .study-premium-image picture,
+.study-premium .study-premium-image > div,
+.study-premium .study-premium-image > div > div {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+
+.study-premium .study-premium-card > .study-premium-no-image {
+  order: 1 !important;
+  flex: 0 0 clamp(82px, 13.2dvh, 132px) !important;
+  width: 100% !important;
+  height: clamp(82px, 13.2dvh, 132px) !important;
+  min-height: clamp(82px, 13.2dvh, 132px) !important;
+  max-height: clamp(82px, 13.2dvh, 132px) !important;
+  margin: 0 !important;
+  border-radius: 11px !important;
+}
+
+.study-premium .study-premium-explanation {
+  position: absolute !important;
+  top: clamp(29px, 4.8dvh, 47px) !important;
+  inset-inline-start: 12px !important;
+  inset-inline-end: auto !important;
+  z-index: 30 !important;
+  width: min(360px, 70%) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: clamp(48px, 7.4dvh, 70px) !important;
+  margin: 0 !important;
+  padding: 5px 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  overflow: auto !important;
+  scrollbar-width: none !important;
+  border: 1px solid rgba(174,202,220,.2) !important;
+  border-radius: 10px !important;
+  background: rgba(8,15,22,.86) !important;
+  color: #c5d4dd !important;
+  box-shadow: 0 7px 20px rgba(0,0,0,.2) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(8px) !important;
+  font-size: 9px !important;
+  line-height: 1.35 !important;
+}
+
+.study-premium .study-premium-explanation.is-empty {
+  display: none !important;
+}
+
+.study-premium .study-premium-explanation b {
+  margin: 0 !important;
+  color: var(--study-accent, var(--rk-accent)) !important;
+  font-size: 9px !important;
+  line-height: 1.15 !important;
+}
+
+.study-premium .study-premium-explanation span {
+  display: block !important;
+  color: #b9c8d1 !important;
+  font-size: 9px !important;
+  line-height: 1.35 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.study-premium .study-premium-question {
+  order: 2 !important;
+  position: relative !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 1px 2px !important;
+  overflow: visible !important;
+  color: var(--rk-text) !important;
+  font-size: clamp(13px, 1.3vw, 19px) !important;
+  font-weight: 850 !important;
+  line-height: 1.32 !important;
+  overflow-wrap: anywhere !important;
+}
+
+.study-premium .study-premium-answers {
+  order: 3 !important;
+  position: relative !important;
+  flex: 1 1 auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: none !important;
+  grid-auto-rows: minmax(min-content, auto) !important;
+  align-content: start !important;
+  gap: clamp(3px, .45vh, 5px) !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.study-premium .study-premium-option {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: clamp(27px, 4.2dvh, 39px) !important;
+  height: auto !important;
+  max-height: none !important;
+  padding: 3px 7px !important;
+  gap: 6px !important;
+  border: 1px solid rgba(174,202,220,.15) !important;
+  border-radius: 9px !important;
+  background: rgba(9,18,26,.68) !important;
+  color: var(--rk-text) !important;
+  box-shadow: none !important;
+}
+
+.study-premium .study-premium-option-text {
+  display: block !important;
+  min-width: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  font-size: clamp(10px, .86vw, 13px) !important;
+  line-height: 1.22 !important;
+}
+
+.study-premium .study-premium-letter {
+  flex: 0 0 23px !important;
+  width: 23px !important;
+  min-width: 23px !important;
+  height: 23px !important;
+  min-height: 23px !important;
+  border-radius: 7px !important;
+  font-size: 10px !important;
+}
+
+.study-premium .study-premium-diagram {
+  order: 4 !important;
+  flex: 0 1 auto !important;
+  min-height: 0 !important;
+  max-height: 6dvh !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+.study-premium .study-premium-diagram:empty {
+  display: none !important;
+}
+
+/* Hard-center the whole navigation group relative to the viewport, not RTL grid flow. */
+.study-premium .study-premium-actions.study-navigation-portal,
+.study-premium nav.study-premium-actions {
+  position: fixed !important;
+  top: auto !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: max(4px, env(safe-area-inset-bottom)) !important;
+  transform: translateX(-50%) !important;
+  z-index: 120 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: min(500px, calc(100vw - 20px)) !important;
+  max-width: min(500px, calc(100vw - 20px)) !important;
+  margin: 0 !important;
+  padding: 4px !important;
+  border: 1px solid rgba(174,202,220,.17) !important;
+  border-radius: 13px !important;
+  background: rgba(8,15,22,.94) !important;
+  box-shadow: 0 7px 24px rgba(0,0,0,.2) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.study-premium .study-premium-action {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 34px !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 6px 8px !important;
+  border-radius: 9px !important;
+  font-size: 11px !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+  transform: none !important;
+}
+
+/* ================================ EXAM ================================= */
+.exam-page-v2 {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  color: var(--rk-text) !important;
+  background:
+    radial-gradient(ellipse at 78% -10%, rgba(45,212,191,.07), transparent 36%),
+    radial-gradient(ellipse at 0% 70%, rgba(56,116,148,.05), transparent 34%),
+    var(--rk-bg) !important;
+}
+
+.exam-page-v2 .exam-topbar-v2 {
+  flex: 0 0 auto !important;
+  min-height: 48px !important;
+  height: auto !important;
+  padding: 5px clamp(7px, 1.4vw, 14px) !important;
+  gap: 6px !important;
+  border-bottom: 1px solid var(--rk-line) !important;
+  background: rgba(10,16,23,.94) !important;
+  box-shadow: none !important;
+}
+
+.exam-page-v2 .exam-back-v2 {
+  width: 33px !important;
+  min-width: 33px !important;
+  height: 33px !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--rk-line) !important;
+  background: var(--rk-panel) !important;
+  color: var(--rk-text) !important;
+}
+
+.exam-page-v2 .exam-title-v2 > strong {
+  color: var(--rk-text) !important;
+  font-size: clamp(12px, 1.2vw, 15px) !important;
+}
+
+.exam-page-v2 .exam-timer-v2 {
+  padding: 5px 9px !important;
+  border: 1px solid rgba(45,212,191,.22) !important;
+  background: rgba(18,40,44,.72) !important;
+  color: #cffff7 !important;
+  font-size: 11px !important;
+  box-shadow: none !important;
+}
+
+.exam-page-v2 .exam-progress-v2 {
+  flex: 0 0 3px !important;
+  height: 3px !important;
+  min-height: 3px !important;
+  background: #17232e !important;
+}
+
+.exam-page-v2 .exam-progress-v2 > span {
+  background: linear-gradient(90deg, var(--rk-accent), rgba(255,255,255,.92)) !important;
+}
+
+.exam-page-v2 .exam-stage-v2 {
+  flex: 1 1 0 !important;
+  width: 100% !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 5px 8px 6px !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+.exam-page-v2 .exam-card-v2 {
+  position: relative !important;
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: clamp(4px, .6vh, 7px) !important;
+  width: min(1000px, 100%) !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 auto !important;
+  padding: clamp(6px, .8vh, 9px) clamp(7px, 1vw, 12px) !important;
+  overflow: hidden !important;
+  border: 1px solid var(--rk-line) !important;
+  border-radius: 15px !important;
+  background: linear-gradient(148deg, rgba(23,34,44,.98), rgba(15,24,33,.99) 72%) !important;
+  box-shadow: 0 16px 42px rgba(0,0,0,.2) !important;
+}
+
+.exam-page-v2 .exam-inside {
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.exam-page-v2 .exam-scroll-v2 {
+  flex: 1 1 auto !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 1px !important;
+  overflow: hidden !important;
+}
+
+.exam-page-v2 .exam-image-slot-v2 {
+  flex: 0 0 clamp(132px, 22dvh, 218px) !important;
+  width: 100% !important;
+  height: clamp(132px, 22dvh, 218px) !important;
+  min-height: clamp(132px, 22dvh, 218px) !important;
+  max-height: clamp(132px, 22dvh, 218px) !important;
+  margin: 0 0 clamp(5px, .65vh, 8px) !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  gap: 7px !important;
+  overflow: hidden !important;
+}
+
+.exam-page-v2 .exam-image-slot-v2.has-two-images {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.exam-page-v2 .exam-question-image-frame {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 3px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(174,202,220,.15) !important;
+  border-radius: 11px !important;
+  background: rgba(8,17,24,.92) !important;
+}
+
+.exam-page-v2 .exam-question-image-frame .exam-image-v2,
+.exam-page-v2 .exam-question-image-frame > div,
+.exam-page-v2 .exam-question-image-frame img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+
+.exam-page-v2 .exam-question-v2 {
+  flex: 0 0 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 0 5px !important;
+  padding: 1px 3px !important;
+  color: var(--rk-text) !important;
+  text-align: start !important;
+  font-size: clamp(13px, 1.35vw, 19px) !important;
+  font-weight: 850 !important;
+  line-height: 1.32 !important;
+  overflow-wrap: anywhere !important;
+}
+
+.exam-page-v2 .exam-question-label {
+  display: inline-block !important;
+  margin-inline-end: 5px !important;
+  color: var(--rk-accent) !important;
+  font-size: 9px !important;
+  font-weight: 850 !important;
+}
+
+.exam-page-v2 .exam-answers-v2 {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: clamp(3px, .45vh, 5px) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.exam-page-v2 .exam-option-v2 {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 3px 7px !important;
+  gap: 6px !important;
+  border: 1px solid rgba(174,202,220,.15) !important;
+  border-radius: 9px !important;
+  background: rgba(9,18,26,.68) !important;
+  color: var(--rk-text) !important;
+  box-shadow: none !important;
+  text-align: start !important;
+}
+
+.exam-page-v2 .exam-option-v2.selected {
+  border-color: rgba(45,212,191,.72) !important;
+  background: linear-gradient(100deg, rgba(45,212,191,.12), rgba(18,35,46,.96)) !important;
+}
+
+.exam-page-v2 .exam-option-letter-v2 {
+  flex: 0 0 23px !important;
+  width: 23px !important;
+  min-width: 23px !important;
+  height: 23px !important;
+  min-height: 23px !important;
+  border-radius: 7px !important;
+  color: #aaf8eb !important;
+  font-size: 10px !important;
+}
+
+.exam-page-v2 .exam-option-text-v2 {
+  min-width: 0 !important;
+  font-size: clamp(10px, .86vw, 13px) !important;
+  line-height: 1.22 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.exam-page-v2 .exam-actions-v2 {
+  position: relative !important;
+  inset: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 4px 0 2px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(82px, .85fr) minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 6px !important;
+  border-top: 1px solid var(--rk-line) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.exam-page-v2 .exam-action-v2,
+.exam-page-v2 .exam-action-v2.finish,
+.exam-page-v2 .exam-action-v2.next,
+.exam-page-v2 .exam-action-v2.secondary {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 34px !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 5px 5px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  border: 1px solid rgba(174,202,220,.18) !important;
+  border-radius: 9px !important;
+  background: #14202a !important;
+  color: #c3d2dc !important;
+  box-shadow: none !important;
+  font-size: clamp(10px, .85vw, 12px) !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+}
+
+.exam-page-v2 .exam-action-v2.next {
+  border-color: rgba(45,212,191,.72) !important;
+  background: var(--rk-accent) !important;
+  color: #06231e !important;
+}
+
+.exam-page-v2 .exam-action-v2.finish {
+  background: rgba(23,35,46,.86) !important;
+  color: #d7e4ea !important;
+}
+
+/* ================================ HOME ================================= */
+.home-page {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(ellipse at 78% -10%, rgba(45,212,191,.07), transparent 36%),
+    var(--rk-bg) !important;
+  color: var(--rk-text) !important;
+}
+
+.home-page .site-header {
+  flex: 0 0 49px !important;
+  width: 100% !important;
+  height: 49px !important;
+  min-height: 49px !important;
+  max-height: 49px !important;
+  padding: 0 !important;
+  border-bottom: 1px solid var(--rk-line) !important;
+  background: rgba(10,16,23,.94) !important;
+  box-shadow: none !important;
+}
+
+.home-page .site-header > div {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 1160px !important;
+  margin: 0 auto !important;
+  padding: 4px 10px !important;
+}
+
+.home-page .brand-mark {
+  width: 31px !important;
+  height: 31px !important;
+  min-width: 31px !important;
+  border-radius: 10px !important;
+}
+
+.home-page .site-header b {
+  color: var(--rk-text) !important;
+  font-size: 14px !important;
+}
+
+.home-page .site-header p {
+  color: var(--rk-muted) !important;
+  font-size: 8px !important;
+  line-height: 1.2 !important;
+}
+
+.home-page .site-header .top-link {
+  min-height: 30px !important;
+  padding: 5px 9px !important;
+  border: 1px solid var(--rk-line) !important;
+  border-radius: 9px !important;
+  background: var(--rk-panel) !important;
+  color: #d2e1e8 !important;
+  font-size: 10px !important;
+}
+
+.home-page > main {
+  flex: 1 1 0 !important;
+  display: grid !important;
+  grid-template-rows: minmax(112px, 1.05fr) minmax(158px, 1.34fr) minmax(56px, .5fr) minmax(62px, .56fr) !important;
+  gap: clamp(5px, .9vh, 10px) !important;
+  width: min(1160px, 100%) !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 auto !important;
+  padding: clamp(6px, 1vh, 10px) clamp(8px, 1.7vw, 18px) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.home-page .home-hero {
+  grid-row: 1 !important;
+  position: relative !important;
+  isolation: isolate !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) clamp(120px, 19%, 205px) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  grid-template-areas: "copy score" !important;
+  align-items: center !important;
+  gap: clamp(7px, 1.4vw, 18px) !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: clamp(10px, 1.6vh, 17px) clamp(11px, 1.8vw, 20px) !important;
+  overflow: hidden !important;
+  border: 1px solid var(--rk-line) !important;
+  border-radius: 16px !important;
+  background: linear-gradient(148deg, rgba(23,34,44,.98), rgba(15,24,33,.98) 72%) !important;
+  box-shadow: 0 15px 40px rgba(0,0,0,.18) !important;
+}
+
+.home-page .home-spirit-scene {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: .48 !important;
+  pointer-events: none !important;
+}
+
+.home-page .home-hero-copy {
+  grid-area: copy !important;
+  position: relative !important;
+  z-index: 2 !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.home-page .home-greeting {
+  margin: 0 0 4px !important;
+  padding: 0 !important;
+}
+
+.home-page .student-name-plate {
+  min-height: 27px !important;
+  padding: 3px 7px !important;
+  border-radius: 9px !important;
+}
+
+.home-page .student-name-copy small {
+  font-size: 7px !important;
+}
+
+.home-page .student-name-copy strong {
+  font-size: 10px !important;
+}
+
+.home-page .home-hero-copy h1 {
+  margin: 4px 0 5px !important;
+  color: var(--rk-text) !important;
+  font-size: clamp(14px, 1.65vw, 22px) !important;
+  line-height: 1.35 !important;
+  font-weight: 900 !important;
+  overflow-wrap: anywhere !important;
+}
+
+.home-page .home-hero-copy > p {
+  max-width: 760px !important;
+  margin: 0 !important;
+  color: #b0c0ca !important;
+  font-size: clamp(9px, .92vw, 12px) !important;
+  line-height: 1.5 !important;
+}
+
+.home-page .home-hero-copy > div:last-child {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin-top: clamp(5px, .8vh, 9px) !important;
+}
+
+.home-page .primary-cta,
+.home-page .home-hero-copy .guide-button {
+  min-height: 32px !important;
+  padding: 6px 11px !important;
+  border-radius: 10px !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+}
+
+.home-page .home-score {
+  grid-area: score !important;
+  position: relative !important;
+  z-index: 2 !important;
+  align-self: stretch !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 7px !important;
+  border: 1px solid rgba(45,212,191,.18) !important;
+  border-radius: 13px !important;
+  background: rgba(8,17,24,.72) !important;
+  box-shadow: none !important;
+}
+
+.home-page .home-score-copy {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+
+.home-page .home-score-copy span {
+  color: #c8d7df !important;
+  font-size: 10px !important;
+  line-height: 1.35 !important;
+}
+
+.home-page .home-score-copy small {
+  color: var(--rk-muted) !important;
+  font-size: 8px !important;
+  line-height: 1.3 !important;
+}
+
+.home-page .home-score-main {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+}
+
+.home-page .home-score-main > strong {
+  color: var(--rk-accent) !important;
+  font-size: clamp(27px, 3.2vw, 42px) !important;
+  line-height: 1 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.home-page .home-score-main .spirit-nitro {
+  transform: scale(.58) !important;
+  transform-origin: top center !important;
+  height: 13px !important;
+  margin: 0 !important;
+}
+
+.home-page > main > section:has(.category-card) {
+  grid-row: 2 !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  gap: 5px !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+.home-page .section-heading {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+}
+
+.home-page .section-heading .eyebrow {
+  margin: 0 0 2px !important;
+  color: var(--rk-accent) !important;
+  font-size: 8px !important;
+}
+
+.home-page .section-heading h2 {
+  margin: 0 !important;
+  color: var(--rk-text) !important;
+  font-size: clamp(13px, 1.4vw, 17px) !important;
+  line-height: 1.25 !important;
+  font-weight: 900 !important;
+}
+
+.home-page .section-hint {
+  max-width: 48% !important;
+  color: var(--rk-muted) !important;
+  font-size: 8px !important;
+  line-height: 1.3 !important;
+  text-align: start !important;
+}
+
+.home-page .home-page-training-grid,
+.home-page > main > section:has(.category-card) > .grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  gap: clamp(6px, .9vw, 11px) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+
+.home-page .category-card {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: 30px minmax(0, 1fr) 17px !important;
+  align-items: center !important;
+  gap: 7px !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: clamp(8px, 1.2vw, 14px) !important;
+  border: 1px solid var(--rk-line) !important;
+  border-radius: 13px !important;
+  background: linear-gradient(145deg, rgba(21,34,44,.96), rgba(10,19,27,.98)) !important;
+  color: var(--rk-text) !important;
+  text-align: start !important;
+  box-shadow: none !important;
+}
+
+.home-page .category-icon {
+  display: grid !important;
+  place-items: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  border: 1px solid rgba(45,212,191,.2) !important;
+  border-radius: 9px !important;
+  background: rgba(45,212,191,.07) !important;
+  color: var(--rk-accent) !important;
+}
+
+.home-page .category-icon svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.home-page .category-card .flex-1 {
+  min-width: 0 !important;
+}
+
+.home-page .category-card h3 {
+  margin: 0 0 4px !important;
+  color: var(--rk-text) !important;
+  font-size: clamp(11px, 1vw, 14px) !important;
+  line-height: 1.35 !important;
+  font-weight: 850 !important;
+}
+
+.home-page .category-card p {
+  margin: 0 !important;
+  color: var(--rk-muted) !important;
+  font-size: clamp(8px, .75vw, 10px) !important;
+  line-height: 1.45 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.home-page .category-card .arrow {
+  color: var(--rk-accent) !important;
+  opacity: .9 !important;
+}
+
+.home-page .category-card .arrow svg {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+.home-page .home-practical-card {
+  grid-row: 3 !important;
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: 34px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 9px !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 7px 12px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--rk-line) !important;
+  border-radius: 13px !important;
+  background: linear-gradient(145deg, rgba(21,34,44,.96), rgba(10,19,27,.98)) !important;
+  color: var(--rk-text) !important;
+  text-align: start !important;
+  box-shadow: none !important;
+}
+
+.home-page .home-practical-icon {
+  width: 32px !important;
+  height: 32px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 9px !important;
+  background: rgba(45,212,191,.08) !important;
+  color: var(--rk-accent) !important;
+}
+
+.home-page .home-practical-icon svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.home-page .home-practical-copy {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.home-page .home-practical-copy small {
+  color: var(--rk-accent) !important;
+  font-size: 8px !important;
+  line-height: 1.2 !important;
+}
+
+.home-page .home-practical-copy strong {
+  color: var(--rk-text) !important;
+  font-size: 12px !important;
+  line-height: 1.25 !important;
+}
+
+.home-page .home-practical-copy em {
+  color: var(--rk-muted) !important;
+  font-size: 8px !important;
+  line-height: 1.3 !important;
+  font-style: normal !important;
+}
+
+.home-page .home-practical-cta {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  white-space: nowrap !important;
+  color: var(--rk-accent) !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+}
+
+.home-page .home-practical-cta svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.home-page .home-exam {
+  grid-row: 4 !important;
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 8px clamp(11px, 1.5vw, 17px) !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(45,212,191,.28) !important;
+  border-radius: 13px !important;
+  background: linear-gradient(110deg, rgba(16,40,44,.96), rgba(15,24,33,.99) 60%) !important;
+  color: var(--rk-text) !important;
+  box-shadow: none !important;
+}
+
+.home-page .home-exam .eyebrow {
+  margin: 0 0 2px !important;
+  color: #88bcb4 !important;
+  font-size: 8px !important;
+  line-height: 1.2 !important;
+}
+
+.home-page .home-exam h2 {
+  margin: 0 0 3px !important;
+  color: var(--rk-text) !important;
+  font-size: clamp(12px, 1.25vw, 16px) !important;
+  line-height: 1.25 !important;
+  font-weight: 900 !important;
+}
+
+.home-page .home-exam p:not(.eyebrow) {
+  margin: 0 !important;
+  color: #afc2ca !important;
+  font-size: 9px !important;
+  line-height: 1.3 !important;
+}
+
+.home-page .home-exam .exam-action {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  min-height: 31px !important;
+  padding: 6px 10px !important;
+  border: 1px solid rgba(45,212,191,.24) !important;
+  border-radius: 9px !important;
+  background: rgba(45,212,191,.1) !important;
+  color: #bffaf1 !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+
+.home-page .home-exam .exam-action svg {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+/* Narrow and short displays: keep each content item on-screen and readable. */
+@media (max-width: 760px) {
+  .study-premium .study-premium-header {
+    min-height: 0 !important;
+    padding: 4px 7px !important;
+    gap: 4px 6px !important;
+    grid-template-columns: 34px minmax(0, 1fr) auto !important;
+    grid-template-areas: "back brand counter" "audio audio audio" !important;
+  }
+
+  .study-premium .study-premium-back {
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+  }
+
+  .study-premium .study-premium-brand strong {
+    font-size: 12px !important;
+  }
+
+  .study-premium .study-premium-brand small,
+  .study-premium .study-premium-kicker {
+    font-size: 7px !important;
+  }
+
+  .study-premium .study-premium-counter {
+    min-width: 59px !important;
+    height: 31px !important;
+    padding: 3px 5px !important;
+  }
+
+  .study-premium .study-premium-counter b {
+    font-size: 15px !important;
+  }
+
+  .study-premium .question-audio-nav,
+  .study-premium .question-audio-nav.study-top {
+    min-height: 24px !important;
+    max-height: 27px !important;
+    gap: 4px !important;
+    padding: 0 !important;
+  }
+
+  .study-premium .question-audio-nav__audio {
+    min-height: 25px !important;
+    height: 25px !important;
+    padding: 3px 6px !important;
+    font-size: 9px !important;
+  }
+
+  .study-premium .question-audio-nav__status {
+    max-width: 47vw !important;
+    font-size: 8px !important;
+    line-height: 1.15 !important;
+  }
+
+  .study-premium .study-premium-stage {
+    padding: 4px 5px 0 !important;
+  }
+
+  .study-premium .study-premium-card {
+    gap: 3px !important;
+    padding: 5px 6px !important;
+    border-radius: 12px !important;
+  }
+
+  .study-premium .study-premium-meta {
+    flex-basis: 16px !important;
+    height: 16px !important;
+    min-height: 16px !important;
+    max-height: 16px !important;
+    line-height: 16px !important;
+    font-size: 8px !important;
+  }
+
+  .study-premium .study-premium-images,
+  .study-premium .study-premium-card > .study-premium-no-image {
+    flex-basis: clamp(70px, 11.5dvh, 98px) !important;
+    height: clamp(70px, 11.5dvh, 98px) !important;
+    min-height: clamp(70px, 11.5dvh, 98px) !important;
+    max-height: clamp(70px, 11.5dvh, 98px) !important;
+    gap: 5px !important;
+  }
+
+  .study-premium .study-premium-explanation {
+    top: 26px !important;
+    inset-inline-start: 8px !important;
+    width: min(280px, 74%) !important;
+    max-height: clamp(43px, 7dvh, 57px) !important;
+    padding: 4px 6px !important;
+    border-radius: 8px !important;
+    font-size: 8px !important;
+  }
+
+  .study-premium .study-premium-explanation b,
+  .study-premium .study-premium-explanation span {
+    font-size: 8px !important;
+    line-height: 1.28 !important;
+  }
+
+  .study-premium .study-premium-question {
+    font-size: clamp(12px, 3.2vw, 16px) !important;
+    line-height: 1.25 !important;
+  }
+
+  .study-premium .study-premium-answers {
+    gap: 3px !important;
+  }
+
+  .study-premium .study-premium-option {
+    min-height: clamp(25px, 3.8dvh, 33px) !important;
+    padding: 2px 5px !important;
+    gap: 5px !important;
+    border-radius: 8px !important;
+  }
+
+  .study-premium .study-premium-letter {
+    flex-basis: 20px !important;
+    width: 20px !important;
+    min-width: 20px !important;
+    height: 20px !important;
+    min-height: 20px !important;
+    font-size: 9px !important;
+  }
+
+  .study-premium .study-premium-option-text {
+    font-size: 9.5px !important;
+    line-height: 1.18 !important;
+  }
+
+  .study-premium .study-premium-diagram {
+    max-height: 4dvh !important;
+  }
+
+  .study-premium .study-premium-actions.study-navigation-portal,
+  .study-premium nav.study-premium-actions {
+    width: min(430px, calc(100vw - 14px)) !important;
+    max-width: min(430px, calc(100vw - 14px)) !important;
+    bottom: max(3px, env(safe-area-inset-bottom)) !important;
+    gap: 5px !important;
+    padding: 3px !important;
+  }
+
+  .study-premium .study-premium-action {
+    min-height: 30px !important;
+    padding: 5px 5px !important;
+    font-size: 10px !important;
+  }
+
+  .exam-page-v2 .exam-topbar-v2 {
+    min-height: 44px !important;
+    padding: 4px 7px !important;
+    gap: 5px !important;
+  }
+
+  .exam-page-v2 .exam-back-v2 {
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 30px !important;
+  }
+
+  .exam-page-v2 .exam-title-v2 > strong {
+    font-size: 11px !important;
+  }
+
+  .exam-page-v2 .exam-question-counter {
+    width: 94px !important;
+    min-width: 94px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+  }
+
+  .exam-page-v2 .exam-timer-v2 {
+    padding: 4px 6px !important;
+    font-size: 9px !important;
+  }
+
+  .exam-page-v2 .exam-stage-v2 {
+    padding: 4px 5px !important;
+  }
+
+  .exam-page-v2 .exam-card-v2 {
+    gap: 3px !important;
+    padding: 5px !important;
+    border-radius: 12px !important;
+  }
+
+  .exam-page-v2 .exam-inside {
+    gap: 3px !important;
+  }
+
+  .exam-page-v2 .exam-image-slot-v2 {
+    flex-basis: clamp(110px, 19dvh, 160px) !important;
+    height: clamp(110px, 19dvh, 160px) !important;
+    min-height: clamp(110px, 19dvh, 160px) !important;
+    max-height: clamp(110px, 19dvh, 160px) !important;
+    gap: 5px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .exam-page-v2 .exam-question-v2 {
+    margin-bottom: 3px !important;
+    font-size: clamp(12px, 3.2vw, 16px) !important;
+    line-height: 1.22 !important;
+  }
+
+  .exam-page-v2 .exam-answers-v2 {
+    gap: 3px !important;
+  }
+
+  .exam-page-v2 .exam-option-v2 {
+    padding: 2px 5px !important;
+    gap: 5px !important;
+    border-radius: 8px !important;
+  }
+
+  .exam-page-v2 .exam-option-letter-v2 {
+    flex-basis: 20px !important;
+    width: 20px !important;
+    min-width: 20px !important;
+    height: 20px !important;
+    min-height: 20px !important;
+  }
+
+  .exam-page-v2 .exam-option-text-v2 {
+    font-size: 9.5px !important;
+    line-height: 1.16 !important;
+  }
+
+  .exam-page-v2 .exam-actions-v2 {
+    gap: 4px !important;
+    padding: 3px 0 1px !important;
+    grid-template-columns: minmax(0, 1fr) minmax(70px, .8fr) minmax(0, 1fr) !important;
+  }
+
+  .exam-page-v2 .exam-action-v2,
+  .exam-page-v2 .exam-action-v2.finish,
+  .exam-page-v2 .exam-action-v2.next,
+  .exam-page-v2 .exam-action-v2.secondary {
+    min-height: 30px !important;
+    padding: 4px 3px !important;
+    gap: 2px !important;
+    font-size: 9px !important;
+  }
+
+  .home-page .site-header {
+    flex-basis: 45px !important;
+    height: 45px !important;
+    min-height: 45px !important;
+    max-height: 45px !important;
+  }
+
+  .home-page .site-header > div {
+    padding: 3px 7px !important;
+  }
+
+  .home-page .site-header .top-link {
+    min-height: 27px !important;
+    padding: 4px 6px !important;
+    font-size: 8px !important;
+  }
+
+  .home-page > main {
+    grid-template-rows: minmax(105px, 1fr) minmax(170px, 1.45fr) minmax(53px, .5fr) minmax(58px, .55fr) !important;
+    gap: 5px !important;
+    padding: 5px 6px !important;
+  }
+
+  .home-page .home-hero {
+    grid-template-columns: minmax(0, 1fr) 84px !important;
+    gap: 6px !important;
+    padding: 7px 8px !important;
+    border-radius: 12px !important;
+  }
+
+  .home-page .home-hero-copy h1 {
+    margin: 3px 0 4px !important;
+    font-size: clamp(12px, 3.4vw, 16px) !important;
+    line-height: 1.28 !important;
+  }
+
+  .home-page .home-hero-copy > p {
+    font-size: 8.5px !important;
+    line-height: 1.35 !important;
+  }
+
+  .home-page .home-hero-copy > div:last-child {
+    gap: 4px !important;
+    margin-top: 5px !important;
+  }
+
+  .home-page .primary-cta,
+  .home-page .home-hero-copy .guide-button {
+    min-height: 27px !important;
+    padding: 4px 7px !important;
+    font-size: 8px !important;
+  }
+
+  .home-page .home-score {
+    padding: 4px !important;
+    border-radius: 9px !important;
+  }
+
+  .home-page .home-score-copy span {
+    font-size: 8px !important;
+  }
+
+  .home-page .home-score-copy small {
+    font-size: 7px !important;
+  }
+
+  .home-page .home-score-main > strong {
+    font-size: 25px !important;
+  }
+
+  .home-page .home-score-main .spirit-nitro {
+    display: none !important;
+  }
+
+  .home-page > main > section:has(.category-card) {
+    gap: 4px !important;
+  }
+
+  .home-page .section-heading h2 {
+    font-size: 12px !important;
+  }
+
+  .home-page .section-hint {
+    max-width: 44% !important;
+    font-size: 7px !important;
+  }
+
+  .home-page > main > section:has(.category-card) > .grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+  }
+
+  .home-page .category-card {
+    grid-template-columns: 25px minmax(0, 1fr) 15px !important;
+    gap: 7px !important;
+    padding: 4px 7px !important;
+    border-radius: 9px !important;
+  }
+
+  .home-page .category-icon {
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 7px !important;
+  }
+
+  .home-page .category-icon svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  .home-page .category-card h3 {
+    margin-bottom: 1px !important;
+    font-size: 10px !important;
+    line-height: 1.15 !important;
+  }
+
+  .home-page .category-card p {
+    font-size: 8px !important;
+    line-height: 1.18 !important;
+  }
+
+  .home-page .category-card .arrow svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+
+  .home-page .home-practical-card {
+    grid-template-columns: 25px minmax(0, 1fr) auto !important;
+    gap: 6px !important;
+    padding: 4px 7px !important;
+    border-radius: 9px !important;
+  }
+
+  .home-page .home-practical-icon,
+  .home-page .home-practical-icon svg {
+    width: 23px !important;
+    height: 23px !important;
+  }
+
+  .home-page .home-practical-copy {
+    gap: 1px !important;
+  }
+
+  .home-page .home-practical-copy small {
+    font-size: 7px !important;
+  }
+
+  .home-page .home-practical-copy strong {
+    font-size: 10px !important;
+  }
+
+  .home-page .home-practical-copy em {
+    font-size: 7px !important;
+    line-height: 1.15 !important;
+  }
+
+  .home-page .home-practical-cta {
+    font-size: 8px !important;
+  }
+
+  .home-page .home-exam {
+    gap: 5px !important;
+    padding: 5px 8px !important;
+    border-radius: 9px !important;
+  }
+
+  .home-page .home-exam .eyebrow {
+    font-size: 7px !important;
+  }
+
+  .home-page .home-exam h2 {
+    font-size: 11px !important;
+  }
+
+  .home-page .home-exam p:not(.eyebrow) {
+    font-size: 8px !important;
+  }
+
+  .home-page .home-exam .exam-action {
+    min-height: 27px !important;
+    padding: 4px 6px !important;
+    font-size: 8px !important;
+  }
+}
+
+@media (max-height: 680px) {
+  .study-premium .study-premium-header {
+    min-height: 43px !important;
+    padding-block: 3px !important;
+  }
+
+  .study-premium .study-premium-images,
+  .study-premium .study-premium-card > .study-premium-no-image {
+    flex-basis: clamp(64px, 10.5dvh, 88px) !important;
+    height: clamp(64px, 10.5dvh, 88px) !important;
+    min-height: clamp(64px, 10.5dvh, 88px) !important;
+    max-height: clamp(64px, 10.5dvh, 88px) !important;
+  }
+
+  .study-premium .study-premium-option {
+    min-height: 24px !important;
+  }
+
+  .study-premium .study-premium-option-text {
+    font-size: 9px !important;
+  }
+
+  .study-premium .study-premium-actions.study-navigation-portal,
+  .study-premium nav.study-premium-actions {
+    bottom: 2px !important;
+  }
+
+  .exam-page-v2 .exam-image-slot-v2 {
+    flex-basis: clamp(92px, 17dvh, 132px) !important;
+    height: clamp(92px, 17dvh, 132px) !important;
+    min-height: clamp(92px, 17dvh, 132px) !important;
+    max-height: clamp(92px, 17dvh, 132px) !important;
+  }
+
+  .home-page > main {
+    grid-template-rows: minmax(90px, 1fr) minmax(145px, 1.4fr) minmax(48px, .5fr) minmax(54px, .55fr) !important;
+    gap: 4px !important;
+    padding-block: 4px !important;
+  }
+
+  .home-page .home-hero-copy h1 {
+    font-size: 12px !important;
+  }
+
+  .home-page .home-hero-copy > p {
+    font-size: 7.5px !important;
+  }
+
+  .home-page > main > section:has(.category-card) > .grid {
+    gap: 3px !important;
+  }
+
+  .home-page .category-card p {
+    font-size: 7px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .study-premium *,
+  .exam-page-v2 *,
+  .home-page *,
+  .study-premium *::before,
+  .exam-page-v2 *::before,
+  .home-page *::before,
+  .study-premium *::after,
+  .exam-page-v2 *::after,
+  .home-page *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
