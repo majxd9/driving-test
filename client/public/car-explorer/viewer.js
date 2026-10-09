@@ -45,6 +45,7 @@ const grid = new THREE.GridHelper(20, 40, 0x353b46, 0x262b34); grid.position.y =
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 let model = null, meshes = [], selected = null, exploded = false, inside = false, renderQueued = false, modelCenter = new THREE.Vector3(), homeCamera = null;
+let modelBounds = null, mainPartEntries = [], selectedMeshes = [], selectedLabel = "";
 const originalPositions = new Map();
 const exteriorPattern = /(body|hood|bonnet|door|fender|wing|roof|bumper|trunk|boot|quarter|grille|grill|windshield|windscreen|window|glass|exterior|shell|front.?clip|rear.?clip)/i;
 const categoryFor = (mesh) => {
@@ -57,17 +58,86 @@ const categoryFor = (mesh) => {
 };
 const categoryLabel = {all:"الكل", exterior:"الهيكل", engine:"المحرك والحركة", cabin:"المقصورة", lights:"الإضاءة", wheels:"العجلات"};
 const cleanName = (raw, index) => {
- let n = String(raw || "").replace(/[_-]+/g," ").replace(/\s+/g," ").trim();
- n = n.replace(/\.\d{3}$/,"");
- if (!n || /^(mesh|object|cube|sphere|plane)(\s*\d*)?$/i.test(n)) return "قطعة من السيارة " + (index + 1);
+ const n = String(raw || "").replace(/[_-]+/g," ").replace(/\s+/g," ").trim();
  const map = [
-  [/(hood|bonnet)/i,"غطاء المحرك"],[/(front.?bumper)/i,"الصدام الأمامي"],[/(rear.?bumper)/i,"الصدام الخلفي"],
-  [/(wheel|tire|tyre)/i,"العجلة / الإطار"],[/(head.?light|headlamp)/i,"المصباح الأمامي"],[/(tail.?light|rear.?lamp)/i,"المصباح الخلفي"],
-  [/(wind.?screen|windshield)/i,"الزجاج الأمامي"],[/(door)/i,"باب السيارة"],[/(seat)/i,"المقعد"],[/(steer)/i,"عجلة القيادة"],
-  [/(engine|motor)/i,"مجموعة المحرك"],[/(exhaust)/i,"أنبوب العادم"],[/(dashboard|dash)/i,"لوحة القيادة"],[/(grille|grill)/i,"شبك الواجهة"]
+  [/(hood|bonnet|engine cover|机盖|发动机罩)/i,"غطاء المحرك"],
+  [/(bumper|fascia|保险杠)/i,"الصدامات"],
+  [/(wheel|tire|tyre|rim|hub|轮胎|车轮|轮毂)/i,"العجلات"],
+  [/(head.?light|tail.?light|lamp|light|车灯|大灯|尾灯)/i,"المصابيح"],
+  [/(wind.?shield|windshield|window|glass|挡风玻璃|车窗|玻璃)/i,"الزجاج"],
+  [/(door|车门)/i,"الأبواب"],
+  [/(seat|座椅)/i,"المقاعد"],
+  [/(steer|volant|方向盘)/i,"المقود"],
+  [/(engine|motor|发动机)/i,"المحرك"],
+  [/(dashboard|dash|仪表台|仪表板|中控台)/i,"لوحة القيادة"],
+  [/(grille|grill|格栅)/i,"شبك الواجهة"],
+  [/(mirror|后视镜)/i,"المرايا"],
+  [/(body|chassis|shell|frame|车身|车体)/i,"الهيكل"]
  ];
- for (const [re, label] of map) if (re.test(n)) return label;
- return n.length > 46 ? n.slice(0,43) + "…" : n;
+ for (const [re,label] of map) if (re.test(n)) return label;
+ return "مكوّن السيارة";
+};
+const mainPartDefinitions = [
+ {id:"body",label:"الهيكل",category:"exterior",keywords:/(bodywork|car.?body|chassis|shell|frame|carrosserie|车身|车体|车壳)/i,max:4,filter:d=>d.longSize>.28&&d.footprint>.05&&d.vertical>.12&&d.vertical<.82,score:d=>d.footprint*2+d.volume},
+ {id:"hood",label:"غطاء المحرك",category:"exterior",keywords:/(hood|bonnet|engine.?cover|motor.?cover|机盖|发动机罩)/i,max:3,filter:d=>Math.abs(d.longPos)>.43&&d.vertical>.27&&d.vertical<.84&&d.sideAbs<.92,score:d=>d.footprint/(.015+d.volume)+Math.abs(d.longPos)*.2},
+ {id:"doors",label:"الأبواب",category:"exterior",keywords:/(door|car.?door|侧门|车门)/i,max:6,filter:d=>Math.abs(d.longPos)<.56&&d.sideAbs>.36&&d.vertical>.18&&d.vertical<.78,score:d=>d.sideAbs+d.footprint*2-Math.abs(d.longPos)*.3},
+ {id:"wheels",label:"العجلات",category:"wheels",keywords:/(wheel|tyre|tire|rim|hubcap|轮胎|车轮|轮毂)/i,max:8,filter:d=>d.vertical<.29&&d.sideAbs>.27&&Math.abs(d.longPos)>.2,score:d=>d.sideAbs+Math.abs(d.longPos)+Math.max(d.size.x,d.size.z)},
+ {id:"lights",label:"المصابيح",category:"lights",keywords:/(head.?light|tail.?light|lamp|light.?assembly|headlamp|taillight|车灯|大灯|尾灯|灯组)/i,max:8,filter:d=>Math.abs(d.longPos)>.56&&d.vertical>.20&&d.vertical<.8&&d.sideAbs>.08,score:d=>Math.abs(d.longPos)+.25/(.02+d.volume)},
+ {id:"seats",label:"المقاعد",category:"cabin",keywords:/(seat|chair|bucket.?seat|座椅|座位|椅子)/i,max:6,filter:d=>d.sideAbs<.5&&d.vertical>.3&&d.vertical<.9&&Math.abs(d.longPos)<.52,score:d=>d.vertical+(1-d.sideAbs)*.5+d.volume},
+ {id:"steering",label:"المقود",category:"cabin",keywords:/(steer(ing)? wheel|steering|volant|方向盘|转向盘)/i,max:3,filter:d=>d.sideAbs<.31&&d.vertical>.4&&d.vertical<.93&&Math.abs(d.longPos)<.62,score:d=>d.vertical+(1-d.sideAbs)-d.volume*8},
+ {id:"dashboard",label:"لوحة القيادة",category:"cabin",keywords:/(dashboard|dash.?board|instrument.?panel|cockpit|console|仪表台|仪表板|中控台)/i,max:4,filter:d=>d.sideAbs<.43&&d.vertical>.31&&d.vertical<.84&&Math.abs(d.longPos)<.72,score:d=>d.footprint+d.vertical},
+ {id:"glass",label:"الزجاج",category:"exterior",keywords:/(wind.?shield|windscreen|window.?glass|glass|glazing|挡风玻璃|车窗|玻璃)/i,max:6,filter:d=>d.vertical>.5&&d.size.y<.22&&d.footprint>.012,score:d=>d.footprint/(.015+d.size.y)},
+ {id:"bumpers",label:"الصدامات",category:"exterior",keywords:/(bumper|fascia|保险杠)/i,max:4,filter:d=>Math.abs(d.longPos)>.68&&d.vertical<.46,score:d=>Math.abs(d.longPos)+(1-d.vertical)+d.footprint},
+ {id:"mirrors",label:"المرايا",category:"exterior",keywords:/(mirror|rear.?view|side.?view|后视镜)/i,max:4,filter:d=>d.sideAbs>.54&&d.vertical>.3&&d.vertical<.84&&Math.abs(d.longPos)<.76,score:d=>d.sideAbs+d.vertical*.2+d.footprint},
+ {id:"grille",label:"شبك الواجهة",category:"exterior",keywords:/(grille|grill|radiator.?grille|格栅|进气格栅)/i,max:4,filter:d=>Math.abs(d.longPos)>.6&&d.vertical>.17&&d.vertical<.6&&d.sideAbs<.45,score:d=>Math.abs(d.longPos)+(1-d.sideAbs)+d.footprint}
+];
+const partCategoryLabels = {all:"الكل",exterior:"الهيكل",engine:"المحرك",cabin:"المقصورة",lights:"الإضاءة",wheels:"العجلات"};
+const nodeNames = (mesh) => {
+ const names = [String(mesh.name || "")];
+ let parent = mesh.parent;
+ while (parent && parent !== model) { if (parent.name) names.push(String(parent.name)); parent = parent.parent; }
+ return names.join(" ").toLowerCase().replace(/[_-]+/g," ");
+};
+function buildMainPartEntries() {
+ if (!model || !meshes.length) return [];
+ const bounds = modelBounds || new THREE.Box3().setFromObject(model);
+ const dims = bounds.getSize(new THREE.Vector3()), center = bounds.getCenter(new THREE.Vector3());
+ const longAxis = dims.x >= dims.z ? "x" : "z", sideAxis = longAxis === "x" ? "z" : "x";
+ const descriptors = meshes.map(mesh => {
+  const b = new THREE.Box3().setFromObject(mesh), c = b.getCenter(new THREE.Vector3()), s = b.getSize(new THREE.Vector3());
+  const longDenom = Math.max(dims[longAxis]/2,.001), sideDenom = Math.max(dims[sideAxis]/2,.001), height = Math.max(dims.y,.001);
+  return {mesh,name:nodeNames(mesh),size:s,longSize:s[longAxis]/Math.max(dims[longAxis],.001),
+   footprint:(s[longAxis]/Math.max(dims[longAxis],.001))*(s[sideAxis]/Math.max(dims[sideAxis],.001)),
+   volume:s.x*s.y*s.z/Math.max(dims.x*dims.y*dims.z,.000001),
+   longPos:(c[longAxis]-center[longAxis])/longDenom,sideAbs:Math.abs((c[sideAxis]-center[sideAxis])/sideDenom),
+   vertical:(c.y-bounds.min.y)/height};
+ });
+ const chosenById = new Map(), used = new Set();
+ const priority = [...mainPartDefinitions.filter(p=>p.id!=="body")];
+ for (const def of priority) {
+  const found = descriptors.filter(d=>def.keywords.test(d.name)&&!used.has(d.mesh)).sort((a,b)=>b.volume-a.volume);
+  if (found.length) {
+   const group = found.slice(0,def.max).map(d=>d.mesh); group.forEach(m=>used.add(m)); chosenById.set(def.id,group);
+  }
+ }
+ for (const def of priority) {
+  if (chosenById.has(def.id)) continue;
+  let candidates = descriptors.filter(d=>!used.has(d.mesh)&&def.filter(d)).sort((a,b)=>def.score(b)-def.score(a));
+  if (!candidates.length) candidates = descriptors.filter(d=>!used.has(d.mesh)).sort((a,b)=>def.score(b)-def.score(a));
+  if (!candidates.length) candidates = [...descriptors].sort((a,b)=>def.score(b)-def.score(a));
+  const group = candidates.slice(0,Math.min(def.max, Math.max(1,def.id==="wheels"?4:2))).map(d=>d.mesh);
+  group.forEach(m=>used.add(m)); chosenById.set(def.id,group);
+ }
+ const bodyDef = mainPartDefinitions.find(p=>p.id==="body");
+ let bodyMeshes = descriptors.filter(d=>bodyDef.keywords.test(d.name)&&!used.has(d.mesh));
+ if (!bodyMeshes.length) bodyMeshes = descriptors.filter(d=>!used.has(d.mesh)&&bodyDef.filter(d));
+ if (!bodyMeshes.length) bodyMeshes = [...descriptors];
+ bodyMeshes.sort((a,b)=>bodyDef.score(b)-bodyDef.score(a));
+ chosenById.set("body",bodyMeshes.slice(0,bodyDef.max).map(d=>d.mesh));
+ return mainPartDefinitions.map(def=>({...def,meshes:chosenById.get(def.id)||[]}));
+}
+const labelForMesh = (mesh) => mainPartEntries.find(p=>p.meshes.includes(mesh))?.label || cleanName(mesh?.name,meshes.indexOf(mesh));
+
 };
 const requestRender = () => {
  if (renderQueued) return;
@@ -146,13 +216,13 @@ function disposeScene(root) {
  });
 }
 function updatePartControls() {
- document.querySelectorAll("[data-move]").forEach((button) => { button.disabled = !selected; });
+ document.querySelectorAll("[data-move]").forEach((button) => { button.disabled = selectedMeshes.length === 0; });
  const label = $("selectedPartName");
- if (label) label.textContent = selected ? cleanName(selected.name, meshes.indexOf(selected)) : "اختر قطعة أولاً";
+ if (label) label.textContent = selectedMeshes.length ? selectedLabel : "اختر قطعة أولاً";
 }
 function clearLoadedModel() {
  if (model) { scene.remove(model); disposeScene(model); }
- model = null; meshes = []; selected = null; exploded = false; inside = false;
+ model = null; meshes = []; selected = null; selectedMeshes = []; selectedLabel = ""; mainPartEntries = []; modelBounds = null; exploded = false; inside = false;
  originalPositions.clear();
  updatePartControls();
 }
@@ -215,6 +285,7 @@ async function loadCarModel(vehicleId = "mclaren", backupMode = false) {
   model.position.set(-originalCenter.x * scaleFactor, -box.min.y * scaleFactor, -originalCenter.z * scaleFactor);
   model.updateMatrixWorld(true);
   const groundedBox = new THREE.Box3().setFromObject(model);
+  modelBounds = groundedBox.clone();
   modelCenter.copy(groundedBox.getCenter(new THREE.Vector3()));
   scene.add(model);
   camera.position.set(modelCenter.x + 4.8, modelCenter.y + 1.3, modelCenter.z + 5.8);
@@ -229,6 +300,7 @@ async function loadCarModel(vehicleId = "mclaren", backupMode = false) {
    originalPositions.set(obj, obj.position.clone());
    meshes.push(obj);
   });
+  mainPartEntries = buildMainPartEntries();
   window.__carViewerModelLoaded = true;
   $("retryLoad").hidden = true;
   $("count").textContent = meshes.length + " قطعة";
@@ -254,38 +326,49 @@ async function loadCarModel(vehicleId = "mclaren", backupMode = false) {
 loadCarModel("mclaren");
 
 function restoreMaterial(mesh) { if (mesh) mesh.material = mesh.userData.baseMaterial; }
-function setSelected(mesh) {
- if (selected === mesh) return;
- restoreMaterial(selected);
- selected = mesh;
- if (selected) {
-  const hi = (mat) => { const m = mat.clone(); if (m.emissive) { m.emissive.set("#6b4215"); m.emissiveIntensity = .55; } return m; };
-  selected.material = Array.isArray(selected.userData.baseMaterial) ? selected.userData.baseMaterial.map(hi) : hi(selected.userData.baseMaterial);
- }
+function setSelected(mesh, explicitEntry = null) {
+ const entry = explicitEntry || (mesh ? mainPartEntries.find(p=>p.meshes.includes(mesh)) : null);
+ const group = entry ? entry.meshes : (mesh ? [mesh] : []);
+ const nextSelected = group[0] || null;
+ const nextLabel = entry ? entry.label : (mesh ? labelForMesh(mesh) : "");
+ if (selected === nextSelected && selectedLabel === nextLabel && selectedMeshes.length === group.length) return;
+ selectedMeshes.forEach(restoreMaterial);
+ selectedMeshes = group;
+ selected = nextSelected;
+ selectedLabel = nextLabel;
+ const hi = (mat) => { const m = mat.clone(); if (m.emissive) { m.emissive.set("#6b4215"); m.emissiveIntensity = .55; } return m; };
+ selectedMeshes.forEach(partMesh => {
+  const base = partMesh.userData.baseMaterial || partMesh.material;
+  partMesh.material = Array.isArray(base) ? base.map(hi) : hi(base);
+ });
  renderParts(); updatePartControls(); requestRender();
 }
+
 function renderParts() {
  const query = $("search").value.trim().toLowerCase();
- const active = document.querySelector(".cat.active")?.dataset.cat || "all";
- const list = meshes.filter((m) => {
-  const n = cleanName(m.name, meshes.indexOf(m));
-  return (active === "all" || categoryFor(m) === active) && (!query || n.toLowerCase().includes(query) || String(m.name).toLowerCase().includes(query));
- });
+ const active = document.querySelector("#categories .cat.active")?.dataset.cat || "all";
+ const list = mainPartEntries.filter(entry =>
+  entry.meshes.some(mesh=>mesh.visible) &&
+  (active === "all" || entry.category === active) &&
+  (!query || entry.label.toLowerCase().includes(query))
+ );
  $("parts").replaceChildren();
- $("count").textContent = list.length + " / " + meshes.length;
- if (!list.length) { const e = document.createElement("div"); e.className="empty"; e.textContent="لا توجد قطع مطابقة للبحث أو التصنيف."; $("parts").append(e); return; }
- list.slice(0, 300).forEach((mesh) => {
-  const i = meshes.indexOf(mesh), b = document.createElement("button");
-  b.type="button"; b.className="part" + (mesh === selected ? " active" : "");
-  const mark = document.createElement("span"); mark.className="part-mark"; mark.textContent=String(i+1).padStart(2,"0");
-  const copy = document.createElement("span"); copy.className="part-copy";
-  const strong = document.createElement("strong"); strong.textContent=cleanName(mesh.name,i);
-  const small = document.createElement("small"); small.textContent=categoryLabel[categoryFor(mesh)] || "مكوّن";
-  copy.append(strong,small); b.append(mark,copy); b.addEventListener("click",()=>setSelected(mesh)); $("parts").append(b);
+ $("count").textContent = list.length + " أجزاء رئيسية";
+ if (!list.length) { const e=document.createElement("div"); e.className="empty"; e.textContent="لا توجد أجزاء مطابقة."; $("parts").append(e); return; }
+ list.forEach((entry,index) => {
+  const b=document.createElement("button"); b.type="button";
+  b.className="part"+(entry.meshes.some(m=>selectedMeshes.includes(m))?" active":"");
+  const mark=document.createElement("span"); mark.className="part-mark"; mark.textContent=String(index+1).padStart(2,"0");
+  const copy=document.createElement("span"); copy.className="part-copy";
+  const strong=document.createElement("strong"); strong.textContent=entry.label;
+  const small=document.createElement("small"); small.textContent=partCategoryLabels[entry.category]||"السيارة";
+  copy.append(strong,small); b.append(mark,copy);
+  b.addEventListener("click",()=>setSelected(entry.meshes[0]||null,entry)); $("parts").append(b);
  });
 }
+
 $("search").addEventListener("input",renderParts);
-$("categories").addEventListener("click",(e)=>{const b=e.target.closest("button[data-cat]");if(!b)return;document.querySelectorAll(".cat").forEach(x=>x.classList.toggle("active",x===b));renderParts();});
+$("categories").addEventListener("click",(e)=>{const b=e.target.closest("button[data-cat]");if(!b)return;document.querySelectorAll("#categories .cat").forEach(x=>x.classList.toggle("active",x===b));renderParts();});
 canvas.addEventListener("pointerup",(event) => {
  if (!model || event.button !== 0) return;
  const rect=canvas.getBoundingClientRect(); pointer.x=((event.clientX-rect.left)/rect.width)*2-1; pointer.y=-((event.clientY-rect.top)/rect.height)*2+1;
@@ -339,7 +422,7 @@ document.querySelectorAll("[data-move]").forEach((button) => {
   const [axis, direction] = button.dataset.move.split(":");
   const delta = Number(direction) * 0.06;
   if (!["x", "y", "z"].includes(axis) || !Number.isFinite(delta)) return;
-  selected.position[axis] += delta;
+  selectedMeshes.forEach(partMesh => { partMesh.position[axis] += delta; });
   requestRender();
  });
 });

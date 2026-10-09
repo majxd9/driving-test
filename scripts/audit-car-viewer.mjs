@@ -12,6 +12,7 @@ const read = (relativePath) => {
 };
 const required = [
   'client/public/car-explorer/index.html',
+  'client/public/car-explorer/viewer-premium.css',
   'client/public/car-explorer/viewer.js',
   'client/public/car-explorer/viewer-boot.js',
   'client/public/car-explorer/vendor/three.module.js',
@@ -27,6 +28,7 @@ const syntaxCheck = spawnSync(process.execPath, ['--check', path.join(root, 'cli
 assert.equal(syntaxCheck.status, 0, 'Car viewer JavaScript syntax check failed: ' + (syntaxCheck.stderr || syntaxCheck.stdout || 'unknown error'));
 const html = read('client/public/car-explorer/index.html');
 const viewer = read('client/public/car-explorer/viewer.js');
+const premiumCss = read('client/public/car-explorer/viewer-premium.css');
 const buildScript = read('scripts/build-client.mjs');
 const boot = read('client/public/car-explorer/viewer-boot.js');
 const orbit = read('client/public/car-explorer/vendor/OrbitControls.js');
@@ -40,6 +42,11 @@ assert.ok(!/<script\b(?![^>]*\bsrc\s*=)[^>]*>/i.test(html), 'Inline script found
 assert.ok(!html.includes('type="importmap"'), 'Inline import map found; viewer should not need an import map');
 assert.ok(html.includes('src="./viewer-boot.js"'), 'Viewer boot/error handler is not linked');
 assert.ok(html.includes('type="module" src="./viewer.js"'), 'Viewer module is not linked');
+assert.ok(html.includes('href="./viewer-premium.css"'), 'Premium viewer CSS is not linked');
+assert.ok(premiumCss.includes('@media(max-width:850px)'), 'Mobile layout is missing');
+assert.ok(viewer.includes('mainPartDefinitions'), 'Human-readable main part list is missing');
+assert.ok(viewer.includes('buildMainPartEntries()'), 'Main part grouping is missing');
+assert.ok(!viewer.includes('list.slice(0, 300)'), 'Technical mesh list must not be exposed');
 assert.ok(html.includes('id="retryLoad"'), 'Retry button is missing');
 
 assert.ok(viewer.includes('./vendor/three.module.js'), 'Three.js core must be local');

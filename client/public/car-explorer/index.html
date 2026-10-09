@@ -16,6 +16,7 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 @media(max-width:480px){header{min-height:57px;padding:8px 10px;gap:7px}.brand strong{font-size:12px}.brand small{font-size:8px}.header-actions{gap:4px}.quality-control{padding:3px;gap:2px}.quality-control span{display:none}.quality-control select{max-width:80px;padding:6px 3px;font-size:10px}.btn{padding:8px 7px;font-size:10px}.workspace{padding:5px}.viewport{border-radius:12px}.viewport-head strong{font-size:12px}.viewport-head small{max-width:185px;font-size:9px}.sidebar{left:5px;right:5px;bottom:5px;max-height:40%}.parts{max-height:calc(40dvh - 100px)}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="./viewer-premium.css">
 </head>
 <body>
 <div class="app">
@@ -29,9 +30,9 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 </section>
 <aside class="sidebar" aria-label="قائمة أجزاء السيارة">
 <div class="vehicle"><span class="eyebrow">VEHICLE PROFILE</span><div class="model" id="vehicleName">McLaren Senna GTR</div><p id="vehicleDescription">اختر السيارة ثم استكشف الهيكل والمقصورة وقطع النموذج ثلاثي الأبعاد.</p><a class="attribution" id="modelAttribution" href="https://sketchfab.com/3d-models/2005-ford-mustang-gt-26b6b60cf2804370ac3c64424242dc1f" target="_blank" rel="noopener noreferrer" hidden>نموذج Mustang: Ricy · ترخيص CC BY 4.0</a></div>
-<div class="side-title"><h2>قطع ومكونات السيارة</h2><span class="count" id="count">—</span></div>
-<label class="search"><input type="search" id="search" placeholder="ابحث عن قطعة…" autocomplete="off" aria-label="ابحث عن قطعة"></label>
-<div class="categories" id="categories"><button class="cat active" data-cat="all">الكل</button><button class="cat" data-cat="exterior">الهيكل</button><button class="cat" data-cat="engine">المحرك والحركة</button><button class="cat" data-cat="cabin">المقصورة</button><button class="cat" data-cat="lights">الإضاءة</button><button class="cat" data-cat="wheels">العجلات</button></div>
+<div class="side-title"><h2>الأجزاء الرئيسية</h2><span class="count" id="count">—</span></div>
+<label class="search"><input type="search" id="search" placeholder="ابحث باسم القطعة…" autocomplete="off" aria-label="ابحث عن قطعة"></label>
+<div class="categories" id="categories"><button class="cat active" data-cat="all">الكل</button><button class="cat" data-cat="exterior">الهيكل</button><button class="cat" data-cat="engine">المحرك</button><button class="cat" data-cat="cabin">المقصورة</button><button class="cat" data-cat="lights">الإضاءة</button><button class="cat" data-cat="wheels">العجلات</button></div>
 <div class="part-adjust"><div class="part-adjust-head"><span>تحريك القطعة المحددة</span><small id="selectedPartName">اختر قطعة أولاً</small></div><div class="part-moves"><button class="cat" data-move="x:-1" aria-label="تحريك يساراً" disabled>←</button><button class="cat" data-move="x:1" aria-label="تحريك يميناً" disabled>→</button><button class="cat" data-move="y:1" aria-label="تحريك للأعلى" disabled>↑</button><button class="cat" data-move="y:-1" aria-label="تحريك للأسفل" disabled>↓</button><button class="cat" data-move="z:1" aria-label="تحريك للأمام" disabled>أمام</button><button class="cat" data-move="z:-1" aria-label="تحريك للخلف" disabled>خلف</button></div></div>
 <div class="parts" id="parts"><div class="empty">تظهر القطع هنا بعد تحميل النموذج.</div></div>
 <div class="tip">يمكنك تدوير السيارة بإصبع واحد، والتكبير أو التصغير بإصبعين على الهاتف. اضغط على قطعة لإظهار اسمها وتحديدها.</div>
