@@ -8,10 +8,60 @@ export function resolveApiUrl(path: string): string {
   return `${API_BASE}/${path.replace(/^\/+/, '')}`;
 }
 
+async function apiErrorMessage(response: Response): Promise<string> {
+  let payload: unknown = null;
+  try {
+    const raw = await response.text();
+    if (raw) { try { payload = JSON.parse(raw) as unknown; } catch { payload = raw; } }
+  } catch { /* Response body may be unavailable */ }
+  if (typeof payload === 'string' && payload.trim()) return payload.trim();
+  if (Array.isArray(payload)) {
+    const items = payload.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+    if (items.length) return items.join('، ');
+  }
+  if (payload && typeof payload === 'object') {
+    const body = payload as Record<string, unknown>;
+    for (const key of ['message', 'detail', 'title', 'error']) {
+      const value = body[key];
+      if (typeof value === 'string' && value.trim()) return value.trim();
+    }
+    if (body.errors && typeof body.errors === 'object') {
+      const items = Object.values(body.errors as Record<string, unknown>)
+        .flatMap(value => Array.isArray(value) ? value : [value])
+        .filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
+      if (items.length) return items.join('، ');
+    }
+  }
+  if (response.status === 401) return 'انتهت جلسة الدخول أو يلزم تسجيل الدخول من جديد.';
+  if (response.status === 403) return 'ليس لديك صلاحية لتنفيذ هذا الإجراء.';
+  if (response.status === 404) return 'المحتوى المطلوب غير موجود.';
+  if (response.status === 409) return 'تعذر تنفيذ الطلب بسبب تعارض في حالة الجلسة. أعد المحاولة.';
+  if (response.status === 429) return 'وصل عدد الطلبات إلى الحد المؤقت. أعد المحاولة بعد قليل.';
+  if (response.status >= 500) return `الخادم واجه خطأ مؤقتاً (HTTP ${response.status}). أعد المحاولة.`;
+  return `تعذر تنفيذ الطلب (HTTP ${response.status}).`;
+}
+async function sendApiRequest(path: string, options: RequestInit = {}): Promise<Response> {
+  const isFormData = options.body instanceof FormData;
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      credentials: 'include',
+      headers: {
+        ...(isFormData || options.body == null ? {} : { 'Content-Type': 'application/json' }),
+        ...(options.headers || {}),
+      },
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') throw error;
+    throw new Error('تعذر الاتصال بالخادم. تحقق من الاتصال ثم أعد المحاولة.');
+  }
+  if (!response.ok) throw new Error(await apiErrorMessage(response));
+  return response;
+}
 async function requestBlob(path: string, options: RequestInit = {}): Promise<Blob> {
-  const res = await fetch(`${API_BASE}${path}`, { ...options, credentials: 'include', headers: { ...(options.body == null ? {} : { 'Content-Type': 'application/json' }), ...(options.headers || {}) } });
-  if (!res.ok) { let message = 'حدث خطأ غير متوقع'; try { const body = await res.json(); message = Array.isArray(body) ? body.join('، ') : (body.message || message); } catch { /* no JSON body */ } throw new Error(message); }
-  return res.blob();
+  const response = await sendApiRequest(path, options);
+  return response.blob();
 }
 
 type QuestionCacheEntry = {
@@ -56,11 +106,9 @@ async function getCachedQuestions(category: 'Ser' | 'Ishara' | 'Mechanic', force
 function getDeviceId(): string { const key = 'drv_device_id'; let id = localStorage.getItem(key); if (!id) { id = crypto.randomUUID(); localStorage.setItem(key, id); } return id; }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const isFormData = options.body instanceof FormData;
-  const res = await fetch(`${API_BASE}${path}`, { ...options, credentials: 'include', headers: { ...(isFormData || options.body == null ? {} : { 'Content-Type': 'application/json' }), ...(options.headers || {}) } });
-  if (!res.ok) { let message = 'حدث خطأ غير متوقع'; try { const body = await res.json(); message = Array.isArray(body) ? body.join('، ') : (body.message || message); } catch { /* no JSON body */ } throw new Error(message); }
-  if (res.status === 204) return undefined as T;
-  return res.json();
+  const response = await sendApiRequest(path, options);
+  if (response.status === 204) return undefined as T;
+  return response.json();
 }
 
 export const api = {
@@ -74,7 +122,7 @@ export const api = {
   getExamQuestions: (modelId: number) => request<import('../types').ExamQuestion[]>(`/api/questions/exam/${modelId}`),
   startExamAttempt: (modelId: number) => request<import('../types').ExamSession>('/api/exam-attempts/start', {
     method: 'POST',
-    body: JSON.stringify({ modelId }),
+    body: JSON.stringify({ modelId, restart: true }),
   }),
   saveExamAnswer: (attemptId: number, questionId: number, selectedAnswerIndex: number) =>
     request<{ saved: boolean; answered: number; expiresAt: string }>(`/api/exam-attempts/${attemptId}/answer`, {

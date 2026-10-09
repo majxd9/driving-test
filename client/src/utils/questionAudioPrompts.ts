@@ -83,6 +83,14 @@ export function getCachedQuestionAudioPromptSource(
   return promptSourceCache.get(key) ?? null;
 }
 
+export function stopQuestionAudioPrompt() {
+  const audio = promptPlaybackAudio;
+  if (!audio) return;
+  audio.pause();
+  audio.currentTime = 0;
+  audio.muted = false;
+}
+
 export function unlockQuestionAudioPrompt(key: QuestionAudioPromptKey = 'question-audio-first-entry') {
   const audio = promptPlaybackAudio;
   if (!audio) return;
