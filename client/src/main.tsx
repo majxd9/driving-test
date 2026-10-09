@@ -34,6 +34,8 @@ import './question-media-final.css';
 // Isolated, presentation-only redesign for the training page. Keep last so it
 // safely overrides legacy training layout rules without touching exam screens.
 import './study-preview.css';
+// Final layout contract: loaded last to neutralize legacy overlapping UI overrides.
+import './ui-layout-contract.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
