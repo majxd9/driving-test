@@ -2241,3 +2241,11 @@ html:has(.exam-page-v2) #root {
     animation: none !important;
   }
 }
+
+
+/* Keep the reserved no-image tile visible; a legacy mobile rule used to collapse it. */
+@media (max-width: 760px) {
+  .study-premium .study-premium-no-image {
+    display: grid !important;
+  }
+}
