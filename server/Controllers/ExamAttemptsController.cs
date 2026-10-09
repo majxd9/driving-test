@@ -13,7 +13,7 @@ namespace DrivingTestApi.Controllers;
 
 [ApiController]
 [Route("api/exam-attempts")]
-[Authorize(Roles = "Student")]
+[Authorize(Roles = "Student,Admin")]
 public class ExamAttemptsController : ControllerBase
 {
     private const int ExamQuestionCount = 30;
@@ -55,6 +55,12 @@ public class ExamAttemptsController : ControllerBase
                 await _db.SaveChangesAsync(cancellationToken);
                 active = null;
             }
+            else if (request.Restart)
+            {
+                // A fresh page entry starts a fresh training attempt. Reuse the
+                // existing active row to avoid accumulating abandoned sessions.
+                // The browser holds answers locally and only submits them at finish.
+            }
             else if (active.ModelId != request.ModelId)
             {
                 return Conflict(new { message = "لديك اختبار غير مكتمل. أكمل الاختبار الحالي أولاً أو عد إليه لاحقاً." });
@@ -85,45 +91,67 @@ public class ExamAttemptsController : ControllerBase
         await _generationJobs.AttachStudentMediaUrlsAsync(
             questions, cancellationToken, includeUnapprovedAiImages: false);
 
-        var attempt = new ExamAttempt
+        ExamAttempt attempt;
+        if (active is not null && request.Restart)
         {
-            StudentId = studentId,
-            ModelId = request.ModelId,
-            Correct = 0,
-            Total = ExamQuestionCount,
-            Answered = 0,
-            WrongQuestionIds = new(),
-            QuestionIds = questionIds,
-            AnswersJson = "{}",
-            Completed = false,
-            ExpiresAt = now.Add(ExamDuration),
-            CreatedAt = now
-        };
-
-        _db.ExamAttempts.Add(attempt);
-        try
-        {
+            // Reset in place: no answer history, no restore on refresh, and one
+            // active row per account. This also avoids an extra insert on reload.
+            active.ModelId = request.ModelId;
+            active.Correct = 0;
+            active.Total = ExamQuestionCount;
+            active.Answered = 0;
+            active.WrongQuestionIds = new();
+            active.QuestionIds = questionIds;
+            active.AnswersJson = "{}";
+            active.Completed = false;
+            active.ExpiresAt = now.Add(ExamDuration);
+            active.CreatedAt = now;
+            active.CompletedAt = null;
             await _db.SaveChangesAsync(cancellationToken);
+            attempt = active;
         }
-        catch (DbUpdateException ex) when (IsActiveAttemptConflict(ex))
+        else
         {
-            // A concurrent first-start request may have created the active session
-            // between our initial read and insert. Reuse that session rather than
-            // creating or exposing a second active exam.
-            _db.Entry(attempt).State = EntityState.Detached;
+            attempt = new ExamAttempt
+            {
+                StudentId = studentId,
+                ModelId = request.ModelId,
+                Correct = 0,
+                Total = ExamQuestionCount,
+                Answered = 0,
+                WrongQuestionIds = new(),
+                QuestionIds = questionIds,
+                AnswersJson = "{}",
+                Completed = false,
+                ExpiresAt = now.Add(ExamDuration),
+                CreatedAt = now
+            };
 
-            var concurrentActive = await _db.ExamAttempts
-                .Where(x => x.StudentId == studentId && !x.Completed)
-                .OrderByDescending(x => x.CreatedAt)
-                .FirstOrDefaultAsync(cancellationToken);
+            _db.ExamAttempts.Add(attempt);
+            try
+            {
+                await _db.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException ex) when (IsActiveAttemptConflict(ex))
+            {
+                // A concurrent first-start request may have created the active session
+                // between our initial read and insert. Reuse that session rather than
+                // creating or exposing a second active exam.
+                _db.Entry(attempt).State = EntityState.Detached;
 
-            if (concurrentActive is null)
-                return Conflict(new { message = "تعذر إنشاء جلسة اختبار واحدة بشكل آمن. أعد المحاولة." });
+                var concurrentActive = await _db.ExamAttempts
+                    .Where(x => x.StudentId == studentId && !x.Completed)
+                    .OrderByDescending(x => x.CreatedAt)
+                    .FirstOrDefaultAsync(cancellationToken);
 
-            if (concurrentActive.ModelId != request.ModelId)
-                return Conflict(new { message = "لديك اختبار غير مكتمل. أكمل الاختبار الحالي أولاً أو عد إليه لاحقاً." });
+                if (concurrentActive is null)
+                    return Conflict(new { message = "تعذر إنشاء جلسة اختبار واحدة بشكل آمن. أعد المحاولة." });
 
-            return await BuildSessionResponseAsync(concurrentActive, cancellationToken);
+                if (concurrentActive.ModelId != request.ModelId)
+                    return Conflict(new { message = "لديك اختبار غير مكتمل. أكمل الاختبار الحالي أولاً أو عد إليه لاحقاً." });
+
+                return await BuildSessionResponseAsync(concurrentActive, cancellationToken);
+            }
         }
 
         return Ok(new ExamSessionResponse(

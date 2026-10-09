@@ -1,6 +1,6 @@
 namespace DrivingTestApi.DTOs;
 
-public record StartExamRequest(int ModelId);
+public record StartExamRequest(int ModelId, bool Restart = false);
 public record SaveExamAnswerRequest(int QuestionId, int SelectedAnswerIndex);
 public record SubmitExamAttemptRequest(Dictionary<int, int>? Answers = null);
 
