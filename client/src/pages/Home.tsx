@@ -69,6 +69,7 @@ export default function Home(){
    <section className="mt-10"><div className="section-heading"><div><p className="eyebrow">مركز التدريب</p><h2>اختر ما تريد مراجعته</h2></div><span className="section-hint">ابدأ من أي قسم، ويمكنك العودة وتغيير القسم لاحقاً.</span></div>
     <div className="grid md:grid-cols-3 gap-4 mt-4">{categories.map(c=><button key={c.key} onPointerEnter={()=>prefetchStudyData(c.key)} onFocus={()=>prefetchStudyData(c.key)} onPointerDown={()=>prefetchStudyData(c.key)} onClick={()=>openStudy(c.path)} className={`category-card ${c.key==='Ser'?'brand':c.key==='Ishara'?'signs':'mek'}`}><div className="category-icon"><Icon type={c.icon}/></div><div className="flex-1 text-right"><h3>{c.title}</h3><p>{c.subtitle}</p></div><span className="arrow"><Icon type="arrow"/></span></button>)}</div>
    </section>
+   <div className="home-feature-row">
    <button type="button" className="home-practical-card" onPointerEnter={preloadPractical} onFocus={preloadPractical} onClick={()=>navigate('/practical-info')}>
     <span className="home-practical-icon" aria-hidden="true">
      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -83,6 +84,23 @@ export default function Home(){
     </span>
     <span className="home-practical-cta">افتح المركز <Icon type="arrow"/></span>
    </button>
+   <button type="button" className="home-car-viewer-card" onClick={()=>navigate('/car-viewer')} aria-label="استعراض السيارة ثلاثية الأبعاد">
+    <span className="home-car-viewer-icon" aria-hidden="true">
+     <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m7 22 3-8a4 4 0 0 1 3.8-2.7h9.8a4 4 0 0 1 3.7 2.5l3.2 8.2 2 2v6h-4"/>
+      <path d="M7 22h26M11 30H8v-6l-.8-1M13 30h14M15 17h10M11 22l2-6h13l3 6"/>
+      <circle cx="12" cy="29" r="3"/><circle cx="29" cy="29" r="3"/>
+     </svg>
+     <small>3D</small>
+    </span>
+    <span className="home-car-viewer-copy">
+     <small>استكشاف تفاعلي</small>
+     <strong>استعراض السيارة ثلاثية الأبعاد</strong>
+     <em>شاهد المركبة وتفاصيلها من زوايا مختلفة.</em>
+    </span>
+    <span className="home-car-viewer-arrow" aria-hidden="true">←</span>
+   </button>
+   </div>
    <section className="home-exam mt-5" onPointerEnter={preloadModels} onFocus={preloadModels} onClick={()=>navigate('/models')} role="button" tabIndex={0} onKeyDown={e=>e.key==='Enter'&&navigate('/models')}>
     <div><p className="eyebrow text-white/60">محاكاة اختبار الرخصة</p><h2>اختبر مستواك الآن</h2><p>٣٠ سؤالاً · ١٥ دقيقة · النجاح من ٢٥ إجابة صحيحة</p></div><div className="exam-action">اختيار النموذج <Icon type="arrow"/></div>
    </section>
