@@ -42,6 +42,10 @@ assert.ok(viewer.includes('./vendor/three.module.js'), 'Three.js core must be lo
 assert.ok(viewer.includes('./vendor/OrbitControls.js'), 'OrbitControls must be local');
 assert.ok(viewer.includes('./vendor/GLTFLoader.js'), 'GLTFLoader must be local');
 assert.ok(viewer.includes('challenger-1970.glb.gzdata'), 'Viewer must prefer the compressed model');
+assert.ok(viewer.includes('qualityProfiles ='), 'Graphics quality profiles are missing');
+assert.ok(viewer.includes('qualitySelect.addEventListener("change"'), 'Graphics quality selector is not wired');
+assert.ok(html.includes('id="qualitySelect"'), 'Graphics quality selector is missing from the UI');
+assert.ok(html.includes('<option value="low">اقتصادية</option>') && html.includes('<option value="medium">متوسطة</option>') && html.includes('<option value="high">عالية</option>'), 'All three graphics quality levels must be available');
 assert.ok(viewer.includes('new DecompressionStream("gzip")'), 'Viewer must decompress the compressed model');
 assert.ok(viewer.includes('loader.parse(modelBuffer'), 'The decompressed buffer must be parsed');
 assert.ok(viewer.includes('fetch("./challenger-1970.glb"'), 'Development fallback for the original model is missing');

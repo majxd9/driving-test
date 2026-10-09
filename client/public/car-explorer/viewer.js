@@ -9,7 +9,14 @@ scene.background = new THREE.Color("#0b0d11");
 const camera = new THREE.PerspectiveCamera(34, 1, 0.01, 500);
 camera.position.set(4.8, 3.0, 5.8);
 const renderer = new THREE.WebGLRenderer({canvas, antialias: !matchMedia("(max-width: 700px)").matches, alpha: false, powerPreference: "high-performance"});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.65));
+const qualityProfiles = {
+ low: { label: "اقتصادية", pixelRatio: (dpr) => Math.min(dpr, 1) * 0.72 },
+ medium: { label: "متوسطة", pixelRatio: (dpr) => Math.min(dpr, 1.25) },
+ high: { label: "عالية", pixelRatio: (dpr) => Math.min(dpr * 1.25, 1.8) },
+};
+let currentQuality = matchMedia("(max-width: 700px)").matches ? "low" : "medium";
+const pixelRatioFor = (quality) => qualityProfiles[quality].pixelRatio(Math.max(1, window.devicePixelRatio || 1));
+renderer.setPixelRatio(pixelRatioFor(currentQuality));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.12;
@@ -63,8 +70,21 @@ const requestRender = () => {
 controls.addEventListener("change", requestRender);
 const resize = () => {
  const w = Math.max(1, canvas.clientWidth), h = Math.max(1, canvas.clientHeight);
- camera.aspect = w/h; camera.updateProjectionMatrix(); renderer.setSize(w,h,false); requestRender();
+ camera.aspect = w/h;
+ camera.updateProjectionMatrix();
+ renderer.setPixelRatio(pixelRatioFor(currentQuality));
+ renderer.setSize(w,h,false);
+ requestRender();
 };
+const qualitySelect = $("qualitySelect");
+if (qualitySelect) {
+ qualitySelect.value = currentQuality;
+ qualitySelect.addEventListener("change", () => {
+  const next = qualityProfiles[qualitySelect.value] ? qualitySelect.value : "medium";
+  currentQuality = next;
+  resize();
+ });
+}
 const ro = new ResizeObserver(resize); ro.observe(canvas);
 window.addEventListener("resize", resize, {passive:true});
 const setLoadError = (message) => {
