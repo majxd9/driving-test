@@ -116,7 +116,7 @@ const setLoadError = (message) => {
  $("progress").style.width = "0%";
 };
 const loader = new GLTFLoader();
-loader.load("./assets/challenger-1970.glb", (gltf) => {
+loader.load("./challenger-1970.glb", (gltf) => {
  model = gltf.scene;
  const box = new THREE.Box3().setFromObject(model);
  modelCenter.copy(box.getCenter(new THREE.Vector3()));
@@ -147,7 +147,7 @@ loader.load("./assets/challenger-1970.glb", (gltf) => {
  $("status").textContent = "تحميل " + (xhr.total > 0 ? Math.round(xhr.loaded/xhr.total*100) + "%" : "…");
 }, (err) => {
  console.error(err);
- setLoadError("ملف النموذج assets/challenger-1970.glb لم يُعثر عليه أو تعذر قراءته. يجب إضافة ملف Blender المحوّل إلى مجلد public/car-explorer/assets قبل نشر هذه الصفحة.");
+ setLoadError("ملف النموذج challenger-1970.glb لم يُعثر عليه أو تعذر قراءته. يجب إضافة ملف Blender المحوّل إلى مجلد public/car-explorer قبل نشر هذه الصفحة.");
 });
 function restoreMaterial(mesh) { if (mesh) mesh.material = mesh.userData.baseMaterial; }
 function setSelected(mesh) {
