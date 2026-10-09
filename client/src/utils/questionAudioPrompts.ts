@@ -11,6 +11,15 @@ const promptInflight = new Map<QuestionAudioPromptKey, Promise<string>>();
 const promptPlaybackAudio =
   typeof window === 'undefined' ? null : new Audio();
 
+let promptPlaybackEndedListener: (() => void) | null = null;
+
+function clearPromptPlaybackEndedListener() {
+  if (promptPlaybackAudio && promptPlaybackEndedListener) {
+    promptPlaybackAudio.removeEventListener('ended', promptPlaybackEndedListener);
+  }
+  promptPlaybackEndedListener = null;
+}
+
 function looksLikeMp3(bytes: Uint8Array): boolean {
   return bytes.length >= 3 && (
     (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) ||
@@ -84,6 +93,7 @@ export function getCachedQuestionAudioPromptSource(
 }
 
 export function stopQuestionAudioPrompt() {
+  clearPromptPlaybackEndedListener();
   const audio = promptPlaybackAudio;
   if (!audio) return;
   audio.pause();
@@ -121,7 +131,8 @@ export function unlockQuestionAudioPrompt(key: QuestionAudioPromptKey = 'questio
 }
 
 export function playQuestionAudioPrompt(
-  key: QuestionAudioPromptKey
+  key: QuestionAudioPromptKey,
+  onEnded?: () => void
 ): Promise<boolean> {
   const audio = promptPlaybackAudio;
   if (!audio) return Promise.resolve(false);
@@ -132,22 +143,36 @@ export function playQuestionAudioPrompt(
   );
 
   try {
+    clearPromptPlaybackEndedListener();
     audio.pause();
     audio.src = cachedSource || directSource;
     audio.preload = 'auto';
     audio.currentTime = 0;
 
-    // The play call itself must happen synchronously from the click/tap.
-    // Waiting for a fetch here can make mobile browsers/WebView reject it
-    // as an autoplay attempt even though the user just pressed the button.
+    if (onEnded) {
+      const endedListener = () => {
+        if (promptPlaybackEndedListener === endedListener) {
+          promptPlaybackEndedListener = null;
+        }
+        onEnded();
+      };
+      promptPlaybackEndedListener = endedListener;
+      audio.addEventListener('ended', endedListener, { once: true });
+    }
+
+    // Keep play() synchronous within the user gesture for mobile/WebView.
     const playPromise = audio.play();
     if (!playPromise) return Promise.resolve(true);
 
     return playPromise.then(
       () => true,
-      () => false
+      () => {
+        clearPromptPlaybackEndedListener();
+        return false;
+      }
     );
   } catch {
+    clearPromptPlaybackEndedListener();
     audio.pause();
     return Promise.resolve(false);
   }

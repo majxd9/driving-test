@@ -43,7 +43,6 @@ export default function Study() {
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [failedAiImageId, setFailedAiImageId] = useState<number | null>(null);
-  const [showExplanatoryImage, setShowExplanatoryImage] = useState(true);
   const [showDiagram, setShowDiagram] = useState(true);
   const [introAudioPlaying, setIntroAudioPlaying] = useState(false);
   const [introAudioMessage, setIntroAudioMessage] = useState<string | null>(null);
@@ -90,7 +89,6 @@ export default function Study() {
     setFailedAiImageId(null);
     setAdminImageBusy(null);
     setAdminImageToolsFor(null);
-    setShowExplanatoryImage(true);
     setShowDiagram(true);
   }, [index]);
 
@@ -242,18 +240,21 @@ export default function Study() {
 
   const playIntroAudio = () => {
     setIntroAudioMessage(null);
-    void playQuestionAudioPrompt('question-audio-first-entry').then(played => {
+    void playQuestionAudioPrompt('question-audio-first-entry', () => {
+      setIntroAudioPlaying(false);
+      setIntroAudioMessage(null);
+    }).then(played => {
       setIntroAudioPlaying(played);
-      if (!played) setIntroAudioMessage('تعذر تشغيل الإرشادات الصوتية. يمكنك المتابعة عند اكتمال التحميل.');
+      if (!played) setIntroAudioMessage('تعذر تشغيل الصوت. اضغط الزر للمحاولة مجدداً.');
     });
   };
   const stopIntroAudio = () => {
     stopQuestionAudioPrompt();
     setIntroAudioPlaying(false);
-    setIntroAudioMessage('تم إيقاف الإرشادات. سيظهر التدريب تلقائياً عند اكتمال التحميل.');
+    setIntroAudioMessage(null);
   };
 
-  if (loading) return <div className="ui-audio-welcome" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel" aria-labelledby="study-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4"/><path d="M4.9 8.5 9.8 11M19.1 8.5 14.2 11M12 14.4v5.3"/></svg></span><p className="ui-audio-welcome__eyebrow">{theme.name}</p><h1 id="study-audio-welcome-title">نجهّز أسئلة التدريب</h1><p className="ui-audio-welcome__copy">يمكنك تشغيل إرشادات الصوت أثناء تجهيز الأسئلة. ستفتح صفحة التدريب تلقائياً فور اكتمال التحميل، دون الحاجة إلى الضغط للمتابعة.</p><div className="ui-audio-welcome__controls"><button type="button" className="ui-audio-welcome__play" onClick={playIntroAudio}>▶ تشغيل الإرشادات الصوتية</button><button type="button" className="ui-audio-welcome__stop" onClick={stopIntroAudio}>■ إيقاف الإرشادات</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'تعمل الآن إرشادات البدء الصوتية.' : 'هذه الشاشة مؤقتة وستختفي تلقائياً.')}</p></section></div>;
+  if (loading) return <div className="ui-audio-welcome" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel" aria-labelledby="study-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></span><p className="ui-audio-welcome__eyebrow">{theme.name}</p><h1 id="study-audio-welcome-title">جاهز للانطلاق؟</h1><p className="ui-audio-welcome__copy">اضغط تشغيل الصوت إذا رغبت بسماع إرشادات قصيرة قبل البدء.</p><div className="ui-audio-welcome__controls"><button type="button" className={`ui-audio-welcome__play ${introAudioPlaying ? 'is-playing' : 'is-pulsing'}`} onClick={introAudioPlaying ? stopIntroAudio : playIntroAudio} aria-pressed={introAudioPlaying}>{introAudioPlaying ? '■ إيقاف الصوت' : '▶ تشغيل الصوت'}</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'يتم تشغيل الإرشادات الصوتية الآن.' : 'اضغط الزر للاستماع.')}</p></section></div>;
 
   if (error) return <div className="study-premium-loading" role="alert">{error}</div>;
 
@@ -277,7 +278,7 @@ export default function Study() {
   const showOriginalImage = Boolean(q.imageUrl && showImage);
   const hasOriginalImage = Boolean(q.imageUrl);
   const hasExplanatoryImage = Boolean(q.aiImageUrl && failedAiImageId !== q.id);
-  const showAiImageForStudent = hasExplanatoryImage && showExplanatoryImage;
+  const showAiImageForStudent = hasExplanatoryImage;
   const hasDiagram = Boolean(q.diagramUrl && q.diagramType);
   const hasOriginalMediaSlot = showOriginalImage || (hasOriginalImage && (hasExplanatoryImage || hasDiagram));
   const mediaTileCount = Number(hasOriginalMediaSlot) + Number(hasExplanatoryImage) + Number(hasDiagram);
@@ -476,7 +477,6 @@ export default function Study() {
 
           {(showOriginalImage || hasExplanatoryImage || hasDiagram) ? (
             <div className={`study-premium-images ${mediaLayoutClass}`}>
-              {hasExplanatoryImage && <button type="button" className="question-image-toggle" onClick={() => setShowExplanatoryImage(value => !value)} aria-pressed={showExplanatoryImage}>{showExplanatoryImage ? 'إخفاء الصورة التوضيحية' : 'إظهار الصورة التوضيحية'}</button>}
               {showOriginalImage && (
                 <div className="study-premium-image">
                   <div
@@ -537,8 +537,6 @@ export default function Study() {
                     </div>
                   )}
                 </div>
-              ) : hasExplanatoryImage ? (
-                <div className="study-premium-image ai-secondary-hidden" aria-hidden="true"><span>الصورة التوضيحية مخفية</span></div>
               ) : null}
               {hasDiagram && (
                 <div className="study-premium-image study-premium-diagram-tile">
