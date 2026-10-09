@@ -1762,3 +1762,31 @@ html:has(.home-page) #root {
     flex-basis: clamp(92px, 17dvh, 132px) !important;
   }
 }
+
+
+/* Preserve a generous, identical Study image frame regardless of source aspect ratio. */
+.study-premium .study-premium-images,
+.study-premium .study-premium-card > .study-premium-no-image {
+  flex-basis: clamp(120px, 18dvh, 170px) !important;
+  height: clamp(120px, 18dvh, 170px) !important;
+  min-height: clamp(120px, 18dvh, 170px) !important;
+  max-height: clamp(120px, 18dvh, 170px) !important;
+}
+@media (max-width: 760px) {
+  .study-premium .study-premium-images,
+  .study-premium .study-premium-card > .study-premium-no-image {
+    flex-basis: clamp(98px, 16dvh, 125px) !important;
+    height: clamp(98px, 16dvh, 125px) !important;
+    min-height: clamp(98px, 16dvh, 125px) !important;
+    max-height: clamp(98px, 16dvh, 125px) !important;
+  }
+}
+@media (max-height: 680px) {
+  .study-premium .study-premium-images,
+  .study-premium .study-premium-card > .study-premium-no-image {
+    flex-basis: clamp(88px, 14dvh, 105px) !important;
+    height: clamp(88px, 14dvh, 105px) !important;
+    min-height: clamp(88px, 14dvh, 105px) !important;
+    max-height: clamp(88px, 14dvh, 105px) !important;
+  }
+}
