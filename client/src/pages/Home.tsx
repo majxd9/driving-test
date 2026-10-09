@@ -40,9 +40,8 @@ export default function Home(){
  };
 
  useEffect(() => {
+  // Only warm the welcome prompt here; per-question/enable/disable sounds load on demand.
   preloadQuestionAudioPrompt('question-audio-first-entry');
-  preloadQuestionAudioPrompt('question-audio-enabled');
-  preloadQuestionAudioPrompt('question-audio-disabled');
  }, []);
 
  useEffect(()=>{
