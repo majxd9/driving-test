@@ -201,6 +201,8 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  const [galleryOpen,setGalleryOpen]=useState(false);
  const [reviewItem,setReviewItem]=useState<import('../../types').AiImageReviewItem|null>(null);
  const [reviewImageSrc,setReviewImageSrc]=useState('');
+ const [reviewImageError,setReviewImageError]=useState('');
+ const [reviewImageRetry,setReviewImageRetry]=useState(0);
  const [reviewLoading,setReviewLoading]=useState(false);
  const [reviewBusy,setReviewBusy]=useState(false);
  const [importFile,setImportFile]=useState<File|null>(null);
@@ -269,33 +271,61 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
  useEffect(()=>{
   if(!reviewItem){
    setReviewImageSrc('');
+   setReviewImageError('');
    return;
   }
+
   let active=true;
   let objectUrl='';
   setReviewImageSrc('');
-  const controller = new AbortController();
+  setReviewImageError('');
+  const controller=new AbortController();
+  const timeout=window.setTimeout(()=>controller.abort(),15000);
+
   void fetch(resolveApiUrl(reviewItem.imageUrl),{
     credentials:'include',
-    cache:'force-cache',
+    cache:'no-store',
     signal:controller.signal
   })
-   .then(response=>{
-    if(!response.ok)throw new Error('تعذر تحميل صورة المراجعة.');
-    return response.blob();
+   .then(async response=>{
+    if(!response.ok)
+     throw new Error(`تعذر تحميل صورة المراجعة (HTTP ${response.status}).`);
+
+    const contentType=(response.headers.get('content-type')||'')
+     .split(';')[0].trim().toLowerCase();
+    if(!contentType.startsWith('image/'))
+     throw new Error('الخادم لم يُرجع ملف صورة. تحقق من صلاحية الأدمن أو جلسة الدخول.');
+
+    const blob=await response.blob();
+    if(blob.size===0)
+     throw new Error('ملف الصورة الذي وصل من الخادم فارغ.');
+
+    return blob;
    })
    .then(blob=>{
     if(!active)return;
     objectUrl=URL.createObjectURL(blob);
     setReviewImageSrc(objectUrl);
+    setReviewImageError('');
    })
-   .catch(()=>{if(active)setReviewImageSrc('')});
+   .catch(error=>{
+    if(!active)return;
+    setReviewImageSrc('');
+    setReviewImageError(
+     error instanceof Error && error.name==='AbortError'
+      ? 'انتهت مهلة تحميل الصورة بعد 15 ثانية.'
+      : error instanceof Error ? error.message : 'تعذر تحميل صورة المراجعة.'
+    );
+   })
+   .finally(()=>window.clearTimeout(timeout));
+
   return ()=>{
    active=false;
+   window.clearTimeout(timeout);
    controller.abort();
    if(objectUrl)URL.revokeObjectURL(objectUrl);
   };
- },[reviewItem]);
+ },[reviewItem,reviewImageRetry]);
 
  const reviewAction=async(approve:boolean)=>{
   if(!reviewItem||reviewBusy)return;
@@ -519,7 +549,18 @@ function AiGenerationPanel({status,reloadAiStatus}:{status:import('../../types')
       <div className="ai-review-preview">
        {reviewImageSrc
         ? <img src={reviewImageSrc} alt={reviewItem.questionText}/>
-        : <div className="ai-review-image-loading">جارٍ تحميل الصورة…</div>}
+        : reviewImageError
+         ? <div className="ai-review-image-loading" role="alert">
+            <strong>تعذر تحميل صورة المراجعة</strong>
+            <small>{reviewImageError}</small>
+            <button
+             type="button"
+             className="secondary-cta"
+             disabled={reviewLoading}
+             onClick={()=>setReviewImageRetry(value=>value+1)}
+            >إعادة تحميل الصورة</button>
+           </div>
+         : <div className="ai-review-image-loading" aria-live="polite">جارٍ تحميل الصورة…</div>}
       </div>
       <div className="ai-review-details">
        <div className="flex items-center justify-between gap-3 flex-wrap">
