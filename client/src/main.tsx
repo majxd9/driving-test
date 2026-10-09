@@ -34,6 +34,8 @@ import './question-media-final.css';
 // Isolated, presentation-only redesign for the training page. Keep last so it
 // safely overrides legacy training layout rules without touching exam screens.
 import './study-preview.css';
+// Final compact shared styling for Study and Exam; presentation only.
+import './compact-study-exam-ui.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
