@@ -47,7 +47,7 @@ assert.ok(viewer.includes('qualitySelect.addEventListener("change"'), 'Graphics 
 assert.ok(html.includes('id="qualitySelect"'), 'Graphics quality selector is missing from the UI');
 assert.ok(html.includes('<option value="low">اقتصادية</option>') && html.includes('<option value="medium">متوسطة</option>') && html.includes('<option value="high">عالية</option>'), 'All three graphics quality levels must be available');
 assert.ok(viewer.includes('new DecompressionStream("gzip")'), 'Viewer must decompress the compressed model');
-assert.ok(viewer.includes('loader.parse(modelBuffer'), 'The decompressed buffer must be parsed');
+assert.ok(viewer.includes('loader.parse(buffer, new URL("./", window.location.href).href, resolve, reject)'), 'Model buffers must be parsed through the awaitable helper');
 assert.ok(viewer.includes('fetch("./challenger-1970.glb"'), 'Production compatibility fallback for the original model is missing');
 assert.ok(viewer.includes('Compressed Challenger model unavailable; trying original GLB'), 'Compressed model failures must activate the fallback');
 assert.ok(viewer.includes('new Promise((resolve, reject) =>'), 'GLB parsing must be awaitable so a parse failure can trigger the fallback');
