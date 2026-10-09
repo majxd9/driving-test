@@ -1777,3 +1777,467 @@ html:has(.exam-page-v2) #root {
     backdrop-filter: none !important;
   }
 }
+
+
+/* 2026-10-10 correction pass — keep Study media in normal layout flow on mobile.
+   Legacy CSS positioned media absolutely; reset every positional lock to remove the dead zone. */
+@media (max-width: 760px) {
+  .study-premium .study-premium-card {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    gap: clamp(5px, .65dvh, 9px) !important;
+    padding: 7px !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+  .study-premium .study-premium-meta {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    order: 0 !important;
+    flex: 0 0 22px !important;
+    width: 100% !important;
+    height: 22px !important;
+    min-height: 22px !important;
+    max-height: 22px !important;
+    margin: 0 !important;
+    z-index: 2 !important;
+  }
+  .study-premium .study-premium-explanation {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    order: 1 !important;
+    flex: 0 0 clamp(52px, 7.4dvh, 70px) !important;
+    width: 100% !important;
+    height: clamp(52px, 7.4dvh, 70px) !important;
+    min-height: clamp(52px, 7.4dvh, 70px) !important;
+    max-height: clamp(52px, 7.4dvh, 70px) !important;
+    margin: 0 !important;
+    padding: 6px 9px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    z-index: 2 !important;
+  }
+  .study-premium .study-premium-explanation[data-has-explanation="false"] {
+    display: none !important;
+    flex: 0 0 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+  .study-premium .study-premium-images,
+  .study-premium .study-premium-no-image {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    order: 2 !important;
+    flex: 0 0 clamp(235px, 30dvh, 365px) !important;
+    width: 100% !important;
+    height: clamp(235px, 30dvh, 365px) !important;
+    min-height: clamp(235px, 30dvh, 365px) !important;
+    max-height: clamp(235px, 30dvh, 365px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 1 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+  .study-premium .study-premium-images {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    gap: 7px !important;
+    align-items: stretch !important;
+  }
+  .study-premium .study-premium-images.has-two-images {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .study-premium .study-premium-images.has-three-media {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .study-premium .study-premium-images.has-three-media > .study-premium-image:last-child {
+    grid-column: 1 / -1 !important;
+  }
+  .study-premium .study-premium-image,
+  .study-premium .study-premium-image-inner-admin,
+  .study-premium .study-premium-image-el {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    margin: 0 !important;
+    aspect-ratio: auto !important;
+    box-sizing: border-box !important;
+  }
+  .study-premium .study-premium-question {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    order: 3 !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 3.25em !important;
+    margin: 0 !important;
+    padding: 2px 4px !important;
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    line-height: 1.55 !important;
+    font-size: clamp(14px, 3.8vw, 17px) !important;
+    text-align: right !important;
+  }
+  .study-premium .study-premium-answers {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    order: 4 !important;
+    flex: 1 1 0% !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: repeat(var(--option-count, 4), minmax(0, 1fr)) !important;
+    gap: clamp(5px, .7dvh, 9px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    align-content: stretch !important;
+  }
+  .study-premium .study-premium-option {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 6px 8px !important;
+    transform: none !important;
+    animation: none !important;
+    transition-property: border-color, background-color, color, box-shadow !important;
+  }
+  .study-premium .study-premium-diagram {
+    display: none !important;
+  }
+  .study-premium .question-image-toggle {
+    position: absolute !important;
+    inset: auto 7px 7px auto !important;
+    z-index: 35 !important;
+  }
+}
+
+/* Short screens: reduce media height, never create an absolute-positioned gap. */
+@media (max-height: 650px) and (max-width: 760px) {
+  .study-premium .study-premium-images,
+  .study-premium .study-premium-no-image {
+    flex-basis: clamp(120px, 21dvh, 176px) !important;
+    height: clamp(120px, 21dvh, 176px) !important;
+    min-height: clamp(120px, 21dvh, 176px) !important;
+    max-height: clamp(120px, 21dvh, 176px) !important;
+  }
+  .study-premium .study-premium-explanation {
+    flex-basis: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+  }
+}
+@media (max-height: 520px) and (max-width: 760px) {
+  .study-premium .study-premium-images,
+  .study-premium .study-premium-no-image {
+    flex-basis: clamp(76px, 18dvh, 108px) !important;
+    height: clamp(76px, 18dvh, 108px) !important;
+    min-height: clamp(76px, 18dvh, 108px) !important;
+    max-height: clamp(76px, 18dvh, 108px) !important;
+  }
+  .study-premium .study-premium-explanation {
+    flex-basis: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    padding: 3px 6px !important;
+  }
+}
+
+/* Drawings are distinct from photos. The student can hide only the drawing;
+   the original question image and generated explanatory image keep their own controls. */
+.study-premium .study-premium-diagram-tile,
+.exam-page-v2 .exam-diagram-frame {
+  position: relative !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 6px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(96,165,250,.28) !important;
+  border-radius: 15px !important;
+  background: linear-gradient(145deg,rgba(96,165,250,.07),rgba(5,15,24,.72)) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.075),0 8px 22px rgba(0,0,0,.15) !important;
+}
+.study-premium .study-premium-diagram-tile .diagram-card,
+.exam-page-v2 .exam-diagram-frame .diagram-card {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 2px !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.study-premium .study-premium-diagram-tile .diagram-card > div:not(.diagram-badge),
+.exam-page-v2 .exam-diagram-frame .diagram-card > div:not(.diagram-badge) {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin-top: 4px !important;
+  overflow: hidden !important;
+}
+.study-premium .study-premium-diagram-tile .diagram-card img,
+.exam-page-v2 .exam-diagram-frame .diagram-card img {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  object-fit: contain !important;
+}
+.study-premium .study-premium-diagram-tile .diagram-badge,
+.exam-page-v2 .exam-diagram-frame .diagram-badge {
+  margin: 0 !important;
+  font-size: 8px !important;
+  line-height: 1.35 !important;
+}
+.diagram-visibility-toggle {
+  position: absolute !important;
+  left: 7px !important;
+  bottom: 7px !important;
+  z-index: 38 !important;
+  min-height: 27px !important;
+  max-width: calc(100% - 14px) !important;
+  padding: 4px 8px !important;
+  border: 1px solid rgba(147,197,253,.34) !important;
+  border-radius: 9px !important;
+  background: rgba(5,16,28,.93) !important;
+  color: #dbeafe !important;
+  font-size: 9px !important;
+  line-height: 1.3 !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(8px) !important;
+}
+.diagram-hidden-placeholder {
+  display: grid !important;
+  place-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  padding: 30px 10px 42px !important;
+  border-radius: 10px !important;
+  background: rgba(5,16,28,.38) !important;
+  color: #9fb7cc !important;
+  font-size: 10px !important;
+  line-height: 1.6 !important;
+  text-align: center !important;
+}
+
+/* Exam media: reserve every available tile, show all original pictures to Admin for review,
+   and reveal editing controls only after the Admin taps the picture. */
+.exam-page-v2 .exam-image-slot-v2.has-three-media {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+}
+.exam-page-v2 .exam-image-slot-v2.has-three-media .exam-question-image-frame {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+.exam-page-v2 .exam-question-image-frame.original-frame,
+.exam-page-v2 .exam-question-image-frame.ai-frame {
+  cursor: default !important;
+}
+.exam-page-v2 .exam-question-image-frame.original-frame[role="button"],
+.exam-page-v2 .exam-question-image-frame.ai-frame[role="button"] {
+  cursor: pointer !important;
+}
+.exam-page-v2 .exam-question-image-frame.original-image-pending {
+  display: grid !important;
+  place-items: center !important;
+  padding: 8px !important;
+  border: 1px dashed rgba(174,202,220,.22) !important;
+  background: linear-gradient(145deg,rgba(16,30,40,.75),rgba(8,17,24,.92)) !important;
+  color: #9eb1bf !important;
+  font-size: 9px !important;
+  line-height: 1.6 !important;
+  text-align: center !important;
+}
+.exam-page-v2 .exam-admin-ai-tools {
+  position: absolute !important;
+  inset-inline: 8px !important;
+  bottom: 8px !important;
+  z-index: 42 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 5px !important;
+  justify-content: center !important;
+  padding: 6px !important;
+  border: 1px solid rgba(191,219,254,.20) !important;
+  border-radius: 12px !important;
+  background: rgba(5,13,22,.94) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.32) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+}
+.exam-page-v2 .exam-admin-ai-tools button {
+  flex: 1 1 auto !important;
+  min-height: 30px !important;
+  padding: 4px 8px !important;
+  border: 1px solid rgba(147,197,253,.22) !important;
+  border-radius: 8px !important;
+  background: rgba(96,165,250,.13) !important;
+  color: #dbeafe !important;
+  font-size: 9px !important;
+  font-weight: 850 !important;
+  white-space: nowrap !important;
+}
+.exam-page-v2 .exam-admin-ai-tools button.danger {
+  border-color: rgba(248,113,113,.3) !important;
+  background: rgba(248,113,113,.13) !important;
+  color: #fecaca !important;
+}
+@media (max-width: 700px) {
+  .exam-page-v2 .exam-image-slot-v2.has-three-media {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    grid-template-rows: repeat(2,minmax(0,1fr)) !important;
+  }
+  .exam-page-v2 .exam-image-slot-v2.has-three-media .exam-question-image-frame:last-of-type {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* Final exam navigation: one deliberate glass control rail with clear hierarchy and tap targets. */
+.exam-page-v2 .exam-actions-v2 {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) minmax(0,1.08fr) minmax(0,1fr) !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  height: 70px !important;
+  min-height: 70px !important;
+  max-height: 70px !important;
+  padding: 8px 10px max(8px, env(safe-area-inset-bottom, 0px)) !important;
+  box-sizing: border-box !important;
+  border-top: 1px solid rgba(147,197,253,.23) !important;
+  border-radius: 22px 22px 0 0 !important;
+  background: linear-gradient(180deg,rgba(27,44,58,.93),rgba(6,15,24,.99)) !important;
+  box-shadow: 0 -14px 34px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.10) !important;
+}
+.exam-page-v2 .exam-actions-v2 .exam-action-v2 {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  width: 100% !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  max-height: 52px !important;
+  padding: 0 7px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 13px !important;
+  font-size: clamp(10px, 2.8vw, 12px) !important;
+  line-height: 1.25 !important;
+  font-weight: 850 !important;
+  white-space: normal !important;
+  overflow: hidden !important;
+  transform: none !important;
+  transition: border-color .16s ease, background-color .16s ease, box-shadow .16s ease !important;
+}
+.exam-page-v2 .exam-actions-v2 .exam-action-v2.next {
+  border-color: rgba(191,219,254,.60) !important;
+  background: linear-gradient(145deg,#a8d1ff,#4b91f5 62%,#3478df) !important;
+  color: #06182b !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.46),0 7px 20px rgba(59,130,246,.20) !important;
+}
+.exam-page-v2 .exam-actions-v2 .exam-action-v2.finish {
+  border-color: rgba(248,113,113,.32) !important;
+  background: linear-gradient(145deg,rgba(248,113,113,.17),rgba(48,23,31,.82)) !important;
+  color: #ffd4d4 !important;
+}
+.exam-page-v2 .exam-actions-v2 .exam-action-v2.secondary {
+  border-color: rgba(203,213,225,.13) !important;
+  background: linear-gradient(145deg,rgba(255,255,255,.075),rgba(8,18,27,.72)) !important;
+  color: #d2dde6 !important;
+}
+.exam-page-v2 .exam-actions-v2 .exam-action-v2:disabled {
+  opacity: .38 !important;
+  cursor: not-allowed !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.025) !important;
+}
+.exam-page-v2 .exam-actions-v2 .exam-action-v2 svg {
+  flex: 0 0 auto !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+@media (max-width: 430px) {
+  .exam-page-v2 .exam-actions-v2 {
+    gap: 6px !important;
+    height: 66px !important;
+    min-height: 66px !important;
+    max-height: 66px !important;
+    padding: 7px 7px max(7px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2 {
+    height: 49px !important;
+    min-height: 49px !important;
+    max-height: 49px !important;
+    padding-inline: 4px !important;
+    gap: 4px !important;
+    font-size: 10px !important;
+  }
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2 svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .diagram-visibility-toggle,
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2 {
+    transition: none !important;
+    animation: none !important;
+  }
+}
