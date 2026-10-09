@@ -37,7 +37,6 @@ export default function Study() {
   const [signalState, setSignalState] = useState<SpiritTrafficState>('pending');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioContinuousRef = useRef(false);
-  const firstEntryPromptPlayedRef = useRef(false);
   const audioModeRef = useRef<'question' | 'enabled-prompt' | 'disabled-prompt' | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
@@ -45,8 +44,8 @@ export default function Study() {
   const [audioError, setAudioError] = useState<string | null>(null);
   const [failedAiImageId, setFailedAiImageId] = useState<number | null>(null);
   const [showExplanatoryImage, setShowExplanatoryImage] = useState(true);
+  const [showDiagram, setShowDiagram] = useState(true);
   const [introAudioPlaying, setIntroAudioPlaying] = useState(false);
-  const [audioWelcomeVisible, setAudioWelcomeVisible] = useState(true);
   const [introAudioMessage, setIntroAudioMessage] = useState<string | null>(null);
   const [adminImageBusy, setAdminImageBusy] = useState<'hide' | 'delete' | null>(null);
   const [adminImageToolsFor, setAdminImageToolsFor] = useState<'original' | 'ai' | null>(null);
@@ -92,6 +91,7 @@ export default function Study() {
     setAdminImageBusy(null);
     setAdminImageToolsFor(null);
     setShowExplanatoryImage(true);
+    setShowDiagram(true);
   }, [index]);
 
   const currentAudioPath = questions[index]?.audioUrl ?? null;
@@ -152,12 +152,6 @@ export default function Study() {
       return false;
     }
   }, [currentAudioUrl]);
-
-  useEffect(() => {
-    if (audioWelcomeVisible || loading || error || !questions.length || firstEntryPromptPlayedRef.current) return;
-    firstEntryPromptPlayedRef.current = true;
-    void playQuestionAudioPrompt('question-audio-first-entry');
-  }, [audioWelcomeVisible, loading, error, questions.length]);
 
   useEffect(() => {
 
@@ -247,25 +241,20 @@ export default function Study() {
   }, [goTo, jumpValue, questions.length]);
 
   const playIntroAudio = () => {
-    firstEntryPromptPlayedRef.current = true;
     setIntroAudioMessage(null);
     void playQuestionAudioPrompt('question-audio-first-entry').then(played => {
       setIntroAudioPlaying(played);
-      if (played) setAudioWelcomeVisible(false);
-      else setIntroAudioMessage('تعذر تشغيل الإرشادات الصوتية. جرّب مرة أخرى أو تابع بدون صوت.');
+      if (!played) setIntroAudioMessage('تعذر تشغيل الإرشادات الصوتية. يمكنك المتابعة عند اكتمال التحميل.');
     });
   };
   const stopIntroAudio = () => {
-    firstEntryPromptPlayedRef.current = true;
     stopQuestionAudioPrompt();
     setIntroAudioPlaying(false);
-    setIntroAudioMessage('تابع التدريب بدون صوت، ويمكنك تشغيل الصوت من أزرار الأسئلة لاحقاً.');
-    setAudioWelcomeVisible(false);
+    setIntroAudioMessage('تم إيقاف الإرشادات. سيظهر التدريب تلقائياً عند اكتمال التحميل.');
   };
 
-  if (audioWelcomeVisible) return <div className="ui-audio-welcome" dir="rtl"><section className="ui-audio-welcome__panel" aria-labelledby="study-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4"/><path d="M4.9 8.5 9.8 11M19.1 8.5 14.2 11M12 14.4v5.3"/></svg></span><p className="ui-audio-welcome__eyebrow">{theme.name}</p><h1 id="study-audio-welcome-title">أهلاً بك في التدريب</h1><p className="ui-audio-welcome__copy">اختر الاستماع إلى إرشادات البدء، أو تابع مباشرة بدون صوت. لن تحتاج إلى انتظار رسالة تحميل.</p><div className="ui-audio-welcome__controls"><button type="button" className="ui-audio-welcome__play" onClick={playIntroAudio}>▶ تشغيل الإرشادات الصوتية</button><button type="button" className="ui-audio-welcome__stop" onClick={stopIntroAudio}>متابعة بدون صوت ←</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'تعمل الآن إرشادات البدء الصوتية.' : 'اضغط تشغيل الإرشادات، أو تابع بدون صوت.')}</p></section></div>;
+  if (loading) return <div className="ui-audio-welcome" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel" aria-labelledby="study-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4"/><path d="M4.9 8.5 9.8 11M19.1 8.5 14.2 11M12 14.4v5.3"/></svg></span><p className="ui-audio-welcome__eyebrow">{theme.name}</p><h1 id="study-audio-welcome-title">نجهّز أسئلة التدريب</h1><p className="ui-audio-welcome__copy">يمكنك تشغيل إرشادات الصوت أثناء تجهيز الأسئلة. ستفتح صفحة التدريب تلقائياً فور اكتمال التحميل، دون الحاجة إلى الضغط للمتابعة.</p><div className="ui-audio-welcome__controls"><button type="button" className="ui-audio-welcome__play" onClick={playIntroAudio}>▶ تشغيل الإرشادات الصوتية</button><button type="button" className="ui-audio-welcome__stop" onClick={stopIntroAudio}>■ إيقاف الإرشادات</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'تعمل الآن إرشادات البدء الصوتية.' : 'هذه الشاشة مؤقتة وستختفي تلقائياً.')}</p></section></div>;
 
-  if (loading) return <div className="ui-audio-welcome ui-audio-welcome--preparing" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="5"/></svg></span><p className="ui-audio-welcome__eyebrow">{theme.name}</p><h1>نجهّز أسئلة التدريب</h1><p className="ui-audio-welcome__copy">تم اختيار طريقة الصوت. نجهّز الأسئلة الآن، وستظهر تلقائياً بعد لحظات.</p><div className="ui-audio-welcome__progress" aria-hidden="true"><span /></div></section></div>;
   if (error) return <div className="study-premium-loading" role="alert">{error}</div>;
 
   const q = questions[index];
@@ -289,6 +278,10 @@ export default function Study() {
   const hasOriginalImage = Boolean(q.imageUrl);
   const hasExplanatoryImage = Boolean(q.aiImageUrl && failedAiImageId !== q.id);
   const showAiImageForStudent = hasExplanatoryImage && showExplanatoryImage;
+  const hasDiagram = Boolean(q.diagramUrl && q.diagramType);
+  const hasOriginalMediaSlot = showOriginalImage || (hasOriginalImage && (hasExplanatoryImage || hasDiagram));
+  const mediaTileCount = Number(hasOriginalMediaSlot) + Number(hasExplanatoryImage) + Number(hasDiagram);
+  const mediaLayoutClass = mediaTileCount >= 3 ? 'has-three-media' : mediaTileCount === 2 ? 'has-two-images' : '';
 
   const hideAiImageForAdmin = async () => {
     if (!q.aiImageUrl || adminImageBusy) return;
@@ -481,8 +474,8 @@ export default function Study() {
             <span>{chosen === undefined ? 'اختر إجابة' : 'تمت الإجابة'}</span>
           </div>
 
-          {(showOriginalImage || hasExplanatoryImage) ? (
-            <div className={`study-premium-images ${hasOriginalImage && hasExplanatoryImage ? 'has-two-images' : ''}`}>
+          {(showOriginalImage || hasExplanatoryImage || hasDiagram) ? (
+            <div className={`study-premium-images ${mediaLayoutClass}`}>
               {hasExplanatoryImage && <button type="button" className="question-image-toggle" onClick={() => setShowExplanatoryImage(value => !value)} aria-pressed={showExplanatoryImage}>{showExplanatoryImage ? 'إخفاء الصورة التوضيحية' : 'إظهار الصورة التوضيحية'}</button>}
               {showOriginalImage && (
                 <div className="study-premium-image">
@@ -492,30 +485,30 @@ export default function Study() {
                       if (isAdmin) setAdminImageToolsFor(current => current === 'original' ? null : 'original');
                     }}
                   >
-                  <OptimizedImage
-                    src={resolveQuestionImageUrl(q.imageUrl)}
-                    alt={`الصورة الأصلية للسؤال ${q.id}`}
-                    sizes="(max-width:700px) 96vw, 760px"
-                    className="study-premium-image-el"
-                    objectFit="contain"
-                    priority
-                    showError
-                  />
-                  {isAdmin && adminImageToolsFor === 'original' && (
-                    <div className="study-admin-ai-tools" onClick={(event) => event.stopPropagation()}>
-                      <button type="button" onClick={() => void hideOriginalImageForAdmin()} disabled={adminImageBusy !== null}>
-                        {adminImageBusy === 'hide' ? '...' : 'إخفاء'}
-                      </button>
-                      <button type="button" className="danger" onClick={() => void removeOriginalImageForAdmin()} disabled={adminImageBusy !== null}>
-                        {adminImageBusy === 'delete' ? '...' : 'إزالة من السؤال'}
-                      </button>
-                    </div>
-                  )}
+                    <OptimizedImage
+                      src={resolveQuestionImageUrl(q.imageUrl)}
+                      alt={`الصورة الأصلية للسؤال ${q.id}`}
+                      sizes="(max-width:700px) 96vw, 760px"
+                      className="study-premium-image-el"
+                      objectFit="contain"
+                      priority
+                      showError
+                    />
+                    {isAdmin && adminImageToolsFor === 'original' && (
+                      <div className="study-admin-ai-tools" onClick={(event) => event.stopPropagation()}>
+                        <button type="button" onClick={() => void hideOriginalImageForAdmin()} disabled={adminImageBusy !== null}>
+                          {adminImageBusy === 'hide' ? '...' : 'إخفاء'}
+                        </button>
+                        <button type="button" className="danger" onClick={() => void removeOriginalImageForAdmin()} disabled={adminImageBusy !== null}>
+                          {adminImageBusy === 'delete' ? '...' : 'إزالة من السؤال'}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
-              {!showOriginalImage && hasOriginalImage && hasExplanatoryImage && <div className="study-premium-image original-image-pending" aria-hidden="true"><span>تظهر الصورة الأصلية بعد الإجابة</span></div>}
-              {showAiImageForStudent && (
+              {!showOriginalImage && hasOriginalImage && (hasExplanatoryImage || hasDiagram) && <div className="study-premium-image original-image-pending" aria-hidden="true"><span>تظهر الصورة الأصلية بعد الإجابة</span></div>}
+              {showAiImageForStudent ? (
                 <div
                   className={`study-premium-image ai-secondary ${isAdmin && adminImageToolsFor === 'ai' ? 'admin-tools-open' : ''}`}
                   onClick={() => {
@@ -544,8 +537,17 @@ export default function Study() {
                     </div>
                   )}
                 </div>
+              ) : hasExplanatoryImage ? (
+                <div className="study-premium-image ai-secondary-hidden" aria-hidden="true"><span>الصورة التوضيحية مخفية</span></div>
+              ) : null}
+              {hasDiagram && (
+                <div className="study-premium-image study-premium-diagram-tile">
+                  <button type="button" className="diagram-visibility-toggle" onClick={() => setShowDiagram(value => !value)} aria-pressed={!showDiagram}>
+                    {showDiagram ? 'إخفاء الرسم' : 'إظهار الرسم'}
+                  </button>
+                  {showDiagram ? <DiagramRenderer question={q} /> : <div className="diagram-hidden-placeholder">الرسم التوضيحي مخفي</div>}
+                </div>
               )}
-              {!showAiImageForStudent && hasExplanatoryImage && <div className="study-premium-image ai-secondary-hidden" aria-hidden="true"><span>الصورة التوضيحية مخفية</span></div>}
             </div>
           ) : (
             <div className="study-premium-no-image" aria-hidden="true" />
@@ -591,8 +593,6 @@ export default function Study() {
               );
             })}
           </div>
-
-          <div className="study-premium-diagram"><DiagramRenderer question={q} /></div>
 
         </section>
       </main>

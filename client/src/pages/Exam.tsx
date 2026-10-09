@@ -45,12 +45,12 @@ export default function Exam() {
   const [audioReady, setAudioReady] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const audioContinuousRef = useRef(false);
-  const firstEntryPromptPlayedRef = useRef(false);
   const audioModeRef = useRef<'question' | 'enabled-prompt' | 'disabled-prompt' | null>(null);
   const [adminImageBusy, setAdminImageBusy] = useState<'approve' | 'reject' | 'hide' | 'delete' | null>(null);
   const [showExplanatoryImage, setShowExplanatoryImage] = useState(true);
+  const [showDiagram, setShowDiagram] = useState(true);
+  const [adminImageToolsFor, setAdminImageToolsFor] = useState<'original' | 'ai' | null>(null);
   const [introAudioPlaying, setIntroAudioPlaying] = useState(false);
-  const [audioWelcomeVisible, setAudioWelcomeVisible] = useState(true);
   const [introAudioMessage, setIntroAudioMessage] = useState<string | null>(null);
 
   questionsRef.current = questions;
@@ -94,7 +94,11 @@ export default function Exam() {
 
   useEffect(() => { void loadExam(); }, [loadExam]);
 
-  useEffect(() => { setShowExplanatoryImage(true); }, [current]);
+  useEffect(() => {
+    setShowExplanatoryImage(true);
+    setShowDiagram(true);
+    setAdminImageToolsFor(null);
+  }, [current]);
 
   useEffect(() => {
     preloadQuestionAudioPrompt('question-audio-first-entry');
@@ -201,12 +205,6 @@ export default function Exam() {
   }, [currentAudioUrl]);
 
   useEffect(() => {
-    if (audioWelcomeVisible || loading || loadError || !questions.length || firstEntryPromptPlayedRef.current) return;
-    firstEntryPromptPlayedRef.current = true;
-    void playQuestionAudioPrompt('question-audio-first-entry');
-  }, [audioWelcomeVisible, loading, loadError, questions.length]);
-
-  useEffect(() => {
 
     const audio = audioRef.current;
     if (!audio) return;
@@ -305,27 +303,51 @@ export default function Exam() {
   }, [loading, expiresAt, finish]);
 
   const playIntroAudio = () => {
-    firstEntryPromptPlayedRef.current = true;
     setIntroAudioMessage(null);
     void playQuestionAudioPrompt('question-audio-first-entry').then(played => {
       setIntroAudioPlaying(played);
-      if (played) setAudioWelcomeVisible(false);
-      else setIntroAudioMessage('تعذر تشغيل الإرشادات الصوتية. جرّب مرة أخرى أو تابع بدون صوت.');
+      if (!played) setIntroAudioMessage('تعذر تشغيل الإرشادات الصوتية. يمكنك المتابعة عند اكتمال التحميل.');
     });
   };
   const stopIntroAudio = () => {
-    firstEntryPromptPlayedRef.current = true;
     stopQuestionAudioPrompt();
     setIntroAudioPlaying(false);
-    setIntroAudioMessage('تابع الاختبار بدون صوت، ويمكنك تشغيل الصوت من أزرار الأسئلة لاحقاً.');
-    setAudioWelcomeVisible(false);
+    setIntroAudioMessage('تم إيقاف الإرشادات. سيظهر الاختبار تلقائياً عند اكتمال التحميل.');
   };
 
-  if(audioWelcomeVisible)return <div className="ui-audio-welcome is-exam" dir="rtl"><section className="ui-audio-welcome__panel" aria-labelledby="exam-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4"/><path d="M4.9 8.5 9.8 11M19.1 8.5 14.2 11M12 14.4v5.3"/></svg></span><p className="ui-audio-welcome__eyebrow">اختبار القيادة</p><h1 id="exam-audio-welcome-title">أهلاً بك في الاختبار</h1><p className="ui-audio-welcome__copy">قبل البدء، اختر الاستماع إلى الإرشادات الصوتية أو تابع مباشرة بدون صوت.</p><div className="ui-audio-welcome__controls"><button type="button" className="ui-audio-welcome__play" onClick={playIntroAudio}>▶ تشغيل الإرشادات الصوتية</button><button type="button" className="ui-audio-welcome__stop" onClick={stopIntroAudio}>متابعة بدون صوت ←</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'تعمل الآن إرشادات البدء الصوتية.' : 'اضغط تشغيل الإرشادات، أو تابع بدون صوت.')}</p></section></div>;
-  if(loading)return <div className="ui-audio-welcome ui-audio-welcome--preparing is-exam" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="5"/></svg></span><p className="ui-audio-welcome__eyebrow">اختبار القيادة</p><h1>نجهّز نموذج الاختبار</h1><p className="ui-audio-welcome__copy">اخترت طريقة الصوت. نجهّز أسئلة الاختبار الآن، وستظهر تلقائياً بعد لحظات.</p><div className="ui-audio-welcome__progress" aria-hidden="true"><span /></div></section></div>;
+  if (loading) return <div className="ui-audio-welcome is-exam" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel" aria-labelledby="exam-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4"/><path d="M4.9 8.5 9.8 11M19.1 8.5 14.2 11M12 14.4v5.3"/></svg></span><p className="ui-audio-welcome__eyebrow">اختبار القيادة</p><h1 id="exam-audio-welcome-title">نجهّز نموذج الاختبار</h1><p className="ui-audio-welcome__copy">يمكنك تشغيل إرشادات الصوت أثناء تجهيز الأسئلة. ستفتح صفحة الاختبار تلقائياً فور اكتمال التحميل، دون الحاجة إلى الضغط للمتابعة.</p><div className="ui-audio-welcome__controls"><button type="button" className="ui-audio-welcome__play" onClick={playIntroAudio}>▶ تشغيل الإرشادات الصوتية</button><button type="button" className="ui-audio-welcome__stop" onClick={stopIntroAudio}>■ إيقاف الإرشادات</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'تعمل الآن إرشادات البدء الصوتية.' : 'هذه الشاشة مؤقتة وستختفي تلقائياً.')}</p></section></div>;
+
   if(loadError||!questions.length)return <div className="page-shell flex items-center justify-center px-5"><div className="surface-panel w-full max-w-md text-center p-7"><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-xl font-black mb-2">تعذر تحضير الاختبار</h1><p className="text-muted text-sm leading-relaxed">{loadError??'لم يتم العثور على أسئلة.'}</p><button onClick={loadExam} className="primary-cta mt-5 w-full">إعادة المحاولة</button></div></div>;
 
   const q=questions[current]; const mm=String(Math.floor(seconds/60)).padStart(2,'0'); const ss=String(seconds%60).padStart(2,'0'); const isLast=current===questions.length-1;
+  const showOriginalQuestionImage = Boolean(q.imageUrl && (isAdmin || shouldShowQuestionImageBeforeAnswer(q)));
+  const hasDiagram = Boolean(q.diagramUrl && q.diagramType);
+  const mediaTileCount = Number(Boolean(q.imageUrl)) + Number(Boolean(q.aiImageUrl)) + Number(hasDiagram);
+  const mediaLayoutClass = mediaTileCount >= 3 ? 'has-three-media' : mediaTileCount === 2 ? 'has-two-images' : '';
+
+  const hideOriginalImageForAdmin = async () => {
+    if (!isAdmin || !q.imageUrl || adminImageBusy) return;
+    setAdminImageBusy('hide');
+    try {
+      await api.admin.hideQuestionImage(q.id);
+      setQuestions(items => items.map(item => item.id === q.id ? { ...item, imageUrl: null } : item));
+      setAdminImageToolsFor(null);
+    } finally {
+      setAdminImageBusy(null);
+    }
+  };
+  const removeOriginalImageForAdmin = async () => {
+    if (!isAdmin || !q.imageUrl || adminImageBusy) return;
+    if (!window.confirm('إزالة الصورة الأصلية من هذا السؤال؟')) return;
+    setAdminImageBusy('delete');
+    try {
+      await api.admin.removeQuestionImage(q.id);
+      setQuestions(items => items.map(item => item.id === q.id ? { ...item, imageUrl: null } : item));
+      setAdminImageToolsFor(null);
+    } finally {
+      setAdminImageBusy(null);
+    }
+  };
 
   const updateCurrentAiImage = (next: string | null) => {
     setQuestions(items => items.map(item => item.id === q.id ? { ...item, aiImageUrl: next } : item));
@@ -465,22 +487,50 @@ export default function Exam() {
             />
           </div>
       <div className="exam-scroll-v2">
-        <div className={`exam-image-slot-v2 ${q.aiImageUrl && shouldShowQuestionImageBeforeAnswer(q) ? 'has-two-images' : ''}`}>
+        <div className={`exam-image-slot-v2 ${mediaLayoutClass}`}>
           {q.aiImageUrl && <button type="button" className="question-image-toggle" onClick={() => setShowExplanatoryImage(value => !value)} aria-pressed={showExplanatoryImage}>{showExplanatoryImage ? 'إخفاء الصورة التوضيحية' : 'إظهار الصورة التوضيحية'}</button>}
-          {shouldShowQuestionImageBeforeAnswer(q) && (
-            <div className="exam-question-image-frame">
+          {showOriginalQuestionImage ? (
+            <div
+              className={`exam-question-image-frame original-frame ${isAdmin && adminImageToolsFor === 'original' ? 'admin-tools-open' : ''}`}
+              onClick={() => { if (isAdmin) setAdminImageToolsFor(currentTools => currentTools === 'original' ? null : 'original'); }}
+              onKeyDown={event => { if (isAdmin && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); setAdminImageToolsFor(currentTools => currentTools === 'original' ? null : 'original'); } }}
+              role={isAdmin ? 'button' : undefined}
+              tabIndex={isAdmin ? 0 : undefined}
+              aria-label={isAdmin ? 'اضغط لعرض أدوات تحرير الصورة الأصلية' : undefined}
+              title={isAdmin ? 'اضغط لعرض أدوات تحرير الصورة الأصلية' : undefined}
+            >
               <OptimizedImage
-                src={q.imageUrl ?? ''}
-                alt="صورة السؤال"
+                src={resolveQuestionImageUrl(q.imageUrl)}
+                alt="الصورة الأصلية للسؤال"
                 className="h-full w-full"
                 priority
                 objectFit="contain"
                 sizes="(max-width:700px) 46vw, 380px"
               />
+              {isAdmin && adminImageToolsFor === 'original' && (
+                <div className="exam-admin-ai-tools" onClick={event => event.stopPropagation()}>
+                  <button type="button" onClick={() => void hideOriginalImageForAdmin()} disabled={adminImageBusy !== null}>
+                    {adminImageBusy === 'hide' ? '...' : 'إخفاء'}
+                  </button>
+                  <button type="button" className="danger" onClick={() => void removeOriginalImageForAdmin()} disabled={adminImageBusy !== null}>
+                    {adminImageBusy === 'delete' ? '...' : 'إزالة الصورة'}
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-          {q.aiImageUrl && showExplanatoryImage && (
-            <div className="exam-question-image-frame ai-frame">
+          ) : q.imageUrl ? (
+            <div className="exam-question-image-frame original-image-pending" aria-hidden="true"><span>الصورة مخفية حتى لا تكشف الإجابة</span></div>
+          ) : null}
+          {q.aiImageUrl && showExplanatoryImage ? (
+            <div
+              className={`exam-question-image-frame ai-frame ${isAdmin && adminImageToolsFor === 'ai' ? 'admin-tools-open' : ''}`}
+              onClick={() => { if (isAdmin) setAdminImageToolsFor(currentTools => currentTools === 'ai' ? null : 'ai'); }}
+              onKeyDown={event => { if (isAdmin && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); setAdminImageToolsFor(currentTools => currentTools === 'ai' ? null : 'ai'); } }}
+              role={isAdmin ? 'button' : undefined}
+              tabIndex={isAdmin ? 0 : undefined}
+              aria-label={isAdmin ? 'اضغط لعرض أدوات تحرير الصورة التوضيحية' : undefined}
+              title={isAdmin ? 'اضغط لعرض أدوات تحرير الصورة التوضيحية' : undefined}
+            >
               <div className="ai-image-label" aria-label="صورة توضيحية">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m5 17 4-4 3 3 3-4 4 5"/></svg>
                 <span>{isAdmin ? 'صورة AI — مراجعة الإدارة' : 'صورة توضيحية'}</span>
@@ -493,7 +543,7 @@ export default function Exam() {
                 priority
                 sizes="(max-width:700px) 96vw, 760px"
               />
-              {isAdmin && (
+              {isAdmin && adminImageToolsFor === 'ai' && (
                 <div className="exam-admin-ai-tools" onClick={event => event.stopPropagation()}>
                   <button type="button" onClick={() => void approveAiImageForAdmin()} disabled={adminImageBusy !== null}>
                     {adminImageBusy === 'approve' ? '...' : 'موافقة'}
@@ -510,15 +560,21 @@ export default function Exam() {
                 </div>
               )}
             </div>
+          ) : q.aiImageUrl ? (
+            <div className="exam-question-image-frame ai-frame ai-frame-hidden" aria-hidden="true"><span>الصورة التوضيحية مخفية</span></div>
+          ) : null}
+          {hasDiagram && (
+            <div className="exam-question-image-frame exam-diagram-frame">
+              <button type="button" className="diagram-visibility-toggle" onClick={() => setShowDiagram(value => !value)} aria-pressed={!showDiagram}>
+                {showDiagram ? 'إخفاء الرسم' : 'إظهار الرسم'}
+              </button>
+              {showDiagram ? <DiagramRenderer question={q} /> : <div className="diagram-hidden-placeholder">الرسم التوضيحي مخفي</div>}
+            </div>
           )}
-          {q.aiImageUrl && !showExplanatoryImage && <div className="exam-question-image-frame ai-frame ai-frame-hidden" aria-hidden="true"><span>الصورة التوضيحية مخفية</span></div>}
-          {!shouldShowQuestionImageBeforeAnswer(q) && !q.aiImageUrl && (
-            <div className="exam-image-placeholder-v2" aria-hidden="true"/>
-          )}
+          {!mediaTileCount && <div className="exam-image-placeholder-v2" aria-hidden="true" />}
         </div>
         <div className="exam-question-v2"><span className="exam-question-label">السؤال {current+1}</span>{q.text}</div>
         <div className="exam-answers-v2" style={{ '--option-count': q.options.length } as React.CSSProperties}>{q.options.map((opt,i)=><button key={i} type="button" onClick={() => void chooseAnswer(i)} disabled={finishedRef.current} className={`exam-option-v2 ${answers[q.id]===i?'selected':''}`}><span className="exam-option-letter-v2">{OPTION_NUMBERS[i] ?? String(i + 1)}</span><span className="exam-option-text-v2">{opt}</span>{answers[q.id]===i&&<UiIcon name="check"/>}</button>)}</div>
-        <DiagramRenderer question={q}/>
       </div>
       <div className="exam-actions-v2">
         <button type="button" onClick={() => goToQuestion(current - 1)} disabled={current === 0} className="exam-action-v2 secondary"><UiIcon name="back"/><span>السابق</span></button>
