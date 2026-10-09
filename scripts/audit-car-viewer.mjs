@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,6 +23,8 @@ const required = [
 ];
 for (const file of required) assert.ok(existsSync(path.join(root, file)), `Missing file: ${file}`);
 
+const syntaxCheck = spawnSync(process.execPath, ['--check', path.join(root, 'client/public/car-explorer/viewer.js')], { encoding: 'utf8' });
+assert.equal(syntaxCheck.status, 0, 'Car viewer JavaScript syntax check failed: ' + (syntaxCheck.stderr || syntaxCheck.stdout || 'unknown error'));
 const html = read('client/public/car-explorer/index.html');
 const viewer = read('client/public/car-explorer/viewer.js');
 const buildScript = read('scripts/build-client.mjs');
