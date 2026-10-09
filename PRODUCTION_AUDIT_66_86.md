@@ -223,3 +223,46 @@ Branch: `main`
 3. لا تعاود فتح القرارات المجمدة.
 4. لا تحذف indexes/extensions أو تضف public RLS policies لمجرد lint cleanup.
 5. لا تعتبر Task 86 خضراء قبل إغلاق الاختبارات الخارجية أعلاه.
+
+
+## Verification Addendum — 2026-10-09
+
+هذا الملحق يحدّث الأدلة الحية فقط؛ لا يغيّر قرار Production Gate ولا يحوّل الاختبارات اليدوية إلى نجاحات مفترضة.
+
+### Automated GitHub checks
+تم التحقق على `main` عند commit `7faf3ff0e52adc1d9c7536f7e889789e2271bb95`:
+- `release-check` run `37788431001`: success؛ بناء client وserver، question-bank audit، Runtime npm audit، NuGet vulnerability scan، Docker build، وفحص non-root.
+- `Secret History Scan` run `37788431063`: success.
+- `API Health Monitor` run `37850950257`: success.
+
+هذه النتائج لا تثبت وحدها جلسة طالب/مدير في متصفح حقيقي، أو restore/rollback، أو قبولاً بصرياً على هاتف.
+
+### Read-only production database recheck
+التاريخ: 2026-10-09. لم تُنفذ أي كتابة أو تغيير schema أثناء هذا التحقق.
+- Questions: 397؛ QuestionAudios: 397؛ ملفات الصوت الفارغة: 0؛ الصوت اليتيم: 0.
+- السؤال الفارغ أو ذو CorrectAnswerIndex خارج 0..3: 0؛ الفئات غير المتوقعة: 0.
+- QuestionAiImages: 305؛ الصور اليتيمة: 0؛ مراجعات AI اليتيمة: 0؛ مجموعات ImageHash غير الفارغة المكررة: 0.
+- توجد 7 سجلات صورة بلا bytes/hash، وجميعها مرتبطة بمراجعات مرفوضة Status=2؛ ليست صوراً منشورة أو معتمدة. مراجعات الصور: 276 Pending و22 Approved و7 Rejected.
+- ExamAttempts النشطة: 0؛ AuthLogs الأقدم من 90 يوماً: 0.
+- حجم قاعدة البيانات: نحو 194 MB؛ الاتصالات الحالية 11/60، منها اتصال نشط واحد.
+- جميع الجداول العامة الـ20 لديها RLS مفعّل؛ لا توجد صلاحيات جدول مباشرة لـ`anon` أو `authenticated` في فحص grants.
+- إعداد التحكم بقي كما هو: AudioEnabled=true، ImageEnabled=false، ImageProvider=comfyui. لم يتم تشغيل توليد الصور أو تغيير حصصه.
+
+### Updated Supabase advisor observations
+- Security advisor: 20 ملاحظة INFO من نوع RLS-enabled-without-policy. هذا متوافق مع نموذج الوصول backend-only الحالي مع RLS مفعّل وعدم وجود table grants مباشرة للأدوار العامة؛ لم تُضف سياسات عامة لمجرد إسكات INFO.
+- Performance advisor الحالي يعرض 4 ملاحظات INFO لفهارس لم تسجل استخداماً في القياس: `IX_ExamAttempts_StudentId_Completed_ExpiresAt` و`IX_AiTestRuns_QuestionId` و`IX_AspNetRoleClaims_RoleId` و`EmailIndex`. الفهرس `IX_QuestionAiImages_ImageHash` سجل استخداماً واحداً وقراءة 299 صفاً في الإحصاء الحالي؛ لم يعد ضمن قائمة advisor الحالية.
+- لم يُحذف أي index؛ القياس القصير أو قلة الاستخدام لا يثبتان أن الحذف آمن لمسارات نادرة أو حساسة.
+
+### Dependency audit — outstanding, not marked complete
+أثر npm الكامل المرفوع مع `release-check` يسجل 8 تنبيهات في شجرة التطوير: 6 High و2 Moderate. فحص `npm audit --omit=dev --audit-level=moderate` اجتاز، لكن هذا لا يغلق تدقيق dev dependencies. شجرة Tailwind CSS 3 الحالية تُدخل تنبيه `braces` الذي لا يوجد له إصدار patched حسب advisory المتاح؛ اقتراح npm لإزالة السلسلة عبر Tailwind 4 يتطلب ترقية major قد تغيّر معالجة CSS. لم أفرض ترقية كبرى أو أحرر lockfile يدوياً من دون تشغيل build حقيقي؛ استنساخ المستودع في بيئة الفحص تعذر بسبب DNS. لذلك يبقى full dev-dependency audit بنداً مفتوحاً، وليس نجاحاً موثقاً.
+
+### Remaining gates — unchanged
+لا تزال المهام التالية غير مكتملة ولا يمكن تعليمها باللون الأخضر دون دليل حقيقي:
+1. Student/Admin/device authenticated E2E وتلاعب الطلبات.
+2. Browser-level CSRF/session replay/concurrent-session checks.
+3. PostgreSQL dump آمن إلى وجهة خارج المستودع العام ثم restore إلى هدف منفصل والتحقق من البيانات.
+4. قياسات Render موثوقة لـp50/p95/p99.
+5. قبول يدوي على متصفح/هاتف وقارئ شاشة.
+6. rollback drill مضبوط.
+
+لم يتم إجراء backup إلى GitHub أو artifact عام، ولم تُنفذ عملية rollback على الإنتاج، ولم يتم إنشاء بيانات دخول أو تجاوز غياب جلسة اختبار فعلية. يبقى Task 86 = CONDITIONAL حتى تُغلق الأدلة أعلاه. لقراءة بيانات Render أو قياس latency، يلزم تأكيد المستخدم لاستخدام مساحة Render المسماة `My Workspace` قبل أي استدعاء لأدوات موارد Render.
