@@ -204,44 +204,46 @@ export default function Exam() {
   }, [currentAudioUrl]);
 
   useEffect(() => {
-
     const audio = audioRef.current;
     if (!audio) return;
 
     let active = true;
-    setAudioReady(false);
+    setAudioReady(Boolean(currentAudioUrl));
     setAudioPlaying(false);
     setAudioError(null);
     audio.pause();
     audio.removeAttribute('src');
     audio.load();
 
-    if (currentAudioUrl) {
-      preloadQuestionAudio(currentAudioUrl);
+    // Avoid downloading question audio while the exam is silent.
+    if (!currentAudioUrl) {
+      setAudioError('لا يوجد صوت لهذا السؤال.');
+    } else if (audioContinuousRef.current) {
       void getQuestionAudioSource(currentAudioUrl)
         .then(source => {
-          if (!active) return;
+          if (!active || !audioContinuousRef.current) return;
           audio.src = source;
           audio.preload = 'auto';
           audio.load();
-          setAudioReady(true);
-          if (audioContinuousRef.current) {
-            audioModeRef.current = 'question';
-            audio.currentTime = 0;
-            void audio.play()
-              .then(() => { setAudioPlaying(true); setAudioError(null); })
-              .catch(error => { setAudioPlaying(false); setAudioError(error instanceof Error ? error.message : 'تعذر تشغيل ملف صوت السؤال.'); });
+          audio.currentTime = 0;
+          audioModeRef.current = 'question';
+          return audio.play();
+        })
+        .then(() => {
+          if (active && audioContinuousRef.current) {
+            setAudioPlaying(true);
+            setAudioError(null);
           }
         })
         .catch(error => {
-          if (!active) return;
-          setAudioError(error instanceof Error ? error.message : String(error));
+          if (active) {
+            setAudioPlaying(false);
+            setAudioError(error instanceof Error ? error.message : 'تعذر تشغيل ملف صوت السؤال.');
+          }
         });
-    } else {
-      setAudioError('لا يوجد صوت لهذا السؤال.');
     }
 
-    preloadQuestionAudio(nextAudioUrl);
+    if (audioContinuousRef.current) preloadQuestionAudio(nextAudioUrl);
     if (nextQuestionImageUrl) {
       const image = new Image();
       image.decoding = 'async';
@@ -304,24 +306,18 @@ export default function Exam() {
   // Speak the short first-entry audio prompt as soon as the actual question/audio controls appear.
   // If the browser blocks audible autoplay, the existing speaker button remains available.
   useEffect(() => {
-    if (loading || !questions.length || welcomePromptAttemptedRef.current) return;
+    if (!loading || welcomePromptAttemptedRef.current) return;
     welcomePromptAttemptedRef.current = true;
     let active = true;
-    const timer = window.setTimeout(() => {
-      void playQuestionAudioPrompt('question-audio-first-entry', () => {
-        if (!active) return;
-        setIntroAudioPlaying(false);
-      }).then(played => {
-        if (!active) return;
-        setIntroAudioPlaying(played);
-        setIntroAudioMessage(played ? null : 'إذا لم يبدأ الصوت تلقائياً، اضغط زر التشغيل للاستماع.');
-      });
-    }, 160);
-    return () => {
-      active = false;
-      window.clearTimeout(timer);
-    };
-  }, [loading, questions.length]);
+    void playQuestionAudioPrompt('question-audio-first-entry', () => {
+      if (active) setIntroAudioPlaying(false);
+    }).then(played => {
+      if (!active) return;
+      setIntroAudioPlaying(played);
+      setIntroAudioMessage(played ? null : 'إذا لم يبدأ الصوت تلقائياً، اضغط زر التشغيل للاستماع.');
+    });
+    return () => { active = false; };
+  }, [loading]);
 
   const playIntroAudio = () => {
     setIntroAudioMessage(null);
