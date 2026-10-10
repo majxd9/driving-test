@@ -2,7 +2,7 @@
 
 ## آخر تحديث بعد الإصلاحات — 2026-10-10 16:20 UTC
 
-هذه الحالة أحدث من الإضافات التاريخية أدناه. آخر commit في `main`: [cecc8e69fcfba4841682cf5f817eeeec13857586](https://github.com/majxd9/driving-test/commit/cecc8e69fcfba4841682cf5f817eeeec13857586).
+هذه الحالة أحدث من الإضافات التاريخية أدناه. آخر commit غيّر الكود هو [cecc8e69fcfba4841682cf5f817eeeec13857586](https://github.com/majxd9/driving-test/commit/cecc8e69fcfba4841682cf5f817eeeec13857586)؛ تلتْه تحديثات توثيق فقط لقياسات السعة وسجل التدقيق.
 
 ### إصلاحات نُفذت على GitHub واجتازت البناء
 - [تقييد التوليد الصوتي العام](https://github.com/majxd9/driving-test/commit/8eb805d643c303b7bae21a6b0b652a6efc7aa8c4): أُضيف تحديد معدل 8 طلبات في الدقيقة لكل عنوان عميل لمساري صوت الشرح ورسائل ديلي، مع رد `429` وموعد إعادة المحاولة عند بلوغ الحصة الشهرية.
