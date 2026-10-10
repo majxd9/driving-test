@@ -4,6 +4,7 @@ using DrivingTestApi.Models;
 using DrivingTestApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
@@ -141,6 +142,7 @@ public class QuestionsController : ControllerBase
 
     [HttpGet("{id:int}/explanation-audio")]
     [AllowAnonymous]
+    [EnableRateLimiting("audio-generation")]
     public async Task<IActionResult> GetQuestionExplanationAudio(int id, CancellationToken cancellationToken)
     {
         var question = await _db.Questions
@@ -164,6 +166,15 @@ public class QuestionsController : ControllerBase
         {
             throw;
         }
+        catch (AiGenerationQuotaExceededException ex)
+        {
+            var retryAfterSeconds = Math.Max(
+                1,
+                (int)Math.Ceiling((ex.NextMonthStartUtc - DateTime.UtcNow).TotalSeconds));
+            Response.Headers.RetryAfter = retryAfterSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return StatusCode(StatusCodes.Status429TooManyRequests,
+                new { message = ex.Message, retryAtUtc = ex.NextMonthStartUtc });
+        }
         catch (Exception)
         {
             // Do not silently return an alternate device/ElevenLabs voice as Deli's explanation.
@@ -184,6 +195,7 @@ public class QuestionsController : ControllerBase
 
     [HttpGet("audio-prompt/{key}")]
     [AllowAnonymous]
+    [EnableRateLimiting("audio-generation")]
     public async Task<IActionResult> GetAudioPrompt(string key, CancellationToken cancellationToken)
     {
         if (!SystemAudioCatalog.IsKnownKey(key))
@@ -198,6 +210,15 @@ public class QuestionsController : ControllerBase
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw;
+        }
+        catch (AiGenerationQuotaExceededException ex)
+        {
+            var retryAfterSeconds = Math.Max(
+                1,
+                (int)Math.Ceiling((ex.NextMonthStartUtc - DateTime.UtcNow).TotalSeconds));
+            Response.Headers.RetryAfter = retryAfterSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return StatusCode(StatusCodes.Status429TooManyRequests,
+                new { message = ex.Message, retryAtUtc = ex.NextMonthStartUtc });
         }
         catch (Exception)
         {
