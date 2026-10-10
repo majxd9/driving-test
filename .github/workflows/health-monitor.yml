@@ -99,26 +99,30 @@ jobs:
           grep -Eiq '<!doctype html|<html' "$temp_dir/home.html"
           echo "Cloudflare home page returned valid HTML."
 
-          fetch_with_retry "$FRONTEND_URL/car-explorer/index.html" "$temp_dir/car-explorer.html"
-          grep -q 'id="carSelect"' "$temp_dir/car-explorer.html"
-          grep -q 'id="guideRobotCanvas"' "$temp_dir/car-explorer.html"
+          fetch_with_retry "$FRONTEND_URL/car-explorer/index.html?healthcheck=1" "$temp_dir/car-explorer.html"
+          grep -Fq 'id="carSelect"' "$temp_dir/car-explorer.html" || {
+            echo "Production car viewer HTML is missing its vehicle selector. Response title:"
+            grep -Eio '<title>[^<]+' "$temp_dir/car-explorer.html" | head -n 1 || true
+            exit 1
+          }
+          grep -Fq 'id="guideRobotCanvas"' "$temp_dir/car-explorer.html" || {
+            echo "Production car viewer HTML is missing the Deli robot canvas."
+            exit 1
+          }
 
-          viewer_script="$(grep -Eo 'type="module" src="\\./viewer\\.js\\?v=[^"]+"' "$temp_dir/car-explorer.html" | head -n 1 | sed -E 's/.*src="([^"]+)".*/\\1/')"
-          guide_robot_script="$(grep -Eo 'src="\\./guide-robot\\.js\\?v=[^"]+"' "$temp_dir/car-explorer.html" | head -n 1 | sed -E 's/.*src="([^"]+)".*/\\1/')"
-          test -n "$viewer_script"
-          test -n "$guide_robot_script"
+          viewer_script="$(grep -o 'src="[^"]*viewer.js?v=[^"]*"' "$temp_dir/car-explorer.html" | grep -m 1 'viewer.js' | cut -d '"' -f 2)"
+          guide_robot_script="$(grep -o 'src="[^"]*guide-robot.js?v=[^"]*"' "$temp_dir/car-explorer.html" | grep -m 1 'guide-robot.js' | cut -d '"' -f 2)"
+          test -n "$viewer_script" || { echo "Could not find the viewer.js script URL in production HTML."; exit 1; }
+          test -n "$guide_robot_script" || { echo "Could not find the guide-robot.js script URL in production HTML."; exit 1; }
 
           fetch_with_retry "$FRONTEND_URL/car-explorer/${viewer_script#./}" "$temp_dir/viewer.js"
-          grep -q 'function animateMeshPositions(paths' "$temp_dir/viewer.js"
-          grep -q 'setLoadError(message, "تعذّر تحميل " + spec.label)' "$temp_dir/viewer.js"
+          grep -Fq 'function animateMeshPositions(paths' "$temp_dir/viewer.js"
+          grep -Fq 'setLoadError(message, "تعذّر تحميل " + spec.label)' "$temp_dir/viewer.js"
 
           fetch_with_retry "$FRONTEND_URL/car-explorer/${guide_robot_script#./}" "$temp_dir/guide-robot.js"
-          grep -q 'Zeb.usdz' "$temp_dir/guide-robot.js"
-          grep -q 'readPointer' "$temp_dir/guide-robot.js"
+          grep -Fq 'Zeb.usdz' "$temp_dir/guide-robot.js"
+          grep -Fq 'readPointer' "$temp_dir/guide-robot.js"
 
-          model_status="$(curl --silent --show-error --location --head \
-            --connect-timeout 10 --max-time 30 \
-            --write-out '%{http_code}' --output /dev/null \
-            "$FRONTEND_URL/car-explorer/Zeb.usdz")"
-          test "$model_status" = "200"
-          echo "Cloudflare production smoke passed: home, car viewer, current viewer JS, Deli guide JS, and Zeb.usdz returned successfully."
+          fetch_with_retry "$FRONTEND_URL/car-explorer/Zeb.usdz" "$temp_dir/Zeb.usdz"
+          test "$(wc -c < "$temp_dir/Zeb.usdz")" -ge 1000
+          echo "Cloudflare production smoke passed: home, standalone car viewer, versioned viewer JS, Deli guide JS, and Zeb.usdz returned successfully."
