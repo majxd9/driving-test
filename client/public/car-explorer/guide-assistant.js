@@ -5,15 +5,8 @@
   const suggestion = $("guideAssistantSuggestion");
   const caption = toggle?.querySelector(".guide-robot-caption");
   if (!root || !toggle) return;
-  try {
-    const saved = sessionStorage.getItem("drv_session");
-    const session = saved ? JSON.parse(saved) : null;
-    if (session?.role === "Admin" || session?.role === "admin") {
-      root.hidden = true;
-      if (suggestion) suggestion.hidden = true;
-      return;
-    }
-  } catch { /* A missing session is not an admin session. */ }
+  // This standalone page exists specifically to let the user explore the 3D car.
+  // Keep Deli visible here even when the viewer was opened from an admin session.
   root.hidden = false;
   if (suggestion) suggestion.hidden = false;
   window.setTimeout(() => { if (suggestion) suggestion.hidden = true; }, 4500);
@@ -105,6 +98,7 @@
     const apiBase = document.querySelector("meta[name=\"api-base-url\"]")?.content || "";
     if (!apiBase || !audioKey) { speakWithDeviceVoice(text); return; }
 
+    const usesDeliVoice = /^(site-assistant-|car-guide-)/.test(audioKey || "");
     const audio = new Audio(apiBase.replace(/\/+$/, "") + "/api/questions/audio-prompt/" + encodeURIComponent(audioKey));
     audio.preload = "auto";
     activeAudio = audio;
@@ -117,6 +111,14 @@
       audio.pause(); audio.removeAttribute("src"); audio.load();
       activeAudio = null;
       setSpeaking(false);
+      if (usesDeliVoice) {
+        if (suggestion) {
+          suggestion.hidden = false;
+          const hint = suggestion.querySelector("p");
+          if (hint) hint.textContent = "تعذر تجهيز صوت ديلي الآن. جرّب الضغط مرة ثانية.";
+        }
+        return;
+      }
       speakWithDeviceVoice(text);
     };
     audio.onplay = () => { if (activeAudio === audio) setSpeaking(true); };
@@ -154,7 +156,7 @@
   toggle.addEventListener("pointerdown", event => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     const id = event.pointerId, target = toggle;
-    const item = { id, startX: event.clientX, startY: event.clientY, x: position.x, y: position.y, moved: false, dragging: false, timer: 0 };
+    const item = { id, startX: event.clientX, startY: event.clientY, x: position.x, y: position.y, moved: false, dragging: false, soundPlayed: false, timer: 0 };
     item.timer = window.setTimeout(() => {
       if (dragging !== item) return;
       item.dragging = true; item.moved = true;
@@ -173,7 +175,12 @@
       return;
     }
     position = clamp({ x: dragging.x + dx, y: dragging.y + dy });
-    positionWidget(position); event.preventDefault();
+    positionWidget(position);
+    if (!dragging.soundPlayed) {
+      dragging.soundPlayed = true;
+      playMovementTick();
+    }
+    event.preventDefault();
   });
   const finishDrag = event => {
     if (!dragging || dragging.id !== event.pointerId) return;
@@ -198,6 +205,7 @@
       event.preventDefault();
       position = clamp({ x: position.x + delta[0] * (event.shiftKey ? 2 : 1), y: position.y + delta[1] * (event.shiftKey ? 2 : 1) });
       positionWidget(position);
+      playMovementTick();
       try { localStorage.setItem("rukhsati-floating-robot-position", JSON.stringify(position)); } catch {}
     }
   });
