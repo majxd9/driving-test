@@ -123,7 +123,7 @@ assert.ok(gltf.includes("from './BufferGeometryUtils.js'"), 'GLTFLoader utility 
 assert.ok(buffer.includes("from './three.module.js'"), 'BufferGeometryUtils core import is not local');
 
 assert.ok(!appPage.includes('<iframe'), 'React route must not embed a page blocked by X-Frame-Options');
-assert.ok(appPage.includes("window.location.replace('/car-explorer/index.html')"), 'React route must open the standalone document');
+assert.ok(appPage.includes("window.location.replace('/car-explorer/index.html?build=20261010-r3')"), 'React route must open the versioned standalone document');
 assert.ok(redirects.split(/\r?\n/).some((line) => line.trim() === '/car-viewer / 200'), 'Deep link fallback for /car-viewer is missing');
 assert.ok(headers.includes("X-Frame-Options: DENY"), 'Keep clickjacking protection enabled');
 assert.ok(headers.includes("frame-ancestors 'none'"), 'Keep restrictive frame-ancestors policy enabled');
