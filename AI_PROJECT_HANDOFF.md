@@ -901,3 +901,16 @@ Read first: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It supersedes older task sta
 - Car-viewer HTML/JS/CSS and model URLs use a fresh version query; document and script files revalidate to reduce stale-cache behavior in a normal laptop browser.
 - CI checks the three local McLaren quality assets. On failure, the viewer tries other McLaren variants first rather than silently switching to the Challenger. If all variants fail, it presents the error and keeps McLaren selected.
 - **Manual acceptance remains open:** verify the normal (non-incognito) laptop navigation and a phone after the deployment. CI cannot prove visual acceptance on those devices.
+
+
+---
+
+## Floating 3D Assistant — 2026-10-10 corrective implementation
+
+- The previous floating helper used CSS shapes only; that did not meet the requested visual. The primary site now uses a real procedural Three.js robot (metallic head/body, visor, limbs, antenna and emissive eyes), and the standalone car viewer has its own Three.js canvas using the viewer's already-vendored Three.js module.
+- The robot eases its head and pupils toward the global pointer. Pointer movement supports a desktop mouse; pointer down/move supports touch on phones. Dragging the helper remains supported and its screen position stays in localStorage.
+- The helper is no longer gated exclusively to the exact Student role in the main SPA: it is available on public/login and student pages; it is hidden from /admin and the Admin role. The standalone car-viewer helper remains Student-session-only because the car viewer is a protected feature.
+- CSS robot remains a fallback if WebGL cannot be created or the context is lost; its eyes also move toward mouse/touch coordinates. This fallback is not considered the target experience when WebGL is available.
+- Assistant speech continues to use browser/device speech temporarily. Do not change question audio, car-guide audio, existing provider settings, or generation queues. A dedicated voice ID for this assistant is pending from the owner.
+- Car-viewer assets/entry URL now use cache revision 20261010-r4; the robot module has no-cache revalidation rules. The viewer audit checks both the SPA widget and standalone robot for 3D rendering and gaze tracking.
+- Release acceptance still requires the owner to open the deployed site on a normal (non-incognito) desktop browser and a phone, confirm the robot is visible, drag it, move the mouse/finger and observe the gaze, open the help panel, and verify the car viewer still loads. Passing a code build does not replace these visual/device checks.

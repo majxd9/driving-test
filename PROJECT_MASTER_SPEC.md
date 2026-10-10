@@ -465,3 +465,8 @@ Latest master audit: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It includes one row
 - The car viewer now uses versioned document/module/CSS/model URLs and cache revalidation. McLaren quality failures retry the remaining local qualities, never silently substituting another car.
 - CI checks the three real McLaren assets, versioned viewer files, cache headers, student-only helper and separation from the current audio setup.
 - Regular laptop and phone acceptance remains open until verified after deployment.
+
+
+## Floating 3D Site Assistant — 2026-10-10
+
+The floating site assistant uses a real Three.js procedural robot in the React SPA and in the standalone car viewer. Its head/pupils follow mouse pointer movement and touch pointer movement; dragging and saved position are retained. The main SPA helper appears on public/login and student pages, and is hidden on Admin routes. CSS is fallback-only for unsupported/lost WebGL and also follows the pointer. Assistant speech still uses device speech until a dedicated voice ID is supplied; do not alter question/car audio. Current car-viewer cache revision: 20261010-r4. Verify on physical desktop/mobile before marking visual acceptance complete.

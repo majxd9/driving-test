@@ -18,6 +18,9 @@ const required = [
   'client/public/car-explorer/guide-assistant.js',
   'client/public/car-explorer/guide-assistant.css',
   'client/public/car-explorer/guide-robot.js',
+  'client/src/components/FloatingSiteAssistant.tsx',
+  'client/src/components/FloatingRobot3D.tsx',
+  'client/src/components/floating-site-assistant.css',
   'server/Services/SystemAudioCatalog.cs',
   'server/Services/SystemAudioPromptService.cs',
   'client/public/car-explorer/vendor/three.module.js',
@@ -43,6 +46,9 @@ const viewer = read('client/public/car-explorer/viewer.js');
 const guideAssistant = read('client/public/car-explorer/guide-assistant.js');
 const guideAssistantCss = read('client/public/car-explorer/guide-assistant.css');
 const guideRobot = read('client/public/car-explorer/guide-robot.js');
+const floatingAssistant = read('client/src/components/FloatingSiteAssistant.tsx');
+const floatingRobot3D = read('client/src/components/FloatingRobot3D.tsx');
+const floatingAssistantCss = read('client/src/components/floating-site-assistant.css');
 const systemAudioCatalog = read('server/Services/SystemAudioCatalog.cs');
 const systemAudioPrompts = read('server/Services/SystemAudioPromptService.cs');
 const systemAudioGeneratorInterfaces = read('server/Services/IQuestionAiGenerators.cs');
@@ -71,6 +77,10 @@ assert.ok(html.includes('id="guideRobotCanvas"') && html.includes('guide-robot.j
 assert.ok(guideRobot.includes('new THREE.WebGLRenderer') && guideRobot.includes('window.addEventListener("pointermove", readPointer'), 'The assistant must be a real Three.js robot that tracks the pointer');
 assert.ok(guideRobot.includes('gaze.x * 0.047') && guideRobot.includes('gaze.y * 0.031'), '3D robot pupils do not follow pointer/touch movement');
 assert.ok(guideAssistantCss.includes('.guide-assistant[data-robot-ready="true"] .guide-robot-stage{display:none}'), 'CSS fallback must yield to the rendered 3D robot');
+assert.ok(floatingAssistant.includes('import FloatingRobot3D') && floatingAssistant.includes("user?.role === 'Admin'") && !floatingAssistant.includes("user?.role !== 'Student'"), 'Main-site assistant must be visible on public/student pages and hidden only from admin routes');
+assert.ok(floatingRobot3D.includes('new THREE.WebGLRenderer') && floatingRobot3D.includes("window.addEventListener('pointermove', readPointer") && floatingRobot3D.includes("window.addEventListener('pointerdown', readPointer"), 'Main-site helper must render an actual Three.js model and track mouse/touch');
+assert.ok(floatingRobot3D.includes('gaze.x * 0.047') && floatingRobot3D.includes('gaze.y * 0.031'), 'Main-site 3D pupils must follow the pointer');
+assert.ok(floatingAssistantCss.includes('.rukhsati-site-assistant[data-robot-ready="true"] .rukhsati-robot-stage{display:none}'), 'Main-site CSS fallback must yield to the rendered 3D robot');
 assert.ok(guideAssistantCss.includes('.guide-assistant[open] .guide-assistant-panel{display:block}'), 'Guide assistant open-state styling is missing');
 assert.ok(guideAssistant.includes('root.addEventListener("toggle"') && guideAssistant.includes('root.dataset.initialized = "true"'), 'Guide assistant did not initialize its disclosure handlers');
 assert.ok(html.includes('meta name="api-base-url"'), 'The guide assistant API base URL is missing');

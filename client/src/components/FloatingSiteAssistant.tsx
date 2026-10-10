@@ -30,7 +30,7 @@ function clampPoint(point: Point): Point {
 }
 
 export default function FloatingSiteAssistant() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [activeTopicId, setActiveTopicId] = useState('welcome');
   const [status, setStatus] = useState('اختر موضوعاً لقراءة الشرح أو الاستماع إليه.');
@@ -80,6 +80,23 @@ export default function FloatingSiteAssistant() {
 
   useEffect(() => () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  }, []);
+
+  // The CSS fallback also follows the pointer when WebGL is unavailable.
+  useEffect(() => {
+    const followPointer = (event: PointerEvent) => {
+      const x = Math.max(-3, Math.min(3, (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * 6));
+      const y = Math.max(-3, Math.min(3, (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * 6));
+      document.querySelectorAll<HTMLElement>('.rukhsati-site-assistant .rukhsati-robot-eye').forEach((eye) => {
+        eye.style.setProperty('translate', x + 'px ' + y + 'px');
+      });
+    };
+    window.addEventListener('pointermove', followPointer, { passive: true });
+    window.addEventListener('pointerdown', followPointer, { passive: true });
+    return () => {
+      window.removeEventListener('pointermove', followPointer);
+      window.removeEventListener('pointerdown', followPointer);
+    };
   }, []);
 
   const playTopic = (topic: GuideTopic) => {
@@ -151,7 +168,7 @@ export default function FloatingSiteAssistant() {
   const panelTop = Math.max(12, Math.min(position.y - panelHeight - 10, screenHeight - panelHeight - 12));
 
   // Show the helper to visitors as well as students; only keep it off the admin console.
-  if (loading || user?.role === 'Admin') return null;
+  if (user?.role === 'Admin' || location.pathname.startsWith('/admin')) return null;
 
   return (
     <div className="rukhsati-site-assistant" dir="rtl" data-robot-ready={robot3dReady ? 'true' : 'false'}>

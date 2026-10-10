@@ -174,6 +174,11 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
         camera.bottom = -halfHeight;
         camera.updateProjectionMatrix();
       };
+      const handleContextLost = (event: Event) => {
+        event.preventDefault();
+        onErrorRef.current?.();
+      };
+      canvas.addEventListener('webglcontextlost', handleContextLost);
       resize();
       let resizeObserver: ResizeObserver | null = null;
       if (typeof ResizeObserver !== 'undefined') {
@@ -211,6 +216,7 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
         window.removeEventListener('pointermove', readPointer);
         window.removeEventListener('pointerdown', readPointer);
         window.removeEventListener('resize', resize);
+        canvas.removeEventListener('webglcontextlost', handleContextLost);
         resizeObserver?.disconnect();
         for (const geometry of geometries) geometry.dispose();
         for (const material of materials) material.dispose();
