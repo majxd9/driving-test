@@ -170,6 +170,8 @@ builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
 
     return sp.GetRequiredService<ElevenLabsQuestionAudioGenerator>();
 });
+// System prompts and guide clips must follow the same provider selection as question audio.
+// Keep this factory aligned with IQuestionAudioGenerator so startup prompts do not bypass Fish Audio/Local TTS.
 builder.Services.AddScoped<ITextToSpeechGenerator>(sp =>
 {
     var provider = (builder.Configuration["QUESTION_AUDIO_PROVIDER"] ?? "fish").Trim();
