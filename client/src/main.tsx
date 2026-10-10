@@ -38,6 +38,7 @@ import './study-preview.css';
 import './ui-layout-contract.css';
 import './question-ui-final-fixes.css';
 import './study-performance-hotfix.css';
+import './study-image-exam-nav-fixes.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
