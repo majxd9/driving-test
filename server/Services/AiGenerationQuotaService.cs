@@ -10,6 +10,17 @@ public sealed record AiGenerationQuota(
     int Remaining,
     DateTime MonthStartUtc);
 
+public sealed class AiGenerationQuotaExceededException : Exception
+{
+    public AiGenerationQuotaExceededException(DateTime nextMonthStartUtc)
+        : base("تم بلوغ الحد الشهري لتوليد الصوت. ستعود الخدمة مع بداية الشهر القادم.")
+    {
+        NextMonthStartUtc = nextMonthStartUtc;
+    }
+
+    public DateTime NextMonthStartUtc { get; }
+}
+
 public sealed class AiGenerationQuotaService
 {
     private readonly AppDbContext _db;
@@ -87,10 +98,15 @@ public sealed class AiGenerationQuotaService
             monthStart);
     }
 
-    public async Task ReleaseAsync(CancellationToken cancellationToken)
+    public Task ReleaseAsync(CancellationToken cancellationToken) =>
+        ReleaseAsync(CurrentMonthStartUtc, cancellationToken);
+
+    public async Task ReleaseAsync(
+        DateTime monthStartUtc,
+        CancellationToken cancellationToken)
     {
         await EnsureSchemaAsync(cancellationToken);
-        var monthStart = CurrentMonthStartUtc;
+        var monthStart = DateTime.SpecifyKind(monthStartUtc, DateTimeKind.Utc);
 
         await _db.Database.ExecuteSqlInterpolatedAsync($"""
             UPDATE "AiGenerationUsage"
@@ -100,14 +116,17 @@ public sealed class AiGenerationQuotaService
             """, cancellationToken);
     }
 
-    // Consumes one monthly generation slot immediately before an actual
-    // ElevenLabs/Piper/ComfyUI generation call. The SQL update is atomic,
-    // so multiple workers cannot exceed the configured monthly limit.
+    // Consumes one monthly generation slot atomically. Passing the captured
+    // month keeps reservations/refunds correct if a provider call crosses UTC month-end.
+    public Task<bool> TryConsumeAsync(CancellationToken cancellationToken) =>
+        TryConsumeAsync(CurrentMonthStartUtc, cancellationToken);
+
     public async Task<bool> TryConsumeAsync(
+        DateTime monthStartUtc,
         CancellationToken cancellationToken)
     {
         await EnsureSchemaAsync(cancellationToken);
-        var monthStart = CurrentMonthStartUtc;
+        var monthStart = DateTime.SpecifyKind(monthStartUtc, DateTimeKind.Utc);
 
         await _db.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO "AiGenerationUsage" ("MonthStart", "GeneratedCount")
