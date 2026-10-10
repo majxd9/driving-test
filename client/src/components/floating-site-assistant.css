@@ -1,4 +1,4 @@
-/* One floating Zeb assistant shared across the public and student pages. */
+/* One floating Deli assistant shared across the public and student pages. */
 .rukhsati-site-assistant{position:fixed;inset:0;z-index:9500;direction:rtl;color:#f3f8fc;font-family:"IBM Plex Sans Arabic","Cairo",system-ui,sans-serif;pointer-events:none}
 .rukhsati-assistant-robot-button{position:fixed;z-index:9502;display:block;width:92px;height:104px;margin:0;padding:0;border:0;border-radius:22px;background:transparent;color:#e9fcff;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;pointer-events:auto;filter:drop-shadow(0 8px 12px #0006)}
 .rukhsati-assistant-robot-button:active{cursor:grabbing}
