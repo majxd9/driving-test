@@ -16,8 +16,7 @@ const qualityProfiles = {
 };
 const vehicleModels = {
  mclaren: { label: "McLaren Senna GTR", description: "نموذج سيارة حلبة؛ جودة المجسّم تتغير مع اختيار الجودة.", urlForQuality: (quality) => "./mclaren-senna-gtr-" + quality + ".glb.gz?v=20261010-r6" },
- mustang: { label: "Ford Mustang GT · 2005", description: "نموذج Mustang GT لعام 2005. تُحفظ نسبة العمل لصاحب النموذج في رابط الترخيص.", url: "https://raw.githubusercontent.com/nesdesignco/FormDrive/e2f861630035385adacd1c5fcdeae5258557cce6/public/models/mustang-2005.glb", attribution: true },
- challenger: { label: "Dodge Challenger 1970 R/T", description: "نموذج احتياطي متوفر داخل المستودع.", url: "./challenger-1970.glb.gzdata", fallbackUrl: "./challenger-1970.glb" },
+ challenger: { label: "Dodge Challenger 1970 R/T", description: "استكشف الهيكل والمقصورة والأجزاء الرئيسية للسيارة.", url: "./challenger-1970.glb.gzdata", fallbackUrl: "./challenger-1970.glb" },
 };
 let activeVehicleId = "mclaren";
 let loadSequence = 0;
@@ -278,16 +277,12 @@ function clearLoadedModel() {
  originalPositions.clear();
  updatePartControls();
 }
-function updateVehicleDetails(vehicleId, backupMode = false, fallbackQuality = null) {
+function updateVehicleDetails(vehicleId, fallbackQuality = null) {
  const spec = vehicleModels[vehicleId];
  $("vehicleName").textContent = spec.label;
  $("vehicleDescription").textContent = fallbackQuality
   ? "تعذّر تحميل الجودة المختارة؛ تم عرض نسخة McLaren بديلة حتى يبقى نفس طراز السيارة ظاهراً."
-  : backupMode
-   ? "تعذّر تحميل السيارة المختارة؛ عُرضت السيارة الاحتياطية الموجودة داخل المستودع حتى يتوفر ملف النموذج."
-   : spec.description;
- const attribution = $("modelAttribution");
- if (attribution) attribution.hidden = !spec.attribution;
+  : spec.description;
 }
 async function loadCarModel(vehicleId = "mclaren", backupMode = false) {
  const token = ++loadSequence;
@@ -381,11 +376,11 @@ async function loadCarModel(vehicleId = "mclaren", backupMode = false) {
   $("count").textContent = meshes.length + " قطعة";
   $("status").textContent = fallbackMcLarenQuality
    ? "تم تحميل McLaren بجودة بديلة"
-   : backupMode ? "تم تحميل النموذج الاحتياطي" : usedFallback ? "تم التحميل بوضع التوافق" : "تم تحميل النموذج";
+   : usedFallback ? "تم التحميل بوضع التوافق" : "تم تحميل النموذج";
   $("loadTitle").textContent = "اكتمل تحميل " + spec.label;
   $("progress").style.width = "100%";
   homeCamera = {position:camera.position.clone(), target:controls.target.clone()};
-  updateVehicleDetails(vehicleId, backupMode, fallbackMcLarenQuality);
+  updateVehicleDetails(vehicleId, fallbackMcLarenQuality);
   renderParts();
   updatePartControls();
   setTimeout(() => { if (token === loadSequence) $("load").classList.add("hidden"); }, 250);
