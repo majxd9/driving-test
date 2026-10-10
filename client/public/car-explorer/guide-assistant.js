@@ -3,18 +3,36 @@
   const $ = (id) => document.getElementById(id);
   const root = $("guideAssistant"), toggle = $("guideAssistantToggle");
   const suggestion = $("guideAssistantSuggestion");
+  const caption = toggle?.querySelector(".guide-robot-caption");
   if (!root || !toggle) return;
   try {
     const saved = sessionStorage.getItem("drv_session");
     const session = saved ? JSON.parse(saved) : null;
-    if (session?.role !== "Student") return;
-  } catch { return; }
+    if (session?.role === "Admin" || session?.role === "admin") return;
+  } catch { /* A missing session is not an admin session. */ }
   root.hidden = false;
   if (suggestion) suggestion.hidden = false;
   window.setTimeout(() => { if (suggestion) suggestion.hidden = true; }, 4500);
 
-  const pageText = "في مستكشف السيارة، اسحب المجسم لتدويره، وكبّر لرؤية التفاصيل، واختر قطعة لمعرفة اسمها ومكانها.";
-  let speaking = false, dragging = null, suppressClick = false;
+  const pageText = "اسحب السيارة لتدويرها، وكبّر لرؤية التفاصيل، واختر قطعة لمعرفة اسمها ومكانها.";
+  let speaking = false, activeAudio = null, dragging = null, suppressClick = false;
+
+  function setSpeaking(value) {
+    speaking = value;
+    if (caption) caption.textContent = value ? "عم يحكي" : "زيب";
+    toggle.setAttribute("aria-label", value ? "زيب يتحدث. اضغط لإيقاف الصوت." : "زيب، اضغط لسماع شرح الصفحة أو اضغط مطولاً لتحريكه.");
+  }
+
+  function stopSpeech() {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    const audio = activeAudio;
+    activeAudio = null;
+    if (audio) {
+      audio.onended = null; audio.onerror = null; audio.onplay = null;
+      audio.pause(); audio.removeAttribute("src"); audio.load();
+    }
+    setSpeaking(false);
+  }
 
   const clamp = p => ({
     x: Math.max(8, Math.min(Math.max(8, window.innerWidth - 100), p.x)),
@@ -40,24 +58,51 @@
   } catch {}
   position = clamp(position); positionWidget(position);
 
-  function speakOnRobotClick() {
-    if (speaking || window.speechSynthesis?.speaking) {
-      window.speechSynthesis.cancel(); speaking = false; return;
+  function speakWithDeviceVoice() {
+    if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
+      setSpeaking(false);
+      return;
     }
-    if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") return;
     const utterance = new SpeechSynthesisUtterance(pageText);
-    utterance.lang = "ar-SA"; utterance.rate = .97;
+    utterance.lang = "ar-SA"; utterance.rate = .97; utterance.pitch = 1;
     const voice = window.speechSynthesis.getVoices().find(item => /^ar([_-]|$)/i.test(item.lang));
     if (voice) utterance.voice = voice;
-    utterance.onstart = () => { speaking = true; };
-    utterance.onend = () => { speaking = false; };
-    utterance.onerror = () => { speaking = false; };
-    speaking = true;
-    if (suggestion) suggestion.hidden = true;
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+    setSpeaking(true);
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   }
 
+  function speakOnRobotClick() {
+    if (speaking || activeAudio || ("speechSynthesis" in window && window.speechSynthesis.speaking)) {
+      stopSpeech();
+      return;
+    }
+    const apiBase = document.querySelector("meta[name=\"api-base-url\"]")?.content || "";
+    if (!apiBase) { speakWithDeviceVoice(); return; }
+    const audio = new Audio(apiBase.replace(/\/+$/, "") + "/api/questions/audio-prompt/site-assistant-car");
+    audio.preload = "auto";
+    activeAudio = audio;
+    setSpeaking(true);
+    let usedFallback = false;
+    const fallback = () => {
+      if (usedFallback || activeAudio !== audio) return;
+      usedFallback = true;
+      audio.onended = null; audio.onerror = null; audio.onplay = null;
+      audio.pause(); audio.removeAttribute("src"); audio.load();
+      activeAudio = null;
+      setSpeaking(false);
+      speakWithDeviceVoice();
+    };
+    audio.onplay = () => { if (activeAudio === audio) setSpeaking(true); };
+    audio.onended = () => { if (activeAudio === audio) { activeAudio = null; setSpeaking(false); } };
+    audio.onerror = fallback;
+    void audio.play().catch(fallback);
+  }
+
+  window.addEventListener("pagehide", stopSpeech, { once: true });
   toggle.addEventListener("pointerdown", event => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     const id = event.pointerId, target = toggle;
@@ -107,6 +152,6 @@
     }
   });
   window.addEventListener("resize", () => { position = clamp(position); positionWidget(position); }, { passive: true });
-  toggle.setAttribute("aria-expanded", "false");
+  if (caption) caption.textContent = "زيب";
   root.dataset.initialized = "true";
 })();
