@@ -914,3 +914,12 @@ Read first: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It supersedes older task sta
 - Assistant speech continues to use browser/device speech temporarily. Do not change question audio, car-guide audio, existing provider settings, or generation queues. A dedicated voice ID for this assistant is pending from the owner.
 - Car-viewer assets/entry URL now use cache revision 20261010-r4; the robot module has no-cache revalidation rules. The viewer audit checks both the SPA widget and standalone robot for 3D rendering and gaze tracking.
 - Release acceptance still requires the owner to open the deployed site on a normal (non-incognito) desktop browser and a phone, confirm the robot is visible, drag it, move the mouse/finger and observe the gaze, open the help panel, and verify the car viewer still loads. Passing a code build does not replace these visual/device checks.
+
+
+## Floating assistant interaction pass — 2026-10-10
+
+- Replaced the topic list with one page-aware message and one explicit speech action; the dedicated assistant voice remains pending. Keep all question audio and existing car-guide audio unchanged.
+- Single click/tap on the robot opens the helper. A press held for 420 ms activates dragging; brief movement without a long press does not move it.
+- Pointer/touch presses on the page cause a small step away, except when the target is the assistant itself or its prompt. Eyes continue following mouse/touch coordinates.
+- A contextual help suggestion appears on initial load and after each SPA route change; the user can open it. The standalone car viewer shows its own suggestion on entry.
+- Owner may provide an alternate robot model and a separate assistant voice ID in a later step.
