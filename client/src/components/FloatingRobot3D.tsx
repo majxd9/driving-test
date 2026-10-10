@@ -47,9 +47,76 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
       for (const geometry of geometries) geometry.dispose();
     };
 
-    const readPointer = (event: PointerEvent) => {
+    const readPointer = (event: { clientX: number; clientY: number }) => {
       pointer.x = Math.max(-1, Math.min(1, event.clientX / Math.max(window.innerWidth, 1) * 2 - 1));
       pointer.y = Math.max(-1, Math.min(1, 1 - event.clientY / Math.max(window.innerHeight, 1) * 2));
+    };
+    const readTouch = (event: TouchEvent) => {
+      const touch = event.touches[0] ?? event.changedTouches[0];
+      if (touch) readPointer(touch);
+    };
+
+    // Some USDZ exports flatten eye names. Prefer named nodes, then infer a restrained
+    // left/right pair from small meshes in the upper/front face if no eye nodes are named.
+    const collectEyeTargets = (model: any) => {
+      const named: Array<{ node: any; rotationX: number; rotationY: number }> = [];
+      model.traverse((node: any) => {
+        const name = String(node.name || '').toLowerCase();
+        if (/(eye|pupil|eyeball|iris)/.test(name) && (node.isMesh || !node.children?.length)) {
+          named.push({ node, rotationX: node.rotation.x, rotationY: node.rotation.y });
+        }
+      });
+      if (named.length >= 2) return named;
+
+      model.updateMatrixWorld(true);
+      const bounds = new THREE.Box3().setFromObject(model);
+      const extent = bounds.getSize(new THREE.Vector3());
+      const middle = bounds.getCenter(new THREE.Vector3());
+      const largest = Math.max(extent.x, extent.y, extent.z, 0.001);
+      const width = Math.max(extent.x, 0.001);
+      const height = Math.max(extent.y, 0.001);
+      const depth = Math.max(extent.z, 0.001);
+      const used = new Set(named.map(item => item.node));
+      const candidates: Array<{ node: any; center: any; front: number; score: number }> = [];
+
+      model.traverse((node: any) => {
+        if (!node.isMesh || !node.geometry || used.has(node)) return;
+        const box = new THREE.Box3().setFromObject(node);
+        if (box.isEmpty()) return;
+        const dims = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        const size = Math.max(dims.x, dims.y, dims.z);
+        const vertical = (center.y - bounds.min.y) / height;
+        const lateral = Math.abs(center.x - middle.x) / (width / 2);
+        const front = (center.z - bounds.min.z) / depth;
+        if (vertical < 0.63 || lateral < 0.08 || lateral > 0.78 ||
+            size < largest * 0.005 || size > largest * 0.15) return;
+        const score = Math.abs(vertical - 0.78) * 2.5 +
+          Math.abs(lateral - 0.32) * 0.6 + size / largest * 0.7;
+        candidates.push({ node, center, front, score });
+      });
+
+      const bestPair = (items: typeof candidates, face: 'front' | 'back' | 'any') => {
+        const scored = items.map(item => ({
+          ...item,
+          score: item.score + (face === 'front' ? (1 - item.front) : face === 'back' ? item.front : Math.min(item.front, 1 - item.front)) * 0.75,
+        })).sort((a, b) => a.score - b.score);
+        const left = scored.find(item => item.center.x < middle.x);
+        const right = scored.find(item => item.center.x >= middle.x);
+        if (left && right) return [left, right];
+        return scored.slice(0, 2);
+      };
+      const positive = bestPair(candidates.filter(item => item.front >= 0.5), 'front');
+      const negative = bestPair(candidates.filter(item => item.front < 0.5), 'back');
+      const anyFace = bestPair(candidates, 'any');
+      const pairs = [positive, negative, anyFace].filter(pair => pair.length === 2);
+      pairs.sort((a, b) => a.reduce((n, item) => n + item.score, 0) - b.reduce((n, item) => n + item.score, 0));
+      for (const item of pairs[0] || []) {
+        if (!named.some(target => target.node === item.node)) {
+          named.push({ node: item.node, rotationX: item.node.rotation.x, rotationY: item.node.rotation.y });
+        }
+      }
+      return named;
     };
 
     const resize = () => {
@@ -127,13 +194,8 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
           normalized.add(loaded);
           scene.add(normalized);
           character = normalized;
-          eyeTargets = [];
-          normalized.traverse((node: any) => {
-            const eyeName = String(node.name || '').toLowerCase();
-            if (/(eye|pupil|eyeball|iris)/.test(eyeName)) {
-              eyeTargets.push({ node, rotationX: node.rotation.x, rotationY: node.rotation.y });
-            }
-          });
+          eyeTargets = collectEyeTargets(normalized);
+          console.info('Deli gaze targets:', eyeTargets.length);
           baseY = normalized.position.y;
         } catch (error) {
           if (loaded && !character) disposeModel(loaded);
@@ -143,8 +205,12 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
       };
 
       canvas.addEventListener('webglcontextlost', handleContextLost);
-      window.addEventListener('pointermove', readPointer, { passive: true });
-      window.addEventListener('pointerdown', readPointer, { passive: true });
+      // Capture gestures before app/scene controls; pointer events can be stopped by canvases.
+      window.addEventListener('pointermove', readPointer, { passive: true, capture: true });
+      window.addEventListener('pointerdown', readPointer, { passive: true, capture: true });
+      window.addEventListener('pointerup', readPointer, { passive: true, capture: true });
+      window.addEventListener('touchstart', readTouch, { passive: true, capture: true });
+      window.addEventListener('touchmove', readTouch, { passive: true, capture: true });
       window.addEventListener('resize', resize, { passive: true });
       if (typeof ResizeObserver !== 'undefined') {
         observer = new ResizeObserver(resize);
@@ -158,15 +224,15 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
         // Cap the small floating character at 30 FPS to reduce mobile GPU use.
         if (now - lastFrameAt < 33) return;
         lastFrameAt = now;
-        gaze.x += (pointer.x - gaze.x) * 0.09;
-        gaze.y += (pointer.y - gaze.y) * 0.09;
+        gaze.x += (pointer.x - gaze.x) * 0.20;
+        gaze.y += (pointer.y - gaze.y) * 0.20;
         if (character) {
           character.rotation.y += (gaze.x * 0.24 - character.rotation.y) * 0.07;
           character.rotation.x += (-gaze.y * 0.11 - character.rotation.x) * 0.07;
           character.position.y = baseY + Math.sin(now * 0.0016) * 0.022;
           for (const eye of eyeTargets) {
-            eye.node.rotation.y += (eye.rotationY + gaze.x * 0.18 - eye.node.rotation.y) * 0.16;
-            eye.node.rotation.x += (eye.rotationX - gaze.y * 0.12 - eye.node.rotation.x) * 0.16;
+            eye.node.rotation.y += (eye.rotationY + gaze.x * 0.32 - eye.node.rotation.y) * 0.28;
+            eye.node.rotation.x += (eye.rotationX - gaze.y * 0.22 - eye.node.rotation.x) * 0.28;
           }
         }
         renderer.render(scene, camera);
@@ -188,8 +254,11 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
         disposed = true;
         window.cancelAnimationFrame(animationFrame);
         document.removeEventListener('visibilitychange', onVisibilityChange);
-        window.removeEventListener('pointermove', readPointer);
-        window.removeEventListener('pointerdown', readPointer);
+        window.removeEventListener('pointermove', readPointer, true);
+        window.removeEventListener('pointerdown', readPointer, true);
+        window.removeEventListener('pointerup', readPointer, true);
+        window.removeEventListener('touchstart', readTouch, true);
+        window.removeEventListener('touchmove', readTouch, true);
         window.removeEventListener('resize', resize);
         canvas.removeEventListener('webglcontextlost', handleContextLost);
         observer?.disconnect();
