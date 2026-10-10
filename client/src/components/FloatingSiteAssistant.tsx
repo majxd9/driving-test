@@ -58,6 +58,29 @@ export default function FloatingSiteAssistant() {
   const locationRef = useRef(location.pathname);
   const positionRef = useRef(position);
   const lastDodgeAtRef = useRef(0);
+  const movementAudioRef = useRef<AudioContext | null>(null);
+
+  const playMovementTick = () => {
+    try {
+      const AudioContextConstructor = window.AudioContext;
+      if (!AudioContextConstructor) return;
+      const context = movementAudioRef.current ?? new AudioContextConstructor();
+      movementAudioRef.current = context;
+      if (context.state === 'suspended') void context.resume();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(740, context.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(520, context.currentTime + 0.045);
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.018, context.currentTime + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.055);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.06);
+    } catch { /* Decorative sound must never block movement. */ }
+  };
 
   const stopSpeech = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -98,6 +121,7 @@ export default function FloatingSiteAssistant() {
       const detail = (event as CustomEvent<AssistantSpeechContext | null>).detail;
       if (detail && typeof detail.text === 'string' && detail.text.trim()) {
         setSpeechContext({ ...detail, text: detail.text.trim() });
+        if (detail.title === 'شرح الإجابة') setShowSuggestion(true);
       } else {
         setSpeechContext(null);
       }
@@ -128,6 +152,7 @@ export default function FloatingSiteAssistant() {
       }
 
       lastDodgeAtRef.current = now;
+      playMovementTick();
       setShowSuggestion(false);
       setPosition(clampPoint({
         x: current.x + (dx / distance) * 62,
@@ -167,6 +192,8 @@ export default function FloatingSiteAssistant() {
       audioRef.current = null;
     }
     speechActiveRef.current = false;
+    void movementAudioRef.current?.close().catch(() => {});
+    movementAudioRef.current = null;
   }, []);
 
   const activeTopic = topicForPath(location.pathname);
@@ -282,6 +309,7 @@ export default function FloatingSiteAssistant() {
     event.currentTarget.dataset.dragging = 'false';
     if (drag.timer) window.clearTimeout(drag.timer);
     if (drag.moved) {
+      if (drag.dragging) playMovementTick();
       suppressClickRef.current = true;
       window.setTimeout(() => { suppressClickRef.current = false; }, 320);
     }
