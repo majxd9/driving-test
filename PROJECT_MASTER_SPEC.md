@@ -437,3 +437,11 @@ Latest master audit: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It includes one row
 - Current release-check 37910063018, Secret History Scan 37910062975 and API Health Monitor 37910063012 passed. Cloudflare production deploy for frontend commit f2ec2ce succeeded.
 - Latest DB snapshot: 397 valid questions, 397 non-empty audios, 273 pending / 25 approved / 7 rejected AI image reviews, usage counter 709, DB ~206 MB, connections 24/60, 20/20 public tables RLS-enabled, direct grants to anon/authenticated = 0.
 - Do not mark the project Production-Cleared until M1–M9 and the final checks in the master report are closed with evidence.
+
+## 30. Car explorer guide assistant — 2026-10-10
+
+- Added a small floating Arabic guide to the standalone 3D car viewer. Implementation is in `client/public/car-explorer/guide-assistant.js` and `guide-assistant.css`; it does not add a second Three.js scene, NPM dependency, or inline script.
+- Five topics explain the first visit, rotation, zoom/reset, main parts, and graphics quality. Audio requires an explicit click; no voice autoplays.
+- The guide uses the existing read-only `/api/questions/audio-prompt/{key}` endpoint and cached `SystemAudios` for `car-guide-welcome`, `car-guide-rotate`, `car-guide-zoom`, `car-guide-parts`, and `car-guide-quality`. Generation of these optional clips is best-effort so unavailable provider quota does not block the rest of the guide; browser speech synthesis is the fallback.
+- Detailed implementation and release checklist: `CAR_EXPLORER_GUIDE_ASSISTANT.md`. `scripts/audit-car-viewer.mjs` now checks the guide files, script syntax, responsive CSS, CSP media origin, and registered audio keys.
+- **Release state:** source changes are committed to `main`; do not treat the feature as production-verified until the frontend build, car-viewer audit, backend build/deploy, and manual desktop/mobile audio checks pass.
