@@ -24,6 +24,7 @@ const required = [
   'client/vite.usdz-loader.config.ts',
   'server/Services/SystemAudioCatalog.cs',
   'server/Services/SystemAudioPromptService.cs',
+  'server/Controllers/QuestionsController.cs',
   'server/Services/FishAudioQuestionAudioGenerator.cs',
   'client/public/car-explorer/vendor/three.module.js',
   'client/public/car-explorer/vendor/OrbitControls.js',
@@ -53,6 +54,8 @@ const floatingRobot3D = read('client/src/components/FloatingRobot3D.tsx');
 const floatingAssistantCss = read('client/src/components/floating-site-assistant.css');
 const systemAudioCatalog = read('server/Services/SystemAudioCatalog.cs');
 const systemAudioPrompts = read('server/Services/SystemAudioPromptService.cs');
+const questionsController = read('server/Controllers/QuestionsController.cs');
+const study = read('client/src/pages/Study.tsx');
 const fishAudioGenerator = read('server/Services/FishAudioQuestionAudioGenerator.cs');
 const systemAudioGeneratorInterfaces = read('server/Services/IQuestionAiGenerators.cs');
 const serverProgram = read('server/Program.cs');
@@ -73,11 +76,11 @@ assert.ok(!html.includes('type="importmap"'), 'Inline import map found; viewer s
 assert.ok(html.includes('src="./viewer-boot.js?v=20261010-r8"'), 'Versioned viewer boot/error handler is not linked');
 assert.ok(html.includes('type="module" src="./viewer.js?v=20261010-r8"'), 'Versioned viewer module is not linked');
 assert.ok(html.includes('href="./viewer-premium.css?v=20261010-r8"'), 'Versioned premium viewer CSS is not linked');
-assert.ok(html.includes('href="./guide-assistant.css?v=20261010-deli1"'), 'Versioned Deli assistant CSS is not linked');
-assert.ok(html.includes('src="./guide-assistant.js?v=20261010-deli1"'), 'Versioned Deli assistant script is not linked');
-assert.ok(html.includes('<div class="guide-assistant" id="guideAssistant" hidden>'), 'Student-only car robot container is missing');
+assert.ok(html.includes('href="./guide-assistant.css?v=20261010-deli2"'), 'Versioned Deli assistant CSS is not linked');
+assert.ok(html.includes('src="./guide-assistant.js?v=20261010-deli2"'), 'Versioned Deli assistant script is not linked');
+assert.ok(html.includes('<div class="guide-assistant" id="guideAssistant">'), 'Deli car-viewer assistant must be visible by default and hidden only for admin sessions');
 assert.ok(html.includes('<button type="button" class="guide-assistant-toggle" id="guideAssistantToggle"'), 'Direct-speech robot button is missing');
-assert.ok(html.includes('id="guideRobotCanvas"') && html.includes('guide-robot.js?v=20261010-deli1'), 'Actual Zeb 3D canvas/module is missing');
+assert.ok(html.includes('id="guideRobotCanvas"') && html.includes('guide-robot.js?v=20261010-deli2'), 'Actual Zeb 3D canvas/module is missing');
 assert.ok(html.includes('id="guideAssistantSuggestion"') && html.includes('type="button" class="guide-assistant-toggle"') && !html.includes('guideAssistantSpeak') && !html.includes('guideAssistantPanel') && !html.includes('data-guide-topic='), 'Standalone assistant must have only a non-interactive page hint and a direct-speech robot, with no popup/button panel');
 assert.ok(guideRobot.includes('new THREE.WebGLRenderer') && guideRobot.includes('window.addEventListener("pointermove", readPointer'), 'The assistant must be a real Three.js robot that tracks the pointer');
 assert.ok(guideRobot.includes('gaze.x * 0.24') && guideRobot.includes('gaze.y * 0.11'), 'Zeb 3D character does not smoothly follow pointer/touch movement');
@@ -101,7 +104,7 @@ assert.ok(!floatingAssistant.includes('rukhsati-assistant-topics') && !floatingA
 assert.ok(html.includes('meta name="api-base-url"'), 'The guide assistant API base URL is missing');
 assert.ok(!/guideAssistantAudio[^>]*autoplay/i.test(html), 'The guide assistant must not autoplay audio');
 assert.ok(guideAssistant.includes('sessionStorage.getItem("drv_session")') && guideAssistant.includes('session?.role === "Admin"') && guideAssistant.includes('session?.role === "admin"'), 'Car-viewer assistant must be visible on non-admin pages only');
-assert.ok(guideAssistant.includes('/api/questions/audio-prompt/site-assistant-car') && guideAssistant.includes('speechSynthesis') && guideAssistant.includes('speakWithDeviceVoice()'), 'Standalone Zeb must prefer the matching cached audio clip and fall back to Arabic device speech');
+assert.ok(guideAssistant.includes('/api/questions/audio-prompt/" + encodeURIComponent(audioKey)') && guideAssistant.includes('speechSynthesis') && guideAssistant.includes('speakWithDeviceVoice(text)'), 'Standalone Deli must prefer cached AI audio for the selected part and fall back to Arabic device speech');
 assert.ok(guideAssistantCss.includes('@media(max-width:480px)') && guideAssistantCss.includes('prefers-reduced-motion:reduce'), 'Guide assistant responsive/reduced-motion styles are missing');
 assert.ok(headers.includes('/car-explorer/guide-robot.js\n  Cache-Control: no-cache'), '3D robot module must revalidate in normal desktop browsers');
 assert.ok(systemAudioCatalog.includes('CarGuideWelcome') && systemAudioCatalog.includes('CarGuideQuality'), 'Guide audio keys are not registered in the backend');
@@ -112,6 +115,13 @@ assert.ok(systemAudioPrompts.includes('existing ElevenLabs/Eden AI fallback'), '
 assert.ok(floatingAssistant.includes('resolveApiUrl') && floatingAssistant.includes('site-assistant-${activeTopic.id}') && floatingAssistant.includes('audio.play()'), 'Main assistant must prefer cached AI speech after a direct click and keep a device-voice fallback');
 assert.ok(systemAudioCatalog.includes('IsSiteAssistantKey') && systemAudioCatalog.includes('SiteAssistantWelcome'), 'Dedicated site-assistant audio keys must stay separate in the catalog');
 assert.ok(systemAudioPrompts.includes('FISH_AUDIO_SITE_ASSISTANT_VOICE_ID') && systemAudioPrompts.includes('DefaultSiteAssistantVoiceId'), 'Site-assistant voice ID must have a separate configuration setting');
+assert.ok(study.includes('rukhsati-assistant-context') && study.includes('/api/questions/${question.id}/explanation-audio'), 'Training must pass an answered question explanation and its audio URL to Deli');
+assert.ok(systemAudioPrompts.includes('EnsureQuestionExplanationAudioAsync') && systemAudioPrompts.includes('deli-question-explanation-audio-v1') && systemAudioPrompts.includes('questionsWithExplanations'), 'Every non-empty explanation must receive versioned, persistent Deli audio');
+assert.ok(questionsController.includes('GetQuestionExplanationAudio') && questionsController.includes('GetCurrentQuestionExplanationAudioAsync'), 'Students must be able to retrieve the cached explanation clip');
+assert.ok(viewer.includes('rukhsati-car-part-selected') && viewer.includes('selectedPartDescription') && viewer.includes('audioKey:"car-guide-part-engine"'), 'Selecting any modeled car part must show and publish its function for Deli');
+assert.ok(guideAssistant.includes('handleCarPartSelected') && guideAssistant.includes('speakText(currentSpeech.text, currentSpeech.audioKey)') && guideAssistant.includes('lastDodgeAt'), 'Car-viewer Deli must speak the selected part and glide away from nearby taps');
+assert.ok(floatingAssistant.includes('rukhsati-assistant-context') && floatingAssistant.includes('speechContext?.audioUrl') && floatingAssistant.includes('handleNearbyPress'), 'Main-site Deli must read current answer explanations and smoothly dodge nearby taps');
+assert.ok(!html.includes('id="guideAssistant" hidden') && html.includes('id="selectedPartDescription"'), 'Deli and the part-function description must be visible by default in the 3D viewer');
 assert.ok(fishAudioGenerator.includes('voiceIdOverride') && fishAudioGenerator.includes('FISH_AUDIO_VOICE_ID') && fishAudioGenerator.includes('GenerateTextAsync(text, cancellationToken, voiceId)'), 'Fish Audio must honor explicit prompt voice IDs without replacing the question voice');
 assert.ok(headers.includes('media-src') && headers.includes('https://driving-test-evd0.onrender.com;'), 'CSP does not permit guide audio from the API');
 assert.ok(premiumCss.includes('@media(max-width:850px)'), 'Mobile layout is missing');

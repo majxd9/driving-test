@@ -129,6 +129,26 @@ export default function Study() {
   const nextAudioPath = questions[index + 1]?.audioUrl ?? null;
   const nextAudioUrl = nextAudioPath ? resolveApiUrl(nextAudioPath) : null;
 
+  // Give Deli the explanation for the current answered question. Deli speaks it only
+  // when the learner taps the assistant; navigating to another question clears this context.
+  useEffect(() => {
+    const question = questions[index];
+    const selected = question ? answers[question.id] : undefined;
+    const explanation = question?.explanation?.trim();
+    const detail = selected !== undefined && explanation
+      ? {
+          title: 'شرح الإجابة',
+          text: explanation,
+          audioUrl: `/api/questions/${question.id}/explanation-audio`,
+        }
+      : null;
+
+    window.dispatchEvent(new CustomEvent('rukhsati-assistant-context', { detail }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('rukhsati-assistant-context', { detail: null }));
+    };
+  }, [answers, index, questions]);
+
   const playCurrentQuestionAudio = useCallback(async (url: string | null) => {
     const audio = audioRef.current;
     if (!audio || !url || !audioContinuousRef.current || url !== currentAudioUrl) return false;

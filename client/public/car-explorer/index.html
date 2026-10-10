@@ -18,7 +18,7 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 <link rel="stylesheet" href="./viewer-premium.css?v=20261010-r8">
-<link rel="stylesheet" href="./guide-assistant.css?v=20261010-deli1">
+<link rel="stylesheet" href="./guide-assistant.css?v=20261010-deli2">
 </head>
 <body>
 <div class="app">
@@ -35,7 +35,7 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 <div class="side-title"><h2>الأجزاء الرئيسية</h2><span class="count" id="count">—</span></div>
 <label class="search"><input type="search" id="search" placeholder="ابحث باسم القطعة…" autocomplete="off" aria-label="ابحث عن قطعة"></label>
 <div class="categories" id="categories"><button class="cat active" data-cat="all">الكل</button><button class="cat" data-cat="exterior">الهيكل</button><button class="cat" data-cat="engine">المحرك</button><button class="cat" data-cat="cabin">المقصورة</button><button class="cat" data-cat="lights">الإضاءة</button><button class="cat" data-cat="wheels">العجلات</button></div>
-<div class="part-adjust"><div class="part-adjust-head"><span>تحريك القطعة المحددة</span><small id="selectedPartName">اختر قطعة أولاً</small></div><div class="part-moves"><button class="cat" data-move="x:-1" aria-label="تحريك يساراً" disabled>←</button><button class="cat" data-move="x:1" aria-label="تحريك يميناً" disabled>→</button><button class="cat" data-move="y:1" aria-label="تحريك للأعلى" disabled>↑</button><button class="cat" data-move="y:-1" aria-label="تحريك للأسفل" disabled>↓</button><button class="cat" data-move="z:1" aria-label="تحريك للأمام" disabled>أمام</button><button class="cat" data-move="z:-1" aria-label="تحريك للخلف" disabled>خلف</button></div></div>
+<div class="part-adjust"><div class="part-adjust-head"><span>تحريك القطعة المحددة</span><small id="selectedPartName">اختر قطعة أولاً</small></div><p class="selected-part-description" id="selectedPartDescription">اختر قطعة لمعرفة وظيفتها وسماع شرح ديلي.</p><div class="part-moves"><button class="cat" data-move="x:-1" aria-label="تحريك يساراً" disabled>←</button><button class="cat" data-move="x:1" aria-label="تحريك يميناً" disabled>→</button><button class="cat" data-move="y:1" aria-label="تحريك للأعلى" disabled>↑</button><button class="cat" data-move="y:-1" aria-label="تحريك للأسفل" disabled>↓</button><button class="cat" data-move="z:1" aria-label="تحريك للأمام" disabled>أمام</button><button class="cat" data-move="z:-1" aria-label="تحريك للخلف" disabled>خلف</button></div></div>
 <div class="parts" id="parts"><div class="empty">تظهر القطع هنا بعد تحميل النموذج.</div></div>
 <div class="tip">يمكنك تدوير السيارة بإصبع واحد، والتكبير أو التصغير بإصبعين على الهاتف. اضغط على قطعة لإظهار اسمها وتحديدها.</div>
 </aside>
@@ -44,7 +44,7 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 <div class="guide-assistant-suggestion" id="guideAssistantSuggestion" role="status" aria-live="polite" hidden>
   <p>تحتاج مساعدة في مستكشف السيارة؟ اضغط على ديلي.</p>
 </div>
-<div class="guide-assistant" id="guideAssistant" hidden>
+<div class="guide-assistant" id="guideAssistant">
   <button type="button" class="guide-assistant-toggle" id="guideAssistantToggle" aria-label="ديلي، اضغط لسماع شرح الصفحة أو اضغط مطولاً لتحريكه">
     <canvas class="guide-robot-canvas" id="guideRobotCanvas" aria-hidden="true"></canvas>
     <span class="guide-robot-stage" aria-hidden="true"><span class="guide-robot-halo"></span><span class="guide-robot-placeholder">D</span></span>
@@ -53,7 +53,7 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 </div>
 <script src="./viewer-boot.js?v=20261010-r8"></script>
 <script type="module" src="./viewer.js?v=20261010-r8"></script>
-<script src="./guide-assistant.js?v=20261010-deli1" defer></script>
-<script type="module" src="./guide-robot.js?v=20261010-deli1"></script>
+<script src="./guide-assistant.js?v=20261010-deli2" defer></script>
+<script type="module" src="./guide-robot.js?v=20261010-deli2"></script>
 </body>
 </html>
