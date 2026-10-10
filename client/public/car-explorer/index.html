@@ -17,8 +17,8 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 @media(max-width:480px){header{min-height:57px;padding:8px 10px;gap:7px}.brand strong{font-size:12px}.brand small{font-size:8px}.header-actions{gap:4px}.quality-control{padding:3px;gap:2px}.quality-control span{display:none}.quality-control select{max-width:80px;padding:6px 3px;font-size:10px}.btn{padding:8px 7px;font-size:10px}.workspace{padding:5px}.viewport{border-radius:12px}.viewport-head strong{font-size:12px}.viewport-head small{max-width:185px;font-size:9px}.sidebar{left:5px;right:5px;bottom:5px;max-height:40%}.parts{max-height:calc(40dvh - 100px)}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
-<link rel="stylesheet" href="./viewer-premium.css?v=20261010-r4">
-<link rel="stylesheet" href="./guide-assistant.css?v=20261010-r4">
+<link rel="stylesheet" href="./viewer-premium.css?v=20261010-r5">
+<link rel="stylesheet" href="./guide-assistant.css?v=20261010-r5">
 </head>
 <body>
 <div class="app">
@@ -41,6 +41,11 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 </aside>
 </main>
 </div>
+<div class="guide-assistant-suggestion" id="guideAssistantSuggestion" role="status" hidden>
+  <button type="button" id="guideAssistantSuggestionClose" aria-label="إخفاء اقتراح المساعدة">×</button>
+  <p>أنا مساعدك في رخصتي. اضغط عليّ لشرح استعراض السيارة.</p>
+  <strong>شرح الصفحة ←</strong>
+</div>
 <details class="guide-assistant" id="guideAssistant" hidden>
   <summary class="guide-assistant-toggle" id="guideAssistantToggle" aria-expanded="false" aria-controls="guideAssistantPanel" aria-label="افتح مساعد رخصتي، أو اسحب المجسّم لتحريكه">
     <canvas class="guide-robot-canvas" id="guideRobotCanvas" aria-hidden="true"></canvas>
@@ -56,21 +61,17 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
       <div class="guide-assistant-heading"><span class="guide-assistant-kicker">مساعد رخصتي</span><h2 id="guideAssistantHeading">كيف أساعدك؟</h2></div>
       <button class="guide-assistant-close" id="guideAssistantClose" type="button" aria-label="إغلاق المساعد">×</button>
     </div>
-    <div class="guide-assistant-message" aria-live="polite"><strong id="guideAssistantTitle">ابدأ الجولة</strong><p id="guideAssistantText">اختر موضوعاً للحصول على شرح مختصر وطريقة استخدام الأدوات.</p></div>
-    <div class="guide-assistant-topics" role="group" aria-label="مواضيع شرح المساعد">
-      <button class="guide-assistant-topic" type="button" data-guide-topic="welcome" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>ابدأ الجولة</strong><small>التعرّف على الموقع والعارض</small></span><span class="guide-assistant-play" aria-hidden="true">›</span></button>
-      <button class="guide-assistant-topic" type="button" data-guide-topic="training" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>التدريب والإشارات</strong><small>اختر القسم وراجع التفسير</small></span><span class="guide-assistant-play" aria-hidden="true">›</span></button>
-      <button class="guide-assistant-topic" type="button" data-guide-topic="rotate" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>تدوير السيارة</strong><small>رؤية السيارة من جميع الجهات</small></span><span class="guide-assistant-play" aria-hidden="true">›</span></button>
-      <button class="guide-assistant-topic" type="button" data-guide-topic="zoom" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>التقريب والتحكم</strong><small>التكبير والتصغير وإعادة الضبط</small></span><span class="guide-assistant-play" aria-hidden="true">›</span></button>
-      <button class="guide-assistant-topic" type="button" data-guide-topic="parts" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>الأجزاء الرئيسية</strong><small>اختيار القطع وتحريكها</small></span><span class="guide-assistant-play" aria-hidden="true">›</span></button>
-      <button class="guide-assistant-topic" type="button" data-guide-topic="quality" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>جودة العرض</strong><small>اختيار الإعداد المناسب</small></span><span class="guide-assistant-play" aria-hidden="true">›</span></button>
+    <div class="guide-assistant-message" aria-live="polite"><strong id="guideAssistantTitle">استعراض السيارة ثلاثية الأبعاد</strong><p id="guideAssistantText">اسحب داخل مساحة العرض لتدوير السيارة، واستخدم التكبير لرؤية التفاصيل.</p></div>
+    <div class="guide-assistant-foot">
+      <span class="guide-assistant-status" id="guideAssistantStatus" role="status" aria-live="polite">اضغط «اسمع الشرح» للحصول على إرشادات هذه الصفحة.</span>
+      <button class="guide-assistant-stop" id="guideAssistantStop" type="button" disabled hidden>إيقاف الصوت</button>
+      <button class="guide-assistant-speak" id="guideAssistantSpeak" type="button">اسمع الشرح</button>
     </div>
-    <div class="guide-assistant-foot"><span class="guide-assistant-status" id="guideAssistantStatus" role="status" aria-live="polite">يستخدم المساعد صوت الجهاز مؤقتاً.</span><button class="guide-assistant-stop" id="guideAssistantStop" type="button" disabled>إيقاف الصوت</button></div>
   </section>
 </details>
-<script src="./viewer-boot.js?v=20261010-r4"></script>
-<script type="module" src="./viewer.js?v=20261010-r4"></script>
-<script src="./guide-assistant.js?v=20261010-r4" defer></script>
-<script type="module" src="./guide-robot.js?v=20261010-r4"></script>
+<script src="./viewer-boot.js?v=20261010-r5"></script>
+<script type="module" src="./viewer.js?v=20261010-r5"></script>
+<script src="./guide-assistant.js?v=20261010-r5" defer></script>
+<script type="module" src="./guide-robot.js?v=20261010-r5"></script>
 </body>
 </html>
