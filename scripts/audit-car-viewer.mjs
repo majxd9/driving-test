@@ -101,7 +101,7 @@ assert.ok(!floatingAssistant.includes('rukhsati-assistant-topics') && !floatingA
 assert.ok(html.includes('meta name="api-base-url"'), 'The guide assistant API base URL is missing');
 assert.ok(!/guideAssistantAudio[^>]*autoplay/i.test(html), 'The guide assistant must not autoplay audio');
 assert.ok(guideAssistant.includes('sessionStorage.getItem("drv_session")') && guideAssistant.includes('session?.role === "Admin"') && guideAssistant.includes('session?.role === "admin"'), 'Car-viewer assistant must be visible on non-admin pages only');
-assert.ok(guideAssistant.includes('speechSynthesis') && !guideAssistant.includes('/api/questions/audio-prompt/'), 'Floating robot must use device speech until its separate voice is configured');
+assert.ok(guideAssistant.includes('/api/questions/audio-prompt/site-assistant-car') && guideAssistant.includes('speechSynthesis') && guideAssistant.includes('speakWithDeviceVoice()'), 'Standalone Zeb must prefer the matching cached audio clip and fall back to Arabic device speech');
 assert.ok(guideAssistantCss.includes('@media(max-width:480px)') && guideAssistantCss.includes('prefers-reduced-motion:reduce'), 'Guide assistant responsive/reduced-motion styles are missing');
 assert.ok(headers.includes('/car-explorer/guide-robot.js\n  Cache-Control: no-cache'), '3D robot module must revalidate in normal desktop browsers');
 assert.ok(systemAudioCatalog.includes('CarGuideWelcome') && systemAudioCatalog.includes('CarGuideQuality'), 'Guide audio keys are not registered in the backend');
