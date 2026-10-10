@@ -1,11 +1,35 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-const DRIFT_SOUND_URL = 'https://cdn.budgetpixel.com/audio-library/sfx/screeching-sharp-abrupt-rubbery-bujneo.mp3';
+const DRIFT_SOUND_URL = 'https://orangefreesounds.com/wp-content/uploads/2023/07/Car-starts-with-tires-screeching-sound-effect.mp3';
 
 export default function SpiritDrift({ onStateChange }: { onStateChange?: (active: boolean) => void }) {
   const [drifting, setDrifting] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const audio = new Audio(DRIFT_SOUND_URL);
+    audio.preload = 'auto';
+    audio.volume = 0.82;
+    audio.onended = () => {
+      setDrifting(false);
+      onStateChange?.(false);
+    };
+    audio.onerror = () => {
+      setDrifting(false);
+      onStateChange?.(false);
+    };
+    audioRef.current = audio;
+    audio.load();
+    return () => {
+      if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+      audio.pause();
+      audio.onended = null;
+      audio.onerror = null;
+      audio.removeAttribute('src');
+      audio.load();
+    };
+  }, [onStateChange]);
 
   const playDrift = () => {
     // Animation must work even when the browser blocks Web Audio.
@@ -14,28 +38,22 @@ export default function SpiritDrift({ onStateChange }: { onStateChange?: (active
     setDrifting(true);
     onStateChange?.(true);
 
-    // Use a real recorded/produced tire screech instead of synthetic oscillator noise.
-    // Source: “Hard Brake Tire Screech” by BudgetPixel AI, CC BY 4.0.
-    try {
-      const audio = audioRef.current ?? new Audio(DRIFT_SOUND_URL);
-      audioRef.current = audio;
-      audio.preload = 'none';
-      audio.volume = 0.78;
+    // Real tire-screech/departure effect from Orange Free Sounds (CC BY-NC 4.0).
+    const audio = audioRef.current;
+    if (audio) {
       audio.currentTime = 0;
       void audio.play().catch(() => {
-        // Keep the animation functional if the browser/network blocks external audio.
+        setDrifting(false);
+        onStateChange?.(false);
       });
-    } catch {
-      // Audio is an enhancement only.
     }
 
     if (timerRef.current !== null) window.clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => {
       timerRef.current = null;
-      if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
       setDrifting(false);
       onStateChange?.(false);
-    }, 1450);
+    }, 2150);
   };
 
   return (
