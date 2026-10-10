@@ -1,0 +1,93 @@
+/* Targeted mobile corrections: give the training illustration the unused vertical space. */
+@media (max-width: 700px) {
+  .study-premium .study-premium-card .study-premium-images,
+  .study-premium .study-premium-card .study-premium-no-image {
+    flex-basis: clamp(205px, 29svh, 300px) !important;
+    height: clamp(205px, 29svh, 300px) !important;
+    min-height: clamp(205px, 29svh, 300px) !important;
+    max-height: clamp(205px, 29svh, 300px) !important;
+  }
+  .study-premium .study-premium-card .study-premium-image,
+  .study-premium .study-premium-card .study-premium-image-inner,
+  .study-premium .study-premium-card .study-premium-image-inner-admin {
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+  }
+  .study-premium .study-premium-card .study-premium-image img,
+  .study-premium .study-premium-card .study-premium-images img {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    object-position: center !important;
+  }
+}
+
+/* Exam navigation must remain above Android browser/system safe areas and never be clipped. */
+.exam-page-v2 {
+  box-sizing: border-box !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+}
+.exam-page-v2 .exam-stage-v2 {
+  box-sizing: border-box !important;
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+}
+.exam-page-v2 .exam-actions-v2 {
+  position: fixed !important;
+  left: max(10px, env(safe-area-inset-left, 0px)) !important;
+  right: max(10px, env(safe-area-inset-right, 0px)) !important;
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+  z-index: 999 !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 8px !important;
+  box-sizing: border-box !important;
+  grid-template-columns: minmax(0,1fr) minmax(0,1.05fr) minmax(0,1fr) !important;
+  gap: 6px !important;
+}
+.exam-page-v2 .exam-actions-v2 .exam-action-v2 {
+  min-width: 0 !important;
+  width: 100% !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  padding: 4px 5px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  line-height: 1.15 !important;
+  font-size: clamp(10px, 2.7vw, 12px) !important;
+}
+.exam-page-v2 .exam-actions-v2 .exam-action-v2 span {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+@media (max-height: 700px) and (max-width: 700px) {
+  .exam-page-v2 { padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important; }
+  .exam-page-v2 .exam-stage-v2 { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important; }
+  .exam-page-v2 .exam-actions-v2 .exam-action-v2 {
+    height: 44px !important; min-height: 44px !important; max-height: 44px !important;
+  }
+}
+
+/* Best-effort browser protection only; it cannot block OS-level screenshots on the web. */
+@media print {
+  body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body * { visibility: hidden !important; }
+  body::after {
+    content: "المحتوى محمي — الطباعة غير متاحة";
+    position: fixed; inset: 0; display: grid; place-items: center;
+    visibility: visible !important; background: #fff; color: #111;
+    font: 800 20px sans-serif; z-index: 2147483647;
+  }
+}
+
+.models-drift-audio-credit{display:flex;flex-direction:column;align-items:center;gap:5px;margin:6px auto 0;position:relative;z-index:3}
+.models-drift-audio-credit a{font-size:10px;color:rgba(203,213,225,.68);text-decoration:underline;text-underline-offset:3px}
+.models-drift-audio-credit a:hover{color:#99f6e4}
