@@ -375,7 +375,8 @@ async function loadCarModel(vehicleId = "mclaren", backupMode = false) {
     groups: mainPartEntries.map(entry => ({
      id: entry.id, label: entry.label, category: entry.category, count: entry.meshes.length,
      meshes: entry.meshes.slice(0, 16).map(describeMesh)
-    }))
+    })),
+    allMeshes: meshes.map(describeMesh)
    };
   };
   window.__carViewerModelLoaded = true;
