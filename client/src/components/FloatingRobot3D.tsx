@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react';
 // @ts-ignore Three.js is already a runtime dependency; keep extra type packages out of the client bundle.
 import * as THREE from 'three';
-// @ts-ignore Three's JavaScript examples loader has no bundled TypeScript declaration.
-import { USDLoader } from 'three/addons/loaders/USDLoader.js';
 
 type Props = { onReady?: () => void; onError?: () => void };
 
@@ -111,6 +109,9 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
       const loadLucario = async () => {
         let loaded: any = null;
         try {
+          // Load the parser as a separate cached chunk so it does not inflate the initial app bundle.
+          // @ts-ignore Three's JavaScript examples loader has no bundled TypeScript declaration.
+          const { USDLoader } = await import('three/addons/loaders/USDLoader.js');
           loaded = await new USDLoader().loadAsync('/car-explorer/Lucario.usdz');
           if (disposed) {
             disposeLoadedModel(loaded);
