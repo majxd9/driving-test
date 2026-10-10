@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import FloatingSiteAssistant from './components/FloatingSiteAssistant';
 import { RulesPage, TrafficSignsPage, DrivingTestSyriaPage, AboutPage, NotFoundPage } from './pages/PublicPages';
 
 const Login = lazy(() => import('./pages/Login'));
@@ -95,6 +96,7 @@ export default function App() {
         />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      <FloatingSiteAssistant />
     </Suspense>
   );
 }

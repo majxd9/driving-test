@@ -445,3 +445,13 @@ Latest master audit: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It includes one row
 - The guide uses the existing read-only `/api/questions/audio-prompt/{key}` endpoint and cached `SystemAudios` for `car-guide-welcome`, `car-guide-rotate`, `car-guide-zoom`, `car-guide-parts`, and `car-guide-quality`. Generation of these optional clips is best-effort so unavailable provider quota does not block the rest of the guide; browser speech synthesis is the fallback.
 - Detailed implementation and release checklist: `CAR_EXPLORER_GUIDE_ASSISTANT.md`. `scripts/audit-car-viewer.mjs` now checks the guide files, script syntax, responsive CSS, CSP media origin, and registered audio keys.
 - **Release state:** source changes are committed to `main`; do not treat the feature as production-verified until the frontend build, car-viewer audit, backend build/deploy, and manual desktop/mobile audio checks pass.
+
+
+## 31. Site-wide floating help assistant — 2026-10-10
+
+- A compact Arabic floating guide is mounted in `client/src/App.tsx`, so it is available throughout ordinary public and student pages instead of being limited to Home or the standalone car viewer.
+- The assistant is intentionally lightweight and uses no new NPM packages or additional 3D scene. The provided `RobotHero/demo.tsx` excerpt is a full-screen demo wrapper, not a site-wide integration.
+- Six selectable topics cover the welcome overview, training, traffic signs, exam models, practical information, and the 3D car viewer. Selecting a topic displays its text and attempts to play its cached voice clip; audio is never played on page load. The browser's Arabic speech synthesis is the fallback.
+- The cached audio keys are registered through `SystemAudioCatalog` and `SystemAudioPromptService`. Anonymous playback continues using the existing read-only `GET /api/questions/audio-prompt/{key}` endpoint; missing optional clips are handled without blocking the UI.
+- The minimized launcher is fixed above page content on mobile and desktop. The widget is hidden on exam, result, admin, and standalone car-viewer routes to avoid covering important controls and duplicating the car viewer's own guide.
+- **Verification state:** source integration and audio-key wiring are committed together; do not call this production-verified until the client/backend builds and the deployed site are checked on desktop and mobile, including playback and the device-voice fallback.

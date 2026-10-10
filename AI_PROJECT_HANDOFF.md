@@ -883,3 +883,11 @@ Read first: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It supersedes older task sta
 - Image generation remains disabled. The effective AI monthly limit is not confirmed; do not change provider, queue, quota, or production configuration without a recorded decision.
 - Render deploy/logs/metrics were not queried in this revalidation because the owner must confirm the target workspace named My Workspace first.
 - The project is NOT RELEASE-READY / CONDITIONAL until the manual gates and final automated release verification in the master audit are complete.
+
+## 21. Site-wide floating help assistant — 2026-10-10
+
+- Root cause of the missing floating helper: the prior recent commits only wired a guide into the standalone `/car-viewer` HTML page; `client/src/App.tsx` did not mount a site-wide assistant. The shared `SiteGuide` button was only present on the Home page and opened a modal, not a floating site-wide guide.
+- The global assistant is now mounted in `App.tsx` and styled in `client/src/components/floating-site-assistant.css`. It is minimized by default and provides six Arabic topics with text, click-to-play audio, stop control, and a shortcut to the relevant section.
+- AI voice uses registered, cached `site-guide-*` keys from the existing audio endpoint. No playback starts automatically. Browser Arabic speech synthesis is used if an audio file cannot be played.
+- No new NPM dependencies were added. The component is hidden on exams, results, admin, and the standalone 3D car viewer to avoid overlapping controls or showing two guides.
+- **Still required before calling it done:** successful client and backend build/release checks, then manual Cloudflare production verification on phone and laptop. Source commit alone does not prove the deployed UI is already visible.

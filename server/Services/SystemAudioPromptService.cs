@@ -51,7 +51,13 @@ public sealed class SystemAudioPromptService
             SystemAudioCatalog.CarGuideRotate,
             SystemAudioCatalog.CarGuideZoom,
             SystemAudioCatalog.CarGuideParts,
-            SystemAudioCatalog.CarGuideQuality
+            SystemAudioCatalog.CarGuideQuality,
+            SystemAudioCatalog.SiteGuideWelcome,
+            SystemAudioCatalog.SiteGuideTraining,
+            SystemAudioCatalog.SiteGuideSigns,
+            SystemAudioCatalog.SiteGuideExam,
+            SystemAudioCatalog.SiteGuidePractical,
+            SystemAudioCatalog.SiteGuideCar
         };
 
         foreach (var key in guidePrompts)
@@ -66,7 +72,7 @@ public sealed class SystemAudioPromptService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Optional car-guide audio generation failed for {Key}; the viewer can use device speech.", key);
+                _logger.LogWarning(ex, "Optional guide audio generation failed for {Key}; the interface can use device speech.", key);
             }
         }
 
@@ -156,6 +162,12 @@ public sealed class SystemAudioPromptService
         SystemAudioCatalog.CarGuideZoom => (SystemAudioCatalog.CarGuideZoom, "استخدم زري التكبير والتصغير أسفل المجسم، أو عجلة الفأرة على الكمبيوتر. اضغط إعادة ضبط للعودة إلى زاوية البداية."),
         SystemAudioCatalog.CarGuideParts => (SystemAudioCatalog.CarGuideParts, "اختر الهيكل أو المحرك أو المقصورة أو الإضاءة أو العجلات من القائمة. عند اختيار قطعة ستظهر محددة على المجسم، ويمكنك تحريكها بأزرار الاتجاهات."),
         SystemAudioCatalog.CarGuideQuality => (SystemAudioCatalog.CarGuideQuality, "اختر الجودة الاقتصادية عند بطء الجهاز أو الاتصال، والمتوسطة للتوازن، والعالية عندما يكون الجهاز قادراً على تشغيل التفاصيل بسلاسة."),
+        SystemAudioCatalog.SiteGuideWelcome => (SystemAudioCatalog.SiteGuideWelcome, "أهلاً بك في رخصتي. اختر أحد أقسام التدريب لمراجعة قواعد السير أو الإشارات المرورية أو أساسيات الميكانيك، ويمكنك فتح نماذج الاختبار لمحاكاة الامتحان."),
+        SystemAudioCatalog.SiteGuideTraining => (SystemAudioCatalog.SiteGuideTraining, "ابدأ من قسم التدريب، واختر قواعد السير أو الإشارات المرورية أو الميكانيك. اقرأ السؤال والصورة، ثم اختر الإجابة وراجع التفسير قبل الانتقال إلى السؤال التالي."),
+        SystemAudioCatalog.SiteGuideSigns => (SystemAudioCatalog.SiteGuideSigns, "في قسم الإشارات المرورية، افحص شكل الإشارة ولونها ورمزها قبل اختيار المعنى. تظهر لك المراجعة بعد الإجابة لتتعلم من الخطأ."),
+        SystemAudioCatalog.SiteGuideExam => (SystemAudioCatalog.SiteGuideExam, "من زر اختيار النموذج، افتح أحد نماذج الاختبار. يتكوّن الاختبار من ثلاثين سؤالاً خلال خمس عشرة دقيقة، ثم تظهر لك النتيجة ومراجعة الإجابات."),
+        SystemAudioCatalog.SiteGuidePractical => (SystemAudioCatalog.SiteGuidePractical, "قسم المعلومات العملية يشرح أساسيات استخدام أضواء السيارة والغمازات، مع عناصر تفاعلية تساعدك على التعرف على الحالات وطريقة الاستخدام."),
+        SystemAudioCatalog.SiteGuideCar => (SystemAudioCatalog.SiteGuideCar, "في استعراض السيارة ثلاثية الأبعاد، اختر السيارة من القائمة، واسحب لتدويرها، واستخدم التكبير والتصغير لرؤية التفاصيل. اختر قسماً لعرض الأجزاء الرئيسية."),
         _ => throw new ArgumentException("رسالة صوت نظامية غير معروفة.", nameof(key))
     };
 }
