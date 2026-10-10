@@ -71,8 +71,8 @@ assert.ok(html.includes('type="module" src="./viewer.js?v=20261010-r6"'), 'Versi
 assert.ok(html.includes('href="./viewer-premium.css?v=20261010-r6"'), 'Versioned premium viewer CSS is not linked');
 assert.ok(html.includes('href="./guide-assistant.css?v=20261010-r6"'), 'Versioned robot CSS is not linked');
 assert.ok(html.includes('src="./guide-assistant.js?v=20261010-r6"'), 'Versioned robot script is not linked');
-assert.ok(html.includes('<details class="guide-assistant" id="guideAssistant" hidden>'), 'Student-only car robot container is missing');
-assert.ok(html.includes('<summary class="guide-assistant-toggle" id="guideAssistantToggle"'), 'Guide assistant native open control is missing');
+assert.ok(html.includes('<div class="guide-assistant" id="guideAssistant" hidden>'), 'Student-only car robot container is missing');
+assert.ok(html.includes('<button type="button" class="guide-assistant-toggle" id="guideAssistantToggle"'), 'Direct-speech robot button is missing');
 assert.ok(html.includes('id="guideRobotCanvas"') && html.includes('guide-robot.js?v=20261010-r6'), 'Actual 3D robot canvas/module is missing');
 assert.ok(html.includes('id="guideAssistantSuggestion"') && html.includes('type="button" class="guide-assistant-toggle"') && !html.includes('guideAssistantSpeak') && !html.includes('guideAssistantPanel') && !html.includes('data-guide-topic='), 'Standalone assistant must have only a non-interactive page hint and a direct-speech robot, with no popup/button panel');
 assert.ok(guideRobot.includes('new THREE.WebGLRenderer') && guideRobot.includes('window.addEventListener("pointermove", readPointer'), 'The assistant must be a real Three.js robot that tracks the pointer');
