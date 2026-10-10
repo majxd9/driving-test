@@ -11,7 +11,7 @@
   } catch { return; }
   root.hidden = false;
   if (suggestion) suggestion.hidden = false;
-  const hintTimer = window.setTimeout(() => { if (suggestion) suggestion.hidden = true; }, 4500);
+  window.setTimeout(() => { if (suggestion) suggestion.hidden = true; }, 4500);
 
   const pageText = "في مستكشف السيارة، اسحب المجسم لتدويره، وكبّر لرؤية التفاصيل، واختر قطعة لمعرفة اسمها ومكانها.";
   let speaking = false, dragging = null, suppressClick = false;
