@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+// “Car Revving Sound Effect” by Alexander, Orange Free Sounds, CC BY-NC 4.0 (source credit kept in code, not shown in the UI).
 const NITRO_SOUND_URL = 'https://orangefreesounds.com/wp-content/uploads/2024/02/Car-revving-sound-effect.mp3';
 
 export default function SpiritNitro({ className = '' }: { className?: string }) {
