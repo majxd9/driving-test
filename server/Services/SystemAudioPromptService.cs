@@ -7,7 +7,7 @@ namespace DrivingTestApi.Services;
 public sealed class SystemAudioPromptService
 {
     private const string VoiceId = "0IwoSbTUTTn6egOMrnel";
-    private const string DeliVoiceId = "9ae8ab5e6db14f12bac954621f68bfae";
+    private const string DefaultSiteAssistantVoiceId = "9ae8ab5e6db14f12bac954621f68bfae";
 
     private readonly AppDbContext _db;
     private readonly ITextToSpeechGenerator _audioGenerator;
@@ -124,7 +124,11 @@ public sealed class SystemAudioPromptService
         if (SystemAudioCatalog.UsesDeliVoice(key))
         {
             var provider = (_configuration["QUESTION_AUDIO_PROVIDER"] ?? "fish").Trim().ToLowerInvariant();
-            var voiceSignature = provider is "fish" or "fishaudio" ? DeliVoiceId : "provider-default";
+            var configuredVoiceId = (_configuration["FISH_AUDIO_SITE_ASSISTANT_VOICE_ID"]
+                ?? DefaultSiteAssistantVoiceId).Trim();
+            var voiceSignature = provider is "fish" or "fishaudio"
+                ? (string.IsNullOrWhiteSpace(configuredVoiceId) ? DefaultSiteAssistantVoiceId : configuredVoiceId)
+                : "provider-default";
             hashSource = $"deli-assistant-audio-v1|provider={provider}|voice={voiceSignature}|text={prompt.Text}";
         }
 
@@ -177,10 +181,14 @@ public sealed class SystemAudioPromptService
         var usesConfiguredProvider = provider is "fish" or "fishaudio" or "local" or "edenai";
         var voiceId = usesConfiguredProvider ? null : VoiceId;
 
-        // Deli's selected voice is the primary Fish Audio voice for both site and car-guide narration.
+        // Deli's primary voice defaults to the requested voice ID; an explicit deployment setting may override it.
         if (useDeliVoice && (provider is "fish" or "fishaudio"))
         {
-            voiceId = DeliVoiceId;
+            var configuredVoiceId = (_configuration["FISH_AUDIO_SITE_ASSISTANT_VOICE_ID"]
+                ?? DefaultSiteAssistantVoiceId).Trim();
+            voiceId = string.IsNullOrWhiteSpace(configuredVoiceId)
+                ? DefaultSiteAssistantVoiceId
+                : configuredVoiceId;
         }
 
         try
