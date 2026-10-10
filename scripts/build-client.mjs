@@ -1,5 +1,5 @@
-import { gunzipSync, gzipSync } from 'node:zlib';
-import { existsSync, readFileSync, writeFileSync, unlinkSync, statSync, readdirSync } from 'node:fs';
+import { gzipSync } from 'node:zlib';
+import { existsSync, readFileSync, writeFileSync, unlinkSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -11,9 +11,7 @@ const distModel = path.join(clientRoot, 'dist', 'car-explorer', 'challenger-1970
 const distOptimized = path.join(clientRoot, 'dist', 'car-explorer', 'challenger-1970.optimized.glb');
 const distCompressed = path.join(clientRoot, 'dist', 'car-explorer', 'challenger-1970.glb.gzdata');
 const zebModelSource = path.join(clientRoot, 'public', 'car-explorer', 'Zeb.usdz');
-const zebAssetPartsDir = path.join(clientRoot, 'assistant-assets', 'zeb');
 const distZebModel = path.join(clientRoot, 'dist', 'car-explorer', 'Zeb.usdz');
-let generatedZebAsset = false;
 
 function runNodeScript(relativePath, args = []) {
   const result = spawnSync(process.execPath, [path.join(clientRoot, relativePath), ...args], {
@@ -25,24 +23,14 @@ function runNodeScript(relativePath, args = []) {
 }
 
 try {
-  // Reassemble the optimized assistant model from source-controlled text parts.
-  // The binary USDZ is created only for this build and is copied by Vite as a static asset.
-  if (!existsSync(zebModelSource)) {
-    if (!existsSync(zebAssetPartsDir)) throw new Error('Missing Zeb assistant asset parts: ' + zebAssetPartsDir);
-    const parts = readdirSync(zebAssetPartsDir)
-      .filter(name => /^part-\\d{2}\\.txt$/.test(name))
-      .sort();
-    if (parts.length !== 23 || parts.some((name, index) => name !== 'part-' + String(index).padStart(2, '0') + '.txt')) {
-      throw new Error('Zeb assistant asset is incomplete; expected 23 ordered base64 parts, found ' + parts.length + '.');
-    }
-    const encoded = parts.map(name => readFileSync(path.join(zebAssetPartsDir, name), 'utf8').trim()).join('');
-    const packaged = gunzipSync(Buffer.from(encoded, 'base64'));
-    if (packaged.subarray(0, 4).toString('binary') !== 'PK\\x03\\x04') {
-      throw new Error('Reconstructed Zeb asset is not a valid USDZ ZIP package.');
-    }
-    writeFileSync(zebModelSource, packaged);
-    generatedZebAsset = true;
-    console.log('Zeb assistant model reconstructed: ' + packaged.byteLength.toLocaleString() + ' bytes.');
+  // The USDZ model is an optional source asset: deployment can still build before
+  // the binary is added. In that case, the assistant safely shows its lightweight Z placeholder.
+  if (existsSync(zebModelSource)) {
+    const modelBytes = statSync(zebModelSource).size;
+    if (modelBytes < 1000) throw new Error('Zeb.usdz is unexpectedly small and may be corrupted.');
+    console.log('Zeb assistant source model found: ' + modelBytes.toLocaleString() + ' bytes.');
+  } else {
+    console.warn('Zeb.usdz is not present at client/public/car-explorer/Zeb.usdz. Add the optimized model there to enable the 3D character; the assistant will keep its lightweight Z placeholder until then.');
   }
 
   if (!existsSync(sourceModel)) throw new Error('Missing original car model: ' + sourceModel);
@@ -118,10 +106,12 @@ try {
 
   if (!existsSync(distCompressed)) throw new Error('Vite output is missing the compressed Challenger model.');
   if (!existsSync(distModel)) throw new Error('Vite output is missing the original Challenger model fallback.');
-  if (!existsSync(distZebModel) || statSync(distZebModel).size < 1000) {
-    throw new Error('Vite output is missing the bundled Zeb assistant USDZ model.');
+  if (existsSync(zebModelSource)) {
+    if (!existsSync(distZebModel) || statSync(distZebModel).size < 1000) {
+      throw new Error('Zeb.usdz exists in public but is missing from the production output.');
+    }
+    console.log('Zeb assistant asset bundled: ' + statSync(distZebModel).size.toLocaleString() + ' bytes.');
   }
-  console.log('Zeb assistant asset bundled: ' + statSync(distZebModel).size.toLocaleString() + ' bytes.');
   if (existsSync(distOptimized)) unlinkSync(distOptimized);
   if (statSync(distModel).size !== original.byteLength) throw new Error('Original model size changed during the build.');
   const publishedBytes = statSync(distCompressed).size;
@@ -136,5 +126,4 @@ try {
   for (const temporary of [sourceCompressed, sourceOptimized, distOptimized]) {
     if (existsSync(temporary)) unlinkSync(temporary);
   }
-  if (generatedZebAsset && existsSync(zebModelSource)) unlinkSync(zebModelSource);
 }
