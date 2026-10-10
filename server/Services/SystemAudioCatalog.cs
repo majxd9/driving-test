@@ -26,7 +26,7 @@ public static class SystemAudioCatalog
     public const string SiteAssistantLogin = "site-assistant-login";
     public const string SiteAssistantResult = "site-assistant-result";
     public const string SiteAssistantAbout = "site-assistant-about";
-    public const string SiteAssistantSyria = "site-assistant-syria";
+    public const string SiteAssistantSyria = "site-assistant-syrian-test";
     public const string SiteAssistantNotFound = "site-assistant-not-found";
 
     public static bool IsSiteAssistantKey(string? key) =>
