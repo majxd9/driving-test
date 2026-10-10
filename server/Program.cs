@@ -136,6 +136,19 @@ builder.Services.AddRateLimiter(options =>
             AutoReplenishment = true
             });
     });
+    options.AddPolicy("audio-generation", httpContext =>
+    {
+        var clientIp = httpContext.RequestServices.GetRequiredService<IClientIpResolver>().GetClientIp(httpContext) ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(
+            clientIp,
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 8,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            });
+    });
 });
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<IAuthLogQueue, AuthLogQueue>();
