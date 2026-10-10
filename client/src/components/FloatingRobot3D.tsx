@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 // @ts-ignore Three.js is already a runtime dependency; keep extra type packages out of the client bundle.
 import * as THREE from 'three';
+// @ts-ignore Three's JavaScript examples loader has no bundled TypeScript declaration.
 import { USDLoader } from 'three/addons/loaders/USDLoader.js';
 
 type Props = { onReady?: () => void; onError?: () => void };
