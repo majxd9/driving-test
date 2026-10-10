@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { resolveApiUrl } from '../api/client';
 import './floating-site-assistant.css';
 import FloatingRobot3D from './FloatingRobot3D';
@@ -44,7 +43,6 @@ function topicForPath(pathname: string): GuideTopic {
 }
 
 export default function FloatingSiteAssistant() {
-  const { user } = useAuth();
   const location = useLocation();
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -246,7 +244,7 @@ export default function FloatingSiteAssistant() {
     : Math.max(12, position.x - suggestionWidth - 10);
   const suggestionTop = Math.max(12, Math.min(position.y + 8, screenHeight - 82));
 
-  if (user?.role === 'Admin' || location.pathname.startsWith('/admin')) return null;
+  if (location.pathname.startsWith('/admin')) return null;
 
   return (
     <div className="rukhsati-site-assistant" dir="rtl" data-robot-ready={robot3dReady ? 'true' : 'false'} data-speaking={isSpeaking ? 'true' : 'false'}>
