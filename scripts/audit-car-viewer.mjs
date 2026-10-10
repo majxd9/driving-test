@@ -67,7 +67,7 @@ assert.ok(guideAssistant.includes('car-guide-welcome') && guideAssistant.include
 assert.ok(guideAssistant.includes('speechSynthesis') && guideAssistant.includes('audio.onerror'), 'Guide assistant speech fallback is missing');
 assert.ok(guideAssistantCss.includes('@media(max-width:480px)') && guideAssistantCss.includes('prefers-reduced-motion:reduce'), 'Guide assistant responsive/reduced-motion styles are missing');
 assert.ok(systemAudioCatalog.includes('CarGuideWelcome') && systemAudioCatalog.includes('CarGuideQuality'), 'Guide audio keys are not registered in the backend');
-assert.ok(systemAudioPrompts.includes('CarGuideWelcome =>') && systemAudioPrompts.includes('Optional car-guide audio generation failed'), 'Guide audio generation is not safely integrated');
+assert.ok(systemAudioPrompts.includes('CarGuideWelcome =>') && systemAudioPrompts.includes('SiteGuideWelcome =>') && systemAudioPrompts.includes('SiteGuideCar =>') && (systemAudioPrompts.includes('Optional car-guide audio generation failed') || systemAudioPrompts.includes('Optional guide audio generation failed')), 'Guide audio generation is not safely integrated');
 assert.ok(systemAudioGeneratorInterfaces.includes('interface ITextToSpeechGenerator'), 'Configured system-text speech interface is missing');
 assert.ok(serverProgram.includes('AddScoped<ITextToSpeechGenerator>') && systemAudioPrompts.includes('QUESTION_AUDIO_PROVIDER'), 'System guide audio must follow the configured audio provider');
 assert.ok(systemAudioPrompts.includes('existing ElevenLabs/Eden AI fallback'), 'Guide audio provider fallback is missing');
