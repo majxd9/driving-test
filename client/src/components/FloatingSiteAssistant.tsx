@@ -10,7 +10,7 @@ type Point = { x: number; y: number };
 type AssistantSpeechContext = { title?: string; text: string; audioUrl?: string | null };
 type DragState = {
   pointerId: number; startX: number; startY: number; originX: number; originY: number;
-  moved: boolean; dragging: boolean; timer?: number;
+  moved: boolean; dragging: boolean; soundPlayed: boolean; timer?: number;
 };
 
 const POSITION_KEY = 'rukhsati-floating-robot-position';
@@ -47,6 +47,7 @@ export default function FloatingSiteAssistant() {
   const location = useLocation();
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechError, setSpeechError] = useState<string | null>(null);
   const [speechContext, setSpeechContext] = useState<AssistantSpeechContext | null>(null);
   const [position, setPosition] = useState<Point>({ x: 20, y: 20 });
   const [positionReady, setPositionReady] = useState(false);
@@ -84,6 +85,7 @@ export default function FloatingSiteAssistant() {
 
   const stopSpeech = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    setSpeechError(null);
     const activeAudio = audioRef.current;
     if (activeAudio) {
       activeAudio.onended = null;
@@ -224,6 +226,7 @@ export default function FloatingSiteAssistant() {
   const speakCurrentPage = () => {
     // Playback remains strictly click-to-play. No audio starts on page load/navigation.
     setShowSuggestion(false);
+    setSpeechError(null);
     if (speechActiveRef.current || audioRef.current || ('speechSynthesis' in window && window.speechSynthesis.speaking)) {
       stopSpeech();
       return;
@@ -246,9 +249,19 @@ export default function FloatingSiteAssistant() {
       audio.onended = null;
       audio.onerror = null;
       audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
       audioRef.current = null;
       speechActiveRef.current = false;
       setIsSpeaking(false);
+
+      // Explanation narration must keep Deli's Fish Audio voice. Do not silently
+      // switch to the browser's unrelated Arabic voice if the server cannot prepare it.
+      if (speechContext?.audioUrl) {
+        setSpeechError('تعذر تجهيز صوت الشرح بصوت ديلي الآن. اضغط على ديلي للمحاولة مرة ثانية.');
+        setShowSuggestion(true);
+        return;
+      }
       speakWithDeviceVoice();
     };
 
@@ -273,7 +286,7 @@ export default function FloatingSiteAssistant() {
     const pointerId = event.pointerId;
     const drag: DragState = {
       pointerId, startX: event.clientX, startY: event.clientY,
-      originX: position.x, originY: position.y, moved: false, dragging: false,
+      originX: position.x, originY: position.y, moved: false, dragging: false, soundPlayed: false,
     };
     drag.timer = window.setTimeout(() => {
       if (dragRef.current !== drag) return;
@@ -299,6 +312,10 @@ export default function FloatingSiteAssistant() {
       return;
     }
     setPosition(clampPoint({ x: drag.originX + dx, y: drag.originY + dy }));
+    if (!drag.soundPlayed) {
+      drag.soundPlayed = true;
+      playMovementTick();
+    }
     event.preventDefault();
   };
 
@@ -309,7 +326,6 @@ export default function FloatingSiteAssistant() {
     event.currentTarget.dataset.dragging = 'false';
     if (drag.timer) window.clearTimeout(drag.timer);
     if (drag.moved) {
-      if (drag.dragging) playMovementTick();
       suppressClickRef.current = true;
       window.setTimeout(() => { suppressClickRef.current = false; }, 320);
     }
@@ -348,7 +364,7 @@ export default function FloatingSiteAssistant() {
       {showSuggestion && !isSpeaking && (
         <div className="rukhsati-assistant-suggestion" role="status" aria-live="polite"
           style={{ left: suggestionLeft, top: suggestionTop, width: suggestionWidth }}>
-          <span>{speechContext?.title ? `اضغط على ديلي لسماع ${speechContext.title}.` : `إذا احتجت مساعدة في ${activeTopic.title}، اضغط على ديلي.`}</span>
+          <span>{speechError ?? (speechContext?.title ? `اضغط على ديلي لسماع ${speechContext.title}.` : `إذا احتجت مساعدة في ${activeTopic.title}، اضغط على ديلي.`)}</span>
           <button type="button" aria-label="إخفاء الاقتراح" onClick={() => setShowSuggestion(false)}>×</button>
         </div>
       )}
