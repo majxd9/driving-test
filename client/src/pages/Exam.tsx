@@ -7,7 +7,7 @@ import DiagramRenderer from '../components/DiagramRenderer';
 import OptimizedImage, { resolveQuestionImageUrl } from '../components/OptimizedImage';
 import { shouldShowQuestionImageBeforeAnswer } from '../utils/questionImages';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
-import { getCachedQuestionAudioPromptSource, playQuestionAudioPrompt, preloadQuestionAudioPrompt, stopQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { getCachedQuestionAudioPromptSource, playQuestionAudioPrompt, preloadQuestionAudioPrompt, stopQuestionAudioPrompt, unlockQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 
 const DURATION = 15 * 60;
 const OPTION_NUMBERS = ['١', '٢', '٣', '٤', '٥', '٦'];
@@ -319,23 +319,18 @@ export default function Exam() {
     return () => { active = false; };
   }, [loading]);
 
-  const playIntroAudio = () => {
-    setIntroAudioMessage(null);
-    void playQuestionAudioPrompt('question-audio-first-entry', () => {
-      setIntroAudioPlaying(false);
-      setIntroAudioMessage(null);
-    }).then(played => {
-      setIntroAudioPlaying(played);
-      if (!played) setIntroAudioMessage('تعذر تشغيل الصوت. اضغط الزر للمحاولة مجدداً.');
-    });
-  };
-  const stopIntroAudio = () => {
+  const enableQuestionAudioFromLoader = () => {
+    // Make the button activate real per-question narration, not just replay the welcome clip.
     stopQuestionAudioPrompt();
     setIntroAudioPlaying(false);
-    setIntroAudioMessage(null);
+    audioContinuousRef.current = true;
+    setAudioEnabled(true);
+    setAudioError(null);
+    setIntroAudioMessage('تم تفعيل صوت الأسئلة؛ سيُقرأ السؤال تلقائياً عند اكتمال التحميل.');
+    unlockQuestionAudioPrompt('question-audio-first-entry');
   };
 
-  if (loading) return <div className="ui-audio-welcome is-exam" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel" aria-labelledby="exam-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></span><p className="ui-audio-welcome__eyebrow">اختبار القيادة</p><h1 id="exam-audio-welcome-title">جاهز للانطلاق؟</h1><p className="ui-audio-welcome__copy">اضغط تشغيل الصوت إذا رغبت بسماع إرشادات قصيرة قبل البدء.</p><div className="ui-audio-welcome__controls"><button type="button" className={`ui-audio-welcome__play ${introAudioPlaying ? 'is-playing' : 'is-pulsing'}`} onClick={introAudioPlaying ? stopIntroAudio : playIntroAudio} aria-pressed={introAudioPlaying}>{introAudioPlaying ? '■ إيقاف الصوت' : '▶ تشغيل الصوت'}</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'يتم تشغيل الإرشادات الصوتية الآن.' : 'اضغط الزر للاستماع.')}</p></section></div>;
+  if (loading) return <div className="ui-audio-welcome is-exam" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel" aria-labelledby="exam-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></span><p className="ui-audio-welcome__eyebrow">اختبار القيادة</p><h1 id="exam-audio-welcome-title">جاهز للانطلاق؟</h1><p className="ui-audio-welcome__copy">فعّل صوت الأسئلة من هنا ليبدأ السؤال نفسه بالصوت تلقائياً عند اكتمال التحميل.</p><div className="ui-audio-welcome__controls"><button type="button" className={`ui-audio-welcome__play ${audioEnabled ? 'is-playing' : 'is-pulsing'}`} onClick={enableQuestionAudioFromLoader} aria-pressed={audioEnabled}>{audioEnabled ? '✓ الصوت مفعّل للأسئلة' : '🔊 تفعيل صوت الأسئلة'}</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'يتم تشغيل الإرشادات الصوتية الآن.' : 'اضغط الزر للاستماع.')}</p></section></div>;
 
   if(loadError||!questions.length)return <div className="page-shell flex items-center justify-center px-5"><div className="surface-panel w-full max-w-md text-center p-7"><div className="brand-mark mx-auto mb-4">ر</div><h1 className="text-xl font-black mb-2">تعذر تحضير الاختبار</h1><p className="text-muted text-sm leading-relaxed">{loadError??'لم يتم العثور على أسئلة.'}</p><button onClick={loadExam} className="primary-cta mt-5 w-full">إعادة المحاولة</button></div></div>;
 

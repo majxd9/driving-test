@@ -140,3 +140,49 @@
   z-index: auto !important;
   box-sizing: border-box !important;
 }
+
+
+/* Exam: allow the scroll area to reveal all four answers and use spare height. */
+.exam-page-v2 .exam-scroll-v2 {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain !important;
+  touch-action: pan-y !important;
+  scrollbar-width: thin !important;
+  padding-bottom: 10px !important;
+}
+.exam-page-v2 .exam-scroll-v2 .exam-answers-v2 {
+  display: grid !important;
+  flex: 1 0 auto !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: repeat(var(--option-count, 4), minmax(56px, auto)) !important;
+  grid-auto-rows: minmax(56px, auto) !important;
+  gap: clamp(8px, 1.25vh, 12px) !important;
+  row-gap: clamp(8px, 1.25vh, 12px) !important;
+  height: auto !important;
+  min-height: max-content !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 0 8px !important;
+  overflow: visible !important;
+  align-content: stretch !important;
+}
+.exam-page-v2 .exam-scroll-v2 .exam-answers-v2 > .exam-option-v2 {
+  flex: none !important;
+  min-height: 56px !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.exam-page-v2 .exam-scroll-v2 .exam-answers-v2 > .exam-option-v2 .exam-option-text-v2 {
+  display: block !important;
+  max-height: none !important;
+  overflow: visible !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+  white-space: normal !important;
+}
