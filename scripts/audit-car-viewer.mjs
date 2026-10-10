@@ -24,6 +24,8 @@ const required = [
   'client/vite.usdz-loader.config.ts',
   'server/Services/SystemAudioCatalog.cs',
   'server/Services/SystemAudioPromptService.cs',
+  'server/Services/AiGenerationQuotaService.cs',
+  'server/Services/AiGenerationWorker.cs',
   'server/Controllers/QuestionsController.cs',
   'server/Services/FishAudioQuestionAudioGenerator.cs',
   'client/public/car-explorer/vendor/three.module.js',
@@ -54,6 +56,8 @@ const floatingRobot3D = read('client/src/components/FloatingRobot3D.tsx');
 const floatingAssistantCss = read('client/src/components/floating-site-assistant.css');
 const systemAudioCatalog = read('server/Services/SystemAudioCatalog.cs');
 const systemAudioPrompts = read('server/Services/SystemAudioPromptService.cs');
+const generationQuota = read('server/Services/AiGenerationQuotaService.cs');
+const generationWorker = read('server/Services/AiGenerationWorker.cs');
 const questionsController = read('server/Controllers/QuestionsController.cs');
 const study = read('client/src/pages/Study.tsx');
 const fishAudioGenerator = read('server/Services/FishAudioQuestionAudioGenerator.cs');
@@ -127,6 +131,12 @@ assert.ok(systemAudioPrompts.includes('_fishAudioGenerator.GenerateTextAsync(tex
 assert.ok(study.includes('rukhsati-assistant-context') && study.includes('/api/questions/${question.id}/explanation-audio'), 'Training must pass an answered question explanation and its audio URL to Deli');
 assert.ok(systemAudioPrompts.includes('GetOrCreateQuestionExplanationAudioAsync') && systemAudioPrompts.includes('deli-question-explanation-audio-v2') && systemAudioPrompts.includes('SystemAudios') && !systemAudioPrompts.includes('questionsWithExplanations'), 'Explanation audio must be generated on demand, versioned, and persisted instead of spending Fish Audio quota during every cold start');
 assert.ok(questionsController.includes('GetQuestionExplanationAudio') && questionsController.includes('GetOrCreateQuestionExplanationAudioAsync'), 'Students must be able to retrieve a cached explanation clip or create it once on first playback');
+assert.ok(systemAudioPrompts.includes('GenerateTextWithQuotaAsync') && systemAudioPrompts.includes('TryConsumeAsync(monthStartUtc, cancellationToken)'), 'On-demand Deli narration must consume the shared monthly generation quota');
+assert.ok(generationQuota.includes('AiGenerationQuotaExceededException') && generationQuota.includes('TryConsumeAsync(\n        DateTime monthStartUtc') && generationQuota.includes('ReleaseAsync(\n        DateTime monthStartUtc'), 'Quota exhaustion and month-bound reservations/refunds must be explicit');
+assert.ok(questionsController.includes('[EnableRateLimiting("audio-generation")]') && questionsController.includes('StatusCodes.Status429TooManyRequests'), 'Public audio generation endpoints must be throttled and report quota exhaustion');
+assert.ok(serverProgram.includes('options.AddPolicy("audio-generation"') && serverProgram.includes('PermitLimit = 8') && serverProgram.includes('Window = TimeSpan.FromMinutes(1)'), 'Audio generation endpoints must have a per-client rate limit');
+assert.ok((questionsController.match(/question\.Category is QuestionCategory\.Ishara or QuestionCategory\.Mechanic/g) || []).length >= 2, 'Original sign/mechanic images must be protected from hide/remove endpoints');
+assert.ok(generationWorker.includes('quota.ReleaseAsync(quotaMonthStartUtc ?? quota.CurrentMonthStartUtc, cancellationToken)'), 'Worker quota refunds must apply to the month that was originally reserved');
 assert.ok(viewer.includes('rukhsati-car-part-selected') && viewer.includes('selectedPartDescription') && viewer.includes('audioKey:"car-guide-part-engine"'), 'Selecting any modeled car part must show and publish its function for Deli');
 assert.ok(guideAssistant.includes('handleCarPartSelected') && guideAssistant.includes('speakText(currentSpeech.text, currentSpeech.audioKey)') && guideAssistant.includes('lastDodgeAt'), 'Car-viewer Deli must speak the selected part and glide away from nearby taps');
 assert.ok(floatingAssistant.includes('rukhsati-assistant-context') && floatingAssistant.includes('speechContext?.audioUrl') && floatingAssistant.includes('handleNearbyPress'), 'Main-site Deli must read current answer explanations and smoothly dodge nearby taps');
