@@ -11,8 +11,9 @@
   } catch { return; }
   root.hidden = false;
   if (suggestion) suggestion.hidden = false;
+  const hintTimer = window.setTimeout(() => { if (suggestion) suggestion.hidden = true; }, 4500);
 
-  const pageText = "أهلاً بك في عارض السيارة ثلاثية الأبعاد. اسحب داخل مساحة العرض لتدوير السيارة، واستخدم التكبير لرؤية التفاصيل، واختر قطعة من القائمة لمعرفة مكانها.";
+  const pageText = "في مستكشف السيارة، اسحب المجسم لتدويره، وكبّر لرؤية التفاصيل، واختر قطعة لمعرفة اسمها ومكانها.";
   let speaking = false, dragging = null, suppressClick = false;
 
   const clamp = p => ({
