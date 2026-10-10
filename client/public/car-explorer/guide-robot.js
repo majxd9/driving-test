@@ -137,11 +137,11 @@ import * as THREE from "./vendor/three.module.js";
     }
     resize();
 
-    const loadZeb = async () => {
+    const loadDeli = async () => {
       let loaded = null;
       try {
         const { USDLoader } = await import("./guide-usdz-loader.js?v=20261010-r8");
-        loaded = await new USDLoader().loadAsync("./Zeb.usdz?v=zeb-1");
+        loaded = await new USDLoader().loadAsync("./Zeb.usdz?v=deli-primary-voice-1");
         if (disposed) {
           disposeModel(loaded);
           return;
@@ -163,15 +163,15 @@ import * as THREE from "./vendor/three.module.js";
       } catch (error) {
         if (loaded && !character) disposeModel(loaded);
         delete root.dataset.robotReady;
-        console.warn("Zeb guide model unavailable; using the neutral placeholder.", error);
+        console.warn("Deli guide model unavailable; using the neutral placeholder.", error);
       }
     };
 
-    void loadZeb();
+    void loadDeli();
     animationFrame = window.requestAnimationFrame(animate);
   } catch (error) {
     delete root.dataset.robotReady;
     try { renderer?.dispose(); } catch {}
-    console.warn("Zeb guide rendering is unavailable; using the neutral placeholder.", error);
+    console.warn("Deli guide rendering is unavailable; using the neutral placeholder.", error);
   }
 })();

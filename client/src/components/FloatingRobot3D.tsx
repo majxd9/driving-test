@@ -99,13 +99,13 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
       rim.position.set(0.1, 0.3, -1.3);
       scene.add(rim);
 
-      const loadZeb = async () => {
+      const loadDeli = async () => {
         let loaded: any = null;
         try {
           // Load the shared character model lazily so it does not inflate the initial app bundle.
           // @ts-ignore Three's JavaScript examples loader has no bundled TypeScript declaration.
           const { USDLoader } = await import('three/addons/loaders/USDLoader.js');
-          loaded = await new USDLoader().loadAsync('/car-explorer/Zeb.usdz?v=zeb-1');
+          loaded = await new USDLoader().loadAsync('/car-explorer/Zeb.usdz?v=deli-primary-voice-1');
           if (disposed) {
             disposeModel(loaded);
             return;
@@ -130,7 +130,7 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
         } catch (error) {
           if (loaded && !character) disposeModel(loaded);
           onErrorRef.current?.();
-          console.warn('Zeb assistant model could not be loaded; keeping the lightweight non-character placeholder.', error);
+          console.warn('Deli assistant model could not be loaded; keeping the lightweight non-character placeholder.', error);
         }
       };
 
@@ -169,7 +169,7 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
         if (!document.hidden && !disposed) animationFrame = window.requestAnimationFrame(animate);
       };
       document.addEventListener('visibilitychange', onVisibilityChange);
-      void loadZeb();
+      void loadDeli();
       animationFrame = window.requestAnimationFrame(animate);
 
       return () => {
@@ -191,7 +191,7 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
     } catch (error) {
       try { renderer?.dispose(); } catch {}
       onErrorRef.current?.();
-      console.warn('Zeb assistant rendering is unavailable on this device.', error);
+      console.warn('Deli assistant rendering is unavailable on this device.', error);
     }
 
     return () => {

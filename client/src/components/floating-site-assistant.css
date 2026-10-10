@@ -1,18 +1,18 @@
-/* One floating Zeb assistant shared across the public and student pages. */
+/* One floating Deli assistant shared across the public and student pages. */
 .rukhsati-site-assistant{position:fixed;inset:0;z-index:9500;direction:rtl;color:#f3f8fc;font-family:"IBM Plex Sans Arabic","Cairo",system-ui,sans-serif;pointer-events:none}
 .rukhsati-assistant-robot-button{position:fixed;z-index:9502;display:block;width:92px;height:104px;margin:0;padding:0;border:0;border-radius:22px;background:transparent;color:#e9fcff;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;pointer-events:auto;filter:drop-shadow(0 8px 12px #0006)}
 .rukhsati-assistant-robot-button:active{cursor:grabbing}
 .rukhsati-assistant-robot-button:focus-visible{outline:2px solid #81f0e0;outline-offset:2px}
 .rukhsati-robot-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;touch-action:none}
 .rukhsati-robot-stage{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
-.rukhsati-robot-halo{position:absolute;width:74px;height:78px;border-radius:50%;background:radial-gradient(ellipse,#36d8dc35 0%,#3470a01b 48%,transparent 73%);filter:blur(4px);animation:rukhsati-zeb-pulse 2.8s ease-in-out infinite}
+.rukhsati-robot-halo{position:absolute;width:74px;height:78px;border-radius:50%;background:radial-gradient(ellipse,#36d8dc35 0%,#3470a01b 48%,transparent 73%);filter:blur(4px);animation:rukhsati-deli-pulse 2.8s ease-in-out infinite}
 .rukhsati-robot-orb{position:relative;display:grid;place-items:center;width:32px;height:32px;border:1px solid #8eece2;border-radius:50%;color:#e7fffc;background:radial-gradient(circle at 30% 23%,#4e8995,#102a38 72%);box-shadow:0 0 18px #46e3d344,inset 0 1px 4px #fff4;font-size:13px;font-weight:800}
 .rukhsati-site-assistant[data-robot-ready="true"] .rukhsati-robot-stage{display:none}
 .rukhsati-robot-caption{position:absolute;left:50%;bottom:-1px;padding:2px 8px 3px;border:1px solid #8ce7dd4a;border-radius:999px;color:#ddfffb;background:#0d2029ed;box-shadow:0 3px 8px #0006;font-size:9px;font-weight:800;line-height:1.4;white-space:nowrap;transform:translateX(-50%);pointer-events:none}
 .rukhsati-assistant-suggestion{position:fixed;z-index:9501;display:block;padding:11px 31px 11px 13px;border:1px solid #94dce55b;border-radius:15px;color:#edf8fa;background:linear-gradient(145deg,#172d38f5,#0b121bf5);box-shadow:0 12px 32px #0006;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:11px;line-height:1.8;pointer-events:auto;animation:rukhsati-assistant-in .18s ease-out both}
 .rukhsati-assistant-suggestion button{position:absolute;top:5px;left:5px;width:23px;height:23px;border:0;border-radius:7px;color:#c8d7df;background:#ffffff09;font-size:17px;line-height:1;cursor:pointer}
 .rukhsati-assistant-suggestion button:focus-visible{outline:2px solid #81f0e0;outline-offset:2px}
-@keyframes rukhsati-zeb-pulse{0%,100%{transform:scale(.96);opacity:.72}50%{transform:scale(1.04);opacity:1}}
+@keyframes rukhsati-deli-pulse{0%,100%{transform:scale(.96);opacity:.72}50%{transform:scale(1.04);opacity:1}}
 @keyframes rukhsati-assistant-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:480px){.rukhsati-assistant-robot-button{width:84px;height:96px}.rukhsati-robot-caption{font-size:8px}.rukhsati-assistant-suggestion{font-size:10px;padding:10px 29px 10px 11px;line-height:1.75}}
 @media(prefers-reduced-motion:reduce){.rukhsati-robot-halo,.rukhsati-assistant-suggestion{animation:none}}
