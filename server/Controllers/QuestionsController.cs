@@ -326,6 +326,9 @@ public class QuestionsController : ControllerBase
         if (question is null)
             return NotFound(new { message = "السؤال غير موجود." });
 
+        if (question.Category is QuestionCategory.Ishara or QuestionCategory.Mechanic)
+            return Conflict(new { message = "لا يمكن إخفاء الصورة الأصلية لأسئلة الإشارات والميكانيك. استخدم مراجعة صور AI لإخفاء الصورة المولدة فقط." });
+
         if (string.IsNullOrWhiteSpace(question.ImageUrl))
             return NotFound(new { message = "لا توجد صورة أصلية مرتبطة بهذا السؤال." });
 
@@ -341,6 +344,9 @@ public class QuestionsController : ControllerBase
         var question = await _db.Questions.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
         if (question is null)
             return NotFound(new { message = "السؤال غير موجود." });
+
+        if (question.Category is QuestionCategory.Ishara or QuestionCategory.Mechanic)
+            return Conflict(new { message = "لا يمكن إزالة الصورة الأصلية لأسئلة الإشارات والميكانيك. استخدم مراجعة صور AI لإخفاء الصورة المولدة فقط." });
 
         if (string.IsNullOrWhiteSpace(question.ImageUrl))
             return NotFound(new { message = "لا توجد صورة أصلية مرتبطة بهذا السؤال." });
