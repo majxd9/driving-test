@@ -257,8 +257,10 @@ export default function FloatingSiteAssistant() {
 
       // Explanation narration must keep Deli's Fish Audio voice. Do not silently
       // switch to the browser's unrelated Arabic voice if the server cannot prepare it.
-      if (speechContext?.audioUrl) {
-        setSpeechError('تعذر تجهيز صوت الشرح بصوت ديلي الآن. اضغط على ديلي للمحاولة مرة ثانية.');
+      if (speechContext?.audioUrl || source.includes('/api/questions/audio-prompt/site-assistant-')) {
+        setSpeechError(speechContext?.audioUrl
+          ? 'تعذر تجهيز صوت الشرح بصوت ديلي الآن. اضغط على ديلي للمحاولة مرة ثانية.'
+          : 'تعذر تجهيز صوت ديلي الآن. اضغط على ديلي للمحاولة مرة ثانية.');
         setShowSuggestion(true);
         return;
       }
