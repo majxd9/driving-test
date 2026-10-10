@@ -111,7 +111,12 @@ export default function Models() {
             <p>كل نموذج يتكوّن من ٣٠ سؤالاً من قواعد السير والإشارات والميكانيك، بمدة ١٥ دقيقة. تحتاج إلى ٢٥ إجابة صحيحة للنجاح.</p>
           </div>
 
-          <SpiritDrift onStateChange={setDrifting} />
+          <div className="models-drift-audio-credit">
+            <SpiritDrift onStateChange={setDrifting} />
+            <a href="https://budgetpixel.com/sfx/hard-brake-tire-screech-e2a70e9e" target="_blank" rel="noreferrer noopener">
+              المؤثر الصوتي: BudgetPixel AI · CC BY 4.0
+            </a>
+          </div>
         </section>
 
         <div className="models-grid">
