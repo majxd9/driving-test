@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 // @ts-ignore Three.js is already a runtime dependency; keep extra type packages out of the client bundle.
 import * as THREE from 'three';
+import { USDLoader } from 'three/addons/loaders/USDLoader.js';
 
 type Props = { onReady?: () => void; onError?: () => void };
 
@@ -82,6 +83,62 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
       const sphere = addGeometry(new THREE.SphereGeometry(1, 18, 12));
       const robot = new THREE.Group();
       scene.add(robot);
+
+      // The uploaded model is a static, same-origin asset. Keep the existing
+      // lightweight robot as a safe fallback until Lucario finishes loading.
+      let lucarioRoot: THREE.Group | null = null;
+      let lucarioBaseY = 0;
+      const disposeLoadedModel = (object: THREE.Object3D) => {
+        const modelGeometries = new Set<THREE.BufferGeometry>();
+        const modelMaterials = new Set<THREE.Material>();
+        const modelTextures = new Set<THREE.Texture>();
+        object.traverse((child) => {
+          const mesh = child as THREE.Mesh;
+          if (mesh.geometry) modelGeometries.add(mesh.geometry);
+          const mats = Array.isArray(mesh.material) ? mesh.material : (mesh.material ? [mesh.material] : []);
+          for (const material of mats) {
+            modelMaterials.add(material);
+            for (const value of Object.values(material)) {
+              if (value instanceof THREE.Texture) modelTextures.add(value);
+            }
+          }
+        });
+        for (const texture of modelTextures) texture.dispose();
+        for (const material of modelMaterials) material.dispose();
+        for (const geometry of modelGeometries) geometry.dispose();
+      };
+      const loadLucario = async () => {
+        let loaded: THREE.Group | null = null;
+        try {
+          loaded = await new USDLoader().loadAsync('/car-explorer/Lucario.usdz') as THREE.Group;
+          if (disposed) {
+            disposeLoadedModel(loaded);
+            return;
+          }
+          const bounds = new THREE.Box3().setFromObject(loaded);
+          const size = bounds.getSize(new THREE.Vector3());
+          const center = bounds.getCenter(new THREE.Vector3());
+          const largestSide = Math.max(size.x, size.y, size.z);
+          if (!Number.isFinite(largestSide) || largestSide <= 0) {
+            throw new Error('Lucario USDZ has invalid bounds.');
+          }
+
+          // Normalize arbitrary authoring units into the same compact helper frame.
+          const fitScale = 2.02 / largestSide;
+          const normalized = new THREE.Group();
+          normalized.scale.setScalar(fitScale);
+          normalized.position.set(-center.x * fitScale, -center.y * fitScale, -center.z * fitScale);
+          normalized.add(loaded);
+          scene.add(normalized);
+          lucarioRoot = normalized;
+          lucarioBaseY = normalized.position.y;
+          robot.visible = false;
+        } catch {
+          if (loaded && !lucarioRoot) disposeLoadedModel(loaded);
+          // A missing/unavailable asset must never disable the existing helper.
+        }
+      };
+      void loadLucario();
 
       const ball = (parent: any, material: any, scale: [number, number, number], pos: [number, number, number]) => {
         const item = new THREE.Mesh(sphere, material);
@@ -206,6 +263,11 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
           eye.shine.position.x = eye.x - 0.02 + gaze.x * 0.047;
           eye.shine.position.y = eye.y + 0.024 + gaze.y * 0.031;
         }
+        if (lucarioRoot) {
+          lucarioRoot.position.y = lucarioBaseY + Math.sin(now * 0.0016) * 0.022;
+          lucarioRoot.rotation.y += ((gaze.x * 0.11) - lucarioRoot.rotation.y) * 0.055;
+          lucarioRoot.rotation.x += ((-gaze.y * 0.045) - lucarioRoot.rotation.x) * 0.055;
+        }
         renderer.render(scene, camera);
         if (!readyReported) {
           readyReported = true;
@@ -228,6 +290,11 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
         document.removeEventListener('visibilitychange', onVisibilityChange);
         canvas.removeEventListener('webglcontextlost', handleContextLost);
         resizeObserver?.disconnect();
+        if (lucarioRoot) {
+          scene.remove(lucarioRoot);
+          disposeLoadedModel(lucarioRoot);
+          lucarioRoot = null;
+        }
         for (const geometry of geometries) geometry.dispose();
         for (const material of materials) material.dispose();
         geometries.clear();
