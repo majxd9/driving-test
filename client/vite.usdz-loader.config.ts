@@ -15,7 +15,7 @@ export default defineConfig({
       name: 'use-local-vendored-three-for-usdz-loader',
       renderChunk(code) {
         return {
-          code: code.replace(/from\\s+(['"])three\\1/g, "from './vendor/three.module.js'"),
+          code: code.replace(/from\s+(['"])three\1/g, "from './vendor/three.module.js'"),
           map: null,
         };
       },
