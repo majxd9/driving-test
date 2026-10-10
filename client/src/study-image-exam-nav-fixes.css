@@ -186,3 +186,98 @@
   line-clamp: unset !important;
   white-space: normal !important;
 }
+
+
+/* Lay out the exam question region in three tracks: flexible media, question, all answers.
+   This uses spare vertical space instead of allowing the full-height image to push choice four below the fold. */
+.exam-page-v2 .exam-card-v2 > .exam-scroll-v2 {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: minmax(72px, 1fr) auto max-content !important;
+  gap: 8px !important;
+  flex: 1 1 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 4px 4px 10px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  align-content: start !important;
+  box-sizing: border-box !important;
+}
+.exam-page-v2 .exam-card-v2 > .exam-scroll-v2 > .exam-image-slot-v2 {
+  grid-row: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  flex: 1 1 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+.exam-page-v2 .exam-card-v2 > .exam-scroll-v2 > .exam-image-slot-v2 .exam-question-image-frame {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  box-sizing: border-box !important;
+}
+.exam-page-v2 .exam-card-v2 > .exam-scroll-v2 > .exam-question-v2 {
+  grid-row: 2 !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 58px !important;
+  max-height: none !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+.exam-page-v2 .exam-card-v2 > .exam-scroll-v2 > .exam-answers-v2 {
+  grid-row: 3 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: repeat(var(--option-count, 4), minmax(56px, auto)) !important;
+  grid-auto-rows: minmax(56px, auto) !important;
+  gap: clamp(8px, 1.25vh, 12px) !important;
+  row-gap: clamp(8px, 1.25vh, 12px) !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: max-content !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 0 8px !important;
+  overflow: visible !important;
+  align-content: stretch !important;
+  box-sizing: border-box !important;
+}
+.exam-page-v2 .exam-card-v2 > .exam-scroll-v2 > .exam-answers-v2 > .exam-option-v2 {
+  display: flex !important;
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 56px !important;
+  max-height: none !important;
+  margin: 0 !important;
+  flex: none !important;
+  align-self: stretch !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+@media (max-height: 600px) {
+  .exam-page-v2 .exam-card-v2 > .exam-scroll-v2 {
+    grid-template-rows: minmax(48px, 1fr) auto max-content !important;
+    gap: 5px !important;
+  }
+  .exam-page-v2 .exam-card-v2 > .exam-scroll-v2 > .exam-answers-v2 {
+    grid-template-rows: repeat(var(--option-count, 4), minmax(44px, auto)) !important;
+    grid-auto-rows: minmax(44px, auto) !important;
+    gap: 6px !important;
+    row-gap: 6px !important;
+  }
+  .exam-page-v2 .exam-card-v2 > .exam-scroll-v2 > .exam-answers-v2 > .exam-option-v2 {
+    min-height: 44px !important;
+  }
+}

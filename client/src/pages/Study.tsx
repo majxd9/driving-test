@@ -47,6 +47,7 @@ export default function Study() {
   const [introAudioPlaying, setIntroAudioPlaying] = useState(false);
   const [introAudioMessage, setIntroAudioMessage] = useState<string | null>(null);
   const welcomePromptAttemptedRef = useRef(false);
+  const questionAudioActivatedOnLoadingRef = useRef(false);
   const [adminImageBusy, setAdminImageBusy] = useState<'hide' | 'delete' | null>(null);
   const [adminImageToolsFor, setAdminImageToolsFor] = useState<'original' | 'ai' | null>(null);
 
@@ -154,7 +155,7 @@ export default function Study() {
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || loading) return;
 
     let active = true;
     setAudioReady(Boolean(currentAudioUrl));
@@ -202,7 +203,7 @@ export default function Study() {
       audio.removeAttribute('src');
       audio.load();
     };
-  }, [currentAudioUrl, nextAudioUrl]);
+  }, [currentAudioUrl, nextAudioUrl, loading]);
 
 
 
@@ -250,9 +251,9 @@ export default function Study() {
     welcomePromptAttemptedRef.current = true;
     let active = true;
     void playQuestionAudioPrompt('question-audio-first-entry', () => {
-      if (active) setIntroAudioPlaying(false);
+      if (active && !questionAudioActivatedOnLoadingRef.current) setIntroAudioPlaying(false);
     }).then(played => {
-      if (!active) return;
+      if (!active || questionAudioActivatedOnLoadingRef.current) return;
       setIntroAudioPlaying(played);
       setIntroAudioMessage(played ? null : 'إذا لم يبدأ الصوت تلقائياً، اضغط زر التشغيل للاستماع.');
     });
@@ -260,7 +261,9 @@ export default function Study() {
   }, [loading]);
 
   const enableQuestionAudioFromLoader = () => {
-    // Make the button activate real per-question narration, not just replay the welcome clip.
+    // One tap enables continuous question narration. It never replays the audible welcome clip.
+    if (audioEnabled || audioContinuousRef.current) return;
+    questionAudioActivatedOnLoadingRef.current = true;
     stopQuestionAudioPrompt();
     setIntroAudioPlaying(false);
     audioContinuousRef.current = true;
@@ -270,7 +273,7 @@ export default function Study() {
     unlockQuestionAudioPrompt('question-audio-first-entry');
   };
 
-  if (loading) return <div className="ui-audio-welcome" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel" aria-labelledby="study-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></span><p className="ui-audio-welcome__eyebrow">{theme.name}</p><h1 id="study-audio-welcome-title">جاهز للانطلاق؟</h1><p className="ui-audio-welcome__copy">فعّل صوت الأسئلة من هنا ليبدأ السؤال نفسه بالصوت تلقائياً عند اكتمال التحميل.</p><div className="ui-audio-welcome__controls"><button type="button" className={`ui-audio-welcome__play ${audioEnabled ? 'is-playing' : 'is-pulsing'}`} onClick={enableQuestionAudioFromLoader} aria-pressed={audioEnabled}>{audioEnabled ? '✓ الصوت مفعّل للأسئلة' : '🔊 تفعيل صوت الأسئلة'}</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'يتم تشغيل الإرشادات الصوتية الآن.' : 'اضغط الزر للاستماع.')}</p></section></div>;
+  if (loading) return <div className="ui-audio-welcome" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel" aria-labelledby="study-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></span><p className="ui-audio-welcome__eyebrow">{theme.name}</p><h1 id="study-audio-welcome-title">جاهز للانطلاق؟</h1><p className="ui-audio-welcome__copy">فعّل صوت الأسئلة من هنا ليبدأ السؤال نفسه بالصوت تلقائياً عند اكتمال التحميل.</p><div className="ui-audio-welcome__controls"><button type="button" className={`ui-audio-welcome__play ${audioEnabled ? 'is-playing' : 'is-pulsing'}`} onClick={enableQuestionAudioFromLoader} disabled={audioEnabled} aria-pressed={audioEnabled}>{audioEnabled ? '✓ الصوت مفعّل للأسئلة' : '🔊 تفعيل صوت الأسئلة'}</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'يتم تشغيل الإرشادات الصوتية الآن.' : 'اضغط الزر للاستماع.')}</p></section></div>;
 
   if (error) return <div className="study-premium-loading" role="alert">{error}</div>;
 
