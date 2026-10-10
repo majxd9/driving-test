@@ -188,7 +188,10 @@ public sealed class SystemAudioPromptService
             return false;
         }
 
-        var result = await GenerateTextAsync(explanation, cancellationToken, useDeliVoice: true);
+        var result = await GenerateTextWithQuotaAsync(
+            explanation,
+            cancellationToken,
+            useDeliVoice: true);
         if (result.Bytes.Length == 0)
             throw new InvalidOperationException($"تعذر إنشاء صوت شرح السؤال {question.Id}.");
 
@@ -296,7 +299,10 @@ public sealed class SystemAudioPromptService
             return false;
         }
 
-        var result = await GenerateTextAsync(prompt.Text, cancellationToken, SystemAudioCatalog.UsesDeliVoice(key));
+        var result = await GenerateTextWithQuotaAsync(
+            prompt.Text,
+            cancellationToken,
+            SystemAudioCatalog.UsesDeliVoice(key));
 
         if (result.Bytes.Length == 0)
             throw new InvalidOperationException(
@@ -322,6 +328,28 @@ public sealed class SystemAudioPromptService
         await _db.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("System audio prompt generated/restored: {Key}.", prompt.Key);
         return true;
+    }
+
+    private async Task<GeneratedAudioResult> GenerateTextWithQuotaAsync(
+        string text,
+        CancellationToken cancellationToken,
+        bool useDeliVoice = false)
+    {
+        var quota = new AiGenerationQuotaService(_db, _configuration);
+
+        // Deli always uses Fish Audio even if the general question-audio provider
+        // is configured as local. Therefore Deli clips must always consume the
+        // shared monthly allowance. Only non-Deli local TTS is exempt.
+        if (!useDeliVoice && quota.IsUnlimited(AiGenerationJobType.Audio))
+            return await GenerateTextAsync(text, cancellationToken, useDeliVoice: false);
+
+        var monthStartUtc = quota.CurrentMonthStartUtc;
+        if (!await quota.TryConsumeAsync(monthStartUtc, cancellationToken))
+            throw new AiGenerationQuotaExceededException(quota.NextMonthStartUtc);
+
+        // Count provider attempts, not just successful cache writes: a failed upstream
+        // request must not allow an unauthenticated caller to retry indefinitely.
+        return await GenerateTextAsync(text, cancellationToken, useDeliVoice);
     }
 
     private async Task<GeneratedAudioResult> GenerateTextAsync(
