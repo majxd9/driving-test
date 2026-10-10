@@ -155,7 +155,7 @@ assert.ok(viewer.includes('urlForQuality') && viewer.includes('mclaren-senna-gtr
 assert.ok(viewer.includes('const qualities = [...new Set([requestedQuality, "low", "medium", "high"])]'), 'McLaren must retry the other quality variants');
 assert.ok(viewer.includes('setLoadError(message, "تعذّر تحميل " + spec.label)') && !viewer.includes('return loadCarModel("challenger", true)'), 'Selected vehicle load errors must not silently change models');
 assert.ok(headers.includes('/car-explorer/index.html\n  Cache-Control: no-cache') && headers.includes('/car-explorer/viewer.js\n  Cache-Control: no-cache'), 'Car viewer HTML/JS must revalidate in normal desktop browsers');
-assert.ok(headers.includes('/car-explorer/viewer-premium.css\\n  Cache-Control: no-cache'), 'Viewer stylesheet must revalidate to prevent stale UI code/styles.');
+assert.ok(headers.includes('/car-explorer/viewer-premium.css\n  Cache-Control: no-cache'), 'Viewer stylesheet must revalidate to prevent stale UI code/styles.');
 
 assert.ok(carExplorer.includes('build=20261010-r9'), 'SPA car viewer route must use a fresh URL');
 assert.ok(html.includes('data-move="x:-1"') && viewer.includes('button.dataset.move'), 'Individual mesh movement controls are missing');
