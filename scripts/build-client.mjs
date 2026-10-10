@@ -10,6 +10,8 @@ const sourceCompressed = path.join(clientRoot, 'public', 'car-explorer', 'challe
 const distModel = path.join(clientRoot, 'dist', 'car-explorer', 'challenger-1970.glb');
 const distOptimized = path.join(clientRoot, 'dist', 'car-explorer', 'challenger-1970.optimized.glb');
 const distCompressed = path.join(clientRoot, 'dist', 'car-explorer', 'challenger-1970.glb.gzdata');
+const zebModelSource = path.join(clientRoot, 'public', 'car-explorer', 'Zeb.usdz');
+const distZebModel = path.join(clientRoot, 'dist', 'car-explorer', 'Zeb.usdz');
 
 function runNodeScript(relativePath, args = []) {
   const result = spawnSync(process.execPath, [path.join(clientRoot, relativePath), ...args], {
@@ -21,6 +23,16 @@ function runNodeScript(relativePath, args = []) {
 }
 
 try {
+  // The USDZ model is an optional source asset: deployment can still build before
+  // the binary is added. In that case, the assistant safely shows its lightweight Z placeholder.
+  if (existsSync(zebModelSource)) {
+    const modelBytes = statSync(zebModelSource).size;
+    if (modelBytes < 1000) throw new Error('Zeb.usdz is unexpectedly small and may be corrupted.');
+    console.log('Zeb assistant source model found: ' + modelBytes.toLocaleString() + ' bytes.');
+  } else {
+    console.warn('Zeb.usdz is not present at client/public/car-explorer/Zeb.usdz. Add the optimized model there to enable the 3D character; the assistant will keep its lightweight Z placeholder until then.');
+  }
+
   if (!existsSync(sourceModel)) throw new Error('Missing original car model: ' + sourceModel);
   const original = readFileSync(sourceModel);
   const originalCompressed = gzipSync(original, { level: 9 });
@@ -94,6 +106,12 @@ try {
 
   if (!existsSync(distCompressed)) throw new Error('Vite output is missing the compressed Challenger model.');
   if (!existsSync(distModel)) throw new Error('Vite output is missing the original Challenger model fallback.');
+  if (existsSync(zebModelSource)) {
+    if (!existsSync(distZebModel) || statSync(distZebModel).size < 1000) {
+      throw new Error('Zeb.usdz exists in public but is missing from the production output.');
+    }
+    console.log('Zeb assistant asset bundled: ' + statSync(distZebModel).size.toLocaleString() + ' bytes.');
+  }
   if (existsSync(distOptimized)) unlinkSync(distOptimized);
   if (statSync(distModel).size !== original.byteLength) throw new Error('Original model size changed during the build.');
   const publishedBytes = statSync(distCompressed).size;

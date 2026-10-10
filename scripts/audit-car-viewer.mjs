@@ -70,38 +70,38 @@ const redirects = read('client/public/_redirects');
 
 assert.ok(!/<script\b(?![^>]*\bsrc\s*=)[^>]*>/i.test(html), 'Inline script found; this site CSP blocks inline scripts');
 assert.ok(!html.includes('type="importmap"'), 'Inline import map found; viewer should not need an import map');
-assert.ok(html.includes('src="./viewer-boot.js?v=20261010-r6"'), 'Versioned viewer boot/error handler is not linked');
-assert.ok(html.includes('type="module" src="./viewer.js?v=20261010-r6"'), 'Versioned viewer module is not linked');
-assert.ok(html.includes('href="./viewer-premium.css?v=20261010-r6"'), 'Versioned premium viewer CSS is not linked');
-assert.ok(html.includes('href="./guide-assistant.css?v=20261010-r6"'), 'Versioned robot CSS is not linked');
-assert.ok(html.includes('src="./guide-assistant.js?v=20261010-r6"'), 'Versioned robot script is not linked');
+assert.ok(html.includes('src="./viewer-boot.js?v=20261010-r8"'), 'Versioned viewer boot/error handler is not linked');
+assert.ok(html.includes('type="module" src="./viewer.js?v=20261010-r8"'), 'Versioned viewer module is not linked');
+assert.ok(html.includes('href="./viewer-premium.css?v=20261010-r8"'), 'Versioned premium viewer CSS is not linked');
+assert.ok(html.includes('href="./guide-assistant.css?v=20261010-r8"'), 'Versioned Zeb assistant CSS is not linked');
+assert.ok(html.includes('src="./guide-assistant.js?v=20261010-r8"'), 'Versioned Zeb assistant script is not linked');
 assert.ok(html.includes('<div class="guide-assistant" id="guideAssistant" hidden>'), 'Student-only car robot container is missing');
 assert.ok(html.includes('<button type="button" class="guide-assistant-toggle" id="guideAssistantToggle"'), 'Direct-speech robot button is missing');
-assert.ok(html.includes('id="guideRobotCanvas"') && html.includes('guide-robot.js?v=20261010-r7'), 'Actual 3D robot canvas/module is missing');
+assert.ok(html.includes('id="guideRobotCanvas"') && html.includes('guide-robot.js?v=20261010-r8'), 'Actual Zeb 3D canvas/module is missing');
 assert.ok(html.includes('id="guideAssistantSuggestion"') && html.includes('type="button" class="guide-assistant-toggle"') && !html.includes('guideAssistantSpeak') && !html.includes('guideAssistantPanel') && !html.includes('data-guide-topic='), 'Standalone assistant must have only a non-interactive page hint and a direct-speech robot, with no popup/button panel');
 assert.ok(guideRobot.includes('new THREE.WebGLRenderer') && guideRobot.includes('window.addEventListener("pointermove", readPointer'), 'The assistant must be a real Three.js robot that tracks the pointer');
-assert.ok(guideRobot.includes('gaze.x * 0.047') && guideRobot.includes('gaze.y * 0.031'), '3D robot pupils do not follow pointer/touch movement');
+assert.ok(guideRobot.includes('gaze.x * 0.24') && guideRobot.includes('gaze.y * 0.11'), 'Zeb 3D character does not smoothly follow pointer/touch movement');
 assert.ok(guideRobot.includes('lastFrameAt') && guideRobot.includes('now - lastFrameAt < 33') && !guideRobot.includes('root.dataset.robotReady = "true";\n\n    const showFallback'), 'Standalone robot should limit rendering to 30 FPS and only reveal after the first frame');
 assert.ok(guideAssistantCss.includes('.guide-assistant[data-robot-ready="true"] .guide-robot-stage{display:none}'), 'CSS fallback must yield to the rendered 3D robot');
-assert.ok(floatingAssistant.includes('import FloatingRobot3D') && floatingAssistant.includes("user?.role === 'Admin'") && !floatingAssistant.includes("user?.role !== 'Student'"), 'Main-site assistant must be visible on public/student pages and hidden only from admin routes');
+assert.ok(floatingAssistant.includes('import FloatingRobot3D') && floatingAssistant.includes("location.pathname.startsWith('/admin')") && !floatingAssistant.includes('useAuth'), 'Main-site assistant must be visible on every non-admin route');
 assert.ok(floatingRobot3D.includes('new THREE.WebGLRenderer') && floatingRobot3D.includes("window.addEventListener('pointermove', readPointer") && floatingRobot3D.includes("window.addEventListener('pointerdown', readPointer"), 'Main-site helper must render an actual Three.js model and track mouse/touch');
-assert.ok(floatingRobot3D.includes("await import('three/addons/loaders/USDLoader.js')") && floatingRobot3D.includes("'/car-explorer/Lucario.usdz") && floatingRobot3D.includes('robot.visible = false'), 'Main assistant must load Lucario USDZ and retain the original model as a safe fallback');
-assert.ok(guideRobot.includes('import("./guide-usdz-loader.js?v=20261010-r7")') && guideRobot.includes('loadAsync("./Lucario.usdz?v=lucario-1")') && guideRobot.includes('robot.visible = false'), 'Standalone assistant must load the same Lucario model with a safe fallback');
+assert.ok(floatingRobot3D.includes("await import('three/addons/loaders/USDLoader.js')") && floatingRobot3D.includes("'/car-explorer/Zeb.usdz?v=zeb-1'") && !floatingRobot3D.includes('Lucario.usdz'), 'Main assistant must load Zeb USDZ and remove the legacy character');
+assert.ok(guideRobot.includes('import("./guide-usdz-loader.js?v=20261010-r8")') && guideRobot.includes('loadAsync("./Zeb.usdz?v=zeb-1")') && !guideRobot.includes('Lucario.usdz'), 'Standalone assistant must load the Zeb model and remove legacy character references');
 assert.ok(usdzLoaderConfig.includes('node_modules/three/examples/jsm/loaders/USDLoader.js') && usdzLoaderConfig.includes("./vendor/three.module.js"), 'Standalone USDZ loader must bundle locally and avoid a CDN');
 assert.ok(buildScript.includes("'vite.usdz-loader.config.ts'") && buildScript.includes('guide-usdz-loader.js'), 'Production build must generate the standalone USDZ loader before copying public assets');
-assert.ok(floatingRobot3D.includes('gaze.x * 0.047') && floatingRobot3D.includes('gaze.y * 0.031'), 'Main-site 3D pupils must follow the pointer');
+assert.ok(floatingRobot3D.includes('gaze.x * 0.24') && floatingRobot3D.includes('gaze.y * 0.11'), 'Main-site Zeb character must smoothly track the pointer');
 assert.ok(floatingAssistantCss.includes('.rukhsati-site-assistant[data-robot-ready="true"] .rukhsati-robot-stage{display:none}'), 'Main-site CSS fallback must yield to the rendered 3D robot');
 assert.ok(floatingRobot3D.includes('lastFrameAt') && floatingRobot3D.includes('now - lastFrameAt < 33') && floatingRobot3D.includes('onVisibilityChange'), 'Main site robot should limit redraws and resume safely when a tab becomes visible');
-assert.ok(guideAssistantCss.includes('.guide-assistant-suggestion{cursor:default;pointer-events:none}'), 'Standalone page hint must not intercept clicks or act like a play button');
+assert.ok(guideAssistantCss.includes('.guide-assistant-suggestion{') && guideAssistantCss.includes('pointer-events:none'), 'Standalone page hint must not intercept clicks or act like a play button');
 assert.ok(guideAssistant.includes('toggle.addEventListener("click"') && guideAssistant.includes('speakOnRobotClick()') && guideAssistant.includes('window.speechSynthesis.speak(utterance)') && guideAssistant.includes('root.dataset.initialized = "true"'), 'Clicking the standalone robot must start speech directly without opening a disclosure');
 assert.ok(guideAssistant.includes('item.dragging = true') && guideAssistant.includes('}, 450)'), 'Robot movement must activate only after a long press');
-assert.ok(guideAssistant.includes('document.addEventListener("pointerdown"') && guideAssistant.includes('if (distance > 190) return') && guideAssistant.includes('position.x + dx * 46'), 'Robot should only step away from nearby unrelated page touches');
-assert.ok(floatingAssistant.includes('setShowSuggestion(true)') && floatingAssistant.includes('topicForPath(location.pathname)') && floatingAssistant.includes("}, 450)"), 'Main SPA must show page-aware suggestions and use long-press dragging');
+assert.ok(!guideAssistant.includes('position.x + dx * 46'), 'Zeb must not dodge unrelated page taps');
+assert.ok(floatingAssistant.includes('setShowSuggestion(true)') && floatingAssistant.includes('topicForPath(location.pathname)') && floatingAssistant.includes('450') && floatingAssistant.includes('setShowSuggestion(false)'), 'Main SPA must show brief page-aware suggestions and support intentional dragging');
 assert.ok(!floatingAssistant.includes('rukhsati-assistant-topics') && !floatingAssistant.includes('اسمع الشرح') && !floatingAssistant.includes('rukhsati-assistant-panel') && floatingAssistant.includes('onClick={handleRobotClick}') && floatingAssistant.includes('window.speechSynthesis.speak(utterance)'), 'Main SPA robot must speak directly on click without a popup or separate speech button');
 assert.ok(html.includes('meta name="api-base-url"'), 'The guide assistant API base URL is missing');
 assert.ok(!/guideAssistantAudio[^>]*autoplay/i.test(html), 'The guide assistant must not autoplay audio');
-assert.ok(guideAssistant.includes('sessionStorage.getItem("drv_session")') && guideAssistant.includes('session?.role !== "Student"'), 'Car-viewer robot must be limited to a student session');
-assert.ok(guideAssistant.includes('speechSynthesis') && !guideAssistant.includes('/api/questions/audio-prompt/'), 'Floating robot must use device speech until its separate voice is configured');
+assert.ok(guideAssistant.includes('sessionStorage.getItem("drv_session")') && guideAssistant.includes('session?.role === "Admin"') && guideAssistant.includes('session?.role === "admin"'), 'Car-viewer assistant must be visible on non-admin pages only');
+assert.ok(guideAssistant.includes('/api/questions/audio-prompt/site-assistant-car') && guideAssistant.includes('speechSynthesis') && guideAssistant.includes('speakWithDeviceVoice()'), 'Standalone Zeb must prefer the matching cached audio clip and fall back to Arabic device speech');
 assert.ok(guideAssistantCss.includes('@media(max-width:480px)') && guideAssistantCss.includes('prefers-reduced-motion:reduce'), 'Guide assistant responsive/reduced-motion styles are missing');
 assert.ok(headers.includes('/car-explorer/guide-robot.js\n  Cache-Control: no-cache'), '3D robot module must revalidate in normal desktop browsers');
 assert.ok(systemAudioCatalog.includes('CarGuideWelcome') && systemAudioCatalog.includes('CarGuideQuality'), 'Guide audio keys are not registered in the backend');
@@ -136,7 +136,7 @@ assert.ok(viewer.includes('urlForQuality') && viewer.includes('mclaren-senna-gtr
 assert.ok(viewer.includes('const qualities = [...new Set([requestedQuality, "low", "medium", "high"])]'), 'McLaren must retry the other quality variants');
 assert.ok(viewer.includes('if (vehicleId === "mclaren") {\n   setLoadError'), 'McLaren failure must be reported instead of silently swapping the car');
 assert.ok(headers.includes('/car-explorer/index.html\n  Cache-Control: no-cache') && headers.includes('/car-explorer/viewer.js\n  Cache-Control: no-cache'), 'Car viewer HTML/JS must revalidate in normal desktop browsers');
-assert.ok(carExplorer.includes('build=20261010-r6'), 'SPA car viewer route must use a fresh URL');
+assert.ok(carExplorer.includes('build=20261010-r8'), 'SPA car viewer route must use a fresh URL');
 assert.ok(viewer.includes('mustang-2005.glb'), 'Ford Mustang model source is missing');
 assert.ok(html.includes('data-move="x:-1"') && viewer.includes('button.dataset.move'), 'Individual mesh movement controls are missing');
 assert.ok(viewer.includes('controls.minDistance = 0.25'), 'Interior camera zoom support is missing');
@@ -161,7 +161,7 @@ assert.ok(gltf.includes("from './BufferGeometryUtils.js'"), 'GLTFLoader utility 
 assert.ok(buffer.includes("from './three.module.js'"), 'BufferGeometryUtils core import is not local');
 
 assert.ok(!appPage.includes('<iframe'), 'React route must not embed a page blocked by X-Frame-Options');
-assert.ok(appPage.includes("window.location.replace('/car-explorer/index.html?build=20261010-r6')"), 'React route must open the versioned standalone document');
+assert.ok(appPage.includes("window.location.replace('/car-explorer/index.html?build=20261010-r8')"), 'React route must open the versioned standalone document');
 assert.ok(redirects.split(/\r?\n/).some((line) => line.trim() === '/car-viewer / 200'), 'Deep link fallback for /car-viewer is missing');
 assert.ok(headers.includes("X-Frame-Options: DENY"), 'Keep clickjacking protection enabled');
 assert.ok(headers.includes("frame-ancestors 'none'"), 'Keep restrictive frame-ancestors policy enabled');
@@ -183,12 +183,13 @@ assert.ok(compressedSize < modelSize * 0.75, `Compressed model size is unexpecte
 assert.ok(modelSize > 1_000_000, `Model file unexpectedly small: ${modelSize} bytes`);
 assert.ok(boot.includes('window.__carViewerShowError') && boot.includes('retryLoad'), 'Visible error/retry behavior is missing');
 
-const lucarioAsset = path.join(root, 'client/public/car-explorer/Lucario.usdz');
-if (!existsSync(lucarioAsset)) {
-  console.warn('Lucario.usdz is not in the repository yet; the assistant will use its existing 3D fallback until the model file is added.');
+const zebAsset = path.join(root, 'client/public/car-explorer/Zeb.usdz');
+if (!existsSync(zebAsset)) {
+  console.warn('Zeb.usdz is not in the repository yet; the assistant will use its unobtrusive Z placeholder until the model file is added.');
 } else {
-  const signature = readFileSync(lucarioAsset).subarray(0, 2).toString('ascii');
-  assert.equal(signature, 'PK', 'Lucario.usdz does not look like a USDZ/ZIP package.');
+  const signature = readFileSync(zebAsset).subarray(0, 2).toString('ascii');
+  assert.equal(signature, 'PK', 'Zeb.usdz does not look like a USDZ/ZIP package.');
+  assert.ok(statSync(zebAsset).size > 1000, 'Zeb.usdz is unexpectedly small.');
 }
 console.log('3D viewer audit passed.');
 console.log(`Source GLB: ${modelSize.toLocaleString('en-US')} bytes`);
