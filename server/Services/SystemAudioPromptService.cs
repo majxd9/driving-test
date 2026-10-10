@@ -127,52 +127,8 @@ public sealed class SystemAudioPromptService
             }
         }
 
-        // Generate and persist a Deli-voice clip for each non-empty question explanation.
-        // The hash includes the text/provider/voice, so existing clips are reused and changed
-        // explanations are regenerated without overwriting the spoken question audio.
-        var questionsWithExplanations = await _db.Questions
-            .AsNoTracking()
-            .Where(question => question.Explanation != null && question.Explanation != "")
-            .OrderBy(question => question.Id)
-            .ToListAsync(cancellationToken);
-        var explanationAudioGenerated = 0;
-        var explanationAudioFailed = 0;
-        var explanationDelayMs = Math.Clamp(
-            _configuration.GetValue("QUESTION_EXPLANATION_AUDIO_DELAY_MS", 150), 0, 5000);
-
-        for (var i = 0; i < questionsWithExplanations.Count; i++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var question = questionsWithExplanations[i];
-            if (string.IsNullOrWhiteSpace(question.Explanation)) continue;
-
-            try
-            {
-                if (await EnsureQuestionExplanationAudioAsync(question, cancellationToken))
-                {
-                    changed++;
-                    explanationAudioGenerated++;
-                    if (explanationDelayMs > 0)
-                        await Task.Delay(explanationDelayMs, cancellationToken);
-                }
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                explanationAudioFailed++;
-                _logger.LogWarning(ex, "Explanation audio generation failed for question {QuestionId}; Deli can use device speech as a fallback.", question.Id);
-            }
-
-            if ((i + 1) % 25 == 0 || i == questionsWithExplanations.Count - 1)
-            {
-                _logger.LogInformation(
-                    "Deli explanation audio cache checked: {Processed}/{Total}; generated/refreshed {Generated}; failures {Failed}.",
-                    i + 1, questionsWithExplanations.Count, explanationAudioGenerated, explanationAudioFailed);
-            }
-        }
+        // Full explanation narration is generated lazily on first playback and cached per question.
+        // This keeps Render cold starts quick and avoids spending Fish Audio quota on every unused explanation.
 
         if (changed > 0)
             _logger.LogInformation("System audio prompts generated/restored: {Count}.", changed);
@@ -190,7 +146,7 @@ public sealed class SystemAudioPromptService
             ? DefaultSiteAssistantVoiceId
             : configuredVoiceId;
         return QuestionAudioTextBuilder.HashText(
-            $"deli-question-explanation-audio-v1|provider=fish|voice={voiceSignature}|id={question.Id}|text={explanation}");
+            $"deli-question-explanation-audio-v2|id={question.Id}|provider=fish|voice={voiceSignature}|text={explanation}");
     }
 
     public async Task<bool> EnsureQuestionExplanationAudioAsync(
@@ -307,7 +263,7 @@ public sealed class SystemAudioPromptService
             var voiceSignature = string.IsNullOrWhiteSpace(configuredVoiceId)
                 ? DefaultSiteAssistantVoiceId
                 : configuredVoiceId;
-            hashSource = $"deli-assistant-audio-v1|provider=fish|voice={voiceSignature}|text={prompt.Text}";
+            hashSource = $"deli-assistant-audio-v2|provider=fish|voice={voiceSignature}|text={prompt.Text}";
         }
 
         var hash = QuestionAudioTextBuilder.HashText(hashSource);
