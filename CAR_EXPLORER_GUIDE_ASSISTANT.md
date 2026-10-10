@@ -28,3 +28,6 @@
 4. اختبر غياب ملف الصوت للتأكد من استخدام صوت الجهاز أو إبقاء النص فقط.
 5. تحقق من أن حالة المجسم والسيارة والقطع لا تتغير بسبب فتح المساعد.
 6. نفّذ `npm run build` داخل `client` ثم `node scripts/audit-car-viewer.mjs` من جذر المستودع بعد اكتمال البناء.
+
+## Fix for the panel not opening — 2026-10-10
+The panel now uses native HTML `<details>/<summary>` disclosure. This means the help text opens when the summary is clicked even if the assistant JavaScript cannot initialize; JavaScript remains responsible for topic selection, audio playback and closing the panel via the close button/Escape.
