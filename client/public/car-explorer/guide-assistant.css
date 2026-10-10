@@ -1,6 +1,6 @@
 /* Self-contained responsive assistant for the standalone 3D car viewer. */
 .guide-assistant{position:fixed;z-index:1000;left:clamp(10px,2vw,22px);bottom:clamp(10px,2vh,20px);display:grid;justify-items:start;gap:9px;direction:rtl;font-family:inherit;color:#f3f6fa}
-.guide-assistant button{font-family:inherit}
+.guide-assistant button,.guide-assistant summary{font-family:inherit}.guide-assistant-toggle{list-style:none;cursor:pointer}.guide-assistant-toggle::-webkit-details-marker{display:none}
 .guide-assistant-toggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:9px 15px;border:1px solid #94dce58a;border-radius:999px;color:#eafcff;background:linear-gradient(135deg,#1b3a45f5,#101d28f5);box-shadow:0 10px 30px #0007,0 0 0 1px #94dce516 inset;backdrop-filter:blur(14px);font-size:12px;font-weight:700;transition:transform .18s,border-color .18s,background .18s}
 .guide-assistant-toggle:hover{transform:translateY(-2px);border-color:#b4f5f7;background:linear-gradient(135deg,#234c58f7,#142330f7)}
 .guide-assistant-toggle:focus-visible,.guide-assistant-panel button:focus-visible{outline:2px solid #94dce5;outline-offset:3px}
@@ -8,7 +8,7 @@
 .guide-assistant-live-dot{width:7px;height:7px;border-radius:50%;background:#8be3d2;box-shadow:0 0 10px #8be3d277}
 .guide-assistant-toggle.is-open .guide-assistant-live-dot{background:#efb45f}
 .guide-assistant-panel{position:absolute;left:0;bottom:58px;width:min(344px,calc(100vw - 22px));max-height:min(72dvh,500px);overflow:auto;padding:14px;border:1px solid #ffffff20;border-radius:19px;background:linear-gradient(150deg,#172431fa,#0b121bf8);box-shadow:0 24px 70px #0009,inset 0 1px #ffffff0a;backdrop-filter:blur(22px);animation:guide-assistant-in .18s ease-out;overscroll-behavior:contain}
-.guide-assistant-panel[hidden]{display:none!important}
+.guide-assistant-panel{display:none}.guide-assistant[open] .guide-assistant-panel{display:block}
 .guide-assistant-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:11px;border-bottom:1px solid #ffffff12}
 .guide-assistant-heading{display:grid;gap:3px;min-width:0}
 .guide-assistant-kicker{color:#efbd76;font-size:9px;font-weight:700;letter-spacing:.15em}
