@@ -84,7 +84,12 @@ public sealed class SystemAudioPromptService
             SystemAudioCatalog.SiteAssistantHome,
             SystemAudioCatalog.SiteAssistantRules,
             SystemAudioCatalog.SiteAssistantPublicSigns,
-            SystemAudioCatalog.SiteAssistantWelcome
+            SystemAudioCatalog.SiteAssistantWelcome,
+            SystemAudioCatalog.SiteAssistantLogin,
+            SystemAudioCatalog.SiteAssistantResult,
+            SystemAudioCatalog.SiteAssistantAbout,
+            SystemAudioCatalog.SiteAssistantSyria,
+            SystemAudioCatalog.SiteAssistantNotFound
         };
 
         foreach (var key in siteAssistantPrompts)
@@ -200,17 +205,22 @@ public sealed class SystemAudioPromptService
         SystemAudioCatalog.CarGuideZoom => (SystemAudioCatalog.CarGuideZoom, "استخدم زري التكبير والتصغير أسفل المجسم، أو عجلة الفأرة على الكمبيوتر. اضغط إعادة ضبط للعودة إلى زاوية البداية."),
         SystemAudioCatalog.CarGuideParts => (SystemAudioCatalog.CarGuideParts, "اختر الهيكل أو المحرك أو المقصورة أو الإضاءة أو العجلات من القائمة. عند اختيار قطعة ستظهر محددة على المجسم، ويمكنك تحريكها بأزرار الاتجاهات."),
         SystemAudioCatalog.CarGuideQuality => (SystemAudioCatalog.CarGuideQuality, "اختر الجودة الاقتصادية عند بطء الجهاز أو الاتصال، والمتوسطة للتوازن، والعالية عندما يكون الجهاز قادراً على تشغيل التفاصيل بسلاسة."),
-        SystemAudioCatalog.SiteAssistantSigns => (SystemAudioCatalog.SiteAssistantSigns, "هذه صفحة تدريب الإشارات. انتبه لشكل الإشارة ولونها ورمزها، واختر الإجابة ثم راجع التفسير."),
-        SystemAudioCatalog.SiteAssistantMechanic => (SystemAudioCatalog.SiteAssistantMechanic, "هذه صفحة تدريب الميكانيك. ركّز على اسم الجزء الرئيسي ووظيفته، ثم اختر الإجابة وراجع التفسير."),
-        SystemAudioCatalog.SiteAssistantTraining => (SystemAudioCatalog.SiteAssistantTraining, "هذه صفحة التدريب. اقرأ السؤال والصورة جيداً، واختر الإجابة، ثم راجع التفسير قبل الانتقال للسؤال التالي."),
-        SystemAudioCatalog.SiteAssistantExam => (SystemAudioCatalog.SiteAssistantExam, "أنت في صفحة الاختبار. اقرأ السؤال جيداً وانتبه للوقت، واختر الإجابة التي تراها صحيحة."),
-        SystemAudioCatalog.SiteAssistantModels => (SystemAudioCatalog.SiteAssistantModels, "من هنا تختار نموذج الاختبار. بعد الانتهاء تظهر النتيجة ويمكنك مراجعة إجاباتك."),
-        SystemAudioCatalog.SiteAssistantCar => (SystemAudioCatalog.SiteAssistantCar, "في عارض السيارة اسحب المجسم لتدويره، واستخدم التقريب، ثم اختر قطعة من القائمة لمعرفة مكانها."),
-        SystemAudioCatalog.SiteAssistantPractical => (SystemAudioCatalog.SiteAssistantPractical, "هذه صفحة المعلومات العملية، وفيها أمثلة عن أضواء السيارة والغمازات وطريقة استخدامها."),
-        SystemAudioCatalog.SiteAssistantHome => (SystemAudioCatalog.SiteAssistantHome, "من الصفحة الرئيسية افتح التدريب، أو الإشارات، أو الميكانيك، أو اختر أحد نماذج الاختبار."),
-        SystemAudioCatalog.SiteAssistantRules => (SystemAudioCatalog.SiteAssistantRules, "راجع قواعد السير بهدوء، ويمكنك الانتقال إلى التدريب لتجربة أسئلة القواعد."),
-        SystemAudioCatalog.SiteAssistantPublicSigns => (SystemAudioCatalog.SiteAssistantPublicSigns, "تعرّف على معاني الإشارات هنا، ثم اختبر معلوماتك في قسم التدريب."),
-        SystemAudioCatalog.SiteAssistantWelcome => (SystemAudioCatalog.SiteAssistantWelcome, "أنا مساعدك في رخصتي. اضغط على الروبوت وسأشرح لك الصفحة الحالية بصوت عربي."),
+        SystemAudioCatalog.SiteAssistantSigns => (SystemAudioCatalog.SiteAssistantSigns, "في تدريب الإشارات، لاحظ الشكل واللون والرمز، ثم اختر الإجابة وراجع التفسير."),
+        SystemAudioCatalog.SiteAssistantMechanic => (SystemAudioCatalog.SiteAssistantMechanic, "في الميكانيك، تعرّف على الجزء ووظيفته، اختر الإجابة، ثم راجع التفسير."),
+        SystemAudioCatalog.SiteAssistantTraining => (SystemAudioCatalog.SiteAssistantTraining, "اقرأ السؤال والصورة بهدوء، اختر الإجابة، ثم راجع التفسير قبل السؤال التالي."),
+        SystemAudioCatalog.SiteAssistantExam => (SystemAudioCatalog.SiteAssistantExam, "أنت في الاختبار؛ اقرأ السؤال جيداً واختر إجابتك قبل انتهاء الوقت."),
+        SystemAudioCatalog.SiteAssistantModels => (SystemAudioCatalog.SiteAssistantModels, "اختر نموذج الاختبار المناسب. بعد الانتهاء ستظهر نتيجتك ويمكنك مراجعة الإجابات."),
+        SystemAudioCatalog.SiteAssistantCar => (SystemAudioCatalog.SiteAssistantCar, "اسحب السيارة لتدويرها، وكبّر لرؤية التفاصيل، واختر قطعة لمعرفة اسمها ومكانها."),
+        SystemAudioCatalog.SiteAssistantPractical => (SystemAudioCatalog.SiteAssistantPractical, "هنا تتعرّف على استخدام أضواء السيارة والغمازات. استعرض الأمثلة ثم جرّبها."),
+        SystemAudioCatalog.SiteAssistantHome => (SystemAudioCatalog.SiteAssistantHome, "من هنا تبدأ التدريب، وتتعلّم الإشارات والميكانيك، أو تدخل نموذج اختبار."),
+        SystemAudioCatalog.SiteAssistantRules => (SystemAudioCatalog.SiteAssistantRules, "استعرض قواعد السير الأساسية، ثم انتقل إلى التدريب لتجربة ما تعلمته."),
+        SystemAudioCatalog.SiteAssistantPublicSigns => (SystemAudioCatalog.SiteAssistantPublicSigns, "استعرض الإشارات ومعانيها، ثم اختبر فهمك من قسم التدريب."),
+        SystemAudioCatalog.SiteAssistantWelcome => (SystemAudioCatalog.SiteAssistantWelcome, "أهلاً بك في رخصتي. اضغط على زيب متى احتجت مساعدة في الصفحة."),
+        SystemAudioCatalog.SiteAssistantLogin => (SystemAudioCatalog.SiteAssistantLogin, "أهلاً بك! سجّل الدخول للمتابعة إلى تدريباتك ونماذج الاختبار."),
+        SystemAudioCatalog.SiteAssistantResult => (SystemAudioCatalog.SiteAssistantResult, "هذه نتيجتك. راجع إجاباتك، وركّز على النقاط التي تحتاج إلى تدريب إضافي."),
+        SystemAudioCatalog.SiteAssistantAbout => (SystemAudioCatalog.SiteAssistantAbout, "هنا تجد نبذة عن رخصتي وكيف يساعدك على الاستعداد لاختبار القيادة."),
+        SystemAudioCatalog.SiteAssistantSyria => (SystemAudioCatalog.SiteAssistantSyria, "تعرّف على معلومات امتحان القيادة في سوريا، ثم تدرّب على الإشارات والقواعد."),
+        SystemAudioCatalog.SiteAssistantNotFound => (SystemAudioCatalog.SiteAssistantNotFound, "لم أجد الصفحة المطلوبة. ارجع للرئيسية أو اختر أحد أقسام رخصتي."),
         _ => throw new ArgumentException("رسالة صوت نظامية غير معروفة.", nameof(key))
     };
 }
