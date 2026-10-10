@@ -106,18 +106,6 @@
       try { localStorage.setItem("rukhsati-floating-robot-position", JSON.stringify(position)); } catch {}
     }
   });
-  document.addEventListener("pointerdown", event => {
-    const target = event.target;
-    if (!(target instanceof Element) || target.closest("#guideAssistant, #guideAssistantSuggestion")) return;
-    const dx0 = position.x + 46 - event.clientX, dy0 = position.y + 50 - event.clientY;
-    const distance = Math.hypot(dx0, dy0);
-    if (distance > 190) return;
-    let dx = dx0, dy = dy0;
-    if (distance < 1) { dx = 1; dy = -1; } else { dx /= distance; dy /= distance; }
-    position = clamp({ x: position.x + dx * 46, y: position.y + dy * 46 });
-    positionWidget(position);
-    try { localStorage.setItem("rukhsati-floating-robot-position", JSON.stringify(position)); } catch {}
-  }, true);
   window.addEventListener("resize", () => { position = clamp(position); positionWidget(position); }, { passive: true });
   toggle.setAttribute("aria-expanded", "false");
   root.dataset.initialized = "true";
