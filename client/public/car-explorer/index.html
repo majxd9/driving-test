@@ -17,8 +17,8 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 @media(max-width:480px){header{min-height:57px;padding:8px 10px;gap:7px}.brand strong{font-size:12px}.brand small{font-size:8px}.header-actions{gap:4px}.quality-control{padding:3px;gap:2px}.quality-control span{display:none}.quality-control select{max-width:80px;padding:6px 3px;font-size:10px}.btn{padding:8px 7px;font-size:10px}.workspace{padding:5px}.viewport{border-radius:12px}.viewport-head strong{font-size:12px}.viewport-head small{max-width:185px;font-size:9px}.sidebar{left:5px;right:5px;bottom:5px;max-height:40%}.parts{max-height:calc(40dvh - 100px)}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
-<link rel="stylesheet" href="./viewer-premium.css?v=20261010-r3">
-<link rel="stylesheet" href="./guide-assistant.css?v=20261010-r3">
+<link rel="stylesheet" href="./viewer-premium.css?v=20261010-r4">
+<link rel="stylesheet" href="./guide-assistant.css?v=20261010-r4">
 </head>
 <body>
 <div class="app">
@@ -43,6 +43,7 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 </div>
 <details class="guide-assistant" id="guideAssistant" hidden>
   <summary class="guide-assistant-toggle" id="guideAssistantToggle" aria-expanded="false" aria-controls="guideAssistantPanel" aria-label="افتح مساعد رخصتي، أو اسحب المجسّم لتحريكه">
+    <canvas class="guide-robot-canvas" id="guideRobotCanvas" aria-hidden="true"></canvas>
     <span class="guide-robot-stage" aria-hidden="true">
       <span class="guide-robot-halo"></span><span class="guide-robot-shadow"></span><span class="guide-robot-antenna"><i></i></span>
       <span class="guide-robot-head"><i class="guide-robot-ear guide-robot-ear-left"></i><i class="guide-robot-ear guide-robot-ear-right"></i><span class="guide-robot-visor"><i class="guide-robot-eye"></i><i class="guide-robot-eye"></i><i class="guide-robot-mouth"></i></span></span>
@@ -67,8 +68,9 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
     <div class="guide-assistant-foot"><span class="guide-assistant-status" id="guideAssistantStatus" role="status" aria-live="polite">يستخدم المساعد صوت الجهاز مؤقتاً.</span><button class="guide-assistant-stop" id="guideAssistantStop" type="button" disabled>إيقاف الصوت</button></div>
   </section>
 </details>
-<script src="./viewer-boot.js?v=20261010-r3"></script>
-<script type="module" src="./viewer.js?v=20261010-r3"></script>
-<script src="./guide-assistant.js?v=20261010-r3" defer></script>
+<script src="./viewer-boot.js?v=20261010-r4"></script>
+<script type="module" src="./viewer.js?v=20261010-r4"></script>
+<script src="./guide-assistant.js?v=20261010-r4" defer></script>
+<script type="module" src="./guide-robot.js?v=20261010-r4"></script>
 </body>
 </html>

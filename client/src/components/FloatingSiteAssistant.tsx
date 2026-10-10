@@ -3,6 +3,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './floating-site-assistant.css';
+import FloatingRobot3D from './FloatingRobot3D';
 
 type GuideTopic = { id: string; title: string; summary: string; text: string; path: string; action: string };
 type Point = { x: number; y: number };
@@ -36,6 +37,7 @@ export default function FloatingSiteAssistant() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [position, setPosition] = useState<Point>({ x: 20, y: 20 });
   const [positionReady, setPositionReady] = useState(false);
+  const [robot3dReady, setRobot3dReady] = useState(false);
   const dragRef = useRef<DragState | null>(null);
   const suppressClickRef = useRef(false);
   const navigate = useNavigate();
@@ -148,10 +150,11 @@ export default function FloatingSiteAssistant() {
   const panelLeft = Math.max(12, Math.min(position.x - panelWidth + 104, screenWidth - panelWidth - 12));
   const panelTop = Math.max(12, Math.min(position.y - panelHeight - 10, screenHeight - panelHeight - 12));
 
-  if (loading || user?.role !== 'Student') return null;
+  // Show the helper to visitors as well as students; only keep it off the admin console.
+  if (loading || user?.role === 'Admin') return null;
 
   return (
-    <div className="rukhsati-site-assistant" dir="rtl">
+    <div className="rukhsati-site-assistant" dir="rtl" data-robot-ready={robot3dReady ? 'true' : 'false'}>
       <button
         type="button"
         className="rukhsati-assistant-robot-button"
@@ -177,6 +180,7 @@ export default function FloatingSiteAssistant() {
           setPosition((current) => clampPoint({ x: current.x + delta.x, y: current.y + delta.y }));
         }}
       >
+        <FloatingRobot3D onReady={() => setRobot3dReady(true)} onError={() => setRobot3dReady(false)} />
         <span className="rukhsati-robot-stage" aria-hidden="true">
           <span className="rukhsati-robot-halo" /><span className="rukhsati-robot-shadow" /><span className="rukhsati-robot-antenna"><i /></span>
           <span className="rukhsati-robot-head">

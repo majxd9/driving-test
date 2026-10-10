@@ -29,3 +29,6 @@
 @keyframes guide-robot-hover{0%,100%{transform:translateY(0) rotateY(-2deg)}50%{transform:translateY(-3px) rotateY(3deg)}}@keyframes guide-robot-blink{0%,43%,47%,100%{transform:scaleY(1)}45%{transform:scaleY(.15)}}
 @media(max-width:480px){.guide-assistant,.guide-assistant-toggle{width:84px;height:96px}.guide-robot-stage{transform:scale(.92);transform-origin:50% 100%}.guide-assistant-panel{max-height:min(480px,66dvh);padding:12px}.guide-assistant-message p{font-size:10px;line-height:1.8}.guide-assistant-topic{min-height:41px;padding:7px 8px}}
 @media(prefers-reduced-motion:reduce){.guide-robot-stage,.guide-assistant-panel,.guide-robot-eye{animation:none}}
+
+.guide-robot-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;touch-action:none}
+.guide-assistant[data-robot-ready="true"] .guide-robot-stage{display:none}

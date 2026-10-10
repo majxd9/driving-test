@@ -1,4 +1,4 @@
-/* A small draggable robot built from lightweight CSS shapes; no WebGL context. */
+/* Lightweight assistant shell with a real Three.js robot and CSS fallback. */
 .rukhsati-site-assistant{position:fixed;inset:0;z-index:9500;direction:rtl;color:#f3f8fc;font-family:"IBM Plex Sans Arabic","Cairo",system-ui,sans-serif;pointer-events:none}
 .rukhsati-assistant-robot-button{position:fixed;z-index:9502;display:block;width:92px;height:104px;margin:0;padding:0;border:0;border-radius:22px;background:transparent;color:#e9fcff;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;pointer-events:auto;filter:drop-shadow(0 8px 12px #0006)}
 .rukhsati-assistant-robot-button:active{cursor:grabbing}.rukhsati-assistant-robot-button:focus-visible{outline:2px solid #81f0e0;outline-offset:2px}
@@ -40,3 +40,6 @@
 @keyframes rukhsati-robot-hover{0%,100%{transform:translateY(0) rotateY(-2deg)}50%{transform:translateY(-3px) rotateY(3deg)}}@keyframes rukhsati-robot-blink{0%,43%,47%,100%{transform:scaleY(1)}45%{transform:scaleY(.15)}}@keyframes rukhsati-assistant-in{from{opacity:0;transform:translateY(7px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:480px){.rukhsati-assistant-robot-button{width:84px;height:96px}.rukhsati-robot-stage{transform:scale(.92);transform-origin:50% 100%}.rukhsati-assistant-panel{max-height:min(500px,68dvh);border-radius:18px}.rukhsati-assistant-header{padding:10px}.rukhsati-assistant-content{padding:9px}.rukhsati-assistant-explanation{padding:9px 10px}.rukhsati-assistant-explanation p{font-size:10px;line-height:1.8}.rukhsati-assistant-topic{min-height:42px;padding:7px 8px}.rukhsati-assistant-footer{padding:9px}}
 @media(prefers-reduced-motion:reduce){.rukhsati-robot-stage,.rukhsati-assistant-panel,.rukhsati-robot-eye{animation:none}}
+
+.rukhsati-robot-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;touch-action:none}
+.rukhsati-site-assistant[data-robot-ready="true"] .rukhsati-robot-stage{display:none}

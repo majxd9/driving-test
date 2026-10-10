@@ -48,5 +48,8 @@
 /car-explorer/guide-assistant.js
   Cache-Control: no-cache, max-age=0, must-revalidate
 
+/car-explorer/guide-robot.js
+  Cache-Control: no-cache, max-age=0, must-revalidate
+
 /car-explorer/guide-assistant.css
   Cache-Control: no-cache, max-age=0, must-revalidate
