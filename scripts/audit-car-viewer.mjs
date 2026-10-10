@@ -21,6 +21,7 @@ const required = [
   'client/src/components/FloatingSiteAssistant.tsx',
   'client/src/components/FloatingRobot3D.tsx',
   'client/src/components/floating-site-assistant.css',
+  'client/vite.usdz-loader.config.ts',
   'server/Services/SystemAudioCatalog.cs',
   'server/Services/SystemAudioPromptService.cs',
   'client/public/car-explorer/vendor/three.module.js',
@@ -55,6 +56,7 @@ const systemAudioGeneratorInterfaces = read('server/Services/IQuestionAiGenerato
 const serverProgram = read('server/Program.cs');
 const premiumCss = read('client/public/car-explorer/viewer-premium.css');
 const buildScript = read('scripts/build-client.mjs');
+const usdzLoaderConfig = read('client/vite.usdz-loader.config.ts');
 const boot = read('client/public/car-explorer/viewer-boot.js');
 const orbit = read('client/public/car-explorer/vendor/OrbitControls.js');
 const gltf = read('client/public/car-explorer/vendor/GLTFLoader.js');
@@ -73,7 +75,7 @@ assert.ok(html.includes('href="./guide-assistant.css?v=20261010-r6"'), 'Versione
 assert.ok(html.includes('src="./guide-assistant.js?v=20261010-r6"'), 'Versioned robot script is not linked');
 assert.ok(html.includes('<div class="guide-assistant" id="guideAssistant" hidden>'), 'Student-only car robot container is missing');
 assert.ok(html.includes('<button type="button" class="guide-assistant-toggle" id="guideAssistantToggle"'), 'Direct-speech robot button is missing');
-assert.ok(html.includes('id="guideRobotCanvas"') && html.includes('guide-robot.js?v=20261010-r6'), 'Actual 3D robot canvas/module is missing');
+assert.ok(html.includes('id="guideRobotCanvas"') && html.includes('guide-robot.js?v=20261010-r7'), 'Actual 3D robot canvas/module is missing');
 assert.ok(html.includes('id="guideAssistantSuggestion"') && html.includes('type="button" class="guide-assistant-toggle"') && !html.includes('guideAssistantSpeak') && !html.includes('guideAssistantPanel') && !html.includes('data-guide-topic='), 'Standalone assistant must have only a non-interactive page hint and a direct-speech robot, with no popup/button panel');
 assert.ok(guideRobot.includes('new THREE.WebGLRenderer') && guideRobot.includes('window.addEventListener("pointermove", readPointer'), 'The assistant must be a real Three.js robot that tracks the pointer');
 assert.ok(guideRobot.includes('gaze.x * 0.047') && guideRobot.includes('gaze.y * 0.031'), '3D robot pupils do not follow pointer/touch movement');
@@ -81,6 +83,10 @@ assert.ok(guideRobot.includes('lastFrameAt') && guideRobot.includes('now - lastF
 assert.ok(guideAssistantCss.includes('.guide-assistant[data-robot-ready="true"] .guide-robot-stage{display:none}'), 'CSS fallback must yield to the rendered 3D robot');
 assert.ok(floatingAssistant.includes('import FloatingRobot3D') && floatingAssistant.includes("user?.role === 'Admin'") && !floatingAssistant.includes("user?.role !== 'Student'"), 'Main-site assistant must be visible on public/student pages and hidden only from admin routes');
 assert.ok(floatingRobot3D.includes('new THREE.WebGLRenderer') && floatingRobot3D.includes("window.addEventListener('pointermove', readPointer") && floatingRobot3D.includes("window.addEventListener('pointerdown', readPointer"), 'Main-site helper must render an actual Three.js model and track mouse/touch');
+assert.ok(floatingRobot3D.includes("import { USDLoader } from 'three/addons/loaders/USDLoader.js'") && floatingRobot3D.includes("'/car-explorer/Lucario.usdz") && floatingRobot3D.includes('robot.visible = false'), 'Main assistant must load Lucario USDZ and retain the original model as a safe fallback');
+assert.ok(guideRobot.includes('import("./guide-usdz-loader.js?v=20261010-r7")') && guideRobot.includes('loadAsync("./Lucario.usdz?v=lucario-1")') && guideRobot.includes('robot.visible = false'), 'Standalone assistant must load the same Lucario model with a safe fallback');
+assert.ok(usdzLoaderConfig.includes('node_modules/three/examples/jsm/loaders/USDLoader.js') && usdzLoaderConfig.includes("./vendor/three.module.js"), 'Standalone USDZ loader must bundle locally and avoid a CDN');
+assert.ok(buildScript.includes("'vite.usdz-loader.config.ts'") && buildScript.includes('guide-usdz-loader.js'), 'Production build must generate the standalone USDZ loader before copying public assets');
 assert.ok(floatingRobot3D.includes('gaze.x * 0.047') && floatingRobot3D.includes('gaze.y * 0.031'), 'Main-site 3D pupils must follow the pointer');
 assert.ok(floatingAssistantCss.includes('.rukhsati-site-assistant[data-robot-ready="true"] .rukhsati-robot-stage{display:none}'), 'Main-site CSS fallback must yield to the rendered 3D robot');
 assert.ok(floatingRobot3D.includes('lastFrameAt') && floatingRobot3D.includes('now - lastFrameAt < 33') && floatingRobot3D.includes('onVisibilityChange'), 'Main site robot should limit redraws and resume safely when a tab becomes visible');
@@ -171,6 +177,13 @@ assert.ok(compressedSize < modelSize * 0.75, `Compressed model size is unexpecte
 assert.ok(modelSize > 1_000_000, `Model file unexpectedly small: ${modelSize} bytes`);
 assert.ok(boot.includes('window.__carViewerShowError') && boot.includes('retryLoad'), 'Visible error/retry behavior is missing');
 
+const lucarioAsset = path.join(root, 'client/public/car-explorer/Lucario.usdz');
+if (!existsSync(lucarioAsset)) {
+  console.warn('Lucario.usdz is not in the repository yet; the assistant will use its existing 3D fallback until the model file is added.');
+} else {
+  const signature = readFileSync(lucarioAsset).subarray(0, 2).toString('ascii');
+  assert.equal(signature, 'PK', 'Lucario.usdz does not look like a USDZ/ZIP package.');
+}
 console.log('3D viewer audit passed.');
 console.log(`Source GLB: ${modelSize.toLocaleString('en-US')} bytes`);
 console.log(`Production compressed model: ${compressedSize.toLocaleString('en-US')} bytes (${(100 - compressedSize / modelSize * 100).toFixed(1)}% smaller)`);
