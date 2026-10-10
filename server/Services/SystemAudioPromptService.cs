@@ -1,6 +1,7 @@
 using DrivingTestApi.Data;
 using DrivingTestApi.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
 
 namespace DrivingTestApi.Services;
 
@@ -8,6 +9,7 @@ public sealed class SystemAudioPromptService
 {
     private const string VoiceId = "0IwoSbTUTTn6egOMrnel";
     private const string DefaultSiteAssistantVoiceId = "9ae8ab5e6db14f12bac954621f68bfae";
+    private static readonly ConcurrentDictionary<int, SemaphoreSlim> QuestionExplanationAudioLocks = new();
 
     private readonly AppDbContext _db;
     private readonly ITextToSpeechGenerator _audioGenerator;
@@ -193,6 +195,26 @@ public sealed class SystemAudioPromptService
         Question question,
         CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(question.Explanation)) return false;
+
+        // A startup warmup and a student's first playback can race. Serialize per question
+        // so Fish Audio is not billed twice for the same text/voice on this API instance.
+        var gate = QuestionExplanationAudioLocks.GetOrAdd(question.Id, static _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken);
+        try
+        {
+            return await EnsureQuestionExplanationAudioCoreAsync(question, cancellationToken);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private async Task<bool> EnsureQuestionExplanationAudioCoreAsync(
+        Question question,
+        CancellationToken cancellationToken)
+    {
         var explanation = question.Explanation?.Trim();
         if (string.IsNullOrWhiteSpace(explanation)) return false;
 
@@ -250,6 +272,21 @@ public sealed class SystemAudioPromptService
                stored.ContentHash == expectedHash
             ? stored
             : null;
+    }
+
+    public async Task<SystemAudio?> GetOrCreateQuestionExplanationAudioAsync(
+        Question question,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(question.Explanation)) return null;
+
+        // Most requests are cache hits. Missing/stale clips are generated once, persisted
+        // in SystemAudios (PostgreSQL), and then reused across page visits and API restarts.
+        var cached = await GetCurrentQuestionExplanationAudioAsync(question, cancellationToken);
+        if (cached is not null) return cached;
+
+        await EnsureQuestionExplanationAudioAsync(question, cancellationToken);
+        return await GetCurrentQuestionExplanationAudioAsync(question, cancellationToken);
     }
 
     public async Task<bool> EnsurePromptAsync(
@@ -339,7 +376,9 @@ public sealed class SystemAudioPromptService
         {
             throw;
         }
-        catch (Exception primaryError) when (usesConfiguredProvider)
+        // Keep Deli on its configured voice. Do not cache an ElevenLabs/Eden fallback
+        // under a Fish Audio voice hash, because that would silently change Deli's identity.
+        catch (Exception primaryError) when (usesConfiguredProvider && !useDeliVoice)
         {
             _logger.LogWarning(
                 primaryError,
