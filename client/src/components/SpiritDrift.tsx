@@ -38,7 +38,7 @@ export default function SpiritDrift({ onStateChange }: { onStateChange?: (active
     setDrifting(true);
     onStateChange?.(true);
 
-    // Real tire-screech/departure effect from Orange Free Sounds (CC BY-NC 4.0).
+    // “Car starts with tires screeching sound effect” by Alexander, Orange Free Sounds, CC BY-NC 4.0 (source credit kept in code, not shown in the UI).
     const audio = audioRef.current;
     if (audio) {
       audio.currentTime = 0;
