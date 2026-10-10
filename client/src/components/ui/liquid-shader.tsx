@@ -46,7 +46,8 @@ export function InteractiveNebulaShader({
       return;
     }
 
-    const pixelRatio = Math.min(window.devicePixelRatio || 1, 0.8);
+    const compactViewport = window.matchMedia('(max-width: 700px)').matches;
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, compactViewport ? 0.6 : 0.8);
     renderer.setPixelRatio(pixelRatio);
     renderer.setClearColor(0x071018, 1);
     renderer.domElement.setAttribute('aria-hidden', 'true');
@@ -167,7 +168,8 @@ export function InteractiveNebulaShader({
     const renderFrame = () => {
       if (document.hidden) return;
       const elapsed = clock.getElapsedTime();
-      if (!reducedMotion && elapsed - lastRenderTime < 1 / 18) return;
+      const targetFps = compactViewport ? 12 : 18;
+      if (!reducedMotion && elapsed - lastRenderTime < 1 / targetFps) return;
       lastRenderTime = elapsed;
       uniforms.iTime.value = reducedMotion ? 0 : elapsed;
       renderer.render(scene, camera);
