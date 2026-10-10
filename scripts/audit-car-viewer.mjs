@@ -72,10 +72,17 @@ const carExplorer = appPage;
 const redirects = read('client/public/_redirects');
 
 assert.ok(!/<script\b(?![^>]*\bsrc\s*=)[^>]*>/i.test(html), 'Inline script found; this site CSP blocks inline scripts');
+assert.ok(!existsSync(path.join(root, 'client/public/car-explorer/diagnostic-temp.js')) && !html.includes('diagnostic-temp.js'), 'Temporary geometry diagnostic must never ship to production.');
+assert.ok(!viewer.includes('__carViewerDebug'), 'Preview-only geometry debug hook must not ship to production.');
+assert.ok(viewer.includes('function animateMeshPositions(paths, duration = 360)') && viewer.includes('positionAnimationId') && !viewer.includes('function tween('), 'Exploded view must use a single cancellable animation loop.');
+assert.ok(viewer.includes('selectedMeshes.forEach(restoreMaterial)') && viewer.includes('material.dispose()'), 'Selection highlight materials must be released when selection/model changes.');
+assert.ok(!viewer.includes('partCategoryLabels[entry.category]') && !viewer.includes('copy.append(strong,small)'), 'Part rows must show only clear main Arabic names.');
+assert.ok(viewer.includes('window.history.back()') && viewer.includes('window.location.replace("/app")'), 'The back action must return to the previous same-site page or a safe app entry point.');
+
 assert.ok(!html.includes('type="importmap"'), 'Inline import map found; viewer should not need an import map');
-assert.ok(html.includes('src="./viewer-boot.js?v=20261010-r8"'), 'Versioned viewer boot/error handler is not linked');
-assert.ok(html.includes('type="module" src="./viewer.js?v=20261010-r8"'), 'Versioned viewer module is not linked');
-assert.ok(html.includes('href="./viewer-premium.css?v=20261010-r8"'), 'Versioned premium viewer CSS is not linked');
+assert.ok(html.includes('src="./viewer-boot.js?v=20261010-r9"'), 'Versioned viewer boot/error handler is not linked');
+assert.ok(html.includes('type="module" src="./viewer.js?v=20261010-r9"'), 'Versioned viewer module is not linked');
+assert.ok(html.includes('href="./viewer-premium.css?v=20261010-r9"'), 'Versioned premium viewer CSS is not linked');
 assert.ok(html.includes('href="./guide-assistant.css?v=20261010-deli4"'), 'Versioned Deli assistant CSS is not linked');
 assert.ok(html.includes('src="./guide-assistant.js?v=20261010-deli4"'), 'Versioned Deli assistant script is not linked');
 assert.ok(html.includes('<div class="guide-assistant" id="guideAssistant">'), 'Deli car-viewer assistant must be visible by default and hidden only for admin sessions');
@@ -144,10 +151,12 @@ assert.ok(html.includes('id="carSelect"'), 'Vehicle selector is missing');
 assert.ok(html.includes('<option value="mclaren" selected>McLaren Senna GTR</option>'), 'McLaren must be the default vehicle');
 assert.ok(!html.includes('value="mustang"') && !viewer.includes('mustang-2005.glb') && !html.includes('id="modelAttribution"'), 'Removed vehicle and attribution must not remain in the production viewer');
 assert.ok(viewer.includes('let currentQuality = "medium"'), 'Medium graphics quality must be the default');
-assert.ok(viewer.includes('urlForQuality') && viewer.includes('mclaren-senna-gtr-') && viewer.includes('20261010-r6'), 'Versioned McLaren quality-specific assets are not wired');
+assert.ok(viewer.includes('urlForQuality') && viewer.includes('mclaren-senna-gtr-') && viewer.includes('20261010-r9'), 'Versioned McLaren quality-specific assets are not wired');
 assert.ok(viewer.includes('const qualities = [...new Set([requestedQuality, "low", "medium", "high"])]'), 'McLaren must retry the other quality variants');
-assert.ok(viewer.includes('if (vehicleId === "mclaren") {\n   setLoadError'), 'McLaren failure must be reported instead of silently swapping the car');
+assert.ok(viewer.includes('setLoadError(message, "تعذّر تحميل " + spec.label)') && !viewer.includes('return loadCarModel("challenger", true)'), 'Selected vehicle load errors must not silently change models');
 assert.ok(headers.includes('/car-explorer/index.html\n  Cache-Control: no-cache') && headers.includes('/car-explorer/viewer.js\n  Cache-Control: no-cache'), 'Car viewer HTML/JS must revalidate in normal desktop browsers');
+assert.ok(headers.includes('/car-explorer/viewer-premium.css\\n  Cache-Control: no-cache'), 'Viewer stylesheet must revalidate to prevent stale UI code/styles.');
+
 assert.ok(carExplorer.includes('build=20261010-r9'), 'SPA car viewer route must use a fresh URL');
 assert.ok(html.includes('data-move="x:-1"') && viewer.includes('button.dataset.move'), 'Individual mesh movement controls are missing');
 assert.ok(viewer.includes('controls.minDistance = 0.25'), 'Interior camera zoom support is missing');

@@ -29,6 +29,9 @@
 /car-explorer/viewer-boot.js
   Cache-Control: no-cache, max-age=0, must-revalidate
 
+/car-explorer/viewer-premium.css
+  Cache-Control: no-cache, max-age=0, must-revalidate
+
 /car-explorer/mclaren-senna-gtr-low.glb.gz
   Content-Encoding: gzip
   Cache-Control: public, max-age=86400

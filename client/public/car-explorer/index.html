@@ -17,12 +17,12 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 @media(max-width:480px){header{min-height:57px;padding:8px 10px;gap:7px}.brand strong{font-size:12px}.brand small{font-size:8px}.header-actions{gap:4px}.quality-control{padding:3px;gap:2px}.quality-control span{display:none}.quality-control select{max-width:80px;padding:6px 3px;font-size:10px}.btn{padding:8px 7px;font-size:10px}.workspace{padding:5px}.viewport{border-radius:12px}.viewport-head strong{font-size:12px}.viewport-head small{max-width:185px;font-size:9px}.sidebar{left:5px;right:5px;bottom:5px;max-height:40%}.parts{max-height:calc(40dvh - 100px)}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
-<link rel="stylesheet" href="./viewer-premium.css?v=20261010-r8">
+<link rel="stylesheet" href="./viewer-premium.css?v=20261010-r9">
 <link rel="stylesheet" href="./guide-assistant.css?v=20261010-deli4">
 </head>
 <body>
 <div class="app">
-<header><div class="brand"><span class="eyebrow">3D CAR LAB</span><strong>استوديو قطع السيارات</strong><small>McLaren Senna GTR</small></div><div class="header-actions"><label class="quality-control vehicle-control" for="carSelect"><span>السيارة</span><select id="carSelect" aria-label="اختر السيارة"><option value="mclaren" selected>McLaren Senna GTR</option><option value="challenger">Dodge Challenger 1970</option></select></label><label class="quality-control" for="qualitySelect"><span>جودة العرض</span><select id="qualitySelect" aria-label="جودة عرض السيارة"><option value="low">اقتصادية</option><option value="medium">متوسطة</option><option value="high">عالية</option></select></label><button class="btn desktop-only" id="helpBtn">طريقة الاستخدام</button><button class="btn" id="backBtn">العودة للإضاءة ←</button></div></header>
+<header><div class="brand"><span class="eyebrow">3D CAR LAB</span><strong>استوديو قطع السيارات</strong><small>McLaren Senna GTR</small></div><div class="header-actions"><label class="quality-control vehicle-control" for="carSelect"><span>السيارة</span><select id="carSelect" aria-label="اختر السيارة"><option value="mclaren" selected>McLaren Senna GTR</option><option value="challenger">Dodge Challenger 1970</option></select></label><label class="quality-control" for="qualitySelect"><span>جودة العرض</span><select id="qualitySelect" aria-label="جودة عرض السيارة"><option value="low">اقتصادية</option><option value="medium">متوسطة</option><option value="high">عالية</option></select></label><button class="btn desktop-only" id="helpBtn">طريقة الاستخدام</button><button class="btn" id="backBtn">رجوع</button></div></header>
 <main class="workspace">
 <section class="viewport" aria-label="عارض السيارة ثلاثي الأبعاد">
 <canvas id="stage" aria-label="اسحب لتدوير السيارة وانقر على القطع"></canvas>
@@ -51,8 +51,8 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
     <span class="guide-robot-caption">ديلي</span>
   </button>
 </div>
-<script src="./viewer-boot.js?v=20261010-r8"></script>
-<script type="module" src="./viewer.js?v=20261010-r8"></script>
+<script src="./viewer-boot.js?v=20261010-r9"></script>
+<script type="module" src="./viewer.js?v=20261010-r9"></script>
 <script src="./guide-assistant.js?v=20261010-deli4" defer></script>
 <script type="module" src="./guide-robot.js?v=20261010-deli4"></script>
 </body>
