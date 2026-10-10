@@ -38,7 +38,7 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
         preserveDrawingBuffer: false,
       });
       renderer.setClearColor(0x000000, 0);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.15));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.08;
@@ -79,7 +79,7 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
       const gold = addMaterial(new THREE.MeshStandardMaterial({
         color: 0xffc36d, emissive: 0xda7c25, emissiveIntensity: 1.25, metalness: 0.35, roughness: 0.24,
       }));
-      const sphere = addGeometry(new THREE.SphereGeometry(1, 28, 20));
+      const sphere = addGeometry(new THREE.SphereGeometry(1, 18, 12));
       const robot = new THREE.Group();
       scene.add(robot);
 
@@ -187,9 +187,13 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
       }
       window.addEventListener('resize', resize, { passive: true });
 
+      let lastFrameAt = 0;
       const animate = (now: number) => {
-        if (disposed) return;
+        if (disposed || document.hidden) return;
         raf = window.requestAnimationFrame(animate);
+        // Cap the tiny helper at 30 FPS to reduce heat and GPU load on phones.
+        if (now - lastFrameAt < 33) return;
+        lastFrameAt = now;
         gaze.x += (pointer.x - gaze.x) * 0.09;
         gaze.y += (pointer.y - gaze.y) * 0.09;
         robot.position.y = Math.sin(now * 0.0018) * 0.028;
@@ -208,6 +212,11 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
           onReadyRef.current?.();
         }
       };
+      const onVisibilityChange = () => {
+        if (document.hidden) window.cancelAnimationFrame(raf);
+        else if (!disposed) raf = window.requestAnimationFrame(animate);
+      };
+      document.addEventListener('visibilitychange', onVisibilityChange);
       raf = window.requestAnimationFrame(animate);
 
       return () => {
@@ -216,6 +225,7 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
         window.removeEventListener('pointermove', readPointer);
         window.removeEventListener('pointerdown', readPointer);
         window.removeEventListener('resize', resize);
+        document.removeEventListener('visibilitychange', onVisibilityChange);
         canvas.removeEventListener('webglcontextlost', handleContextLost);
         resizeObserver?.disconnect();
         for (const geometry of geometries) geometry.dispose();
