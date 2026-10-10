@@ -1,6 +1,5 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ContentProtection } from './ContentProtection';
 
 export function ProtectedRoute({
   children,
@@ -15,5 +14,5 @@ export function ProtectedRoute({
   if (!user) return <Navigate to="/login" replace />;
   if (adminOnly && user.role !== 'Admin') return <Navigate to="/app" replace />;
 
-  return adminOnly ? <>{children}</> : <ContentProtection>{children}</ContentProtection>;
+  return <>{children}</>;
 }
