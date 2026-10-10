@@ -596,6 +596,7 @@ export default function Study() {
               <>
                 <b>الشرح</b>
                 <span>{q.explanation}</span>
+                <p className="study-assistant-read-prompt" role="status" aria-live="polite">فيني اقرأ لك الشرح بصوت ديلي؛ اضغط على المساعد العائم للاستماع.</p>
               </>
             ) : (
               <span>&nbsp;</span>
