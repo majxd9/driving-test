@@ -31,7 +31,7 @@ export default function SpiritNitro({ className = '' }: { className?: string }) 
     if (!audio) return;
 
     setPlaying(true);
-    audio.currentTime = 0;
+    try { audio.currentTime = 0; } catch { /* Metadata may still be loading. */ }
     void audio.play().catch(() => setPlaying(false));
   };
 
