@@ -16,3 +16,5 @@
 @keyframes guide-deli-pulse{0%,100%{transform:scale(.96);opacity:.72}50%{transform:scale(1.04);opacity:1}}
 @media(max-width:480px){.guide-assistant,.guide-assistant-toggle{width:84px;height:96px}.guide-robot-caption{font-size:8px}.guide-assistant-suggestion{font-size:10px;padding:10px 11px;line-height:1.75}}
 @media(prefers-reduced-motion:reduce){.guide-robot-halo{animation:none}}
+
+.selected-part-description{margin:0;padding:0 11px 10px;color:#aab7c8;font-size:10px;line-height:1.8}
