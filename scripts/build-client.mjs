@@ -77,6 +77,18 @@ try {
     original.byteLength.toLocaleString() + ' -> ' + compressed.byteLength.toLocaleString() +
     ' bytes (' + (100 - compressed.byteLength / original.byteLength * 100).toFixed(1) + '% smaller vs original GLB).');
 
+  // Create a self-contained USDZ parser bundle for the standalone viewer.
+  // The loader shares the viewer's existing local Three.js module and avoids a CDN.
+  runNodeScript('node_modules/vite/bin/vite.js', ['build', '--config', 'vite.usdz-loader.config.ts']);
+  const standaloneUsdLoader = path.join(clientRoot, 'public', 'car-explorer', 'guide-usdz-loader.js');
+  if (!existsSync(standaloneUsdLoader)) throw new Error('Standalone USDZ loader bundle was not generated.');
+  const standaloneUsdLoaderSource = readFileSync(standaloneUsdLoader, 'utf8');
+  if (!standaloneUsdLoaderSource.includes("./vendor/three.module.js") ||
+      /from\\s+['"]three['"]/.test(standaloneUsdLoaderSource)) {
+    throw new Error('Standalone USDZ loader must import the local Three.js module, not a bare package or CDN.');
+  }
+  console.log('Standalone USDZ loader bundle prepared with local dependencies.');
+
   runNodeScript('node_modules/typescript/bin/tsc', ['-b']);
   runNodeScript('node_modules/vite/bin/vite.js', ['build']);
 
