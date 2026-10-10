@@ -7,7 +7,7 @@ import { useEffect } from 'react';
  */
 export default function CarExplorer() {
   useEffect(() => {
-    window.location.replace('/car-explorer/index.html?build=20261010-r8');
+    window.location.replace('/car-explorer/index.html?build=20261010-r9');
   }, []);
 
   return (
