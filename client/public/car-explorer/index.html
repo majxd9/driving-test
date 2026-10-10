@@ -41,12 +41,12 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 </aside>
 </main>
 </div>
-<div class="guide-assistant" id="guideAssistant">
-  <button class="guide-assistant-toggle" id="guideAssistantToggle" type="button" aria-expanded="false" aria-controls="guideAssistantPanel" aria-label="افتح مساعد استوديو السيارات">
+<details class="guide-assistant" id="guideAssistant">
+  <summary class="guide-assistant-toggle" id="guideAssistantToggle" aria-expanded="false" aria-controls="guideAssistantPanel" aria-label="افتح مساعد استوديو السيارات">
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 9.5h8a4 4 0 0 1 4 4v1a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-1a4 4 0 0 1 4-4Z" stroke="currentColor" stroke-width="1.6"/><path d="M12 9V5m-2 0h4M8 13h.01M16 13h.01M9 16h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="4.5" r="1" fill="#efbd76"/></svg>
     <span>مساعد الاستوديو</span><span class="guide-assistant-live-dot" aria-hidden="true"></span>
-  </button>
-  <section class="guide-assistant-panel" id="guideAssistantPanel" aria-labelledby="guideAssistantHeading" hidden>
+  </summary>
+  <section class="guide-assistant-panel" id="guideAssistantPanel" aria-labelledby="guideAssistantHeading">
     <div class="guide-assistant-head">
       <div class="guide-assistant-heading"><span class="guide-assistant-kicker">3D GUIDE</span><h2 id="guideAssistantHeading">دليل استوديو السيارات</h2></div>
       <button class="guide-assistant-close" id="guideAssistantClose" type="button" aria-label="إغلاق المساعد">×</button>
@@ -65,7 +65,7 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
     <div class="guide-assistant-foot"><span class="guide-assistant-status" id="guideAssistantStatus" role="status" aria-live="polite">اختر موضوعاً للاستماع إلى الشرح.</span><button class="guide-assistant-stop" id="guideAssistantStop" type="button" disabled>إيقاف الصوت</button></div>
     <audio class="guide-assistant-audio" id="guideAssistantAudio" preload="none" aria-label="الصوت المساعد"></audio>
   </section>
-</div>
+</details>
 <script src="./viewer-boot.js"></script>
 <script type="module" src="./viewer.js"></script>
 <script src="./guide-assistant.js" defer></script>
