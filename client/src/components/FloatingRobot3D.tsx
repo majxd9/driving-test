@@ -21,6 +21,7 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
     let disposed = false;
     let didReportReady = false;
     let character: any = null;
+    let eyeTargets: Array<{ node: any; rotationX: number; rotationY: number }> = [];
     let baseY = 0;
     let lastFrameAt = 0;
     const pointer = { x: 0, y: 0 };
@@ -126,6 +127,13 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
           normalized.add(loaded);
           scene.add(normalized);
           character = normalized;
+          eyeTargets = [];
+          normalized.traverse((node: any) => {
+            const eyeName = String(node.name || '').toLowerCase();
+            if (/(eye|pupil|eyeball|iris)/.test(eyeName)) {
+              eyeTargets.push({ node, rotationX: node.rotation.x, rotationY: node.rotation.y });
+            }
+          });
           baseY = normalized.position.y;
         } catch (error) {
           if (loaded && !character) disposeModel(loaded);
@@ -156,6 +164,10 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
           character.rotation.y += (gaze.x * 0.24 - character.rotation.y) * 0.07;
           character.rotation.x += (-gaze.y * 0.11 - character.rotation.x) * 0.07;
           character.position.y = baseY + Math.sin(now * 0.0016) * 0.022;
+          for (const eye of eyeTargets) {
+            eye.node.rotation.y += (eye.rotationY + gaze.x * 0.18 - eye.node.rotation.y) * 0.16;
+            eye.node.rotation.x += (eye.rotationX - gaze.y * 0.12 - eye.node.rotation.x) * 0.16;
+          }
         }
         renderer.render(scene, camera);
         if (character && !didReportReady) {
