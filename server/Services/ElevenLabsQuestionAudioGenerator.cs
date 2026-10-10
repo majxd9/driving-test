@@ -4,7 +4,7 @@ using DrivingTestApi.Models;
 
 namespace DrivingTestApi.Services;
 
-public sealed class ElevenLabsQuestionAudioGenerator : IQuestionAudioGenerator
+public sealed class ElevenLabsQuestionAudioGenerator : IQuestionAudioGenerator, ITextToSpeechGenerator
 {
     private const string DefaultVoiceId="0IwoSbTUTTn6egOMrnel";
     private readonly IHttpClientFactory _httpClientFactory;
