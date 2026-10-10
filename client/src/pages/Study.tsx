@@ -11,7 +11,7 @@ import type { SpiritTrafficState } from '../components/SpiritTrafficSignal';
 import { playAnswerFeedback } from '../utils/answerFeedbackAudio';
 import { preloadImage } from '../utils/imagePreload';
 import { getQuestionAudioSource, preloadQuestionAudio } from '../utils/questionAudio';
-import { getCachedQuestionAudioPromptSource, playQuestionAudioPrompt, preloadQuestionAudioPrompt, stopQuestionAudioPrompt } from '../utils/questionAudioPrompts';
+import { getCachedQuestionAudioPromptSource, playQuestionAudioPrompt, preloadQuestionAudioPrompt, stopQuestionAudioPrompt, unlockQuestionAudioPrompt } from '../utils/questionAudioPrompts';
 
 const THEME: Record<QuestionCategory, { name: string; accent: string; soft: string }> = {
   Ser: { name: 'قواعد السير', accent: '#2DD4BF', soft: 'rgba(45,212,191,.12)' },
@@ -259,23 +259,18 @@ export default function Study() {
     return () => { active = false; };
   }, [loading]);
 
-  const playIntroAudio = () => {
-    setIntroAudioMessage(null);
-    void playQuestionAudioPrompt('question-audio-first-entry', () => {
-      setIntroAudioPlaying(false);
-      setIntroAudioMessage(null);
-    }).then(played => {
-      setIntroAudioPlaying(played);
-      if (!played) setIntroAudioMessage('تعذر تشغيل الصوت. اضغط الزر للمحاولة مجدداً.');
-    });
-  };
-  const stopIntroAudio = () => {
+  const enableQuestionAudioFromLoader = () => {
+    // Make the button activate real per-question narration, not just replay the welcome clip.
     stopQuestionAudioPrompt();
     setIntroAudioPlaying(false);
-    setIntroAudioMessage(null);
+    audioContinuousRef.current = true;
+    setAudioEnabled(true);
+    setAudioError(null);
+    setIntroAudioMessage('تم تفعيل صوت الأسئلة؛ سيُقرأ السؤال تلقائياً عند اكتمال التحميل.');
+    unlockQuestionAudioPrompt('question-audio-first-entry');
   };
 
-  if (loading) return <div className="ui-audio-welcome" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel" aria-labelledby="study-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></span><p className="ui-audio-welcome__eyebrow">{theme.name}</p><h1 id="study-audio-welcome-title">جاهز للانطلاق؟</h1><p className="ui-audio-welcome__copy">اضغط تشغيل الصوت إذا رغبت بسماع إرشادات قصيرة قبل البدء.</p><div className="ui-audio-welcome__controls"><button type="button" className={`ui-audio-welcome__play ${introAudioPlaying ? 'is-playing' : 'is-pulsing'}`} onClick={introAudioPlaying ? stopIntroAudio : playIntroAudio} aria-pressed={introAudioPlaying}>{introAudioPlaying ? '■ إيقاف الصوت' : '▶ تشغيل الصوت'}</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'يتم تشغيل الإرشادات الصوتية الآن.' : 'اضغط الزر للاستماع.')}</p></section></div>;
+  if (loading) return <div className="ui-audio-welcome" dir="rtl" role="status" aria-live="polite"><section className="ui-audio-welcome__panel" aria-labelledby="study-audio-welcome-title"><span className="ui-audio-welcome__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></span><p className="ui-audio-welcome__eyebrow">{theme.name}</p><h1 id="study-audio-welcome-title">جاهز للانطلاق؟</h1><p className="ui-audio-welcome__copy">فعّل صوت الأسئلة من هنا ليبدأ السؤال نفسه بالصوت تلقائياً عند اكتمال التحميل.</p><div className="ui-audio-welcome__controls"><button type="button" className={`ui-audio-welcome__play ${audioEnabled ? 'is-playing' : 'is-pulsing'}`} onClick={enableQuestionAudioFromLoader} aria-pressed={audioEnabled}>{audioEnabled ? '✓ الصوت مفعّل للأسئلة' : '🔊 تفعيل صوت الأسئلة'}</button></div><p className="ui-audio-welcome__status" role="status" aria-live="polite">{introAudioMessage ?? (introAudioPlaying ? 'يتم تشغيل الإرشادات الصوتية الآن.' : 'اضغط الزر للاستماع.')}</p></section></div>;
 
   if (error) return <div className="study-premium-loading" role="alert">{error}</div>;
 
