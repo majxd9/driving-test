@@ -9,16 +9,22 @@ public sealed class SystemAudioPromptService
     private const string VoiceId = "0IwoSbTUTTn6egOMrnel";
 
     private readonly AppDbContext _db;
-    private readonly FallbackQuestionAudioGenerator _audioGenerator;
+    private readonly ITextToSpeechGenerator _audioGenerator;
+    private readonly FallbackQuestionAudioGenerator _fallbackAudioGenerator;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<SystemAudioPromptService> _logger;
 
     public SystemAudioPromptService(
         AppDbContext db,
-        FallbackQuestionAudioGenerator audioGenerator,
+        ITextToSpeechGenerator audioGenerator,
+        FallbackQuestionAudioGenerator fallbackAudioGenerator,
+        IConfiguration configuration,
         ILogger<SystemAudioPromptService> logger)
     {
         _db = db;
         _audioGenerator = audioGenerator;
+        _fallbackAudioGenerator = fallbackAudioGenerator;
+        _configuration = configuration;
         _logger = logger;
     }
 
@@ -85,10 +91,7 @@ public sealed class SystemAudioPromptService
             return false;
         }
 
-        var result = await _audioGenerator.GenerateTextAsync(
-            prompt.Text,
-            VoiceId,
-            cancellationToken);
+        var result = await GenerateTextAsync(prompt.Text, cancellationToken);
 
         if (result.Bytes.Length == 0)
             throw new InvalidOperationException(
@@ -114,6 +117,33 @@ public sealed class SystemAudioPromptService
         await _db.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("System audio prompt generated/restored: {Key}.", prompt.Key);
         return true;
+    }
+
+    private async Task<GeneratedAudioResult> GenerateTextAsync(
+        string text,
+        CancellationToken cancellationToken)
+    {
+        var provider = (_configuration["QUESTION_AUDIO_PROVIDER"] ?? "fish").Trim().ToLowerInvariant();
+        var usesConfiguredProvider = provider is "fish" or "fishaudio" or "local" or "edenai";
+        var voiceId = usesConfiguredProvider ? null : VoiceId;
+
+        try
+        {
+            return await _audioGenerator.GenerateTextAsync(text, voiceId, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception primaryError) when (usesConfiguredProvider)
+        {
+            _logger.LogWarning(
+                primaryError,
+                "Configured audio provider {Provider} failed for a system prompt. Trying the existing ElevenLabs/Eden AI fallback.",
+                provider);
+
+            return await _fallbackAudioGenerator.GenerateTextAsync(text, VoiceId, cancellationToken);
+        }
     }
 
     private static (string Key, string Text) GetPrompt(string key) => key switch
