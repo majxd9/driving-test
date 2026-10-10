@@ -1,5 +1,6 @@
 /* The standalone viewer uses Deli only; this is a neutral placeholder while it loads. */
-.guide-assistant{position:fixed;left:20px;top:calc(100dvh - 112px);bottom:auto;z-index:10000;width:92px;height:104px;display:block;overflow:visible;direction:rtl;color:#effdff;font-family:inherit;pointer-events:none}
+.guide-assistant{position:fixed;left:20px;top:calc(100dvh - 112px);bottom:auto;z-index:10000;width:92px;height:104px;display:block;overflow:visible;direction:rtl;color:#effdff;font-family:inherit;pointer-events:none;transition:left .24s cubic-bezier(.2,.75,.2,1),top .24s cubic-bezier(.2,.75,.2,1)}
+.guide-assistant[data-dragging="true"]{transition:none}
 .guide-assistant[hidden]{display:none!important}
 .guide-assistant-toggle{position:absolute;inset:0;display:block;width:92px;height:104px;margin:0;padding:0;border:0;border-radius:22px;background:transparent;color:inherit;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;pointer-events:auto;filter:drop-shadow(0 8px 12px #0006)}
 .guide-assistant-toggle:active{cursor:grabbing}
