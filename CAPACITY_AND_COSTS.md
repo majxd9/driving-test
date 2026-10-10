@@ -15,7 +15,7 @@ Media:
 - QuestionAiImages table: 47.9 MB including indexes.
 - 397 questions.
 - 397 audio records; 0 empty audio files.
-- 299 صورة AI محفوظة حالياً.\n- 277 مراجعة صورة AI pending، 22 approved، 7 rejected.\n- 98 image jobs pending لكنها غير قابلة للتنفيذ حالياً لأن ImageEnabled=false.
+- 297 صورة AI ذات بيانات غير فارغة من أصل 305 سجلات.\n- مراجعات AI: 273 Pending، 24 Approved، 8 Rejected، 0 Hidden.\n- 108 image jobs pending في لقطة 2026-10-10، وImageEnabled=false.
 
 تقريباً:
 - متوسط التخزين الخام للصوت لكل سؤال مع صوت محفوظ ≈ 0.34 MB.
