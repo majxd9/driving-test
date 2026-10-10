@@ -15,7 +15,7 @@ const qualityProfiles = {
  high: { label: "عالية", pixelRatio: (dpr) => Math.min(dpr * 1.25, 1.8) },
 };
 const vehicleModels = {
- mclaren: { label: "McLaren Senna GTR", description: "نموذج سيارة حلبة؛ جودة المجسّم تتغير مع اختيار الجودة.", urlForQuality: (quality) => "./mclaren-senna-gtr-" + quality + ".glb.gz?v=20261010-r4" },
+ mclaren: { label: "McLaren Senna GTR", description: "نموذج سيارة حلبة؛ جودة المجسّم تتغير مع اختيار الجودة.", urlForQuality: (quality) => "./mclaren-senna-gtr-" + quality + ".glb.gz?v=20261010-r5" },
  mustang: { label: "Ford Mustang GT · 2005", description: "نموذج Mustang GT لعام 2005. تُحفظ نسبة العمل لصاحب النموذج في رابط الترخيص.", url: "https://raw.githubusercontent.com/nesdesignco/FormDrive/e2f861630035385adacd1c5fcdeae5258557cce6/public/models/mustang-2005.glb", attribution: true },
  challenger: { label: "Dodge Challenger 1970 R/T", description: "نموذج احتياطي متوفر داخل المستودع.", url: "./challenger-1970.glb.gzdata", fallbackUrl: "./challenger-1970.glb" },
 };
