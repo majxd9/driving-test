@@ -87,3 +87,7 @@
     font: 800 20px sans-serif; z-index: 2147483647;
   }
 }
+
+.models-drift-audio-credit{display:flex;flex-direction:column;align-items:center;gap:5px;margin:6px auto 0;position:relative;z-index:3}
+.models-drift-audio-credit a{font-size:10px;color:rgba(203,213,225,.68);text-decoration:underline;text-underline-offset:3px}
+.models-drift-audio-credit a:hover{color:#99f6e4}
