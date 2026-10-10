@@ -78,7 +78,7 @@ assert.ok(html.includes('type="module" src="./viewer.js?v=20261010-r8"'), 'Versi
 assert.ok(html.includes('href="./viewer-premium.css?v=20261010-r8"'), 'Versioned premium viewer CSS is not linked');
 assert.ok(html.includes('href="./guide-assistant.css?v=20261010-deli2"'), 'Versioned Deli assistant CSS is not linked');
 assert.ok(html.includes('src="./guide-assistant.js?v=20261010-deli2"'), 'Versioned Deli assistant script is not linked');
-assert.ok(html.includes('<div class="guide-assistant" id="guideAssistant" hidden>'), 'Student-only car robot container is missing');
+assert.ok(html.includes('<div class="guide-assistant" id="guideAssistant">'), 'Deli car-viewer assistant must be visible by default and hidden only for admin sessions');
 assert.ok(html.includes('<button type="button" class="guide-assistant-toggle" id="guideAssistantToggle"'), 'Direct-speech robot button is missing');
 assert.ok(html.includes('id="guideRobotCanvas"') && html.includes('guide-robot.js?v=20261010-deli2'), 'Actual Zeb 3D canvas/module is missing');
 assert.ok(html.includes('id="guideAssistantSuggestion"') && html.includes('type="button" class="guide-assistant-toggle"') && !html.includes('guideAssistantSpeak') && !html.includes('guideAssistantPanel') && !html.includes('data-guide-topic='), 'Standalone assistant must have only a non-interactive page hint and a direct-speech robot, with no popup/button panel');
@@ -104,7 +104,7 @@ assert.ok(!floatingAssistant.includes('rukhsati-assistant-topics') && !floatingA
 assert.ok(html.includes('meta name="api-base-url"'), 'The guide assistant API base URL is missing');
 assert.ok(!/guideAssistantAudio[^>]*autoplay/i.test(html), 'The guide assistant must not autoplay audio');
 assert.ok(guideAssistant.includes('sessionStorage.getItem("drv_session")') && guideAssistant.includes('session?.role === "Admin"') && guideAssistant.includes('session?.role === "admin"'), 'Car-viewer assistant must be visible on non-admin pages only');
-assert.ok(guideAssistant.includes('/api/questions/audio-prompt/site-assistant-car') && guideAssistant.includes('speechSynthesis') && guideAssistant.includes('speakWithDeviceVoice()'), 'Standalone Zeb must prefer the matching cached audio clip and fall back to Arabic device speech');
+assert.ok(guideAssistant.includes('/api/questions/audio-prompt/" + encodeURIComponent(audioKey)') && guideAssistant.includes('speechSynthesis') && guideAssistant.includes('speakWithDeviceVoice(text)'), 'Standalone Deli must prefer cached AI audio for the selected part and fall back to Arabic device speech');
 assert.ok(guideAssistantCss.includes('@media(max-width:480px)') && guideAssistantCss.includes('prefers-reduced-motion:reduce'), 'Guide assistant responsive/reduced-motion styles are missing');
 assert.ok(headers.includes('/car-explorer/guide-robot.js\n  Cache-Control: no-cache'), '3D robot module must revalidate in normal desktop browsers');
 assert.ok(systemAudioCatalog.includes('CarGuideWelcome') && systemAudioCatalog.includes('CarGuideQuality'), 'Guide audio keys are not registered in the backend');
