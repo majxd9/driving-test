@@ -8,19 +8,25 @@
   try {
     const saved = sessionStorage.getItem("drv_session");
     const session = saved ? JSON.parse(saved) : null;
-    if (session?.role === "Admin" || session?.role === "admin") return;
+    if (session?.role === "Admin" || session?.role === "admin") {
+      root.hidden = true;
+      if (suggestion) suggestion.hidden = true;
+      return;
+    }
   } catch { /* A missing session is not an admin session. */ }
   root.hidden = false;
   if (suggestion) suggestion.hidden = false;
   window.setTimeout(() => { if (suggestion) suggestion.hidden = true; }, 4500);
 
   const pageText = "اسحب السيارة لتدويرها، وكبّر لرؤية التفاصيل، واختر قطعة لمعرفة اسمها ومكانها.";
+  let currentSpeech = { text: pageText, audioKey: "site-assistant-car", label: "مستكشف السيارة" };
   let speaking = false, activeAudio = null, dragging = null, suppressClick = false;
+  let lastDodgeAt = 0;
 
   function setSpeaking(value) {
     speaking = value;
     if (caption) caption.textContent = value ? "عم يحكي" : "ديلي";
-    toggle.setAttribute("aria-label", value ? "ديلي يتحدث. اضغط لإيقاف الصوت." : "ديلي، اضغط لسماع شرح الصفحة أو اضغط مطولاً لتحريكه.");
+    toggle.setAttribute("aria-label", value ? "ديلي يتحدث. اضغط لإيقاف الصوت." : `ديلي، اضغط لسماع شرح ${currentSpeech.label || "الصفحة"} أو اضغط مطولاً لتحريكه.`);
   }
 
   function stopSpeech() {
@@ -58,12 +64,12 @@
   } catch {}
   position = clamp(position); positionWidget(position);
 
-  function speakWithDeviceVoice() {
+  function speakWithDeviceVoice(text = currentSpeech.text) {
     if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
       setSpeaking(false);
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(pageText);
+    const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ar-SA"; utterance.rate = .97; utterance.pitch = 1;
     const voice = window.speechSynthesis.getVoices().find(item => /^ar([_-]|$)/i.test(item.lang));
     if (voice) utterance.voice = voice;
@@ -75,14 +81,12 @@
     window.speechSynthesis.speak(utterance);
   }
 
-  function speakOnRobotClick() {
-    if (speaking || activeAudio || ("speechSynthesis" in window && window.speechSynthesis.speaking)) {
-      stopSpeech();
-      return;
-    }
+  function speakText(text, audioKey) {
+    stopSpeech();
     const apiBase = document.querySelector("meta[name=\"api-base-url\"]")?.content || "";
-    if (!apiBase) { speakWithDeviceVoice(); return; }
-    const audio = new Audio(apiBase.replace(/\/+$/, "") + "/api/questions/audio-prompt/site-assistant-car");
+    if (!apiBase || !audioKey) { speakWithDeviceVoice(text); return; }
+
+    const audio = new Audio(apiBase.replace(/\/+$/, "") + "/api/questions/audio-prompt/" + encodeURIComponent(audioKey));
     audio.preload = "auto";
     activeAudio = audio;
     setSpeaking(true);
@@ -94,7 +98,7 @@
       audio.pause(); audio.removeAttribute("src"); audio.load();
       activeAudio = null;
       setSpeaking(false);
-      speakWithDeviceVoice();
+      speakWithDeviceVoice(text);
     };
     audio.onplay = () => { if (activeAudio === audio) setSpeaking(true); };
     audio.onended = () => { if (activeAudio === audio) { activeAudio = null; setSpeaking(false); } };
@@ -102,7 +106,32 @@
     void audio.play().catch(fallback);
   }
 
+  function speakOnRobotClick() {
+    if (speaking || activeAudio || ("speechSynthesis" in window && window.speechSynthesis.speaking)) {
+      stopSpeech();
+      return;
+    }
+    speakText(currentSpeech.text, currentSpeech.audioKey);
+  }
+
+  function handleCarPartSelected(event) {
+    const part = event.detail;
+    if (!part || typeof part.description !== "string" || !part.description.trim()) {
+      currentSpeech = { text: pageText, audioKey: "site-assistant-car", label: "مستكشف السيارة" };
+      return;
+    }
+    currentSpeech = {
+      text: part.description.trim(),
+      audioKey: typeof part.audioKey === "string" ? part.audioKey : "car-guide-part-unknown",
+      label: typeof part.label === "string" && part.label.trim() ? part.label.trim() : "قطعة السيارة"
+    };
+    // Selecting a part is an intentional request: Deli says the function immediately,
+    // using the pre-generated AI clip when ready and Arabic device speech as a fallback.
+    speakText(currentSpeech.text, currentSpeech.audioKey);
+  }
+
   window.addEventListener("pagehide", stopSpeech, { once: true });
+  window.addEventListener("rukhsati-car-part-selected", handleCarPartSelected);
   toggle.addEventListener("pointerdown", event => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     const id = event.pointerId, target = toggle;
@@ -110,6 +139,7 @@
     item.timer = window.setTimeout(() => {
       if (dragging !== item) return;
       item.dragging = true; item.moved = true;
+      root.dataset.dragging = "true";
       if (suggestion) suggestion.hidden = true;
       try { target.setPointerCapture(id); } catch {}
     }, 450);
@@ -129,6 +159,7 @@
   const finishDrag = event => {
     if (!dragging || dragging.id !== event.pointerId) return;
     const item = dragging; dragging = null; clearTimeout(item.timer);
+    root.dataset.dragging = "false";
     if (item.moved) {
       suppressClick = true;
       try { localStorage.setItem("rukhsati-floating-robot-position", JSON.stringify(position)); } catch {}
@@ -151,6 +182,25 @@
       try { localStorage.setItem("rukhsati-floating-robot-position", JSON.stringify(position)); } catch {}
     }
   });
+  document.addEventListener("pointerdown", event => {
+    if (event.target instanceof Element && event.target.closest("#guideAssistant, #guideAssistantSuggestion")) return;
+    const now = Date.now();
+    if (now - lastDodgeAt < 650) return;
+    let dx = position.x + 46 - event.clientX;
+    let dy = position.y + 50 - event.clientY;
+    let distance = Math.hypot(dx, dy);
+    if (distance > 150) return;
+    if (distance < 1) {
+      dx = position.x < window.innerWidth / 2 ? 1 : -1;
+      dy = position.y < window.innerHeight / 2 ? 1 : -1;
+      distance = Math.hypot(dx, dy);
+    }
+    lastDodgeAt = now;
+    if (suggestion) suggestion.hidden = true;
+    position = clamp({ x: position.x + dx / distance * 60, y: position.y + dy / distance * 60 });
+    positionWidget(position);
+    try { localStorage.setItem("rukhsati-floating-robot-position", JSON.stringify(position)); } catch {}
+  }, true);
   window.addEventListener("resize", () => { position = clamp(position); positionWidget(position); }, { passive: true });
   if (caption) caption.textContent = "ديلي";
   root.dataset.initialized = "true";
