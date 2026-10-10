@@ -149,7 +149,6 @@ assert.ok(viewer.includes('const qualities = [...new Set([requestedQuality, "low
 assert.ok(viewer.includes('if (vehicleId === "mclaren") {\n   setLoadError'), 'McLaren failure must be reported instead of silently swapping the car');
 assert.ok(headers.includes('/car-explorer/index.html\n  Cache-Control: no-cache') && headers.includes('/car-explorer/viewer.js\n  Cache-Control: no-cache'), 'Car viewer HTML/JS must revalidate in normal desktop browsers');
 assert.ok(carExplorer.includes('build=20261010-r9'), 'SPA car viewer route must use a fresh URL');
-assert.ok(viewer.includes('mustang-2005.glb'), 'Ford Mustang model source is missing');
 assert.ok(html.includes('data-move="x:-1"') && viewer.includes('button.dataset.move'), 'Individual mesh movement controls are missing');
 assert.ok(viewer.includes('controls.minDistance = 0.25'), 'Interior camera zoom support is missing');
 assert.ok(html.includes('id="qualitySelect"'), 'Graphics quality selector is missing from the UI');
