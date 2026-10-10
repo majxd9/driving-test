@@ -157,7 +157,7 @@ public class QuestionsController : ControllerBase
             return NotFound(new { message = "صوت الشرح لم يُجهّز بعد." });
 
         Response.Headers.CacheControl = "public,max-age=300,stale-while-revalidate=60";
-        Response.Headers.ETag = $"\\"{audio.ContentHash}\\"";
+        Response.Headers.ETag = $"\"{audio.ContentHash}\"";
         Response.Headers["Content-Disposition"] = "inline";
         Response.Headers["X-Audio-Bytes"] = audio.AudioBytes.LongLength.ToString();
         Response.Headers["X-Audio-Format"] = "mp3";
