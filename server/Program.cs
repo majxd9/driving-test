@@ -170,6 +170,26 @@ builder.Services.AddScoped<IQuestionAudioGenerator>(sp =>
 
     return sp.GetRequiredService<ElevenLabsQuestionAudioGenerator>();
 });
+builder.Services.AddScoped<ITextToSpeechGenerator>(sp =>
+{
+    var provider = (builder.Configuration["QUESTION_AUDIO_PROVIDER"] ?? "fish").Trim();
+
+    if (string.Equals(provider, "local", StringComparison.OrdinalIgnoreCase))
+        return sp.GetRequiredService<LocalQuestionAudioGenerator>();
+
+    if (string.Equals(provider, "edenai", StringComparison.OrdinalIgnoreCase))
+        return sp.GetRequiredService<EdenAiQuestionAudioGenerator>();
+
+    if (string.Equals(provider, "fish", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(provider, "fishaudio", StringComparison.OrdinalIgnoreCase))
+        return sp.GetRequiredService<FishAudioQuestionAudioGenerator>();
+
+    if (string.Equals(provider, "elevenlabs", StringComparison.OrdinalIgnoreCase) &&
+        HasEdenFallbackConfiguration(builder.Configuration, "EDENAI_AUDIO_PROVIDER"))
+        return sp.GetRequiredService<FallbackQuestionAudioGenerator>();
+
+    return sp.GetRequiredService<ElevenLabsQuestionAudioGenerator>();
+});
 builder.Services.AddScoped<ComfyUiQuestionImageGenerator>();
 builder.Services.AddScoped<HuggingFaceQuestionImageGenerator>();
 builder.Services.AddScoped<EdenAiQuestionImageGenerator>();
