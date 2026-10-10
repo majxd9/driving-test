@@ -5,7 +5,7 @@ using DrivingTestApi.Models;
 
 namespace DrivingTestApi.Services;
 
-public sealed class EdenAiQuestionAudioGenerator : IQuestionAudioGenerator
+public sealed class EdenAiQuestionAudioGenerator : IQuestionAudioGenerator, ITextToSpeechGenerator
 {
     private const string Endpoint = "v2/audio/text_to_speech";
     private readonly IHttpClientFactory _httpClientFactory;
@@ -26,6 +26,12 @@ public sealed class EdenAiQuestionAudioGenerator : IQuestionAudioGenerator
         Question question,
         CancellationToken cancellationToken) =>
         GenerateTextAsync(QuestionAudioTextBuilder.Build(question), cancellationToken);
+
+    public Task<GeneratedAudioResult> GenerateTextAsync(
+        string text,
+        string? voiceId,
+        CancellationToken cancellationToken) =>
+        GenerateTextAsync(text, cancellationToken);
 
     public async Task<GeneratedAudioResult> GenerateTextAsync(
         string text,
