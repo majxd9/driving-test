@@ -17,8 +17,8 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 @media(max-width:480px){header{min-height:57px;padding:8px 10px;gap:7px}.brand strong{font-size:12px}.brand small{font-size:8px}.header-actions{gap:4px}.quality-control{padding:3px;gap:2px}.quality-control span{display:none}.quality-control select{max-width:80px;padding:6px 3px;font-size:10px}.btn{padding:8px 7px;font-size:10px}.workspace{padding:5px}.viewport{border-radius:12px}.viewport-head strong{font-size:12px}.viewport-head small{max-width:185px;font-size:9px}.sidebar{left:5px;right:5px;bottom:5px;max-height:40%}.parts{max-height:calc(40dvh - 100px)}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
-<link rel="stylesheet" href="./viewer-premium.css">
-<link rel="stylesheet" href="./guide-assistant.css">
+<link rel="stylesheet" href="./viewer-premium.css?v=20261010-r3">
+<link rel="stylesheet" href="./guide-assistant.css?v=20261010-r3">
 </head>
 <body>
 <div class="app">
@@ -41,33 +41,34 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 </aside>
 </main>
 </div>
-<details class="guide-assistant" id="guideAssistant">
-  <summary class="guide-assistant-toggle" id="guideAssistantToggle" aria-expanded="false" aria-controls="guideAssistantPanel" aria-label="افتح مساعد استوديو السيارات">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 9.5h8a4 4 0 0 1 4 4v1a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-1a4 4 0 0 1 4-4Z" stroke="currentColor" stroke-width="1.6"/><path d="M12 9V5m-2 0h4M8 13h.01M16 13h.01M9 16h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="4.5" r="1" fill="#efbd76"/></svg>
-    <span>مساعد الاستوديو</span><span class="guide-assistant-live-dot" aria-hidden="true"></span>
+<details class="guide-assistant" id="guideAssistant" hidden>
+  <summary class="guide-assistant-toggle" id="guideAssistantToggle" aria-expanded="false" aria-controls="guideAssistantPanel" aria-label="افتح مساعد رخصتي، أو اسحب المجسّم لتحريكه">
+    <span class="guide-robot-stage" aria-hidden="true">
+      <span class="guide-robot-halo"></span><span class="guide-robot-shadow"></span><span class="guide-robot-antenna"><i></i></span>
+      <span class="guide-robot-head"><i class="guide-robot-ear guide-robot-ear-left"></i><i class="guide-robot-ear guide-robot-ear-right"></i><span class="guide-robot-visor"><i class="guide-robot-eye"></i><i class="guide-robot-eye"></i><i class="guide-robot-mouth"></i></span></span>
+      <span class="guide-robot-neck"></span><span class="guide-robot-torso"><i></i></span><i class="guide-robot-arm guide-robot-arm-left"></i><i class="guide-robot-arm guide-robot-arm-right"></i><i class="guide-robot-leg guide-robot-leg-left"></i><i class="guide-robot-leg guide-robot-leg-right"></i>
+    </span>
+    <span class="guide-robot-caption">اسألني</span>
   </summary>
   <section class="guide-assistant-panel" id="guideAssistantPanel" aria-labelledby="guideAssistantHeading">
     <div class="guide-assistant-head">
-      <div class="guide-assistant-heading"><span class="guide-assistant-kicker">3D GUIDE</span><h2 id="guideAssistantHeading">دليل استوديو السيارات</h2></div>
+      <div class="guide-assistant-heading"><span class="guide-assistant-kicker">مساعد رخصتي</span><h2 id="guideAssistantHeading">كيف أساعدك؟</h2></div>
       <button class="guide-assistant-close" id="guideAssistantClose" type="button" aria-label="إغلاق المساعد">×</button>
     </div>
-    <div class="guide-assistant-message" aria-live="polite">
-      <strong id="guideAssistantTitle">أهلاً بك</strong>
-      <p id="guideAssistantText">اختر موضوعاً للحصول على شرح مختصر وطريقة استخدام الأدوات.</p>
-    </div>
+    <div class="guide-assistant-message" aria-live="polite"><strong id="guideAssistantTitle">ابدأ الجولة</strong><p id="guideAssistantText">اختر موضوعاً للحصول على شرح مختصر وطريقة استخدام الأدوات.</p></div>
     <div class="guide-assistant-topics" role="group" aria-label="مواضيع شرح المساعد">
-      <button class="guide-assistant-topic" type="button" data-guide-topic="welcome" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>ابدأ الجولة</strong><small>اختيار السيارة والتعرّف على العارض</small></span><span class="guide-assistant-play" aria-hidden="true">▶</span></button>
-      <button class="guide-assistant-topic" type="button" data-guide-topic="rotate" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>تدوير السيارة</strong><small>رؤية السيارة من جميع الجهات</small></span><span class="guide-assistant-play" aria-hidden="true">▶</span></button>
-      <button class="guide-assistant-topic" type="button" data-guide-topic="zoom" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>التقريب والتحكم</strong><small>التكبير والتصغير وإعادة الضبط</small></span><span class="guide-assistant-play" aria-hidden="true">▶</span></button>
-      <button class="guide-assistant-topic" type="button" data-guide-topic="parts" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>الأجزاء الرئيسية</strong><small>اختيار القطع وتحريكها</small></span><span class="guide-assistant-play" aria-hidden="true">▶</span></button>
-      <button class="guide-assistant-topic" type="button" data-guide-topic="quality" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>جودة العرض</strong><small>اختيار الإعداد المناسب لجهازك</small></span><span class="guide-assistant-play" aria-hidden="true">▶</span></button>
+      <button class="guide-assistant-topic" type="button" data-guide-topic="welcome" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>ابدأ الجولة</strong><small>التعرّف على الموقع والعارض</small></span><span class="guide-assistant-play" aria-hidden="true">›</span></button>
+      <button class="guide-assistant-topic" type="button" data-guide-topic="training" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>التدريب والإشارات</strong><small>اختر القسم وراجع التفسير</small></span><span class="guide-assistant-play" aria-hidden="true">›</span></button>
+      <button class="guide-assistant-topic" type="button" data-guide-topic="rotate" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>تدوير السيارة</strong><small>رؤية السيارة من جميع الجهات</small></span><span class="guide-assistant-play" aria-hidden="true">›</span></button>
+      <button class="guide-assistant-topic" type="button" data-guide-topic="zoom" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>التقريب والتحكم</strong><small>التكبير والتصغير وإعادة الضبط</small></span><span class="guide-assistant-play" aria-hidden="true">›</span></button>
+      <button class="guide-assistant-topic" type="button" data-guide-topic="parts" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>الأجزاء الرئيسية</strong><small>اختيار القطع وتحريكها</small></span><span class="guide-assistant-play" aria-hidden="true">›</span></button>
+      <button class="guide-assistant-topic" type="button" data-guide-topic="quality" aria-pressed="false"><span class="guide-assistant-topic-copy"><strong>جودة العرض</strong><small>اختيار الإعداد المناسب</small></span><span class="guide-assistant-play" aria-hidden="true">›</span></button>
     </div>
-    <div class="guide-assistant-foot"><span class="guide-assistant-status" id="guideAssistantStatus" role="status" aria-live="polite">اختر موضوعاً للاستماع إلى الشرح.</span><button class="guide-assistant-stop" id="guideAssistantStop" type="button" disabled>إيقاف الصوت</button></div>
-    <audio class="guide-assistant-audio" id="guideAssistantAudio" preload="none" aria-label="الصوت المساعد"></audio>
+    <div class="guide-assistant-foot"><span class="guide-assistant-status" id="guideAssistantStatus" role="status" aria-live="polite">يستخدم المساعد صوت الجهاز مؤقتاً.</span><button class="guide-assistant-stop" id="guideAssistantStop" type="button" disabled>إيقاف الصوت</button></div>
   </section>
 </details>
-<script src="./viewer-boot.js"></script>
-<script type="module" src="./viewer.js"></script>
-<script src="./guide-assistant.js" defer></script>
+<script src="./viewer-boot.js?v=20261010-r3"></script>
+<script type="module" src="./viewer.js?v=20261010-r3"></script>
+<script src="./guide-assistant.js?v=20261010-r3" defer></script>
 </body>
 </html>

@@ -15,7 +15,7 @@ const qualityProfiles = {
  high: { label: "عالية", pixelRatio: (dpr) => Math.min(dpr * 1.25, 1.8) },
 };
 const vehicleModels = {
- mclaren: { label: "McLaren Senna GTR", description: "نموذج سيارة حلبة؛ جودة المجسّم تتغير مع اختيار الجودة.", urlForQuality: (quality) => "./mclaren-senna-gtr-" + quality + ".glb.gz" },
+ mclaren: { label: "McLaren Senna GTR", description: "نموذج سيارة حلبة؛ جودة المجسّم تتغير مع اختيار الجودة.", urlForQuality: (quality) => "./mclaren-senna-gtr-" + quality + ".glb.gz?v=20261010-r3" },
  mustang: { label: "Ford Mustang GT · 2005", description: "نموذج Mustang GT لعام 2005. تُحفظ نسبة العمل لصاحب النموذج في رابط الترخيص.", url: "https://raw.githubusercontent.com/nesdesignco/FormDrive/e2f861630035385adacd1c5fcdeae5258557cce6/public/models/mustang-2005.glb", attribution: true },
  challenger: { label: "Dodge Challenger 1970 R/T", description: "نموذج احتياطي متوفر داخل المستودع.", url: "./challenger-1970.glb.gzdata", fallbackUrl: "./challenger-1970.glb" },
 };
@@ -272,12 +272,14 @@ function clearLoadedModel() {
  originalPositions.clear();
  updatePartControls();
 }
-function updateVehicleDetails(vehicleId, backupMode = false) {
+function updateVehicleDetails(vehicleId, backupMode = false, fallbackQuality = null) {
  const spec = vehicleModels[vehicleId];
  $("vehicleName").textContent = spec.label;
- $("vehicleDescription").textContent = backupMode
-  ? "تعذّر تحميل السيارة المختارة؛ عُرضت السيارة الاحتياطية الموجودة داخل المستودع حتى يتوفر ملف النموذج."
-  : spec.description;
+ $("vehicleDescription").textContent = fallbackQuality
+  ? "تعذّر تحميل الجودة المختارة؛ تم عرض نسخة McLaren بديلة حتى يبقى نفس طراز السيارة ظاهراً."
+  : backupMode
+   ? "تعذّر تحميل السيارة المختارة؛ عُرضت السيارة الاحتياطية الموجودة داخل المستودع حتى يتوفر ملف النموذج."
+   : spec.description;
  const attribution = $("modelAttribution");
  if (attribution) attribution.hidden = !spec.attribution;
 }
@@ -293,7 +295,7 @@ async function loadCarModel(vehicleId = "mclaren", backupMode = false) {
  $("status").textContent = "بدء التحميل…";
  if (carSelect && carSelect.value !== vehicleId) carSelect.value = vehicleId;
  try {
-  let gltf, usedFallback = false;
+  let gltf, usedFallback = false, fallbackMcLarenQuality = null;
   if (vehicleId === "challenger") {
    let compressedError = null;
    try {
@@ -311,9 +313,30 @@ async function loadCarModel(vehicleId = "mclaren", backupMode = false) {
      throw new Error("فشل تحميل النسخة السريعة (" + first + ") والنسخة الاحتياطية (" + second + ").");
     }
    }
+  } else if (vehicleId === "mclaren") {
+   // Retry local McLaren qualities rather than silently replacing the requested vehicle.
+   const requestedQuality = currentQuality;
+   const qualities = [...new Set([requestedQuality, "low", "medium", "high"])];
+   let lastQualityError = null;
+   for (const quality of qualities) {
+    try {
+     $("loadMessage").textContent = quality === requestedQuality
+      ? "تحميل نسخة McLaren بالجودة المحددة…"
+      : "نجرب نسخة McLaren بديلة بالجودة " + qualityProfiles[quality].label + "…";
+     gltf = await loadGltf(spec.urlForQuality(quality), "تحميل McLaren · " + qualityProfiles[quality].label, 0, 66);
+     if (quality !== requestedQuality) fallbackMcLarenQuality = quality;
+     break;
+    } catch (qualityError) {
+     lastQualityError = qualityError;
+     console.warn("McLaren quality asset unavailable:", quality, qualityError);
+    }
+   }
+   if (!gltf) {
+    const detail = lastQualityError instanceof Error ? lastQualityError.message : "تعذّر تنزيل ملفات السيارة.";
+    throw new Error("تعذّر تحميل أي نسخة من McLaren Senna GTR. " + detail);
+   }
   } else {
-   const url = vehicleId === "mclaren" ? spec.urlForQuality(currentQuality) : spec.url;
-   gltf = await loadGltf(url, "تحميل " + spec.label, 0, 66);
+   gltf = await loadGltf(spec.url, "تحميل " + spec.label, 0, 66);
   }
   if (token !== loadSequence) { disposeScene(gltf.scene); return; }
   $("status").textContent = "تجهيز المشهد ثلاثي الأبعاد…";
@@ -350,11 +373,13 @@ async function loadCarModel(vehicleId = "mclaren", backupMode = false) {
   window.__carViewerModelLoaded = true;
   $("retryLoad").hidden = true;
   $("count").textContent = meshes.length + " قطعة";
-  $("status").textContent = backupMode ? "تم تحميل النموذج الاحتياطي" : usedFallback ? "تم التحميل بوضع التوافق" : "تم تحميل النموذج";
+  $("status").textContent = fallbackMcLarenQuality
+   ? "تم تحميل McLaren بجودة بديلة"
+   : backupMode ? "تم تحميل النموذج الاحتياطي" : usedFallback ? "تم التحميل بوضع التوافق" : "تم تحميل النموذج";
   $("loadTitle").textContent = "اكتمل تحميل " + spec.label;
   $("progress").style.width = "100%";
   homeCamera = {position:camera.position.clone(), target:controls.target.clone()};
-  updateVehicleDetails(vehicleId, backupMode);
+  updateVehicleDetails(vehicleId, backupMode, fallbackMcLarenQuality);
   renderParts();
   updatePartControls();
   setTimeout(() => { if (token === loadSequence) $("load").classList.add("hidden"); }, 250);
@@ -362,6 +387,10 @@ async function loadCarModel(vehicleId = "mclaren", backupMode = false) {
  } catch (err) {
   if (token !== loadSequence) return;
   console.error(spec.label + " model load error:", err);
+  if (vehicleId === "mclaren") {
+   setLoadError(err instanceof Error ? err.message : "تعذّر تحميل McLaren Senna GTR. افحص الاتصال ثم أعد المحاولة.");
+   return;
+  }
   if (vehicleId !== "challenger" && !backupMode) {
    $("loadMessage").textContent = "لم يتوفر ملف هذه السيارة بعد؛ يجري فتح النموذج الاحتياطي حتى لا يتعطل العارض.";
    return loadCarModel("challenger", true);

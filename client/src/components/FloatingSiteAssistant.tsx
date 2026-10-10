@@ -1,345 +1,225 @@
 import { useEffect, useRef, useState } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { resolveApiUrl } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import './floating-site-assistant.css';
 
-type GuideTopic = {
-  id: string;
-  title: string;
-  summary: string;
-  text: string;
-  audioKey: string;
-  path: string;
-  action: string;
-};
+type GuideTopic = { id: string; title: string; summary: string; text: string; path: string; action: string };
+type Point = { x: number; y: number };
+type DragState = { pointerId: number; startX: number; startY: number; originX: number; originY: number; moved: boolean };
 
+const POSITION_KEY = 'rukhsati-floating-robot-position';
+const ROBOT_WIDTH = 92;
+const ROBOT_HEIGHT = 104;
 const topics: GuideTopic[] = [
-  {
-    id: 'welcome',
-    title: 'ابدأ من هنا',
-    summary: 'جولة سريعة في رخصتي',
-    text: 'أهلاً بك في رخصتي. اختر أحد أقسام التدريب لمراجعة قواعد السير أو الإشارات المرورية أو أساسيات الميكانيك، ويمكنك فتح نماذج الاختبار لمحاكاة الامتحان.',
-    audioKey: 'site-guide-welcome',
-    path: '/app',
-    action: 'افتح الصفحة الرئيسية',
-  },
-  {
-    id: 'training',
-    title: 'التدريب والمراجعة',
-    summary: 'السؤال والإجابة والتفسير',
-    text: 'ابدأ من قسم التدريب، واختر قواعد السير أو الإشارات المرورية أو الميكانيك. اقرأ السؤال والصورة، ثم اختر الإجابة وراجع التفسير قبل الانتقال إلى السؤال التالي.',
-    audioKey: 'site-guide-training',
-    path: '/study/Ser',
-    action: 'افتح التدريب',
-  },
-  {
-    id: 'signs',
-    title: 'الإشارات المرورية',
-    summary: 'افهم شكل الإشارة ومعناها',
-    text: 'في قسم الإشارات المرورية، افحص شكل الإشارة ولونها ورمزها قبل اختيار المعنى. تظهر لك المراجعة بعد الإجابة لتتعلم من الخطأ.',
-    audioKey: 'site-guide-signs',
-    path: '/study/Ishara',
-    action: 'افتح الإشارات',
-  },
-  {
-    id: 'exam',
-    title: 'محاكاة الاختبار',
-    summary: 'النماذج والوقت والنتيجة',
-    text: 'من زر اختيار النموذج، افتح أحد نماذج الاختبار. يتكوّن الاختبار من ثلاثين سؤالاً خلال خمس عشرة دقيقة، ثم تظهر لك النتيجة ومراجعة الإجابات.',
-    audioKey: 'site-guide-exam',
-    path: '/models',
-    action: 'اختر نموذج اختبار',
-  },
-  {
-    id: 'practical',
-    title: 'المعلومات العملية',
-    summary: 'أضواء السيارة والغمازات',
-    text: 'قسم المعلومات العملية يشرح أساسيات استخدام أضواء السيارة والغمازات، مع عناصر تفاعلية تساعدك على التعرف على الحالات وطريقة الاستخدام.',
-    audioKey: 'site-guide-practical',
-    path: '/practical-info',
-    action: 'افتح المعلومات العملية',
-  },
-  {
-    id: 'car',
-    title: 'استعراض السيارة 3D',
-    summary: 'التدوير والتقريب والأجزاء',
-    text: 'في استعراض السيارة ثلاثية الأبعاد، اختر السيارة من القائمة، واسحب لتدويرها، واستخدم التكبير والتصغير لرؤية التفاصيل. اختر قسماً لعرض الأجزاء الرئيسية.',
-    audioKey: 'site-guide-car',
-    path: '/car-viewer',
-    action: 'استعرض السيارة',
-  },
+  { id: 'welcome', title: 'أهلاً بك في رخصتي', summary: 'جولة سريعة في الموقع', text: 'اختر أحد أقسام التدريب لمراجعة قواعد السير أو الإشارات المرورية أو أساسيات الميكانيك، ثم جرّب نموذج اختبار عندما تصبح جاهزاً.', path: '/app', action: 'الصفحة الرئيسية' },
+  { id: 'training', title: 'التدريب والمراجعة', summary: 'السؤال والإجابة والتفسير', text: 'افتح قسم التدريب واختر المادة التي تريدها. اقرأ السؤال والصورة، ثم اختر الإجابة وراجع التفسير قبل الانتقال إلى السؤال التالي.', path: '/study/Ser', action: 'افتح التدريب' },
+  { id: 'signs', title: 'الإشارات المرورية', summary: 'افهم شكل الإشارة ومعناها', text: 'لاحظ شكل الإشارة ولونها ورمزها قبل اختيار معناها. بعد الإجابة، راجع التوضيح لتتعلّم من الخطأ.', path: '/study/Ishara', action: 'افتح الإشارات' },
+  { id: 'mechanic', title: 'أساسيات الميكانيك', summary: 'الأجزاء ووظائفها', text: 'تدرّب على أسئلة الميكانيك وتعرّف على الأجزاء الرئيسية ووظيفة كل جزء من خلال السؤال والتفسير.', path: '/study/Mechanic', action: 'افتح الميكانيك' },
+  { id: 'exam', title: 'محاكاة الاختبار', summary: 'النماذج والوقت والنتيجة', text: 'اختر نموذجاً من صفحة النماذج. يحتوي الاختبار على ثلاثين سؤالاً ومدة خمس عشرة دقيقة، ثم تظهر النتيجة ومراجعة الإجابات.', path: '/models', action: 'اختر نموذجاً' },
+  { id: 'practical', title: 'المعلومات العملية', summary: 'الأضواء والغمازات', text: 'يعرض قسم المعلومات العملية أمثلة تفاعلية لأضواء السيارة والغمازات وطريقة استخدامها.', path: '/practical-info', action: 'المعلومات العملية' },
+  { id: 'car', title: 'استعراض السيارة ثلاثية الأبعاد', summary: 'التدوير والتقريب والأجزاء', text: 'اختر السيارة من القائمة، واسحب داخل مساحة العرض لتدويرها. استخدم التكبير والتصغير ثم اختر قسماً لعرض الأجزاء الرئيسية.', path: '/car-viewer', action: 'استعرض السيارة' },
 ];
 
+function clampPoint(point: Point): Point {
+  return {
+    x: Math.max(8, Math.min(Math.max(8, window.innerWidth - ROBOT_WIDTH - 8), point.x)),
+    y: Math.max(8, Math.min(Math.max(8, window.innerHeight - ROBOT_HEIGHT - 8), point.y)),
+  };
+}
+
 export default function FloatingSiteAssistant() {
+  const { user, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const [activeTopicId, setActiveTopicId] = useState('welcome');
   const [status, setStatus] = useState('اختر موضوعاً لقراءة الشرح أو الاستماع إليه.');
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const generationRef = useRef(0);
-  const fallbackRef = useRef(-1);
+  const [position, setPosition] = useState<Point>({ x: 20, y: 20 });
+  const [positionReady, setPositionReady] = useState(false);
+  const dragRef = useRef<DragState | null>(null);
+  const suppressClickRef = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Avoid overlapping important exam controls, the admin dashboard, result review,
-  // and the car viewer (which already has its own dedicated guide).
-  const hiddenOnRoute =
-    location.pathname === '/admin' ||
-    location.pathname.startsWith('/exam/') ||
-    location.pathname === '/result' ||
-    location.pathname === '/car-viewer';
-
   const stopSpeech = (announce = true) => {
-    generationRef.current += 1;
-    fallbackRef.current = -1;
-    const audio = audioRef.current;
-    if (audio) {
-      audio.pause();
-      audio.onplaying = null;
-      audio.onended = null;
-      audio.onerror = null;
-      audio.removeAttribute('src');
-      audio.load();
-    }
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     setIsSpeaking(false);
     if (announce) setStatus('تم إيقاف الصوت.');
   };
 
   useEffect(() => {
-    const audio = new Audio();
-    audio.preload = 'none';
-    audioRef.current = audio;
-    return () => {
-      generationRef.current += 1;
-      audio.pause();
-      audio.removeAttribute('src');
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      audioRef.current = null;
-    };
+    let initial = { x: 20, y: window.innerHeight - ROBOT_HEIGHT - 18 };
+    try {
+      const saved = localStorage.getItem(POSITION_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<Point>;
+        if (Number.isFinite(parsed.x) && Number.isFinite(parsed.y)) initial = { x: parsed.x as number, y: parsed.y as number };
+      }
+    } catch {}
+    setPosition(clampPoint(initial));
+    setPositionReady(true);
   }, []);
 
   useEffect(() => {
-    if (!hiddenOnRoute) return;
-    setOpen(false);
-    stopSpeech(false);
-  }, [hiddenOnRoute]);
+    if (!positionReady) return;
+    try { localStorage.setItem(POSITION_KEY, JSON.stringify(position)); } catch {}
+  }, [position, positionReady]);
 
   useEffect(() => {
-    if (!open) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      stopSpeech(false);
-      setOpen(false);
-    };
-    document.addEventListener('keydown', closeOnEscape);
-    return () => document.removeEventListener('keydown', closeOnEscape);
-  }, [open]);
+    const onResize = () => setPosition((current) => clampPoint(current));
+    window.addEventListener('resize', onResize, { passive: true });
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    setOpen(false);
+    stopSpeech(false);
+  }, [location.pathname]);
+
+  useEffect(() => () => {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  }, []);
 
   const playTopic = (topic: GuideTopic) => {
-    const request = ++generationRef.current;
-    fallbackRef.current = -1;
     setActiveTopicId(topic.id);
-    setIsSpeaking(true);
-    setStatus('جارٍ تجهيز الشرح الصوتي…');
-
-    const audio = audioRef.current;
-    if (audio) {
-      audio.pause();
-      audio.onplaying = null;
-      audio.onended = null;
-      audio.onerror = null;
-      audio.removeAttribute('src');
-      audio.load();
-    }
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-
-    const speakOnDevice = () => {
-      if (request !== generationRef.current || fallbackRef.current === request) return;
-      fallbackRef.current = request;
-
-      if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
-        setIsSpeaking(false);
-        setStatus('الصوت غير متاح على هذا الجهاز حالياً؛ يمكنك قراءة الشرح الظاهر.');
-        return;
-      }
-
-      const utterance = new SpeechSynthesisUtterance(topic.text);
-      utterance.lang = 'ar-SA';
-      utterance.rate = 0.95;
-      const voices = window.speechSynthesis.getVoices();
-      const arabicVoice = voices.find((voice) => /^ar([_-]|$)/i.test(voice.lang));
-      if (arabicVoice) utterance.voice = arabicVoice;
-
-      utterance.onstart = () => {
-        if (request === generationRef.current) {
-          setIsSpeaking(true);
-          setStatus('الصوت المولّد غير متاح؛ يعمل صوت الجهاز الآن.');
-        }
-      };
-      utterance.onend = () => {
-        if (request !== generationRef.current) return;
-        setIsSpeaking(false);
-        setStatus('انتهى الشرح الصوتي.');
-      };
-      utterance.onerror = () => {
-        if (request !== generationRef.current) return;
-        setIsSpeaking(false);
-        setStatus('تعذّر تشغيل الصوت؛ يمكنك قراءة الشرح الظاهر.');
-      };
-
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
-    };
-
-    if (!audio) {
-      speakOnDevice();
+    if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+      setIsSpeaking(false);
+      setStatus('الصوت غير متاح على هذا الجهاز حالياً؛ يمكنك قراءة الشرح الظاهر.');
       return;
     }
-
-    audio.onplaying = () => {
-      if (request === generationRef.current) setStatus('يعمل ملف الشرح الصوتي.');
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(topic.text);
+    utterance.lang = 'ar-SA';
+    utterance.rate = 0.96;
+    utterance.pitch = 1.02;
+    const arabicVoice = window.speechSynthesis.getVoices().find((voice) => /^ar([_-]|$)/i.test(voice.lang));
+    if (arabicVoice) utterance.voice = arabicVoice;
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      setStatus('يعمل صوت الجهاز مؤقتاً، بانتظار إعداد الصوت المخصّص للمساعد.');
     };
-    audio.onended = () => {
-      if (request !== generationRef.current) return;
-      setIsSpeaking(false);
-      setStatus('انتهى الشرح الصوتي.');
-    };
-    audio.onerror = speakOnDevice;
-    audio.src = resolveApiUrl('/api/questions/audio-prompt/' + encodeURIComponent(topic.audioKey) + '?v=20261010');
-    audio.load();
+    utterance.onend = () => { setIsSpeaking(false); setStatus('انتهى الشرح الصوتي.'); };
+    utterance.onerror = () => { setIsSpeaking(false); setStatus('تعذّر تشغيل الصوت؛ يمكنك قراءة الشرح الظاهر.'); };
+    setStatus('جارٍ تشغيل الشرح الصوتي…');
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  };
 
-    try {
-      const playback = audio.play();
-      if (playback) void playback.catch(speakOnDevice);
-    } catch {
-      speakOnDevice();
+  const startDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    dragRef.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, originX: position.x, originY: position.y, moved: false };
+    try { event.currentTarget.setPointerCapture(event.pointerId); } catch {}
+  };
+
+  const moveDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    if (!drag.moved && Math.hypot(dx, dy) < 5) return;
+    drag.moved = true;
+    setPosition(clampPoint({ x: drag.originX + dx, y: drag.originY + dy }));
+    event.preventDefault();
+  };
+
+  const finishDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+    if (drag.moved) {
+      suppressClickRef.current = true;
+      window.setTimeout(() => { suppressClickRef.current = false; }, 280);
     }
+    try {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {}
+  };
+
+  const toggleAssistant = () => {
+    if (suppressClickRef.current) { suppressClickRef.current = false; return; }
+    if (open) { stopSpeech(); setOpen(false); } else setOpen(true);
   };
 
   const activeTopic = topics.find((topic) => topic.id === activeTopicId) ?? topics[0];
+  const screenWidth = window.innerWidth;
+  const screenHeight = window.innerHeight;
+  const panelWidth = Math.min(356, screenWidth - 24);
+  const panelHeight = Math.min(520, screenHeight * 0.7);
+  const panelLeft = Math.max(12, Math.min(position.x - panelWidth + 104, screenWidth - panelWidth - 12));
+  const panelTop = Math.max(12, Math.min(position.y - panelHeight - 10, screenHeight - panelHeight - 12));
 
-  if (hiddenOnRoute) return null;
+  if (loading || user?.role !== 'Student') return null;
 
   return (
     <div className="rukhsati-site-assistant" dir="rtl">
       <button
         type="button"
-        className="rukhsati-assistant-trigger"
+        className="rukhsati-assistant-robot-button"
+        style={{ left: position.x, top: position.y }}
+        aria-label="مساعد رخصتي. اضغط لفتح الشرح، أو اسحب المجسّم لتحريكه."
         aria-expanded={open}
         aria-controls="rukhsati-assistant-panel"
-        onClick={() => {
-          if (open) {
-            stopSpeech();
-            setOpen(false);
-          } else {
-            setOpen(true);
-          }
+        title="اسحب المجسّم لتحريكه أو اضغط لفتح المساعدة"
+        onPointerDown={startDrag}
+        onPointerMove={moveDrag}
+        onPointerUp={finishDrag}
+        onPointerCancel={finishDrag}
+        onClick={toggleAssistant}
+        onKeyDown={(event) => {
+          const step = event.shiftKey ? 28 : 14;
+          const directions: Record<string, Point> = {
+            ArrowLeft: { x: -step, y: 0 }, ArrowRight: { x: step, y: 0 },
+            ArrowUp: { x: 0, y: -step }, ArrowDown: { x: 0, y: step },
+          };
+          const delta = directions[event.key];
+          if (!delta) return;
+          event.preventDefault();
+          setPosition((current) => clampPoint({ x: current.x + delta.x, y: current.y + delta.y }));
         }}
       >
-        <span className="rukhsati-assistant-avatar" aria-hidden="true">
-          <svg viewBox="0 0 40 40" fill="none">
-            <path d="M20 6V3.5M16.5 3.5h7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-            <rect x="7" y="9" width="26" height="23" rx="8" stroke="currentColor" strokeWidth="1.8" />
-            <path d="M3.5 17v7M36.5 17v7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            <rect x="12" y="15" width="5" height="5" rx="2.5" fill="#83eadb" />
-            <rect x="23" y="15" width="5" height="5" rx="2.5" fill="#83eadb" />
-            <path d="M14 25h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-            <circle cx="20" cy="3.5" r="1.7" fill="#efbd76" />
-          </svg>
+        <span className="rukhsati-robot-stage" aria-hidden="true">
+          <span className="rukhsati-robot-halo" /><span className="rukhsati-robot-shadow" /><span className="rukhsati-robot-antenna"><i /></span>
+          <span className="rukhsati-robot-head">
+            <i className="rukhsati-robot-ear rukhsati-robot-ear-left" /><i className="rukhsati-robot-ear rukhsati-robot-ear-right" />
+            <span className="rukhsati-robot-visor"><i className="rukhsati-robot-eye rukhsati-robot-eye-left" /><i className="rukhsati-robot-eye rukhsati-robot-eye-right" /><i className="rukhsati-robot-mouth" /></span>
+          </span>
+          <span className="rukhsati-robot-neck" /><span className="rukhsati-robot-torso"><i className="rukhsati-robot-chest-light" /></span>
+          <i className="rukhsati-robot-arm rukhsati-robot-arm-left" /><i className="rukhsati-robot-arm rukhsati-robot-arm-right" />
+          <i className="rukhsati-robot-leg rukhsati-robot-leg-left" /><i className="rukhsati-robot-leg rukhsati-robot-leg-right" />
         </span>
-        <span className="rukhsati-assistant-trigger-copy">
-          <strong>مساعد رخصتي</strong>
-          <small>شرح الموقع بالصوت</small>
-        </span>
-        <span className="rukhsati-assistant-live" aria-hidden="true" />
+        <span className="rukhsati-robot-caption">اسألني</span>
       </button>
 
       {open && (
         <section
           id="rukhsati-assistant-panel"
           className="rukhsati-assistant-panel"
+          style={{ left: panelLeft, top: panelTop }}
           role="dialog"
           aria-modal="false"
           aria-labelledby="rukhsati-assistant-title"
         >
           <header className="rukhsati-assistant-header">
-            <span className="rukhsati-assistant-header-avatar" aria-hidden="true">
-              <svg viewBox="0 0 40 40" fill="none">
-                <rect x="7" y="10" width="26" height="22" rx="8" stroke="currentColor" strokeWidth="1.8" />
-                <path d="M20 10V5M16.5 5h7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                <circle cx="15" cy="20" r="2.2" fill="#83eadb" />
-                <circle cx="25" cy="20" r="2.2" fill="#83eadb" />
-                <path d="M14 26h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
-            </span>
-            <div>
-              <span className="rukhsati-assistant-kicker">دليل تفاعلي</span>
-              <h2 id="rukhsati-assistant-title">كيف أساعدك؟</h2>
-            </div>
-            <button
-              type="button"
-              className="rukhsati-assistant-close"
-              aria-label="إغلاق المساعد"
-              onClick={() => {
-                stopSpeech(false);
-                setOpen(false);
-              }}
-            >
-              ×
-            </button>
+            <span className="rukhsati-assistant-header-avatar" aria-hidden="true"><span className="rukhsati-mini-robot-face"><i /><i /><b /></span></span>
+            <div><span className="rukhsati-assistant-kicker">مساعد رخصتي</span><h2 id="rukhsati-assistant-title">كيف أساعدك؟</h2></div>
+            <button type="button" className="rukhsati-assistant-close" aria-label="إغلاق المساعد" onClick={() => { stopSpeech(false); setOpen(false); }}>×</button>
           </header>
-
           <div className="rukhsati-assistant-content">
-            <div className="rukhsati-assistant-explanation" aria-live="polite">
-              <strong>{activeTopic.title}</strong>
-              <p>{activeTopic.text}</p>
-            </div>
-
+            <div className="rukhsati-assistant-explanation" aria-live="polite"><strong>{activeTopic.title}</strong><p>{activeTopic.text}</p></div>
             <div className="rukhsati-assistant-topics" role="group" aria-label="مواضيع المساعدة">
               {topics.map((topic) => (
-                <button
-                  type="button"
-                  key={topic.id}
-                  className="rukhsati-assistant-topic"
-                  data-active={activeTopicId === topic.id ? 'true' : 'false'}
-                  aria-pressed={activeTopicId === topic.id}
-                  onClick={() => playTopic(topic)}
-                >
-                  <span className="rukhsati-assistant-topic-mark" aria-hidden="true">
-                    {activeTopicId === topic.id ? '▶' : '›'}
-                  </span>
-                  <span className="rukhsati-assistant-topic-copy">
-                    <strong>{topic.title}</strong>
-                    <small>{topic.summary}</small>
-                  </span>
+                <button type="button" key={topic.id} className="rukhsati-assistant-topic" data-active={activeTopicId === topic.id ? 'true' : 'false'} aria-pressed={activeTopicId === topic.id} onClick={() => playTopic(topic)}>
+                  <span className="rukhsati-assistant-topic-mark" aria-hidden="true">{activeTopicId === topic.id ? '▶' : '›'}</span>
+                  <span className="rukhsati-assistant-topic-copy"><strong>{topic.title}</strong><small>{topic.summary}</small></span>
                 </button>
               ))}
             </div>
           </div>
-
           <footer className="rukhsati-assistant-footer">
             <span className="rukhsati-assistant-status" role="status" aria-live="polite">{status}</span>
             <div className="rukhsati-assistant-actions">
-              <button
-                type="button"
-                className="rukhsati-assistant-stop"
-                disabled={!isSpeaking}
-                onClick={() => stopSpeech()}
-              >
-                إيقاف الصوت
-              </button>
-              <button
-                type="button"
-                className="rukhsati-assistant-open-page"
-                onClick={() => {
-                  stopSpeech(false);
-                  setOpen(false);
-                  navigate(activeTopic.path);
-                }}
-              >
-                {activeTopic.action}
-              </button>
+              <button type="button" className="rukhsati-assistant-stop" disabled={!isSpeaking} onClick={() => stopSpeech()}>إيقاف الصوت</button>
+              <button type="button" className="rukhsati-assistant-open-page" onClick={() => { stopSpeech(false); setOpen(false); navigate(activeTopic.path); }}>{activeTopic.action}</button>
             </div>
           </footer>
         </section>

@@ -455,3 +455,13 @@ Latest master audit: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It includes one row
 - The cached audio keys are registered through `SystemAudioCatalog` and `SystemAudioPromptService`. Anonymous playback continues using the existing read-only `GET /api/questions/audio-prompt/{key}` endpoint; missing optional clips are handled without blocking the UI.
 - The minimized launcher is fixed above page content on mobile and desktop. The widget is hidden on exam, result, admin, and standalone car-viewer routes to avoid covering important controls and duplicating the car viewer's own guide.
 - **Verification state:** source integration and audio-key wiring are committed together; do not call this production-verified until the client/backend builds and the deployed site are checked on desktop and mobile, including playback and the device-voice fallback.
+
+
+## 32. Draggable student robot and McLaren viewer recovery — 2026-10-10
+
+- The floating helper is now a small metallic 3D-styled robot assembled with lightweight CSS geometry (no extra WebGL context). Dragging works with mouse/touch, arrow keys move it while focused, and its position persists locally across the React app and standalone viewer.
+- The SPA robot is restricted to authenticated Students and remains available on student pages including Study, Models, Exam and Result. The standalone viewer applies the same-session Student check. Admin and logged-out users do not see the helper.
+- Floating-robot speech currently uses device speech only. Do not connect it to existing question/car audio; wait for the separate voice ID from the owner.
+- The car viewer now uses versioned document/module/CSS/model URLs and cache revalidation. McLaren quality failures retry the remaining local qualities, never silently substituting another car.
+- CI checks the three real McLaren assets, versioned viewer files, cache headers, student-only helper and separation from the current audio setup.
+- Regular laptop and phone acceptance remains open until verified after deployment.

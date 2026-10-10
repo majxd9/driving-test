@@ -891,3 +891,13 @@ Read first: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It supersedes older task sta
 - AI voice uses registered, cached `site-guide-*` keys from the existing audio endpoint. No playback starts automatically. Browser Arabic speech synthesis is used if an audio file cannot be played.
 - No new NPM dependencies were added. The component is hidden on exams, results, admin, and the standalone 3D car viewer to avoid overlapping controls or showing two guides.
 - **Still required before calling it done:** successful client and backend build/release checks, then manual Cloudflare production verification on phone and laptop. Source commit alone does not prove the deployed UI is already visible.
+
+
+## 22. Draggable student robot + car-viewer recovery — 2026-10-10
+
+- Replaced the fixed help pill with a small metallic 3D-styled robot made from lightweight CSS shapes. It can be dragged with mouse or touch, supports keyboard arrows, and shares its saved position between the SPA and standalone car viewer.
+- The robot appears throughout authenticated Student routes, including Study, Models, Exam and Result, and remains hidden for logged-out visitors and Admin. The standalone car viewer checks the same-tab `drv_session` role before displaying it.
+- Floating-robot speech intentionally uses the browser/device Arabic voice only for now. It no longer requests existing question/car system-audio clips or their voice. Configure its dedicated voice only after the owner supplies a separate voice ID.
+- Car-viewer HTML/JS/CSS and model URLs use a fresh version query; document and script files revalidate to reduce stale-cache behavior in a normal laptop browser.
+- CI checks the three local McLaren quality assets. On failure, the viewer tries other McLaren variants first rather than silently switching to the Challenger. If all variants fail, it presents the error and keeps McLaren selected.
+- **Manual acceptance remains open:** verify the normal (non-incognito) laptop navigation and a phone after the deployment. CI cannot prove visual acceptance on those devices.

@@ -25,6 +25,9 @@ const required = [
   'client/public/car-explorer/vendor/BufferGeometryUtils.js',
   'client/public/car-explorer/vendor/THREE-LICENSE.txt',
   'client/public/car-explorer/challenger-1970.glb',
+  'client/public/car-explorer/mclaren-senna-gtr-low.glb.gz',
+  'client/public/car-explorer/mclaren-senna-gtr-medium.glb.gz',
+  'client/public/car-explorer/mclaren-senna-gtr-high.glb.gz',
 ];
 for (const file of required) assert.ok(existsSync(path.join(root, file)), `Missing file: ${file}`);
 
@@ -48,26 +51,27 @@ const gltf = read('client/public/car-explorer/vendor/GLTFLoader.js');
 const buffer = read('client/public/car-explorer/vendor/BufferGeometryUtils.js');
 const headers = read('client/public/_headers');
 const appPage = read('client/src/pages/CarExplorer.tsx');
+const carExplorer = appPage;
 const redirects = read('client/public/_redirects');
 
 assert.ok(!/<script\b(?![^>]*\bsrc\s*=)[^>]*>/i.test(html), 'Inline script found; this site CSP blocks inline scripts');
 assert.ok(!html.includes('type="importmap"'), 'Inline import map found; viewer should not need an import map');
-assert.ok(html.includes('src="./viewer-boot.js"'), 'Viewer boot/error handler is not linked');
-assert.ok(html.includes('type="module" src="./viewer.js"'), 'Viewer module is not linked');
-assert.ok(html.includes('href="./viewer-premium.css"'), 'Premium viewer CSS is not linked');
-assert.ok(html.includes('href="./guide-assistant.css"'), 'Car guide assistant CSS is not linked');
-assert.ok(html.includes('src="./guide-assistant.js"'), 'Car guide assistant script is not linked');
-assert.ok(html.includes('<details class="guide-assistant" id="guideAssistant">'), 'Guide assistant must use native disclosure so it can open without JavaScript');
+assert.ok(html.includes('src="./viewer-boot.js?v=20261010-r3"'), 'Versioned viewer boot/error handler is not linked');
+assert.ok(html.includes('type="module" src="./viewer.js?v=20261010-r3"'), 'Versioned viewer module is not linked');
+assert.ok(html.includes('href="./viewer-premium.css?v=20261010-r3"'), 'Versioned premium viewer CSS is not linked');
+assert.ok(html.includes('href="./guide-assistant.css?v=20261010-r3"'), 'Versioned robot CSS is not linked');
+assert.ok(html.includes('src="./guide-assistant.js?v=20261010-r3"'), 'Versioned robot script is not linked');
+assert.ok(html.includes('<details class="guide-assistant" id="guideAssistant" hidden>'), 'Student-only car robot container is missing');
 assert.ok(html.includes('<summary class="guide-assistant-toggle" id="guideAssistantToggle"'), 'Guide assistant native open control is missing');
 assert.ok(guideAssistantCss.includes('.guide-assistant[open] .guide-assistant-panel{display:block}'), 'Guide assistant open-state styling is missing');
 assert.ok(guideAssistant.includes('root.addEventListener("toggle"') && guideAssistant.includes('root.dataset.initialized = "true"'), 'Guide assistant did not initialize its disclosure handlers');
 assert.ok(html.includes('meta name="api-base-url"'), 'The guide assistant API base URL is missing');
 assert.ok(!/guideAssistantAudio[^>]*autoplay/i.test(html), 'The guide assistant must not autoplay audio');
-assert.ok(guideAssistant.includes('car-guide-welcome') && guideAssistant.includes('car-guide-rotate') && guideAssistant.includes('car-guide-zoom') && guideAssistant.includes('car-guide-parts') && guideAssistant.includes('car-guide-quality'), 'Guide audio topic keys are incomplete');
-assert.ok(guideAssistant.includes('speechSynthesis') && guideAssistant.includes('audio.onerror'), 'Guide assistant speech fallback is missing');
+assert.ok(guideAssistant.includes('sessionStorage.getItem("drv_session")') && guideAssistant.includes('session?.role !== "Student"'), 'Car-viewer robot must be limited to a student session');
+assert.ok(guideAssistant.includes('speechSynthesis') && !guideAssistant.includes('/api/questions/audio-prompt/'), 'Floating robot must use device speech until its separate voice is configured');
 assert.ok(guideAssistantCss.includes('@media(max-width:480px)') && guideAssistantCss.includes('prefers-reduced-motion:reduce'), 'Guide assistant responsive/reduced-motion styles are missing');
 assert.ok(systemAudioCatalog.includes('CarGuideWelcome') && systemAudioCatalog.includes('CarGuideQuality'), 'Guide audio keys are not registered in the backend');
-assert.ok(systemAudioPrompts.includes('CarGuideWelcome =>') && systemAudioPrompts.includes('SiteGuideWelcome =>') && systemAudioPrompts.includes('SiteGuideCar =>') && (systemAudioPrompts.includes('Optional car-guide audio generation failed') || systemAudioPrompts.includes('Optional guide audio generation failed')), 'Guide audio generation is not safely integrated');
+assert.ok(systemAudioPrompts.includes('CarGuideWelcome =>') && systemAudioPrompts.includes('Optional car-guide audio generation failed') && !systemAudioPrompts.includes('SiteGuideWelcome =>'), 'Keep existing question/car audio separate from the floating robot voice');
 assert.ok(systemAudioGeneratorInterfaces.includes('interface ITextToSpeechGenerator'), 'Configured system-text speech interface is missing');
 assert.ok(serverProgram.includes('AddScoped<ITextToSpeechGenerator>') && systemAudioPrompts.includes('QUESTION_AUDIO_PROVIDER'), 'System guide audio must follow the configured audio provider');
 assert.ok(systemAudioPrompts.includes('existing ElevenLabs/Eden AI fallback'), 'Guide audio provider fallback is missing');
@@ -90,7 +94,11 @@ assert.ok(html.includes('id="carSelect"'), 'Vehicle selector is missing');
 assert.ok(html.includes('<option value="mclaren" selected>McLaren Senna GTR</option>'), 'McLaren must be the default vehicle');
 assert.ok(html.includes('<option value="mustang">Ford Mustang GT</option>'), 'Ford Mustang must be the second vehicle option');
 assert.ok(viewer.includes('let currentQuality = "medium"'), 'Medium graphics quality must be the default');
-assert.ok(viewer.includes('urlForQuality') && viewer.includes('mclaren-senna-gtr-'), 'McLaren quality-specific assets are not wired');
+assert.ok(viewer.includes('urlForQuality') && viewer.includes('mclaren-senna-gtr-') && viewer.includes('20261010-r3'), 'Versioned McLaren quality-specific assets are not wired');
+assert.ok(viewer.includes('const qualities = [...new Set([requestedQuality, "low", "medium", "high"])]'), 'McLaren must retry the other quality variants');
+assert.ok(viewer.includes('if (vehicleId === "mclaren") {\n   setLoadError'), 'McLaren failure must be reported instead of silently swapping the car');
+assert.ok(headers.includes('/car-explorer/index.html\n  Cache-Control: no-cache') && headers.includes('/car-explorer/viewer.js\n  Cache-Control: no-cache'), 'Car viewer HTML/JS must revalidate in normal desktop browsers');
+assert.ok(carExplorer.includes('build=20261010-r3'), 'SPA car viewer route must use a fresh URL');
 assert.ok(viewer.includes('mustang-2005.glb'), 'Ford Mustang model source is missing');
 assert.ok(html.includes('data-move="x:-1"') && viewer.includes('button.dataset.move'), 'Individual mesh movement controls are missing');
 assert.ok(viewer.includes('controls.minDistance = 0.25'), 'Interior camera zoom support is missing');

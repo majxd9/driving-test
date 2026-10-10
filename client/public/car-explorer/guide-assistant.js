@@ -1,6 +1,5 @@
 (() => {
   "use strict";
-
   const $ = (id) => document.getElementById(id);
   const root = $("guideAssistant");
   const toggle = $("guideAssistantToggle");
@@ -10,142 +9,160 @@
   const message = $("guideAssistantText");
   const status = $("guideAssistantStatus");
   const stopButton = $("guideAssistantStop");
-  const audio = $("guideAssistantAudio");
-  const apiBase = (document.querySelector('meta[name="api-base-url"]')?.content ||
-    "https://driving-test-evd0.onrender.com").trim().replace(/\/+$/, "");
+  if (!root || !toggle || !panel || !title || !message || !status) return;
 
-  if (!root || !toggle || !panel || !title || !message || !status || !audio) return;
+  // The standalone document must not show the student-only helper for anonymous users or admins.
+  try {
+    const saved = sessionStorage.getItem("drv_session");
+    const session = saved ? JSON.parse(saved) : null;
+    if (session?.role !== "Student") return;
+  } catch { return; }
+  root.hidden = false;
 
   const topics = {
-    welcome: { title: "ابدأ الجولة", text: "أهلاً بك في استوديو السيارات ثلاثي الأبعاد. اختر السيارة من أعلى الصفحة، ثم اختر موضوعاً من هذا المساعد للتعرّف على أدوات العرض.", key: "car-guide-welcome" },
-    rotate: { title: "تدوير السيارة", text: "اسحب على مساحة السيارة لتدويرها ورؤية الجوانب المختلفة. على الهاتف استخدم إصبعاً واحداً للتدوير.", key: "car-guide-rotate" },
-    zoom: { title: "التقريب والتحكم", text: "استخدم زري التكبير والتصغير أسفل المجسم، أو عجلة الفأرة على الكمبيوتر. اضغط إعادة ضبط للعودة إلى زاوية البداية.", key: "car-guide-zoom" },
-    parts: { title: "الأجزاء الرئيسية", text: "اختر الهيكل أو المحرك أو المقصورة أو الإضاءة أو العجلات من القائمة. عند اختيار قطعة ستظهر محددة على المجسم، ويمكنك تحريكها بأزرار الاتجاهات.", key: "car-guide-parts" },
-    quality: { title: "جودة العرض", text: "اختر الجودة الاقتصادية عند بطء الجهاز أو الاتصال، والمتوسطة للتوازن، والعالية عندما يكون الجهاز قادراً على تشغيل التفاصيل بسلاسة.", key: "car-guide-quality" }
+    welcome: { title: "ابدأ الجولة", text: "أهلاً بك في رخصتي. اختر السيارة من أعلى صفحة الاستعراض، أو استخدم هذا المساعد لمعرفة طريقة التحكم." },
+    training: { title: "التدريب والإشارات", text: "من صفحات رخصتي يمكنك مراجعة قواعد السير والإشارات والميكانيك، ثم تجربة أحد نماذج الاختبار." },
+    rotate: { title: "تدوير السيارة", text: "اسحب على مساحة السيارة لتدويرها ورؤية الجوانب المختلفة. على الهاتف استخدم إصبعاً واحداً للتدوير." },
+    zoom: { title: "التقريب والتحكم", text: "استخدم زري التكبير والتصغير أسفل المجسم، أو عجلة الفأرة على الكمبيوتر. اضغط إعادة ضبط للعودة إلى زاوية البداية." },
+    parts: { title: "الأجزاء الرئيسية", text: "اختر الهيكل أو المحرك أو المقصورة أو الإضاءة أو العجلات من القائمة. عند اختيار قطعة ستظهر محددة على المجسم." },
+    quality: { title: "جودة العرض", text: "إذا كان الجهاز بطيئاً، اختر الجودة الاقتصادية. استخدم المتوسطة للتوازن، والعالية عندما يكون الجهاز قادراً على تشغيل التفاصيل بسلاسة." }
   };
 
-  let token = 0;
-  let fallbackToken = -1;
-  let activeTopic = null;
-  const setStatus = (text) => { status.textContent = text; };
+  let speechToken = 0;
+  let activeTopic = "welcome";
+  let drag = null;
+  let suppressClick = false;
+  const clamp = (point) => ({
+    x: Math.max(8, Math.min(Math.max(8, window.innerWidth - 100), point.x)),
+    y: Math.max(8, Math.min(Math.max(8, window.innerHeight - 112), point.y))
+  });
 
-  function stopSpeech(update = true) {
-    token++;
-    activeTopic = null;
-    audio.pause();
-    audio.removeAttribute("src");
-    audio.load();
+  function positionWidget(point) {
+    root.style.left = point.x + "px";
+    root.style.top = point.y + "px";
+    root.style.bottom = "auto";
+    const width = Math.min(348, window.innerWidth - 22);
+    const height = Math.min(500, window.innerHeight * .68);
+    panel.style.left = Math.max(11, Math.min(point.x - width + 92, window.innerWidth - width - 11)) + "px";
+    panel.style.top = Math.max(11, Math.min(point.y - height - 10, window.innerHeight - height - 11)) + "px";
+    panel.style.bottom = "auto";
+  }
+
+  let position = { x: 20, y: window.innerHeight - 112 };
+  try {
+    const saved = localStorage.getItem("rukhsati-floating-robot-position");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Number.isFinite(parsed.x) && Number.isFinite(parsed.y)) position = { x: parsed.x, y: parsed.y };
+    }
+  } catch {}
+  position = clamp(position);
+  positionWidget(position);
+
+  function stopSpeech(announce = true) {
+    speechToken += 1;
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     if (stopButton) stopButton.disabled = true;
-    if (update) setStatus("تم إيقاف الصوت.");
+    if (announce) status.textContent = "تم إيقاف الصوت.";
   }
-
-  function speakOnDevice(topic, requestToken) {
-    if (requestToken !== token || fallbackToken === requestToken) return;
-    fallbackToken = requestToken;
-    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
-      if (stopButton) stopButton.disabled = true;
-      setStatus("الصوت غير متاح على هذا المتصفح حالياً. يمكنك قراءة الشرح أعلاه.");
-      return;
-    }
-
-    const utterance = new SpeechSynthesisUtterance(topic.text);
-    utterance.lang = "ar-SA";
-    utterance.rate = 0.96;
-    const voices = window.speechSynthesis.getVoices();
-    const voice = voices.find((item) => /^ar([_-]|$)/i.test(item.lang)) ||
-      voices.find((item) => item.lang.toLowerCase().startsWith("ar"));
-    if (voice) utterance.voice = voice;
-
-    utterance.onstart = () => {
-      if (requestToken === token) setStatus("ملف الصوت المولّد غير متاح؛ يعمل صوت الجهاز الآن.");
-    };
-    utterance.onend = () => {
-      if (requestToken !== token) return;
-      activeTopic = null;
-      if (stopButton) stopButton.disabled = true;
-      setStatus("انتهى الشرح الصوتي.");
-    };
-    utterance.onerror = () => {
-      if (requestToken !== token) return;
-      activeTopic = null;
-      if (stopButton) stopButton.disabled = true;
-      setStatus("تعذّر تشغيل الصوت. يمكنك قراءة الشرح أعلاه.");
-    };
-
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-  }
-
-  function playTopic(topic) {
-    const requestToken = ++token;
-    activeTopic = topic;
-    fallbackToken = -1;
-    if (stopButton) stopButton.disabled = false;
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    audio.pause();
-    audio.removeAttribute("src");
-    audio.load();
-
-    setStatus("جارٍ تشغيل الشرح الصوتي…");
-    audio.onerror = () => speakOnDevice(topic, requestToken);
-    audio.onplaying = () => {
-      if (requestToken === token) setStatus("يعمل الصوت المولّد بالذكاء الاصطناعي.");
-    };
-    audio.onended = () => {
-      if (requestToken !== token) return;
-      activeTopic = null;
-      if (stopButton) stopButton.disabled = true;
-      setStatus("انتهى الشرح الصوتي.");
-    };
-
-    audio.src = apiBase + "/api/questions/audio-prompt/" + encodeURIComponent(topic.key) + "?v=20261010";
-    audio.load();
-    const playing = audio.play();
-    if (playing && typeof playing.catch === "function") playing.catch(() => speakOnDevice(topic, requestToken));
-  }
-
-  function showTopic(id, shouldPlay = true) {
+  function showTopic(id) {
     const topic = topics[id];
     if (!topic) return;
+    activeTopic = id;
     title.textContent = topic.title;
     message.textContent = topic.text;
     root.querySelectorAll("[data-guide-topic]").forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.guideTopic === id));
     });
-    if (shouldPlay) playTopic(topic);
-    else {
-      stopSpeech(false);
-      setStatus("اختر «استمع» لتشغيل الشرح الصوتي.");
-    }
   }
-
-  // Native <details>/<summary> opens the help panel even if this script fails to load.
-  root.addEventListener("toggle", () => {
-    const open = root.open;
-    toggle.setAttribute("aria-expanded", String(open));
-    if (open) {
-      if (!activeTopic) showTopic("welcome", false);
-    } else {
-      stopSpeech(false);
+  function playTopic(id) {
+    const topic = topics[id];
+    if (!topic) return;
+    showTopic(id);
+    stopSpeech(false);
+    const request = ++speechToken;
+    if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
+      status.textContent = "الصوت غير متاح هنا؛ يمكنك قراءة الشرح الظاهر.";
+      return;
     }
-  });
-
+    const utterance = new SpeechSynthesisUtterance(topic.text);
+    utterance.lang = "ar-SA";
+    utterance.rate = .96;
+    const voice = window.speechSynthesis.getVoices().find((item) => /^ar([_-]|$)/i.test(item.lang));
+    if (voice) utterance.voice = voice;
+    utterance.onstart = () => {
+      if (request === speechToken) status.textContent = "يعمل صوت الجهاز مؤقتاً، بانتظار الصوت المخصّص للمساعد.";
+    };
+    utterance.onend = () => {
+      if (request === speechToken) { stopButton.disabled = true; status.textContent = "انتهى الشرح الصوتي."; }
+    };
+    utterance.onerror = () => {
+      if (request === speechToken) { stopButton.disabled = true; status.textContent = "تعذّر تشغيل الصوت؛ يمكنك قراءة الشرح الظاهر."; }
+    };
+    stopButton.disabled = false;
+    status.textContent = "جارٍ تشغيل الشرح الصوتي…";
+    window.speechSynthesis.speak(utterance);
+  }
   function setOpen(open) {
     root.open = open;
     toggle.setAttribute("aria-expanded", String(open));
-    if (!open) stopSpeech(false);
+    if (open) showTopic(activeTopic);
+    else stopSpeech(false);
   }
 
-  if (close) close.addEventListener("click", () => setOpen(false));
-  root.querySelectorAll("[data-guide-topic]").forEach((button) => {
-    button.addEventListener("click", () => showTopic(button.dataset.guideTopic));
+  toggle.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    drag = { id: event.pointerId, startX: event.clientX, startY: event.clientY, x: position.x, y: position.y, moved: false };
+    try { toggle.setPointerCapture(event.pointerId); } catch {}
   });
-  if (stopButton) stopButton.addEventListener("click", () => stopSpeech(true));
+  toggle.addEventListener("pointermove", (event) => {
+    if (!drag || drag.id !== event.pointerId) return;
+    const dx = event.clientX - drag.startX, dy = event.clientY - drag.startY;
+    if (!drag.moved && Math.hypot(dx, dy) < 5) return;
+    drag.moved = true;
+    position = clamp({ x: drag.x + dx, y: drag.y + dy });
+    positionWidget(position);
+  });
+  const finishDrag = (event) => {
+    if (!drag || drag.id !== event.pointerId) return;
+    const moved = drag.moved;
+    drag = null;
+    if (moved) {
+      suppressClick = true;
+      try { localStorage.setItem("rukhsati-floating-robot-position", JSON.stringify(position)); } catch {}
+      window.setTimeout(() => { suppressClick = false; }, 280);
+    }
+    try { if (toggle.hasPointerCapture(event.pointerId)) toggle.releasePointerCapture(event.pointerId); } catch {}
+  };
+  toggle.addEventListener("pointerup", finishDrag);
+  toggle.addEventListener("pointercancel", finishDrag);
+  toggle.addEventListener("click", (event) => {
+    if (suppressClick) { event.preventDefault(); event.stopPropagation(); suppressClick = false; }
+  });
+  root.addEventListener("toggle", () => {
+    toggle.setAttribute("aria-expanded", String(root.open));
+    if (root.open) { showTopic(activeTopic); status.textContent = "اختر موضوعاً للاستماع إلى الشرح."; }
+    else stopSpeech(false);
+  });
+  close?.addEventListener("click", () => setOpen(false));
+  root.querySelectorAll("[data-guide-topic]").forEach((button) => {
+    button.addEventListener("click", () => playTopic(button.dataset.guideTopic));
+  });
+  stopButton?.addEventListener("click", () => stopSpeech(true));
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && root.open) setOpen(false);
+    const delta = { ArrowLeft: [-14, 0], ArrowRight: [14, 0], ArrowUp: [0, -14], ArrowDown: [0, 14] }[event.key];
+    if (delta && document.activeElement === toggle) {
+      event.preventDefault();
+      position = clamp({ x: position.x + delta[0] * (event.shiftKey ? 2 : 1), y: position.y + delta[1] * (event.shiftKey ? 2 : 1) });
+      positionWidget(position);
+      try { localStorage.setItem("rukhsati-floating-robot-position", JSON.stringify(position)); } catch {}
+    }
   });
-
+  window.addEventListener("resize", () => {
+    position = clamp(position);
+    positionWidget(position);
+  }, { passive: true });
   toggle.setAttribute("aria-expanded", String(root.open));
   root.dataset.initialized = "true";
 })();
