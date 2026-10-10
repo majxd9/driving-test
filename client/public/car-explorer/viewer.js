@@ -192,17 +192,60 @@ const loader = new GLTFLoader();
 // decodes it while receiving the bytes, then GLTFLoader parses the GLB.
 function loadGltf(url, statusLabel, progressStart = 0, progressSpan = 64) {
  return new Promise((resolve, reject) => {
-  loader.load(url, resolve, (event) => {
-   if (event && event.total > 0) {
-    const pct = Math.max(0, Math.min(100, event.loaded / event.total * 100));
-    $("status").textContent = statusLabel + " " + Math.round(pct) + "%";
-    $("progress").style.width = (progressStart + progressSpan * pct / 100) + "%";
-   } else if (event && event.loaded > 0) {
-    $("status").textContent = statusLabel + " (" + (event.loaded / 1048576).toFixed(1) + " MB)";
+  (async () => {
+   const response = await fetch(url);
+   if (!response.ok) throw new Error("فشل تنزيل ملف النموذج (HTTP " + response.status + "): " + url);
+   const total = Number(response.headers.get("content-length")) || 0;
+   let loaded = 0;
+   const chunks = [];
+   if (response.body && typeof response.body.getReader === "function") {
+    const reader = response.body.getReader();
+    while (true) {
+     const part = await reader.read();
+     if (part.done) break;
+     if (!part.value) continue;
+     chunks.push(part.value);
+     loaded += part.value.byteLength;
+     const pct = total > 0 ? Math.min(1, loaded / total) : Math.min(.92, loaded / (loaded + 2 * 1024 * 1024));
+     $("status").textContent = statusLabel + " (" + (loaded / 1048576).toFixed(1) + " MB)";
+     $("progress").style.width = (progressStart + progressSpan * pct) + "%";
+    }
    } else {
-    $("status").textContent = statusLabel;
+    const buffer = await response.arrayBuffer();
+    chunks.push(new Uint8Array(buffer));
+    loaded = buffer.byteLength;
    }
-  }, reject);
+   let bytes;
+   if (chunks.length === 1) {
+    bytes = chunks[0];
+   } else {
+    bytes = new Uint8Array(loaded);
+    let offset = 0;
+    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+   }
+   // Inspect the actual payload: some static hosts return gzip bytes even when
+   // Content-Encoding is configured. Normal browsers may instead return GLB bytes directly.
+   const isGzip = bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
+   if (isGzip) {
+    if (typeof DecompressionStream !== "function") {
+     throw new Error("وصل ملف السيارة مضغوطاً، لكن المتصفح لا يدعم فك gzip. حدّث المتصفح أو جرّب جهازاً آخر.");
+    }
+    $("status").textContent = "فك ضغط " + statusLabel + "…";
+    $("progress").style.width = (progressStart + progressSpan * .86) + "%";
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+    bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+   }
+   const signature = String.fromCharCode(...bytes.subarray(0, 4));
+   if (signature !== "glTF") {
+    const prefix = Array.from(bytes.subarray(0, 8)).map(n => n.toString(16).padStart(2, "0")).join(" ");
+    throw new Error("الملف الذي وصل ليس نموذج GLB صالحاً (التوقيع " + (prefix || "فارغ") + ").");
+   }
+   $("status").textContent = "تحليل " + statusLabel + "…";
+   $("progress").style.width = (progressStart + progressSpan * .92) + "%";
+   const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+   const basePath = new URL(".", new URL(url, document.baseURI)).href;
+   loader.parse(buffer, basePath, resolve, reject);
+  })().catch(reject);
  });
 }
 

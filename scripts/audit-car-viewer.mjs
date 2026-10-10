@@ -68,11 +68,13 @@ assert.ok(viewer.includes('controls.minDistance = 0.25'), 'Interior camera zoom 
 assert.ok(html.includes('id="qualitySelect"'), 'Graphics quality selector is missing from the UI');
 assert.ok(html.includes('<option value="low">اقتصادية</option>') && html.includes('<option value="medium">متوسطة</option>') && html.includes('<option value="high">عالية</option>'), 'All three graphics quality levels must be available');
 assert.ok(headers.includes("Content-Encoding: gzip"), "Compressed model must be browser-decompressed via HTTP Content-Encoding");
-assert.ok(viewer.includes('loader.load(url, resolve'), "GLTFLoader must load the URL directly instead of buffering the full file");
+assert.ok(viewer.includes('await fetch(url') && viewer.includes('loader.parse('), "Viewer must inspect downloaded bytes and parse the decoded GLB");
+assert.ok(viewer.includes('new DecompressionStream("gzip")'), "Viewer must decompress raw gzip payloads when necessary");
+assert.ok(viewer.includes('signature !== "glTF"'), "Viewer must validate the GLB signature before parsing");
 assert.ok(viewer.includes('loadGltf("./challenger-1970.glb.gzdata"'), "Viewer must prefer the compressed model");
 assert.ok(viewer.includes('loadGltf("./challenger-1970.glb"'), "Production compatibility fallback for the original model is missing");
 assert.ok(viewer.includes('Compressed Challenger model unavailable; trying original GLB'), "Compressed model failures must activate the fallback");
-assert.ok(!viewer.includes("DecompressionStream") && !viewer.includes("readResponseBytes"), "Manual JavaScript decompression and chunk buffering must remain removed");
+assert.ok(headers.includes("connect-src 'self' https: blob:"), "CSP must allow GLTFLoader blob texture fetches");
 assert.ok(buildScript.includes("@gltf-transform/cli@4.5.1"), "Build-time glTF texture optimization must be pinned to a known version");
 assert.ok(buildScript.includes("'--texture-compress', 'webp'") && buildScript.includes("'--texture-size', '1024'"), "Web-first WebP texture compression and resizing must be enabled");
 assert.ok(buildScript.includes("'--flatten', 'false'") && buildScript.includes("'--join', 'false'"), "Optimization must preserve separate model parts for the interactive sidebar");
