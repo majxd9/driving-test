@@ -23,12 +23,19 @@ public static class SystemAudioCatalog
     public const string SiteAssistantRules = "site-assistant-rules";
     public const string SiteAssistantPublicSigns = "site-assistant-public-signs";
     public const string SiteAssistantWelcome = "site-assistant-welcome";
+    public const string SiteAssistantLogin = "site-assistant-login";
+    public const string SiteAssistantResult = "site-assistant-result";
+    public const string SiteAssistantAbout = "site-assistant-about";
+    public const string SiteAssistantSyria = "site-assistant-syria";
+    public const string SiteAssistantNotFound = "site-assistant-not-found";
 
     public static bool IsSiteAssistantKey(string? key) =>
         key is SiteAssistantSigns or SiteAssistantMechanic or SiteAssistantTraining
             or SiteAssistantExam or SiteAssistantModels or SiteAssistantCar
             or SiteAssistantPractical or SiteAssistantHome or SiteAssistantRules
-            or SiteAssistantPublicSigns or SiteAssistantWelcome;
+            or SiteAssistantPublicSigns or SiteAssistantWelcome
+            or SiteAssistantLogin or SiteAssistantResult or SiteAssistantAbout
+            or SiteAssistantSyria or SiteAssistantNotFound;
 
 
     public static bool IsKnownKey(string? key) =>
@@ -37,5 +44,7 @@ public static class SystemAudioCatalog
             or SiteAssistantSigns or SiteAssistantMechanic or SiteAssistantTraining
             or SiteAssistantExam or SiteAssistantModels or SiteAssistantCar
             or SiteAssistantPractical or SiteAssistantHome or SiteAssistantRules
-            or SiteAssistantPublicSigns or SiteAssistantWelcome;
+            or SiteAssistantPublicSigns or SiteAssistantWelcome
+            or SiteAssistantLogin or SiteAssistantResult or SiteAssistantAbout
+            or SiteAssistantSyria or SiteAssistantNotFound;
 }
