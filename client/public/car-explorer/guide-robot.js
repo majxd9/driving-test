@@ -21,7 +21,7 @@ import * as THREE from "./vendor/three.module.js";
     camera.lookAt(0, 0, 0);
     renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "low-power" });
     renderer.setClearColor(0x000000, 0);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.15));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.08;
@@ -40,7 +40,7 @@ import * as THREE from "./vendor/three.module.js";
     const pupilMat = material(new THREE.MeshStandardMaterial({ color: 0x03202d, emissive: 0x061d2b, emissiveIntensity: 0.3, roughness: 0.16 }));
     const whiteGlow = material(new THREE.MeshBasicMaterial({ color: 0xe6ffff }));
     const gold = material(new THREE.MeshStandardMaterial({ color: 0xffc36d, emissive: 0xda7c25, emissiveIntensity: 1.25, metalness: 0.35, roughness: 0.24 }));
-    const sphere = geometry(new THREE.SphereGeometry(1, 28, 20));
+    const sphere = geometry(new THREE.SphereGeometry(1, 18, 12));
     const robot = new THREE.Group(); scene.add(robot);
 
     const ball = (parent, mat, scale, pos) => {
@@ -125,9 +125,12 @@ import * as THREE from "./vendor/three.module.js";
     }
     window.addEventListener("resize", resize, { passive: true });
 
+    let lastFrameAt = 0;
     const animate = (now) => {
       if (disposed || document.hidden) return;
       raf = window.requestAnimationFrame(animate);
+      if (now - lastFrameAt < 33) return;
+      lastFrameAt = now;
       gaze.x += (pointer.x - gaze.x) * 0.09;
       gaze.y += (pointer.y - gaze.y) * 0.09;
       robot.position.y = Math.sin(now * 0.0018) * 0.028;
@@ -143,8 +146,12 @@ import * as THREE from "./vendor/three.module.js";
       renderer.render(scene, camera);
       root.dataset.robotReady = "true";
     };
+    const onVisibilityChange = () => {
+      if (document.hidden) window.cancelAnimationFrame(raf);
+      else if (!disposed) raf = window.requestAnimationFrame(animate);
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
     raf = window.requestAnimationFrame(animate);
-    root.dataset.robotReady = "true";
 
     const showFallback = () => { delete root.dataset.robotReady; };
     const onVisibilityChange = () => {
