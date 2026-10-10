@@ -22,6 +22,25 @@
   let currentSpeech = { text: pageText, audioKey: "site-assistant-car", label: "مستكشف السيارة" };
   let speaking = false, activeAudio = null, dragging = null, suppressClick = false;
   let lastDodgeAt = 0;
+  let movementAudio = null;
+  function playMovementTick() {
+    try {
+      const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextConstructor) return;
+      movementAudio ||= new AudioContextConstructor();
+      if (movementAudio.state === "suspended") void movementAudio.resume();
+      const oscillator = movementAudio.createOscillator();
+      const gain = movementAudio.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(740, movementAudio.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(520, movementAudio.currentTime + 0.045);
+      gain.gain.setValueAtTime(0.0001, movementAudio.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.018, movementAudio.currentTime + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, movementAudio.currentTime + 0.055);
+      oscillator.connect(gain); gain.connect(movementAudio.destination);
+      oscillator.start(); oscillator.stop(movementAudio.currentTime + 0.06);
+    } catch { /* Decorative sound must never block movement. */ }
+  }
 
   function setSpeaking(value) {
     speaking = value;
@@ -196,6 +215,7 @@
       distance = Math.hypot(dx, dy);
     }
     lastDodgeAt = now;
+    playMovementTick();
     if (suggestion) suggestion.hidden = true;
     position = clamp({ x: position.x + dx / distance * 60, y: position.y + dy / distance * 60 });
     positionWidget(position);
