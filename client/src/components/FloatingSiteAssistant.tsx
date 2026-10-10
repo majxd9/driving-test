@@ -7,6 +7,7 @@ import FloatingRobot3D from './FloatingRobot3D';
 
 type GuideTopic = { id: string; title: string; text: string };
 type Point = { x: number; y: number };
+type AssistantSpeechContext = { title?: string; text: string; audioUrl?: string | null };
 type DragState = {
   pointerId: number; startX: number; startY: number; originX: number; originY: number;
   moved: boolean; dragging: boolean; timer?: number;
@@ -46,6 +47,7 @@ export default function FloatingSiteAssistant() {
   const location = useLocation();
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechContext, setSpeechContext] = useState<AssistantSpeechContext | null>(null);
   const [position, setPosition] = useState<Point>({ x: 20, y: 20 });
   const [positionReady, setPositionReady] = useState(false);
   const [robot3dReady, setRobot3dReady] = useState(false);
@@ -54,6 +56,8 @@ export default function FloatingSiteAssistant() {
   const speechActiveRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const locationRef = useRef(location.pathname);
+  const positionRef = useRef(position);
+  const lastDodgeAtRef = useRef(0);
 
   const stopSpeech = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -84,9 +88,56 @@ export default function FloatingSiteAssistant() {
   }, []);
 
   useEffect(() => {
+    positionRef.current = position;
     if (!positionReady) return;
     try { localStorage.setItem(POSITION_KEY, JSON.stringify(position)); } catch {}
   }, [position, positionReady]);
+
+  useEffect(() => {
+    const handleAssistantContext = (event: Event) => {
+      const detail = (event as CustomEvent<AssistantSpeechContext | null>).detail;
+      if (detail && typeof detail.text === 'string' && detail.text.trim()) {
+        setSpeechContext({ ...detail, text: detail.text.trim() });
+      } else {
+        setSpeechContext(null);
+      }
+    };
+    window.addEventListener('rukhsati-assistant-context', handleAssistantContext);
+    return () => window.removeEventListener('rukhsati-assistant-context', handleAssistantContext);
+  }, []);
+
+  // A nearby page tap makes Deli glide away a little. Taps on Deli itself and long-press
+  // dragging remain untouched, and a cooldown prevents the movement from becoming annoying.
+  useEffect(() => {
+    const handleNearbyPress = (event: PointerEvent) => {
+      if (event.target instanceof Element && event.target.closest('.rukhsati-site-assistant')) return;
+      const now = Date.now();
+      if (now - lastDodgeAtRef.current < 650) return;
+
+      const current = positionRef.current;
+      const centerX = current.x + ROBOT_WIDTH / 2;
+      const centerY = current.y + ROBOT_HEIGHT / 2;
+      let dx = centerX - event.clientX;
+      let dy = centerY - event.clientY;
+      let distance = Math.hypot(dx, dy);
+      if (distance > 150) return;
+      if (distance < 1) {
+        dx = centerX < window.innerWidth / 2 ? 1 : -1;
+        dy = centerY < window.innerHeight / 2 ? 1 : -1;
+        distance = Math.hypot(dx, dy);
+      }
+
+      lastDodgeAtRef.current = now;
+      setShowSuggestion(false);
+      setPosition(clampPoint({
+        x: current.x + (dx / distance) * 62,
+        y: current.y + (dy / distance) * 62,
+      }));
+    };
+
+    document.addEventListener('pointerdown', handleNearbyPress, true);
+    return () => document.removeEventListener('pointerdown', handleNearbyPress, true);
+  }, []);
 
   useEffect(() => {
     const onResize = () => setPosition(current => clampPoint(current));
@@ -128,7 +179,7 @@ export default function FloatingSiteAssistant() {
     }
 
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(activeTopic.text);
+    const utterance = new SpeechSynthesisUtterance(speechContext?.text ?? activeTopic.text);
     utterance.lang = 'ar-SA';
     utterance.rate = 0.97;
     utterance.pitch = 1;
@@ -152,7 +203,10 @@ export default function FloatingSiteAssistant() {
     }
 
     const key = `site-assistant-${activeTopic.id}`;
-    const audio = new Audio(resolveApiUrl(`/api/questions/audio-prompt/${encodeURIComponent(key)}`));
+    const source = speechContext?.audioUrl
+      ? resolveApiUrl(speechContext.audioUrl)
+      : resolveApiUrl(`/api/questions/audio-prompt/${encodeURIComponent(key)}`);
+    const audio = new Audio(source);
     audio.preload = 'auto';
     audioRef.current = audio;
     speechActiveRef.current = true;
@@ -198,6 +252,7 @@ export default function FloatingSiteAssistant() {
       if (dragRef.current !== drag) return;
       drag.dragging = true;
       drag.moved = true;
+      target.dataset.dragging = 'true';
       try { target.setPointerCapture(pointerId); } catch {}
       setShowSuggestion(false);
     }, 450);
@@ -224,6 +279,7 @@ export default function FloatingSiteAssistant() {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
     dragRef.current = null;
+    event.currentTarget.dataset.dragging = 'false';
     if (drag.timer) window.clearTimeout(drag.timer);
     if (drag.moved) {
       suppressClickRef.current = true;
@@ -264,7 +320,7 @@ export default function FloatingSiteAssistant() {
       {showSuggestion && !isSpeaking && (
         <div className="rukhsati-assistant-suggestion" role="status" aria-live="polite"
           style={{ left: suggestionLeft, top: suggestionTop, width: suggestionWidth }}>
-          <span>إذا احتجت مساعدة في {activeTopic.title}، اضغط على ديلي.</span>
+          <span>{speechContext?.title ? `اضغط على ديلي لسماع ${speechContext.title}.` : `إذا احتجت مساعدة في ${activeTopic.title}، اضغط على ديلي.`}</span>
           <button type="button" aria-label="إخفاء الاقتراح" onClick={() => setShowSuggestion(false)}>×</button>
         </div>
       )}
