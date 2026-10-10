@@ -131,6 +131,7 @@ public sealed class AiGenerationWorker : BackgroundService
         var generationJobs = scope.ServiceProvider.GetRequiredService<AiGenerationJobService>();
         var quota = new AiGenerationQuotaService(db, _configuration);
         var quotaConsumed = false;
+        DateTime? quotaMonthStartUtc = null;
 
         try
         {
@@ -176,19 +177,21 @@ public sealed class AiGenerationWorker : BackgroundService
                     return;
                 }
 
-                if (!quota.IsUnlimited(AiGenerationJobType.Audio) &&
-                    !await quota.TryConsumeAsync(cancellationToken))
+                if (!quota.IsUnlimited(AiGenerationJobType.Audio))
                 {
-                    await ReleaseJobAsync(
-                        db,
-                        claimed.Id,
-                        "تم بلوغ الحد الشهري لتوليد AI؛ ستُستأنف المهمة تلقائياً في بداية الشهر القادم.",
-                        cancellationToken,
-                        quota.NextMonthStartUtc);
-                    return;
+                    quotaMonthStartUtc = quota.CurrentMonthStartUtc;
+                    if (!await quota.TryConsumeAsync(quotaMonthStartUtc.Value, cancellationToken))
+                    {
+                        await ReleaseJobAsync(
+                            db,
+                            claimed.Id,
+                            "تم بلوغ الحد الشهري لتوليد AI؛ ستُستأنف المهمة تلقائياً في بداية الشهر القادم.",
+                            cancellationToken,
+                            quota.NextMonthStartUtc);
+                        return;
+                    }
+                    quotaConsumed = true;
                 }
-
-                quotaConsumed = !quota.IsUnlimited(AiGenerationJobType.Audio);
 
                 var generator = scope.ServiceProvider
                     .GetRequiredService<IQuestionAudioGenerator>();
@@ -204,7 +207,7 @@ public sealed class AiGenerationWorker : BackgroundService
                 if (currentQuestionAfterGeneration is null)
                 {
                     if (quotaConsumed)
-                        await quota.ReleaseAsync(cancellationToken);
+                        await quota.ReleaseAsync(quotaMonthStartUtc ?? quota.CurrentMonthStartUtc, cancellationToken);
 
                     await CompleteJobAsync(
                         db,
@@ -217,7 +220,7 @@ public sealed class AiGenerationWorker : BackgroundService
                 if (QuestionAudioTextBuilder.GetCurrentHash(currentQuestionAfterGeneration) != claimed.ContentHash)
                 {
                     if (quotaConsumed)
-                        await quota.ReleaseAsync(cancellationToken);
+                        await quota.ReleaseAsync(quotaMonthStartUtc ?? quota.CurrentMonthStartUtc, cancellationToken);
 
                     await CompleteJobAsync(
                         db,
@@ -276,19 +279,21 @@ public sealed class AiGenerationWorker : BackgroundService
                     return;
                 }
 
-                if (!quota.IsUnlimited(AiGenerationJobType.AiImage) &&
-                    !await quota.TryConsumeAsync(cancellationToken))
+                if (!quota.IsUnlimited(AiGenerationJobType.AiImage))
                 {
-                    await ReleaseJobAsync(
-                        db,
-                        claimed.Id,
-                        "تم بلوغ الحد الشهري لتوليد AI؛ ستُستأنف المهمة تلقائياً في بداية الشهر القادم.",
-                        cancellationToken,
-                        quota.NextMonthStartUtc);
-                    return;
+                    quotaMonthStartUtc = quota.CurrentMonthStartUtc;
+                    if (!await quota.TryConsumeAsync(quotaMonthStartUtc.Value, cancellationToken))
+                    {
+                        await ReleaseJobAsync(
+                            db,
+                            claimed.Id,
+                            "تم بلوغ الحد الشهري لتوليد AI؛ ستُستأنف المهمة تلقائياً في بداية الشهر القادم.",
+                            cancellationToken,
+                            quota.NextMonthStartUtc);
+                        return;
+                    }
+                    quotaConsumed = true;
                 }
-
-                quotaConsumed = !quota.IsUnlimited(AiGenerationJobType.AiImage);
 
                 var promptFromBank = ScenePromptBank.TryGet(question, out var storedScenePrompt);
                 var (diagnosticPositivePrompt, _) = QuestionImagePromptBuilder.Build(question);
@@ -336,7 +341,7 @@ public sealed class AiGenerationWorker : BackgroundService
                 if (currentQuestionAfterGeneration is null)
                 {
                     if (quotaConsumed)
-                        await quota.ReleaseAsync(cancellationToken);
+                        await quota.ReleaseAsync(quotaMonthStartUtc ?? quota.CurrentMonthStartUtc, cancellationToken);
 
                     await CompleteJobAsync(
                         db,
@@ -349,7 +354,7 @@ public sealed class AiGenerationWorker : BackgroundService
                 if (QuestionImagePromptBuilder.GetContentHash(currentQuestionAfterGeneration) != claimed.ContentHash)
                 {
                     if (quotaConsumed)
-                        await quota.ReleaseAsync(cancellationToken);
+                        await quota.ReleaseAsync(quotaMonthStartUtc ?? quota.CurrentMonthStartUtc, cancellationToken);
 
                     await CompleteJobAsync(
                         db,
@@ -452,7 +457,7 @@ public sealed class AiGenerationWorker : BackgroundService
             {
                 try
                 {
-                    await quota.ReleaseAsync(cancellationToken);
+                    await quota.ReleaseAsync(quotaMonthStartUtc ?? quota.CurrentMonthStartUtc, cancellationToken);
                 }
                 catch (Exception releaseError)
                 {
