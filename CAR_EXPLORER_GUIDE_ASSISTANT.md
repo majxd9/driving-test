@@ -31,3 +31,12 @@
 
 ## Fix for the panel not opening — 2026-10-10
 The panel now uses native HTML `<details>/<summary>` disclosure. This means the help text opens when the summary is clicked even if the assistant JavaScript cannot initialize; JavaScript remains responsible for topic selection, audio playback and closing the panel via the close button/Escape.
+
+
+## Lucario assistant model integration — 2026-10-10
+
+- The main-site floating helper and the standalone car-explorer helper now have a same-origin loader path for `client/public/car-explorer/Lucario.usdz`.
+- The main-site parser is dynamically imported so it does not inflate the first JavaScript bundle; the standalone page builds a local USDZ loader bundle with `client/vite.usdz-loader.config.ts`. No external CDN is introduced.
+- The existing procedural 3D robot remains the fallback if the model cannot be fetched or parsed. Direct click-to-speak and long-press dragging stay unchanged; question-training/exam audio is not touched.
+- **Release blocker:** the uploaded `Lucario.usdz` binary is not yet present in the GitHub repository. Until it is committed at `client/public/car-explorer/Lucario.usdz`, the assistant will continue displaying its procedural fallback rather than Lucario.
+- To finish the change, add the original uploaded binary at that exact path, commit and push it to `main`, then rerun `npm run build` in `client` and `node scripts/audit-car-viewer.mjs` from the repository root. After the asset is present, visually verify model orientation, textures, mobile rendering, long-press dragging and direct speech before declaring the production rollout complete.
