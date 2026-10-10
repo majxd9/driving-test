@@ -470,3 +470,12 @@ Latest master audit: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It includes one row
 ## Floating 3D Site Assistant — 2026-10-10
 
 The floating site assistant uses a real Three.js procedural robot in the React SPA and in the standalone car viewer. Its head/pupils follow mouse pointer movement and touch pointer movement; dragging and saved position are retained. The main SPA helper appears on public/login and student pages, and is hidden on Admin routes. CSS is fallback-only for unsupported/lost WebGL and also follows the pointer. Assistant speech still uses device speech until a dedicated voice ID is supplied; do not alter question/car audio. Current car-viewer cache revision: 20261010-r4. Verify on physical desktop/mobile before marking visual acceptance complete.
+
+
+## Floating assistant interaction pass — 2026-10-10
+
+- Replaced the topic list with one page-aware message and one explicit speech action; the dedicated assistant voice remains pending. Keep all question audio and existing car-guide audio unchanged.
+- Single click/tap on the robot opens the helper. A press held for 420 ms activates dragging; brief movement without a long press does not move it.
+- Pointer/touch presses on the page cause a small step away, except when the target is the assistant itself or its prompt. Eyes continue following mouse/touch coordinates.
+- A contextual help suggestion appears on initial load and after each SPA route change; the user can open it. The standalone car viewer shows its own suggestion on entry.
+- Owner may provide an alternate robot model and a separate assistant voice ID in a later step.
