@@ -3,7 +3,7 @@ using DrivingTestApi.Models;
 
 namespace DrivingTestApi.Services;
 
-public sealed class FishAudioQuestionAudioGenerator : IQuestionAudioGenerator
+public sealed class FishAudioQuestionAudioGenerator : IQuestionAudioGenerator, ITextToSpeechGenerator
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
@@ -16,6 +16,12 @@ public sealed class FishAudioQuestionAudioGenerator : IQuestionAudioGenerator
 
     public Task<GeneratedAudioResult> GenerateAsync(Question question, CancellationToken cancellationToken) =>
         GenerateTextAsync(QuestionAudioTextBuilder.Build(question), cancellationToken);
+
+    public Task<GeneratedAudioResult> GenerateTextAsync(
+        string text,
+        string? voiceId,
+        CancellationToken cancellationToken) =>
+        GenerateTextAsync(text, cancellationToken);
 
     private async Task<GeneratedAudioResult> GenerateTextAsync(string text, CancellationToken cancellationToken)
     {
