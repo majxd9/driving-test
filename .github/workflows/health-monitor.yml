@@ -66,3 +66,59 @@ jobs:
 
           echo "API health check failed after 3 attempts."
           exit 1
+
+      - name: Check Cloudflare Pages production assets
+        env:
+          FRONTEND_URL: https://driving-test-7en.pages.dev
+        shell: bash
+        run: |
+          set -euo pipefail
+          temp_dir="$(mktemp -d)"
+          trap 'rm -rf "$temp_dir"' EXIT
+
+          fetch_with_retry() {
+            local url="$1"
+            local destination="$2"
+            local attempt
+            for attempt in 1 2 3 4 5 6; do
+              if curl --fail --location --silent --show-error \
+                --connect-timeout 10 --max-time 30 \
+                "$url" --output "$destination"; then
+                return 0
+              fi
+              if [ "$attempt" -lt 6 ]; then
+                echo "Production asset request failed (attempt $attempt/6); retrying in 10 seconds."
+                sleep 10
+              fi
+            done
+            echo "Production asset request failed after 6 attempts: $url" >&2
+            return 1
+          }
+
+          fetch_with_retry "$FRONTEND_URL/" "$temp_dir/home.html"
+          grep -Eiq '<!doctype html|<html' "$temp_dir/home.html"
+          echo "Cloudflare home page returned valid HTML."
+
+          fetch_with_retry "$FRONTEND_URL/car-explorer/index.html" "$temp_dir/car-explorer.html"
+          grep -q 'id="carSelect"' "$temp_dir/car-explorer.html"
+          grep -q 'id="guideRobotCanvas"' "$temp_dir/car-explorer.html"
+
+          viewer_script="$(grep -Eo 'type="module" src="\\./viewer\\.js\\?v=[^"]+"' "$temp_dir/car-explorer.html" | head -n 1 | sed -E 's/.*src="([^"]+)".*/\\1/')"
+          guide_robot_script="$(grep -Eo 'src="\\./guide-robot\\.js\\?v=[^"]+"' "$temp_dir/car-explorer.html" | head -n 1 | sed -E 's/.*src="([^"]+)".*/\\1/')"
+          test -n "$viewer_script"
+          test -n "$guide_robot_script"
+
+          fetch_with_retry "$FRONTEND_URL/car-explorer/${viewer_script#./}" "$temp_dir/viewer.js"
+          grep -q 'function animateMeshPositions(paths' "$temp_dir/viewer.js"
+          grep -q 'setLoadError(message, "تعذّر تحميل " + spec.label)' "$temp_dir/viewer.js"
+
+          fetch_with_retry "$FRONTEND_URL/car-explorer/${guide_robot_script#./}" "$temp_dir/guide-robot.js"
+          grep -q 'Zeb.usdz' "$temp_dir/guide-robot.js"
+          grep -q 'readPointer' "$temp_dir/guide-robot.js"
+
+          model_status="$(curl --silent --show-error --location --head \
+            --connect-timeout 10 --max-time 30 \
+            --write-out '%{http_code}' --output /dev/null \
+            "$FRONTEND_URL/car-explorer/Zeb.usdz")"
+          test "$model_status" = "200"
+          echo "Cloudflare production smoke passed: home, car viewer, current viewer JS, Deli guide JS, and Zeb.usdz returned successfully."
