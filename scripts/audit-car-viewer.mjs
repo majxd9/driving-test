@@ -142,7 +142,7 @@ assert.ok(viewer.includes('qualityProfiles ='), 'Graphics quality profiles are m
 assert.ok(viewer.includes('qualitySelect.addEventListener("change"'), 'Graphics quality selector is not wired');
 assert.ok(html.includes('id="carSelect"'), 'Vehicle selector is missing');
 assert.ok(html.includes('<option value="mclaren" selected>McLaren Senna GTR</option>'), 'McLaren must be the default vehicle');
-assert.ok(html.includes('<option value="mustang">Ford Mustang GT</option>'), 'Ford Mustang must be the second vehicle option');
+assert.ok(!html.includes('value="mustang"') && !viewer.includes('mustang-2005.glb') && !html.includes('id="modelAttribution"'), 'Removed vehicle and attribution must not remain in the production viewer');
 assert.ok(viewer.includes('let currentQuality = "medium"'), 'Medium graphics quality must be the default');
 assert.ok(viewer.includes('urlForQuality') && viewer.includes('mclaren-senna-gtr-') && viewer.includes('20261010-r6'), 'Versioned McLaren quality-specific assets are not wired');
 assert.ok(viewer.includes('const qualities = [...new Set([requestedQuality, "low", "medium", "high"])]'), 'McLaren must retry the other quality variants');
