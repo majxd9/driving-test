@@ -25,17 +25,22 @@ function clampPoint(point: Point): Point {
 }
 
 function topicForPath(pathname: string): GuideTopic {
-  if (pathname.startsWith('/study/Ishara')) return { id: 'signs', title: 'الإشارات المرورية', text: 'هذه صفحة تدريب الإشارات. انتبه لشكل الإشارة ولونها ورمزها، واختر الإجابة ثم راجع التفسير.' };
-  if (pathname.startsWith('/study/Mechanic')) return { id: 'mechanic', title: 'تدريب الميكانيك', text: 'هذه صفحة تدريب الميكانيك. ركّز على اسم الجزء الرئيسي ووظيفته، ثم اختر الإجابة وراجع التفسير.' };
-  if (pathname.startsWith('/study/')) return { id: 'training', title: 'التدريب والمراجعة', text: 'هذه صفحة التدريب. اقرأ السؤال والصورة جيداً، واختر الإجابة، ثم راجع التفسير قبل الانتقال للسؤال التالي.' };
-  if (pathname.startsWith('/exam/')) return { id: 'exam', title: 'الاختبار', text: 'أنت في صفحة الاختبار. اقرأ السؤال جيداً وانتبه للوقت، واختر الإجابة التي تراها صحيحة.' };
-  if (pathname.startsWith('/models')) return { id: 'models', title: 'نماذج الاختبار', text: 'من هنا تختار نموذج الاختبار. بعد الانتهاء تظهر النتيجة ويمكنك مراجعة إجاباتك.' };
-  if (pathname.startsWith('/car-viewer')) return { id: 'car', title: 'استعراض السيارة ثلاثية الأبعاد', text: 'في عارض السيارة اسحب المجسم لتدويره، واستخدم التقريب، ثم اختر قطعة من القائمة لمعرفة مكانها.' };
-  if (pathname.startsWith('/practical-info')) return { id: 'practical', title: 'المعلومات العملية', text: 'هذه صفحة المعلومات العملية، وفيها أمثلة عن أضواء السيارة والغمازات وطريقة استخدامها.' };
-  if (pathname.startsWith('/app')) return { id: 'home', title: 'أهلاً بك في رخصتي', text: 'من الصفحة الرئيسية افتح التدريب، أو الإشارات، أو الميكانيك، أو اختر أحد نماذج الاختبار.' };
-  if (pathname.startsWith('/rules')) return { id: 'rules', title: 'قواعد السير', text: 'راجع قواعد السير بهدوء، ويمكنك الانتقال إلى التدريب لتجربة أسئلة القواعد.' };
-  if (pathname.startsWith('/traffic-signs')) return { id: 'public-signs', title: 'دليل الإشارات المرورية', text: 'تعرّف على معاني الإشارات هنا، ثم اختبر معلوماتك في قسم التدريب.' };
-  return { id: 'welcome', title: 'مساعد رخصتي', text: 'أنا مساعدك في رخصتي. اضغط على الروبوت وسأشرح لك الصفحة الحالية بصوت عربي.' };
+  if (pathname.startsWith('/study/Ishara')) return { id: 'signs', title: 'الإشارات المرورية', text: 'في تدريب الإشارات، لاحظ الشكل واللون والرمز، ثم اختر الإجابة وراجع التفسير.' };
+  if (pathname.startsWith('/study/Mechanic')) return { id: 'mechanic', title: 'تدريب الميكانيك', text: 'في الميكانيك، تعرّف على الجزء ووظيفته، اختر الإجابة، ثم راجع التفسير.' };
+  if (pathname.startsWith('/study/')) return { id: 'training', title: 'التدريب والمراجعة', text: 'اقرأ السؤال والصورة بهدوء، اختر الإجابة، ثم راجع التفسير قبل السؤال التالي.' };
+  if (pathname.startsWith('/exam/')) return { id: 'exam', title: 'الاختبار', text: 'أنت في الاختبار؛ اقرأ السؤال جيداً واختر إجابتك قبل انتهاء الوقت.' };
+  if (pathname.startsWith('/models')) return { id: 'models', title: 'نماذج الاختبار', text: 'اختر نموذج الاختبار المناسب. بعد الانتهاء ستظهر نتيجتك ويمكنك مراجعة الإجابات.' };
+  if (pathname.startsWith('/car-viewer')) return { id: 'car', title: 'استعراض السيارة ثلاثية الأبعاد', text: 'اسحب السيارة لتدويرها، وكبّر لرؤية التفاصيل، واختر قطعة لمعرفة اسمها ومكانها.' };
+  if (pathname.startsWith('/practical-info')) return { id: 'practical', title: 'المعلومات العملية', text: 'هنا تتعرّف على استخدام أضواء السيارة والغمازات. استعرض الأمثلة ثم جرّبها.' };
+  if (pathname.startsWith('/app')) return { id: 'home', title: 'الرئيسية', text: 'من هنا تبدأ التدريب، وتتعلّم الإشارات والميكانيك، أو تدخل نموذج اختبار.' };
+  if (pathname.startsWith('/rules')) return { id: 'rules', title: 'قواعد السير', text: 'استعرض قواعد السير الأساسية، ثم انتقل إلى التدريب لتجربة ما تعلمته.' };
+  if (pathname.startsWith('/traffic-signs')) return { id: 'public-signs', title: 'دليل الإشارات المرورية', text: 'استعرض الإشارات ومعانيها، ثم اختبر فهمك من قسم التدريب.' };
+  if (pathname.startsWith('/result')) return { id: 'result', title: 'النتيجة', text: 'هذه نتيجتك. راجع إجاباتك، وركّز على النقاط التي تحتاج إلى تدريب إضافي.' };
+  if (pathname.startsWith('/about')) return { id: 'about', title: 'عن رخصتي', text: 'هنا تجد نبذة عن رخصتي وكيف يساعدك على الاستعداد لاختبار القيادة.' };
+  if (pathname.startsWith('/driving-test-syria')) return { id: 'syrian-test', title: 'امتحان القيادة في سوريا', text: 'تعرّف على معلومات امتحان القيادة في سوريا، ثم تدرّب على الإشارات والقواعد.' };
+  if (pathname === '/' || pathname.startsWith('/login')) return { id: 'login', title: 'تسجيل الدخول', text: 'أهلاً بك! سجّل الدخول للمتابعة إلى تدريباتك ونماذج الاختبار.' };
+  if (pathname.startsWith('/admin')) return { id: 'welcome', title: 'مساعد رخصتي', text: 'أهلاً بك في رخصتي. اضغط على زيب متى احتجت مساعدة في الصفحة.' };
+  return { id: 'not-found', title: 'الصفحة غير موجودة', text: 'لم أجد الصفحة المطلوبة. ارجع للرئيسية أو اختر أحد أقسام رخصتي.' };
 }
 
 export default function FloatingSiteAssistant() {
@@ -92,10 +97,13 @@ export default function FloatingSiteAssistant() {
   }, []);
 
   useEffect(() => {
-    if (locationRef.current === location.pathname) return;
-    locationRef.current = location.pathname;
-    stopSpeech();
+    if (locationRef.current !== location.pathname) {
+      locationRef.current = location.pathname;
+      stopSpeech();
+    }
     setShowSuggestion(true);
+    const hideHint = window.setTimeout(() => setShowSuggestion(false), 4500);
+    return () => window.clearTimeout(hideHint);
   }, [location.pathname]);
 
   useEffect(() => () => {
@@ -110,41 +118,6 @@ export default function FloatingSiteAssistant() {
       audioRef.current = null;
     }
     speechActiveRef.current = false;
-  }, []);
-
-  // Only dodge a nearby tap. Far-away page clicks must not make the robot jump around.
-  useEffect(() => {
-    const onPagePress = (event: PointerEvent) => {
-      const target = event.target;
-      if (!(target instanceof Element) || target.closest('.rukhsati-site-assistant, .rukhsati-assistant-suggestion')) return;
-      setPosition(current => {
-        const centerX = current.x + ROBOT_WIDTH / 2;
-        const centerY = current.y + ROBOT_HEIGHT / 2;
-        let dx = centerX - event.clientX;
-        let dy = centerY - event.clientY;
-        const distance = Math.hypot(dx, dy);
-        if (distance > 190) return current;
-        if (distance < 1) { dx = 1; dy = -1; } else { dx /= distance; dy /= distance; }
-        return clampPoint({ x: current.x + dx * 46, y: current.y + dy * 46 });
-      });
-    };
-    document.addEventListener('pointerdown', onPagePress, true);
-    return () => document.removeEventListener('pointerdown', onPagePress, true);
-  }, []);
-
-  // CSS fallback gaze; the actual Three.js pupils use the same pointer/touch signal.
-  useEffect(() => {
-    const followPointer = (event: PointerEvent) => {
-      const x = Math.max(-2, Math.min(2, (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * 4));
-      const y = Math.max(-2, Math.min(2, (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * 4));
-      document.querySelectorAll<HTMLElement>('.rukhsati-site-assistant .rukhsati-robot-eye').forEach(eye => eye.style.setProperty('translate', x + 'px ' + y + 'px'));
-    };
-    window.addEventListener('pointermove', followPointer, { passive: true });
-    window.addEventListener('pointerdown', followPointer, { passive: true });
-    return () => {
-      window.removeEventListener('pointermove', followPointer);
-      window.removeEventListener('pointerdown', followPointer);
-    };
   }, []);
 
   const activeTopic = topicForPath(location.pathname);
@@ -284,19 +257,17 @@ export default function FloatingSiteAssistant() {
         onClick={handleRobotClick}>
         <FloatingRobot3D onReady={() => setRobot3dReady(true)} onError={() => setRobot3dReady(false)} />
         <span className="rukhsati-robot-stage" aria-hidden="true">
-          <span className="rukhsati-robot-halo" /><span className="rukhsati-robot-shadow" /><span className="rukhsati-robot-antenna"><i /></span>
-          <span className="rukhsati-robot-head"><i className="rukhsati-robot-ear rukhsati-robot-ear-left" /><i className="rukhsati-robot-ear rukhsati-robot-ear-right" /><span className="rukhsati-robot-visor"><i className="rukhsati-robot-eye rukhsati-robot-eye-left" /><i className="rukhsati-robot-eye rukhsati-robot-eye-right" /><i className="rukhsati-robot-mouth" /></span></span>
-          <span className="rukhsati-robot-neck" /><span className="rukhsati-robot-torso"><i className="rukhsati-robot-chest-light" /></span>
-          <i className="rukhsati-robot-arm rukhsati-robot-arm-left" /><i className="rukhsati-robot-arm rukhsati-robot-arm-right" /><i className="rukhsati-robot-leg rukhsati-robot-leg-left" /><i className="rukhsati-robot-leg rukhsati-robot-leg-right" />
+          <span className="rukhsati-robot-halo" />
+          <span className="rukhsati-robot-orb">Z</span>
         </span>
-        <span className="rukhsati-robot-caption">{isSpeaking ? 'عم يحكي' : 'اسألني'}</span>
+        <span className="rukhsati-robot-caption">{isSpeaking ? 'عم يحكي' : 'زيب'}</span>
       </button>
 
       {showSuggestion && !isSpeaking && (
         <div className="rukhsati-assistant-suggestion" role="status" aria-live="polite"
           style={{ left: suggestionLeft, top: suggestionTop, width: suggestionWidth }}>
-          <span>{activeTopic.text}</span>
-          <b>اضغط على الروبوت لأشرح لك</b>
+          <span>إذا احتجت مساعدة في {activeTopic.title}، اضغط على زيب.</span>
+          <button type="button" aria-label="إخفاء الاقتراح" onClick={() => setShowSuggestion(false)}>×</button>
         </div>
       )}
     </div>
