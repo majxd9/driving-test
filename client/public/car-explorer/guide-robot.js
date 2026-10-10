@@ -126,7 +126,7 @@ import * as THREE from "./vendor/three.module.js";
     window.addEventListener("resize", resize, { passive: true });
 
     const animate = (now) => {
-      if (disposed) return;
+      if (disposed || document.hidden) return;
       raf = window.requestAnimationFrame(animate);
       gaze.x += (pointer.x - gaze.x) * 0.09;
       gaze.y += (pointer.y - gaze.y) * 0.09;
@@ -147,24 +147,23 @@ import * as THREE from "./vendor/three.module.js";
     root.dataset.robotReady = "true";
 
     const showFallback = () => { delete root.dataset.robotReady; };
+    const onVisibilityChange = () => {
+      if (!document.hidden && !disposed) raf = window.requestAnimationFrame(animate);
+    };
     canvas.addEventListener("webglcontextlost", showFallback);
-    document.addEventListener("visibilitychange", () => { if (document.hidden) renderer.setAnimationLoop(null); });
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     window.addEventListener("pagehide", () => {
       disposed = true; window.cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", readPointer);
       window.removeEventListener("pointerdown", readPointer);
       window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       observer?.disconnect();
-      scene.traverse((object) => {
-        if (object.geometry && geometrySet.has(object.geometry)) geometrySet.delete(object.geometry);
-        if (object.material) {
-          const list = Array.isArray(object.material) ? object.material : [object.material];
-          for (const entry of list) if (materialSet.has(entry)) materialSet.delete(entry);
-        }
-      });
       for (const entry of geometrySet) entry.dispose();
       for (const entry of materialSet) entry.dispose();
+      geometrySet.clear();
+      materialSet.clear();
       renderer.dispose();
     }, { once: true });
   } catch (error) {

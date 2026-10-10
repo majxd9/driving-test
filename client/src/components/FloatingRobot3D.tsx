@@ -212,15 +212,10 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
         window.removeEventListener('pointerdown', readPointer);
         window.removeEventListener('resize', resize);
         resizeObserver?.disconnect();
-        scene.traverse((object: any) => {
-          if (object.geometry && geometries.has(object.geometry)) geometries.delete(object.geometry);
-          if (object.material) {
-            const list = Array.isArray(object.material) ? object.material : [object.material];
-            for (const material of list) if (materials.has(material)) materials.delete(material);
-          }
-        });
         for (const geometry of geometries) geometry.dispose();
         for (const material of materials) material.dispose();
+        geometries.clear();
+        materials.clear();
         renderer.dispose();
         renderer.forceContextLoss();
       };
