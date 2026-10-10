@@ -1,53 +1,18 @@
-/* Lightweight assistant shell with a real Three.js robot and CSS fallback. */
+/* One floating Zeb assistant shared across the public and student pages. */
 .rukhsati-site-assistant{position:fixed;inset:0;z-index:9500;direction:rtl;color:#f3f8fc;font-family:"IBM Plex Sans Arabic","Cairo",system-ui,sans-serif;pointer-events:none}
 .rukhsati-assistant-robot-button{position:fixed;z-index:9502;display:block;width:92px;height:104px;margin:0;padding:0;border:0;border-radius:22px;background:transparent;color:#e9fcff;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;pointer-events:auto;filter:drop-shadow(0 8px 12px #0006)}
-.rukhsati-assistant-robot-button:active{cursor:grab}.rukhsati-assistant-robot-button:focus-visible{outline:2px solid #81f0e0;outline-offset:2px}
-.rukhsati-robot-stage{position:absolute;inset:0 0 12px;display:block;perspective:230px;transform-style:preserve-3d;animation:rukhsati-robot-hover 3.2s ease-in-out infinite;pointer-events:none}
-.rukhsati-robot-halo{position:absolute;left:8px;right:8px;top:16px;bottom:0;border-radius:50%;background:radial-gradient(ellipse,#36d8dc32 0%,#3470a015 46%,transparent 72%);filter:blur(4px)}
-.rukhsati-robot-shadow{position:absolute;left:22px;bottom:1px;width:49px;height:12px;border-radius:50%;background:#0008;filter:blur(5px);transform:rotateX(62deg)}
-.rukhsati-robot-antenna{position:absolute;left:44px;top:2px;width:4px;height:14px;border-radius:5px;background:linear-gradient(90deg,#6d8694,#f1fbff 42%,#698294);box-shadow:1px 1px 2px #0008;transform:rotate(5deg)}
-.rukhsati-robot-antenna i{position:absolute;left:-4px;top:-5px;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 34% 27%,#fffae5,#ffce77 36%,#e78b4f 73%,#7b4b37);box-shadow:0 0 8px #ffbf6a9c,inset -2px -2px 2px #7b493e}
-.rukhsati-robot-head{position:absolute;left:17px;top:13px;width:58px;height:43px;border:1px solid #c6e5ee;border-radius:16px 16px 18px 18px;background:linear-gradient(130deg,#f7fcff 0%,#c3d7df 22%,#849eaf 53%,#dbe9ee 72%,#718b9b 100%);box-shadow:inset 2px 2px 3px #fff,inset -5px -5px 6px #344e6185,4px 6px 8px #0008;transform:rotateY(-9deg) rotateX(2deg) translateZ(5px)}
-.rukhsati-robot-ear{position:absolute;top:13px;width:8px;height:17px;border:1px solid #8ab8c5;border-radius:5px;background:linear-gradient(90deg,#395364,#c4e2e9 48%,#6e91a3);box-shadow:1px 2px 3px #0008}.rukhsati-robot-ear-left{left:-6px}.rukhsati-robot-ear-right{right:-6px}
-.rukhsati-robot-visor{position:absolute;inset:5px 5px 6px;display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid #476f7b;border-radius:11px;background:linear-gradient(150deg,#132d3e,#071520 76%);box-shadow:inset 0 1px 5px #000,0 0 8px #52ebe51b}
-.rukhsati-robot-eye{width:8px;height:10px;border-radius:4px 4px 5px 5px;background:linear-gradient(180deg,#dfffff,#65f0e1 60%,#2daab5);box-shadow:0 0 7px #53f8ee,0 0 13px #42d8d566;animation:rukhsati-robot-blink 5.2s infinite}
-.rukhsati-robot-mouth{position:absolute;left:50%;bottom:4px;width:12px;height:2px;border-radius:5px;background:#7fece2;box-shadow:0 0 4px #7fece2a3;transform:translateX(-50%)}
-.rukhsati-robot-neck{position:absolute;left:40px;top:53px;width:13px;height:7px;border-radius:2px 2px 4px 4px;background:linear-gradient(90deg,#536d7e,#dceaf0 45%,#637f90);box-shadow:1px 2px 3px #0007}
-.rukhsati-robot-torso{position:absolute;left:27px;top:59px;width:35px;height:24px;border:1px solid #abcbd6;border-radius:11px 11px 10px 10px;background:linear-gradient(125deg,#effaff 0%,#9ab5c5 24%,#526e82 55%,#d1e3e9 73%,#607e91 100%);box-shadow:inset 2px 1px 3px #fff,inset -3px -3px 5px #385367,3px 4px 5px #0007;transform:rotateY(-8deg)}
-.rukhsati-robot-chest-light{position:absolute;left:13px;top:8px;width:8px;height:8px;border:1px solid #86f1e8;border-radius:3px;background:radial-gradient(circle at 30% 25%,#e6ffff,#3dd8d0 58%,#187a96);box-shadow:0 0 8px #51ede0a8}
-.rukhsati-robot-arm{position:absolute;top:63px;width:9px;height:19px;border:1px solid #9fbfcd;border-radius:7px;background:linear-gradient(90deg,#4e6a7e,#dae8ee 45%,#7893a4);box-shadow:2px 2px 3px #0007}.rukhsati-robot-arm-left{left:17px;transform:rotate(16deg)}.rukhsati-robot-arm-right{right:17px;transform:rotate(-16deg)}
-.rukhsati-robot-leg{position:absolute;top:80px;width:11px;height:9px;border:1px solid #93b7c6;border-radius:4px 4px 5px 5px;background:linear-gradient(90deg,#465e70,#b7d3df 48%,#617d8f);box-shadow:2px 2px 3px #0007}.rukhsati-robot-leg-left{left:32px}.rukhsati-robot-leg-right{right:32px}
-.rukhsati-robot-caption{position:absolute;left:50%;bottom:-1px;padding:2px 8px 3px;border:1px solid #8ce7dd4a;border-radius:999px;color:#ddfffb;background:#0d2029ef;box-shadow:0 3px 8px #0006;font-size:9px;font-weight:800;line-height:1.4;white-space:nowrap;transform:translateX(-50%)}
-.rukhsati-assistant-panel{position:fixed;z-index:9501;display:flex;flex-direction:column;width:min(356px,calc(100vw - 24px));max-height:min(520px,70dvh);overflow:hidden;border:1px solid #9be4dd45;border-radius:21px;color:#f2f7fa;background:radial-gradient(ellipse at 100% 0%,#1d455144,transparent 50%),linear-gradient(150deg,#14232ffb 0%,#0b141dfc 75%);box-shadow:0 25px 75px #000a,inset 0 1px #ffffff0c;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);animation:rukhsati-assistant-in .18s ease-out both;pointer-events:auto}
-.rukhsati-assistant-header{display:flex;flex:0 0 auto;align-items:center;gap:10px;padding:13px;border-bottom:1px solid #ffffff12}
-.rukhsati-assistant-header-avatar{display:grid;flex:0 0 42px;width:42px;height:42px;place-items:center;border:1px solid #84e6d355;border-radius:14px;background:radial-gradient(circle at 35% 22%,#315965,#132833 72%);box-shadow:0 0 18px #2dd4bf20,inset 0 1px #ffffff17}
-.rukhsati-mini-robot-face{position:relative;display:flex;align-items:center;justify-content:center;gap:5px;width:30px;height:24px;border:1px solid #bad8e4;border-radius:9px;background:linear-gradient(135deg,#f0f8fa,#688497);box-shadow:inset -2px -2px 3px #24485e}
-.rukhsati-mini-robot-face i{width:4px;height:6px;border-radius:3px;background:#63eee1;box-shadow:0 0 5px #58e7dc}.rukhsati-mini-robot-face b{position:absolute;left:50%;bottom:4px;width:7px;height:1px;background:#68d8d5;transform:translateX(-50%)}
-.rukhsati-assistant-header>div{flex:1;min-width:0}.rukhsati-assistant-kicker{display:block;margin-bottom:2px;color:#efbd76;font-size:9px;font-weight:800}
-.rukhsati-assistant-header h2{margin:0;color:#f3f8fc;font-size:15px;font-weight:800;line-height:1.5}
-.rukhsati-assistant-close{display:grid;flex:0 0 34px;width:34px;height:34px;place-items:center;border:1px solid #ffffff19;border-radius:11px;color:#d4e0e9;background:#ffffff08;font-size:23px;line-height:1;cursor:pointer}
-.rukhsati-assistant-content{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px;scrollbar-width:thin;scrollbar-color:#4c6e77 transparent}
-.rukhsati-assistant-explanation{padding:11px 12px 12px;border:1px solid #7ee6d51e;border-radius:15px;background:linear-gradient(135deg,#1a374029,#ffffff03)}
-.rukhsati-assistant-explanation strong{display:block;margin-bottom:5px;color:#a8f0e5;font-size:13px;font-weight:800}.rukhsati-assistant-explanation p{margin:0;color:#c4d2dd;font-size:11px;line-height:1.9}
-.rukhsati-assistant-topics{display:grid;gap:6px;margin-top:10px}.rukhsati-assistant-topic{display:flex;align-items:center;gap:9px;width:100%;min-height:45px;padding:7px 10px;border:1px solid #ffffff10;border-radius:12px;color:#e9f1f6;background:#ffffff04;text-align:right;cursor:pointer}
-.rukhsati-assistant-topic:hover,.rukhsati-assistant-topic[data-active="true"]{border-color:#80e7d553;background:#78dfcf0e}
-.rukhsati-assistant-topic-mark{display:grid;flex:0 0 29px;width:29px;height:29px;place-items:center;border:1px solid #7de7d52a;border-radius:9px;color:#a9f4e7;background:#7de7d50c;font-size:14px}
-.rukhsati-assistant-topic-copy{display:grid;flex:1;gap:2px;min-width:0}.rukhsati-assistant-topic-copy strong{font-size:11px;font-weight:700;line-height:1.5}.rukhsati-assistant-topic-copy small{color:#91a7b7;font-size:9px;line-height:1.45}
-.rukhsati-assistant-footer{display:grid;flex:0 0 auto;gap:9px;padding:11px 12px 12px;border-top:1px solid #ffffff12;background:#09121bd9}
-.rukhsati-assistant-status{min-height:16px;color:#92abb9;font-size:9px;line-height:1.7}.rukhsati-assistant-actions{display:flex;flex-wrap:wrap;gap:7px}
-.rukhsati-assistant-stop,.rukhsati-assistant-open-page{flex:1 1 auto;min-height:37px;padding:8px 10px;border:1px solid #ffffff17;border-radius:11px;color:#e6edf3;background:#ffffff07;font:inherit;font-size:10px;font-weight:700;cursor:pointer}
-.rukhsati-assistant-open-page{border-color:#75ddc65c;color:#05221f;background:linear-gradient(115deg,#8be5d5,#62cbbb)}.rukhsati-assistant-stop:disabled{opacity:.4;cursor:not-allowed}
-@keyframes rukhsati-robot-hover{0%,100%{transform:translateY(0) rotateY(-2deg)}50%{transform:translateY(-3px) rotateY(3deg)}}@keyframes rukhsati-robot-blink{0%,43%,47%,100%{transform:scaleY(1)}45%{transform:scaleY(.15)}}@keyframes rukhsati-assistant-in{from{opacity:0;transform:translateY(7px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
-@media(max-width:480px){.rukhsati-assistant-robot-button{width:84px;height:96px}.rukhsati-robot-stage{transform:scale(.92);transform-origin:50% 100%}.rukhsati-assistant-panel{max-height:min(500px,68dvh);border-radius:18px}.rukhsati-assistant-header{padding:10px}.rukhsati-assistant-content{padding:9px}.rukhsati-assistant-explanation{padding:9px 10px}.rukhsati-assistant-explanation p{font-size:10px;line-height:1.8}.rukhsati-assistant-topic{min-height:42px;padding:7px 8px}.rukhsati-assistant-footer{padding:9px}}
-@media(prefers-reduced-motion:reduce){.rukhsati-robot-stage,.rukhsati-assistant-panel,.rukhsati-robot-eye{animation:none}}
-
+.rukhsati-assistant-robot-button:active{cursor:grabbing}
+.rukhsati-assistant-robot-button:focus-visible{outline:2px solid #81f0e0;outline-offset:2px}
 .rukhsati-robot-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;touch-action:none}
+.rukhsati-robot-stage{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.rukhsati-robot-halo{position:absolute;width:74px;height:78px;border-radius:50%;background:radial-gradient(ellipse,#36d8dc35 0%,#3470a01b 48%,transparent 73%);filter:blur(4px);animation:rukhsati-zeb-pulse 2.8s ease-in-out infinite}
+.rukhsati-robot-orb{position:relative;display:grid;place-items:center;width:32px;height:32px;border:1px solid #8eece2;border-radius:50%;color:#e7fffc;background:radial-gradient(circle at 30% 23%,#4e8995,#102a38 72%);box-shadow:0 0 18px #46e3d344,inset 0 1px 4px #fff4;font-size:13px;font-weight:800}
 .rukhsati-site-assistant[data-robot-ready="true"] .rukhsati-robot-stage{display:none}
-
-.rukhsati-assistant-suggestion{position:fixed;z-index:9503;display:grid;gap:6px;padding:11px 12px;border:1px solid #8ce7dd52;border-radius:15px;color:#eaf8fa;background:linear-gradient(145deg,#142934f5,#0b141df5);box-shadow:0 14px 40px #0008;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);text-align:right;font:inherit;font-size:11px;line-height:1.8;cursor:default;pointer-events:none;animation:rukhsati-assistant-in .18s ease-out both}
-.rukhsati-assistant-suggestion b{color:#8be7d9;font-size:10px;font-weight:800}
-.rukhsati-assistant-panel{max-height:min(255px,48dvh)}
-.rukhsati-assistant-explanation p{margin:0;color:#c4d2dd;font-size:12px;line-height:1.9}
-.rukhsati-assistant-actions{display:flex;gap:7px}
-.rukhsati-assistant-open-page{width:100%}
-@media(max-width:480px){.rukhsati-assistant-suggestion{font-size:10px;padding:10px 11px}.rukhsati-assistant-panel{max-height:min(245px,46dvh)}.rukhsati-assistant-explanation p{font-size:11px}}
+.rukhsati-robot-caption{position:absolute;left:50%;bottom:-1px;padding:2px 8px 3px;border:1px solid #8ce7dd4a;border-radius:999px;color:#ddfffb;background:#0d2029ed;box-shadow:0 3px 8px #0006;font-size:9px;font-weight:800;line-height:1.4;white-space:nowrap;transform:translateX(-50%);pointer-events:none}
+.rukhsati-assistant-suggestion{position:fixed;z-index:9501;display:block;padding:11px 31px 11px 13px;border:1px solid #94dce55b;border-radius:15px;color:#edf8fa;background:linear-gradient(145deg,#172d38f5,#0b121bf5);box-shadow:0 12px 32px #0006;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:11px;line-height:1.8;pointer-events:auto;animation:rukhsati-assistant-in .18s ease-out both}
+.rukhsati-assistant-suggestion button{position:absolute;top:5px;left:5px;width:23px;height:23px;border:0;border-radius:7px;color:#c8d7df;background:#ffffff09;font-size:17px;line-height:1;cursor:pointer}
+.rukhsati-assistant-suggestion button:focus-visible{outline:2px solid #81f0e0;outline-offset:2px}
+@keyframes rukhsati-zeb-pulse{0%,100%{transform:scale(.96);opacity:.72}50%{transform:scale(1.04);opacity:1}}
+@keyframes rukhsati-assistant-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:480px){.rukhsati-assistant-robot-button{width:84px;height:96px}.rukhsati-robot-caption{font-size:8px}.rukhsati-assistant-suggestion{font-size:10px;padding:10px 29px 10px 11px;line-height:1.75}}
+@media(prefers-reduced-motion:reduce){.rukhsati-robot-halo,.rukhsati-assistant-suggestion{animation:none}}
