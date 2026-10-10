@@ -43,6 +43,62 @@ import * as THREE from "./vendor/three.module.js";
     const sphere = geometry(new THREE.SphereGeometry(1, 18, 12));
     const robot = new THREE.Group(); scene.add(robot);
 
+  let lucarioRoot = null;
+  let lucarioBaseY = 0;
+  const disposeLoadedModel = (object) => {
+    const geometries = new Set();
+    const materials = new Set();
+    const textures = new Set();
+    object.traverse((child) => {
+      if (child.geometry) geometries.add(child.geometry);
+      const list = Array.isArray(child.material) ? child.material : (child.material ? [child.material] : []);
+      for (const item of list) {
+        materials.add(item);
+        for (const value of Object.values(item)) {
+          if (value && value.isTexture) textures.add(value);
+        }
+      }
+    });
+    for (const item of textures) item.dispose();
+    for (const item of materials) item.dispose();
+    for (const item of geometries) item.dispose();
+  };
+
+  // Import the parser only when this small helper starts; keep the old robot
+  // visible if the generated loader or model asset is not available.
+  const loadLucario = async () => {
+    let loaded = null;
+    try {
+      const { USDLoader } = await import("./guide-usdz-loader.js?v=20261010-r7");
+      loaded = await new USDLoader().loadAsync("./Lucario.usdz?v=lucario-1");
+      if (disposed) {
+        disposeLoadedModel(loaded);
+        return;
+      }
+      const bounds = new THREE.Box3().setFromObject(loaded);
+      const size = bounds.getSize(new THREE.Vector3());
+      const center = bounds.getCenter(new THREE.Vector3());
+      const largestSide = Math.max(size.x, size.y, size.z);
+      if (!Number.isFinite(largestSide) || largestSide <= 0) {
+        throw new Error("Lucario USDZ has invalid bounds.");
+      }
+
+      const fitScale = 2.02 / largestSide;
+      const normalized = new THREE.Group();
+      normalized.scale.setScalar(fitScale);
+      normalized.position.set(-center.x * fitScale, -center.y * fitScale, -center.z * fitScale);
+      normalized.add(loaded);
+      scene.add(normalized);
+      lucarioRoot = normalized;
+      lucarioBaseY = normalized.position.y;
+      robot.visible = false;
+    } catch {
+      if (loaded && !lucarioRoot) disposeLoadedModel(loaded);
+      // Do not disable the helper when the optional model fails to load.
+    }
+  };
+  void loadLucario();
+
     const ball = (parent, mat, scale, pos) => {
       const item = new THREE.Mesh(sphere, mat);
       item.scale.set(scale[0], scale[1], scale[2]);
@@ -143,6 +199,11 @@ import * as THREE from "./vendor/three.module.js";
         eye.shine.position.x = eye.x - 0.02 + gaze.x * 0.047;
         eye.shine.position.y = eye.y + 0.024 + gaze.y * 0.031;
       }
+      if (lucarioRoot) {
+        lucarioRoot.position.y = lucarioBaseY + Math.sin(now * 0.0016) * 0.022;
+        lucarioRoot.rotation.y += ((gaze.x * 0.11) - lucarioRoot.rotation.y) * 0.055;
+        lucarioRoot.rotation.x += ((-gaze.y * 0.045) - lucarioRoot.rotation.x) * 0.055;
+      }
       renderer.render(scene, camera);
       root.dataset.robotReady = "true";
     };
@@ -163,6 +224,11 @@ import * as THREE from "./vendor/three.module.js";
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       observer?.disconnect();
+      if (lucarioRoot) {
+        scene.remove(lucarioRoot);
+        disposeLoadedModel(lucarioRoot);
+        lucarioRoot = null;
+      }
       for (const entry of geometrySet) entry.dispose();
       for (const entry of materialSet) entry.dispose();
       geometrySet.clear();
