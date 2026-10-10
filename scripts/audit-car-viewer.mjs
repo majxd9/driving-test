@@ -15,6 +15,10 @@ const required = [
   'client/public/car-explorer/viewer-premium.css',
   'client/public/car-explorer/viewer.js',
   'client/public/car-explorer/viewer-boot.js',
+  'client/public/car-explorer/guide-assistant.js',
+  'client/public/car-explorer/guide-assistant.css',
+  'server/Services/SystemAudioCatalog.cs',
+  'server/Services/SystemAudioPromptService.cs',
   'client/public/car-explorer/vendor/three.module.js',
   'client/public/car-explorer/vendor/OrbitControls.js',
   'client/public/car-explorer/vendor/GLTFLoader.js',
@@ -26,8 +30,14 @@ for (const file of required) assert.ok(existsSync(path.join(root, file)), `Missi
 
 const syntaxCheck = spawnSync(process.execPath, ['--check', path.join(root, 'client/public/car-explorer/viewer.js')], { encoding: 'utf8' });
 assert.equal(syntaxCheck.status, 0, 'Car viewer JavaScript syntax check failed: ' + (syntaxCheck.stderr || syntaxCheck.stdout || 'unknown error'));
+const guideSyntaxCheck = spawnSync(process.execPath, ['--check', path.join(root, 'client/public/car-explorer/guide-assistant.js')], { encoding: 'utf8' });
+assert.equal(guideSyntaxCheck.status, 0, 'Car guide assistant JavaScript syntax check failed: ' + (guideSyntaxCheck.stderr || guideSyntaxCheck.stdout || 'unknown error'));
 const html = read('client/public/car-explorer/index.html');
 const viewer = read('client/public/car-explorer/viewer.js');
+const guideAssistant = read('client/public/car-explorer/guide-assistant.js');
+const guideAssistantCss = read('client/public/car-explorer/guide-assistant.css');
+const systemAudioCatalog = read('server/Services/SystemAudioCatalog.cs');
+const systemAudioPrompts = read('server/Services/SystemAudioPromptService.cs');
 const premiumCss = read('client/public/car-explorer/viewer-premium.css');
 const buildScript = read('scripts/build-client.mjs');
 const boot = read('client/public/car-explorer/viewer-boot.js');
@@ -43,6 +53,16 @@ assert.ok(!html.includes('type="importmap"'), 'Inline import map found; viewer s
 assert.ok(html.includes('src="./viewer-boot.js"'), 'Viewer boot/error handler is not linked');
 assert.ok(html.includes('type="module" src="./viewer.js"'), 'Viewer module is not linked');
 assert.ok(html.includes('href="./viewer-premium.css"'), 'Premium viewer CSS is not linked');
+assert.ok(html.includes('href="./guide-assistant.css"'), 'Car guide assistant CSS is not linked');
+assert.ok(html.includes('src="./guide-assistant.js"'), 'Car guide assistant script is not linked');
+assert.ok(html.includes('meta name="api-base-url"'), 'The guide assistant API base URL is missing');
+assert.ok(!/guideAssistantAudio[^>]*autoplay/i.test(html), 'The guide assistant must not autoplay audio');
+assert.ok(guideAssistant.includes('car-guide-welcome') && guideAssistant.includes('car-guide-rotate') && guideAssistant.includes('car-guide-zoom') && guideAssistant.includes('car-guide-parts') && guideAssistant.includes('car-guide-quality'), 'Guide audio topic keys are incomplete');
+assert.ok(guideAssistant.includes('speechSynthesis') && guideAssistant.includes('audio.onerror'), 'Guide assistant speech fallback is missing');
+assert.ok(guideAssistantCss.includes('@media(max-width:480px)') && guideAssistantCss.includes('prefers-reduced-motion:reduce'), 'Guide assistant responsive/reduced-motion styles are missing');
+assert.ok(systemAudioCatalog.includes('CarGuideWelcome') && systemAudioCatalog.includes('CarGuideQuality'), 'Guide audio keys are not registered in the backend');
+assert.ok(systemAudioPrompts.includes('CarGuideWelcome =>') && systemAudioPrompts.includes('Optional car-guide audio generation failed'), 'Guide audio generation is not safely integrated');
+assert.ok(headers.includes('media-src') && headers.includes('https://driving-test-evd0.onrender.com;'), 'CSP does not permit guide audio from the API');
 assert.ok(premiumCss.includes('@media(max-width:850px)'), 'Mobile layout is missing');
 assert.ok(viewer.includes('mainPartDefinitions'), 'Human-readable main part list is missing');
 assert.ok(viewer.includes('id:"engine",label:"المحرك",category:"engine"'), 'Engine category is missing from the main part list');
