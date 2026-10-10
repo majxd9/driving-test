@@ -17,8 +17,8 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 @media(max-width:480px){header{min-height:57px;padding:8px 10px;gap:7px}.brand strong{font-size:12px}.brand small{font-size:8px}.header-actions{gap:4px}.quality-control{padding:3px;gap:2px}.quality-control span{display:none}.quality-control select{max-width:80px;padding:6px 3px;font-size:10px}.btn{padding:8px 7px;font-size:10px}.workspace{padding:5px}.viewport{border-radius:12px}.viewport-head strong{font-size:12px}.viewport-head small{max-width:185px;font-size:9px}.sidebar{left:5px;right:5px;bottom:5px;max-height:40%}.parts{max-height:calc(40dvh - 100px)}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
-<link rel="stylesheet" href="./viewer-premium.css?v=20261010-r5">
-<link rel="stylesheet" href="./guide-assistant.css?v=20261010-r5">
+<link rel="stylesheet" href="./viewer-premium.css?v=20261010-r6">
+<link rel="stylesheet" href="./guide-assistant.css?v=20261010-r6">
 </head>
 <body>
 <div class="app">
@@ -41,13 +41,11 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
 </aside>
 </main>
 </div>
-<div class="guide-assistant-suggestion" id="guideAssistantSuggestion" role="status" hidden>
-  <button type="button" id="guideAssistantSuggestionClose" aria-label="إخفاء اقتراح المساعدة">×</button>
-  <p>أنا مساعدك في رخصتي. اضغط عليّ لشرح استعراض السيارة.</p>
-  <strong>شرح الصفحة ←</strong>
+<div class="guide-assistant-suggestion" id="guideAssistantSuggestion" role="status" aria-live="polite" hidden>
+  <p>اسحب داخل مساحة العرض لتدوير السيارة. اضغط على الروبوت لأشرح لك الصفحة الحالية.</p>
 </div>
-<details class="guide-assistant" id="guideAssistant" hidden>
-  <summary class="guide-assistant-toggle" id="guideAssistantToggle" aria-expanded="false" aria-controls="guideAssistantPanel" aria-label="افتح مساعد رخصتي، أو اسحب المجسّم لتحريكه">
+<div class="guide-assistant" id="guideAssistant" hidden>
+  <button type="button" class="guide-assistant-toggle" id="guideAssistantToggle" aria-label="اضغط لسماع شرح الصفحة أو اضغط مطولاً لتحريك الروبوت">
     <canvas class="guide-robot-canvas" id="guideRobotCanvas" aria-hidden="true"></canvas>
     <span class="guide-robot-stage" aria-hidden="true">
       <span class="guide-robot-halo"></span><span class="guide-robot-shadow"></span><span class="guide-robot-antenna"><i></i></span>
@@ -55,23 +53,11 @@ header{display:flex;align-items:center;gap:16px;padding:11px 18px;border-bottom:
       <span class="guide-robot-neck"></span><span class="guide-robot-torso"><i></i></span><i class="guide-robot-arm guide-robot-arm-left"></i><i class="guide-robot-arm guide-robot-arm-right"></i><i class="guide-robot-leg guide-robot-leg-left"></i><i class="guide-robot-leg guide-robot-leg-right"></i>
     </span>
     <span class="guide-robot-caption">اسألني</span>
-  </summary>
-  <section class="guide-assistant-panel" id="guideAssistantPanel" aria-labelledby="guideAssistantHeading">
-    <div class="guide-assistant-head">
-      <div class="guide-assistant-heading"><span class="guide-assistant-kicker">مساعد رخصتي</span><h2 id="guideAssistantHeading">كيف أساعدك؟</h2></div>
-      <button class="guide-assistant-close" id="guideAssistantClose" type="button" aria-label="إغلاق المساعد">×</button>
-    </div>
-    <div class="guide-assistant-message" aria-live="polite"><strong id="guideAssistantTitle">استعراض السيارة ثلاثية الأبعاد</strong><p id="guideAssistantText">اسحب داخل مساحة العرض لتدوير السيارة، واستخدم التكبير لرؤية التفاصيل.</p></div>
-    <div class="guide-assistant-foot">
-      <span class="guide-assistant-status" id="guideAssistantStatus" role="status" aria-live="polite">اضغط «اسمع الشرح» للحصول على إرشادات هذه الصفحة.</span>
-      <button class="guide-assistant-stop" id="guideAssistantStop" type="button" disabled hidden>إيقاف الصوت</button>
-      <button class="guide-assistant-speak" id="guideAssistantSpeak" type="button">اسمع الشرح</button>
-    </div>
-  </section>
-</details>
-<script src="./viewer-boot.js?v=20261010-r5"></script>
-<script type="module" src="./viewer.js?v=20261010-r5"></script>
-<script src="./guide-assistant.js?v=20261010-r5" defer></script>
-<script type="module" src="./guide-robot.js?v=20261010-r5"></script>
+  </button>
+</div>
+<script src="./viewer-boot.js?v=20261010-r6"></script>
+<script type="module" src="./viewer.js?v=20261010-r6"></script>
+<script src="./guide-assistant.js?v=20261010-r6" defer></script>
+<script type="module" src="./guide-robot.js?v=20261010-r6"></script>
 </body>
 </html>
