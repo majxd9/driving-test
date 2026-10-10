@@ -84,7 +84,7 @@ try {
   if (!existsSync(standaloneUsdLoader)) throw new Error('Standalone USDZ loader bundle was not generated.');
   const standaloneUsdLoaderSource = readFileSync(standaloneUsdLoader, 'utf8');
   if (!standaloneUsdLoaderSource.includes("./vendor/three.module.js") ||
-      /from\\s+['"]three['"]/.test(standaloneUsdLoaderSource)) {
+      /from\s+['"]three['"]/.test(standaloneUsdLoaderSource)) {
     throw new Error('Standalone USDZ loader must import the local Three.js module, not a bare package or CDN.');
   }
   console.log('Standalone USDZ loader bundle prepared with local dependencies.');
