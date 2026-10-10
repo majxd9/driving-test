@@ -38,3 +38,6 @@
 .guide-assistant-suggestion>button{position:absolute;top:4px;left:5px;width:23px;height:23px;border:0;border-radius:7px;color:#c8d7df;background:#ffffff09;font-size:17px;line-height:1;cursor:pointer}
 .guide-assistant-speak{flex:1 1 auto;padding:7px 12px;border:1px solid #94dce55c;border-radius:9px;color:#07221f;background:linear-gradient(115deg,#9be8df,#65cbbb);font:inherit;font-size:10px;font-weight:800;cursor:pointer}
 .guide-assistant-foot{flex-wrap:wrap}.guide-assistant-panel{max-height:min(255px,48dvh)}
+
+.guide-assistant-suggestion{cursor:default;pointer-events:none}
+.guide-assistant-panel,.guide-assistant-speak{display:none!important}
