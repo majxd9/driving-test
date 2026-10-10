@@ -78,19 +78,19 @@ const cleanName = (raw, index) => {
  return "مكوّن السيارة";
 };
 const mainPartDefinitions = [
- {id:"body",label:"الهيكل",category:"exterior",keywords:/(bodywork|car.?body|chassis|shell|frame|carrosserie|车身|车体|车壳)/i,max:4,filter:d=>d.longSize>.28&&d.footprint>.05&&d.vertical>.12&&d.vertical<.82,score:d=>d.footprint*2+d.volume},
- {id:"hood",label:"غطاء المحرك",category:"exterior",keywords:/(hood|bonnet|engine.?cover|motor.?cover|机盖|发动机罩)/i,max:3,filter:d=>Math.abs(d.longPos)>.43&&d.vertical>.27&&d.vertical<.84&&d.sideAbs<.92,score:d=>d.footprint/(.015+d.volume)+Math.abs(d.longPos)*.2},
- {id:"engine",label:"المحرك",category:"engine",keywords:/(engine|motor|power.?unit|发动机|引擎|动力总成)/i,max:6,filter:d=>d.vertical>.14&&d.vertical<.58&&d.sideAbs<.48&&Math.abs(d.longPos)>.12,score:d=>(1-d.sideAbs)+(1-d.vertical)*.8+Math.abs(d.longPos)*.25+d.volume},
- {id:"doors",label:"الأبواب",category:"exterior",keywords:/(door|car.?door|侧门|车门)/i,max:6,filter:d=>Math.abs(d.longPos)<.56&&d.sideAbs>.36&&d.vertical>.18&&d.vertical<.78,score:d=>d.sideAbs+d.footprint*2-Math.abs(d.longPos)*.3},
- {id:"wheels",label:"العجلات",category:"wheels",keywords:/(wheel|tyre|tire|rim|hubcap|轮胎|车轮|轮毂)/i,max:8,filter:d=>d.vertical<.29&&d.sideAbs>.27&&Math.abs(d.longPos)>.2,score:d=>d.sideAbs+Math.abs(d.longPos)+Math.max(d.size.x,d.size.z)},
- {id:"lights",label:"المصابيح",category:"lights",keywords:/(head.?light|tail.?light|lamp|light.?assembly|headlamp|taillight|车灯|大灯|尾灯|灯组)/i,max:8,filter:d=>Math.abs(d.longPos)>.56&&d.vertical>.20&&d.vertical<.8&&d.sideAbs>.08,score:d=>Math.abs(d.longPos)+.25/(.02+d.volume)},
- {id:"seats",label:"المقاعد",category:"cabin",keywords:/(seat|chair|bucket.?seat|座椅|座位|椅子)/i,max:6,filter:d=>d.sideAbs<.5&&d.vertical>.3&&d.vertical<.9&&Math.abs(d.longPos)<.52,score:d=>d.vertical+(1-d.sideAbs)*.5+d.volume},
- {id:"steering",label:"المقود",category:"cabin",keywords:/(steer(ing)? wheel|steering|volant|方向盘|转向盘)/i,max:3,filter:d=>d.sideAbs<.31&&d.vertical>.4&&d.vertical<.93&&Math.abs(d.longPos)<.62,score:d=>d.vertical+(1-d.sideAbs)-d.volume*8},
- {id:"dashboard",label:"لوحة القيادة",category:"cabin",keywords:/(dashboard|dash.?board|instrument.?panel|cockpit|console|仪表台|仪表板|中控台)/i,max:4,filter:d=>d.sideAbs<.43&&d.vertical>.31&&d.vertical<.84&&Math.abs(d.longPos)<.72,score:d=>d.footprint+d.vertical},
- {id:"glass",label:"الزجاج",category:"exterior",keywords:/(wind.?shield|windscreen|window.?glass|glass|glazing|挡风玻璃|车窗|玻璃)/i,max:6,filter:d=>d.vertical>.5&&d.size.y<.22&&d.footprint>.012,score:d=>d.footprint/(.015+d.size.y)},
- {id:"bumpers",label:"الصدامات",category:"exterior",keywords:/(bumper|fascia|保险杠)/i,max:4,filter:d=>Math.abs(d.longPos)>.68&&d.vertical<.46,score:d=>Math.abs(d.longPos)+(1-d.vertical)+d.footprint},
- {id:"mirrors",label:"المرايا",category:"exterior",keywords:/(mirror|rear.?view|side.?view|后视镜)/i,max:4,filter:d=>d.sideAbs>.54&&d.vertical>.3&&d.vertical<.84&&Math.abs(d.longPos)<.76,score:d=>d.sideAbs+d.vertical*.2+d.footprint},
- {id:"grille",label:"شبك الواجهة",category:"exterior",keywords:/(grille|grill|radiator.?grille|格栅|进气格栅)/i,max:4,filter:d=>Math.abs(d.longPos)>.6&&d.vertical>.17&&d.vertical<.6&&d.sideAbs<.45,score:d=>Math.abs(d.longPos)+(1-d.sideAbs)+d.footprint}
+ {id:"body",label:"الهيكل",category:"exterior",description:"الهيكل هو البنية الرئيسية التي تربط أجزاء السيارة وتحافظ على تماسكها وتساعد على حماية الركاب.",audioKey:"car-guide-part-body",keywords:/(bodywork|car.?body|chassis|shell|frame|carrosserie|车身|车体|车壳)/i,max:4,filter:d=>d.longSize>.28&&d.footprint>.05&&d.vertical>.12&&d.vertical<.82,score:d=>d.footprint*2+d.volume},
+ {id:"hood",label:"غطاء المحرك",category:"exterior",description:"غطاء المحرك يغطي حجرة المحرك، ويمكن فتحه للوصول إلى المحرك وفحص السوائل وإجراء الصيانة.",audioKey:"car-guide-part-hood",keywords:/(hood|bonnet|engine.?cover|motor.?cover|机盖|发动机罩)/i,max:3,filter:d=>Math.abs(d.longPos)>.43&&d.vertical>.27&&d.vertical<.84&&d.sideAbs<.92,score:d=>d.footprint/(.015+d.volume)+Math.abs(d.longPos)*.2},
+ {id:"engine",label:"المحرك",category:"engine",description:"المحرك يحوّل الطاقة إلى قوة حركة، وينقل ناقل الحركة هذه القوة إلى العجلات لتحريك السيارة.",audioKey:"car-guide-part-engine",keywords:/(engine|motor|power.?unit|发动机|引擎|动力总成)/i,max:6,filter:d=>d.vertical>.14&&d.vertical<.58&&d.sideAbs<.48&&Math.abs(d.longPos)>.12,score:d=>(1-d.sideAbs)+(1-d.vertical)*.8+Math.abs(d.longPos)*.25+d.volume},
+ {id:"doors",label:"الأبواب",category:"exterior",description:"الأبواب تسمح بدخول الركاب وخروجهم، وتساعد على إغلاق المقصورة وحماية من بداخل السيارة.",audioKey:"car-guide-part-doors",keywords:/(door|car.?door|侧门|车门)/i,max:6,filter:d=>Math.abs(d.longPos)<.56&&d.sideAbs>.36&&d.vertical>.18&&d.vertical<.78,score:d=>d.sideAbs+d.footprint*2-Math.abs(d.longPos)*.3},
+ {id:"wheels",label:"العجلات",category:"wheels",description:"العجلات والإطارات تلامس الطريق، وتحمل وزن السيارة وتوفر التماسك والتوجيه والفرملة.",audioKey:"car-guide-part-wheels",keywords:/(wheel|tyre|tire|rim|hubcap|轮胎|车轮|轮毂)/i,max:8,filter:d=>d.vertical<.29&&d.sideAbs>.27&&Math.abs(d.longPos)>.2,score:d=>d.sideAbs+Math.abs(d.longPos)+Math.max(d.size.x,d.size.z)},
+ {id:"lights",label:"المصابيح",category:"lights",description:"المصابيح تنير الطريق وتُظهر السيارة للآخرين، وتشمل أضواء المقدمة والخلف والإشارات الضوئية.",audioKey:"car-guide-part-lights",keywords:/(head.?light|tail.?light|lamp|light.?assembly|headlamp|taillight|车灯|大灯|尾灯|灯组)/i,max:8,filter:d=>Math.abs(d.longPos)>.56&&d.vertical>.20&&d.vertical<.8&&d.sideAbs>.08,score:d=>Math.abs(d.longPos)+.25/(.02+d.volume)},
+ {id:"seats",label:"المقاعد",category:"cabin",description:"المقاعد تدعم السائق والركاب وتساعدهم على الجلوس بثبات، وتعمل مع أحزمة الأمان لتقليل الإصابات.",audioKey:"car-guide-part-seats",keywords:/(seat|chair|bucket.?seat|座椅|座位|椅子)/i,max:6,filter:d=>d.sideAbs<.5&&d.vertical>.3&&d.vertical<.9&&Math.abs(d.longPos)<.52,score:d=>d.vertical+(1-d.sideAbs)*.5+d.volume},
+ {id:"steering",label:"المقود",category:"cabin",description:"المقود يتحكم باتجاه السيارة؛ فعند تدويره ينقل نظام التوجيه الحركة إلى العجلات الأمامية عادةً.",audioKey:"car-guide-part-steering",keywords:/(steer(ing)? wheel|steering|volant|方向盘|转向盘)/i,max:3,filter:d=>d.sideAbs<.31&&d.vertical>.4&&d.vertical<.93&&Math.abs(d.longPos)<.62,score:d=>d.vertical+(1-d.sideAbs)-d.volume*8},
+ {id:"dashboard",label:"لوحة القيادة",category:"cabin",description:"لوحة القيادة تعرض معلومات السرعة والتحذيرات وحالة الأنظمة، وتضم أدوات التحكم التي يحتاجها السائق.",audioKey:"car-guide-part-dashboard",keywords:/(dashboard|dash.?board|instrument.?panel|cockpit|console|仪表台|仪表板|中控台)/i,max:4,filter:d=>d.sideAbs<.43&&d.vertical>.31&&d.vertical<.84&&Math.abs(d.longPos)<.72,score:d=>d.footprint+d.vertical},
+ {id:"glass",label:"الزجاج",category:"exterior",description:"الزجاج الأمامي والنوافذ توفر الرؤية للسائق وتحمي المقصورة من الهواء والعوامل الخارجية.",audioKey:"car-guide-part-glass",keywords:/(wind.?shield|windscreen|window.?glass|glass|glazing|挡风玻璃|车窗|玻璃)/i,max:6,filter:d=>d.vertical>.5&&d.size.y<.22&&d.footprint>.012,score:d=>d.footprint/(.015+d.size.y)},
+ {id:"bumpers",label:"الصدامات",category:"exterior",description:"الصدامات تقع في مقدمة السيارة ومؤخرتها، وتساعد على امتصاص بعض طاقة الصدمات البسيطة وحماية أجزاء الهيكل.",audioKey:"car-guide-part-bumpers",keywords:/(bumper|fascia|保险杠)/i,max:4,filter:d=>Math.abs(d.longPos)>.68&&d.vertical<.46,score:d=>Math.abs(d.longPos)+(1-d.vertical)+d.footprint},
+ {id:"mirrors",label:"المرايا",category:"exterior",description:"المرايا تساعد السائق على رؤية ما خلف السيارة وعلى جانبيها وتقليل المناطق غير المرئية أثناء القيادة.",audioKey:"car-guide-part-mirrors",keywords:/(mirror|rear.?view|side.?view|后视镜)/i,max:4,filter:d=>d.sideAbs>.54&&d.vertical>.3&&d.vertical<.84&&Math.abs(d.longPos)<.76,score:d=>d.sideAbs+d.vertical*.2+d.footprint},
+ {id:"grille",label:"شبك الواجهة",category:"exterior",description:"شبك الواجهة يسمح بمرور الهواء إلى منطقة التبريد، ويساعد على حماية المبرد ويكمل تصميم مقدمة السيارة.",audioKey:"car-guide-part-grille",keywords:/(grille|grill|radiator.?grille|格栅|进气格栅)/i,max:4,filter:d=>Math.abs(d.longPos)>.6&&d.vertical>.17&&d.vertical<.6&&d.sideAbs<.45,score:d=>Math.abs(d.longPos)+(1-d.sideAbs)+d.footprint}
 ];
 const partCategoryLabels = {all:"الكل",exterior:"الهيكل",engine:"المحرك",cabin:"المقصورة",lights:"الإضاءة",wheels:"العجلات"};
 const nodeNames = (mesh) => {
@@ -141,6 +141,7 @@ function buildMainPartEntries() {
  return mainPartDefinitions.map(def=>({...def,meshes:chosenById.get(def.id)||[]}));
 }
 const labelForMesh = (mesh) => mainPartEntries.find(p=>p.meshes.includes(mesh))?.label || cleanName(mesh?.name,meshes.indexOf(mesh));
+const unknownPartDescription = "هذا جزء من السيارة. اختر اسماً واضحاً من قائمة الأجزاء لمعرفة وظيفته بالتحديد.";
 
 const requestRender = () => {
  if (renderQueued) return;
@@ -265,6 +266,11 @@ function updatePartControls() {
  document.querySelectorAll("[data-move]").forEach((button) => { button.disabled = selectedMeshes.length === 0; });
  const label = $("selectedPartName");
  if (label) label.textContent = selectedMeshes.length ? selectedLabel : "اختر قطعة أولاً";
+ const description = $("selectedPartDescription");
+ const entry = selected ? mainPartEntries.find(part => part.meshes.includes(selected)) : null;
+ if (description) description.textContent = selectedMeshes.length
+  ? (entry?.description || unknownPartDescription)
+  : "اختر قطعة لمعرفة وظيفتها وسماع شرح ديلي.";
 }
 function clearLoadedModel() {
  if (model) { scene.remove(model); disposeScene(model); }
@@ -406,7 +412,16 @@ function setSelected(mesh, explicitEntry = null) {
  const group = entry ? entry.meshes : (mesh ? [mesh] : []);
  const nextSelected = group[0] || null;
  const nextLabel = entry ? entry.label : (mesh ? labelForMesh(mesh) : "");
- if (selected === nextSelected && selectedLabel === nextLabel && selectedMeshes.length === group.length) return;
+ const assistantPart = entry
+  ? { id: entry.id, label: entry.label, description: entry.description, audioKey: entry.audioKey }
+  : mesh
+   ? { id: "unknown", label: nextLabel, description: unknownPartDescription, audioKey: "car-guide-part-unknown" }
+   : null;
+ const announceToDeli = () => window.dispatchEvent(new CustomEvent("rukhsati-car-part-selected", { detail: assistantPart }));
+ if (selected === nextSelected && selectedLabel === nextLabel && selectedMeshes.length === group.length) {
+  announceToDeli();
+  return;
+ }
  selectedMeshes.forEach(restoreMaterial);
  selectedMeshes = group;
  selected = nextSelected;
@@ -416,7 +431,7 @@ function setSelected(mesh, explicitEntry = null) {
   const base = partMesh.userData.baseMaterial || partMesh.material;
   partMesh.material = Array.isArray(base) ? base.map(hi) : hi(base);
  });
- renderParts(); updatePartControls(); requestRender();
+ renderParts(); updatePartControls(); requestRender(); announceToDeli();
 }
 
 function renderParts() {
@@ -433,6 +448,7 @@ function renderParts() {
  if (!list.length) { const e=document.createElement("div"); e.className="empty"; e.textContent="لا توجد أجزاء مطابقة."; $("parts").append(e); return; }
  list.forEach((entry,index) => {
   const b=document.createElement("button"); b.type="button";
+  b.title = entry.description || entry.label;
   b.className="part"+(entry.meshes.some(m=>selectedMeshes.includes(m))?" active":"");
   const mark=document.createElement("span"); mark.className="part-mark"; mark.textContent=String(index+1).padStart(2,"0");
   const copy=document.createElement("span"); copy.className="part-copy";
