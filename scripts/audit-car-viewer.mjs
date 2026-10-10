@@ -57,6 +57,10 @@ assert.ok(html.includes('type="module" src="./viewer.js"'), 'Viewer module is no
 assert.ok(html.includes('href="./viewer-premium.css"'), 'Premium viewer CSS is not linked');
 assert.ok(html.includes('href="./guide-assistant.css"'), 'Car guide assistant CSS is not linked');
 assert.ok(html.includes('src="./guide-assistant.js"'), 'Car guide assistant script is not linked');
+assert.ok(html.includes('<details class="guide-assistant" id="guideAssistant">'), 'Guide assistant must use native disclosure so it can open without JavaScript');
+assert.ok(html.includes('<summary class="guide-assistant-toggle" id="guideAssistantToggle"'), 'Guide assistant native open control is missing');
+assert.ok(guideAssistantCss.includes('.guide-assistant[open] .guide-assistant-panel{display:block}'), 'Guide assistant open-state styling is missing');
+assert.ok(guideAssistant.includes('root.addEventListener("toggle"') && guideAssistant.includes('root.dataset.initialized = "true"'), 'Guide assistant did not initialize its disclosure handlers');
 assert.ok(html.includes('meta name="api-base-url"'), 'The guide assistant API base URL is missing');
 assert.ok(!/guideAssistantAudio[^>]*autoplay/i.test(html), 'The guide assistant must not autoplay audio');
 assert.ok(guideAssistant.includes('car-guide-welcome') && guideAssistant.includes('car-guide-rotate') && guideAssistant.includes('car-guide-zoom') && guideAssistant.includes('car-guide-parts') && guideAssistant.includes('car-guide-quality'), 'Guide audio topic keys are incomplete');
