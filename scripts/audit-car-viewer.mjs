@@ -73,6 +73,12 @@ assert.ok(viewer.includes('new DecompressionStream("gzip")'), "Viewer must decom
 assert.ok(viewer.includes('signature !== "glTF"'), "Viewer must validate the GLB signature before parsing");
 assert.ok(viewer.includes('loadGltf("./challenger-1970.glb.gzdata"'), "Viewer must prefer the compressed model");
 assert.ok(viewer.includes('loadGltf("./challenger-1970.glb"'), "Production compatibility fallback for the original model is missing");
+assert.ok(!viewer.includes('return loadCarModel("challenger", true)'), "A failed selected vehicle must not silently switch to a different car");
+assert.ok(viewer.includes("animateMeshPositions(paths, 360)"), "Explode animation must use a shared frame loop instead of one loop per mesh");
+assert.ok(!viewer.includes("copy.append(strong,small)"), "Component rows must not show redundant sublabels");
+assert.ok(html.includes('viewer.js?v=20261010-r6') && html.includes('viewer-boot.js?v=20261010-r6') && html.includes('viewer-premium.css?v=20261010-r6'), "Updated viewer assets must bypass stale browser caches");
+assert.ok(headers.includes("/car-explorer/viewer.js\n  Cache-Control: public, max-age=0, must-revalidate"), "Viewer JavaScript must revalidate instead of staying cached for a day");
+assert.ok(headers.includes("/car-explorer/viewer-premium.css\n  Cache-Control: public, max-age=0, must-revalidate"), "Viewer stylesheet must revalidate instead of remaining stale");
 assert.ok(viewer.includes('Compressed Challenger model unavailable; trying original GLB'), "Compressed model failures must activate the fallback");
 assert.ok(headers.includes("connect-src 'self' https: blob:"), "CSP must allow GLTFLoader blob texture fetches");
 assert.ok(buildScript.includes("@gltf-transform/cli@4.5.1"), "Build-time glTF texture optimization must be pinned to a known version");
