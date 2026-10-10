@@ -154,11 +154,7 @@ import * as THREE from "./vendor/three.module.js";
     raf = window.requestAnimationFrame(animate);
 
     const showFallback = () => { delete root.dataset.robotReady; };
-    const onVisibilityChange = () => {
-      if (!document.hidden && !disposed) raf = window.requestAnimationFrame(animate);
-    };
     canvas.addEventListener("webglcontextlost", showFallback);
-    document.addEventListener("visibilitychange", onVisibilityChange);
 
     window.addEventListener("pagehide", () => {
       disposed = true; window.cancelAnimationFrame(raf);
