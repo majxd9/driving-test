@@ -44,7 +44,7 @@
 .rukhsati-robot-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;touch-action:none}
 .rukhsati-site-assistant[data-robot-ready="true"] .rukhsati-robot-stage{display:none}
 
-.rukhsati-assistant-suggestion{position:fixed;z-index:9503;display:grid;gap:6px;padding:11px 12px;border:1px solid #8ce7dd52;border-radius:15px;color:#eaf8fa;background:linear-gradient(145deg,#142934f5,#0b141df5);box-shadow:0 14px 40px #0008;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);text-align:right;font:inherit;font-size:11px;line-height:1.8;cursor:pointer;pointer-events:auto;animation:rukhsati-assistant-in .18s ease-out both}
+.rukhsati-assistant-suggestion{position:fixed;z-index:9503;display:grid;gap:6px;padding:11px 12px;border:1px solid #8ce7dd52;border-radius:15px;color:#eaf8fa;background:linear-gradient(145deg,#142934f5,#0b141df5);box-shadow:0 14px 40px #0008;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);text-align:right;font:inherit;font-size:11px;line-height:1.8;cursor:default;pointer-events:none;animation:rukhsati-assistant-in .18s ease-out both}
 .rukhsati-assistant-suggestion b{color:#8be7d9;font-size:10px;font-weight:800}
 .rukhsati-assistant-panel{max-height:min(255px,48dvh)}
 .rukhsati-assistant-explanation p{margin:0;color:#c4d2dd;font-size:12px;line-height:1.9}
