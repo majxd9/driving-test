@@ -1,4 +1,4 @@
-/* The standalone viewer uses Zeb only; this is a neutral placeholder while it loads. */
+/* The standalone viewer uses Deli only; this is a neutral placeholder while it loads. */
 .guide-assistant{position:fixed;left:20px;top:calc(100dvh - 112px);bottom:auto;z-index:10000;width:92px;height:104px;display:block;overflow:visible;direction:rtl;color:#effdff;font-family:inherit;pointer-events:none}
 .guide-assistant[hidden]{display:none!important}
 .guide-assistant-toggle{position:absolute;inset:0;display:block;width:92px;height:104px;margin:0;padding:0;border:0;border-radius:22px;background:transparent;color:inherit;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;pointer-events:auto;filter:drop-shadow(0 8px 12px #0006)}
@@ -6,12 +6,12 @@
 .guide-assistant-toggle:focus-visible{outline:2px solid #81f0e0;outline-offset:2px}
 .guide-robot-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;touch-action:none}
 .guide-robot-stage{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
-.guide-robot-halo{position:absolute;width:74px;height:78px;border-radius:50%;background:radial-gradient(ellipse,#36d8dc35 0%,#3470a01b 48%,transparent 73%);filter:blur(4px);animation:guide-zeb-pulse 2.8s ease-in-out infinite}
+.guide-robot-halo{position:absolute;width:74px;height:78px;border-radius:50%;background:radial-gradient(ellipse,#36d8dc35 0%,#3470a01b 48%,transparent 73%);filter:blur(4px);animation:guide-deli-pulse 2.8s ease-in-out infinite}
 .guide-robot-placeholder{position:relative;display:grid;place-items:center;width:32px;height:32px;border:1px solid #8eece2;border-radius:50%;color:#e7fffc;background:radial-gradient(circle at 30% 23%,#4e8995,#102a38 72%);box-shadow:0 0 18px #46e3d344,inset 0 1px 4px #fff4;font-size:13px;font-weight:800}
 .guide-assistant[data-robot-ready="true"] .guide-robot-stage{display:none}
 .guide-robot-caption{position:absolute;left:50%;bottom:-1px;padding:2px 8px 3px;border:1px solid #8ce7dd4a;border-radius:999px;color:#ddfffb;background:#0d2029ed;box-shadow:0 3px 8px #0006;font-size:9px;font-weight:800;line-height:1.4;white-space:nowrap;transform:translateX(-50%);pointer-events:none}
 .guide-assistant-suggestion{position:fixed;z-index:10001;display:grid;gap:5px;padding:11px 13px;border:1px solid #94dce55b;border-radius:15px;color:#edf8fa;background:linear-gradient(145deg,#172d38f5,#0b121bf5);box-shadow:0 12px 32px #0006;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:11px;line-height:1.8;pointer-events:none}
 .guide-assistant-suggestion[hidden]{display:none!important}
-@keyframes guide-zeb-pulse{0%,100%{transform:scale(.96);opacity:.72}50%{transform:scale(1.04);opacity:1}}
+@keyframes guide-deli-pulse{0%,100%{transform:scale(.96);opacity:.72}50%{transform:scale(1.04);opacity:1}}
 @media(max-width:480px){.guide-assistant,.guide-assistant-toggle{width:84px;height:96px}.guide-robot-caption{font-size:8px}.guide-assistant-suggestion{font-size:10px;padding:10px 11px;line-height:1.75}}
 @media(prefers-reduced-motion:reduce){.guide-robot-halo{animation:none}}

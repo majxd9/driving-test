@@ -38,6 +38,15 @@ public static class SystemAudioCatalog
             or SiteAssistantSyria or SiteAssistantNotFound;
 
 
+    // Deli is the shared assistant persona in both the site and car explorer.
+    public static bool UsesDeliVoice(string? key) =>
+        key is CarGuideWelcome or CarGuideRotate or CarGuideZoom or CarGuideParts or CarGuideQuality
+            or SiteAssistantSigns or SiteAssistantMechanic or SiteAssistantTraining
+            or SiteAssistantExam or SiteAssistantModels or SiteAssistantCar
+            or SiteAssistantPractical or SiteAssistantHome or SiteAssistantRules
+            or SiteAssistantPublicSigns or SiteAssistantWelcome or SiteAssistantLogin
+            or SiteAssistantResult or SiteAssistantAbout or SiteAssistantSyria or SiteAssistantNotFound;
+
     public static bool IsKnownKey(string? key) =>
         key is FirstEntry or Enabled or Disabled
             or CarGuideWelcome or CarGuideRotate or CarGuideZoom or CarGuideParts or CarGuideQuality

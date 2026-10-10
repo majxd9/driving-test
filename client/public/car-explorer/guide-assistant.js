@@ -19,8 +19,8 @@
 
   function setSpeaking(value) {
     speaking = value;
-    if (caption) caption.textContent = value ? "عم يحكي" : "زيب";
-    toggle.setAttribute("aria-label", value ? "زيب يتحدث. اضغط لإيقاف الصوت." : "زيب، اضغط لسماع شرح الصفحة أو اضغط مطولاً لتحريكه.");
+    if (caption) caption.textContent = value ? "عم يحكي" : "ديلي";
+    toggle.setAttribute("aria-label", value ? "ديلي يتحدث. اضغط لإيقاف الصوت." : "ديلي، اضغط لسماع شرح الصفحة أو اضغط مطولاً لتحريكه.");
   }
 
   function stopSpeech() {
@@ -152,6 +152,6 @@
     }
   });
   window.addEventListener("resize", () => { position = clamp(position); positionWidget(position); }, { passive: true });
-  if (caption) caption.textContent = "زيب";
+  if (caption) caption.textContent = "ديلي";
   root.dataset.initialized = "true";
 })();

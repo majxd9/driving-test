@@ -117,7 +117,22 @@ public sealed class SystemAudioPromptService
         CancellationToken cancellationToken)
     {
         var prompt = GetPrompt(key);
-        var hash = QuestionAudioTextBuilder.HashText(prompt.Text);
+        var hashSource = prompt.Text;
+
+        // Include provider and voice in the cache hash for all Deli narration. This refreshes
+        // previously stored clips instead of accidentally continuing to play an older voice.
+        if (SystemAudioCatalog.UsesDeliVoice(key))
+        {
+            var provider = (_configuration["QUESTION_AUDIO_PROVIDER"] ?? "fish").Trim().ToLowerInvariant();
+            var configuredVoiceId = (_configuration["FISH_AUDIO_SITE_ASSISTANT_VOICE_ID"]
+                ?? DefaultSiteAssistantVoiceId).Trim();
+            var voiceSignature = provider is "fish" or "fishaudio"
+                ? (string.IsNullOrWhiteSpace(configuredVoiceId) ? DefaultSiteAssistantVoiceId : configuredVoiceId)
+                : "provider-default";
+            hashSource = $"deli-assistant-audio-v1|provider={provider}|voice={voiceSignature}|text={prompt.Text}";
+        }
+
+        var hash = QuestionAudioTextBuilder.HashText(hashSource);
 
         var existing = await _db.SystemAudios
             .SingleOrDefaultAsync(x => x.Key == prompt.Key, cancellationToken);
@@ -129,7 +144,7 @@ public sealed class SystemAudioPromptService
             return false;
         }
 
-        var result = await GenerateTextAsync(prompt.Text, cancellationToken, SystemAudioCatalog.IsSiteAssistantKey(key));
+        var result = await GenerateTextAsync(prompt.Text, cancellationToken, SystemAudioCatalog.UsesDeliVoice(key));
 
         if (result.Bytes.Length == 0)
             throw new InvalidOperationException(
@@ -160,14 +175,14 @@ public sealed class SystemAudioPromptService
     private async Task<GeneratedAudioResult> GenerateTextAsync(
         string text,
         CancellationToken cancellationToken,
-        bool useSiteAssistantVoice = false)
+        bool useDeliVoice = false)
     {
         var provider = (_configuration["QUESTION_AUDIO_PROVIDER"] ?? "fish").Trim().ToLowerInvariant();
         var usesConfiguredProvider = provider is "fish" or "fishaudio" or "local" or "edenai";
         var voiceId = usesConfiguredProvider ? null : VoiceId;
 
-        // Dedicated voice applies only to the new site-assistant prompts on Fish Audio.
-        if (useSiteAssistantVoice && (provider is "fish" or "fishaudio"))
+        // Deli's primary voice defaults to the requested voice ID; an explicit deployment setting may override it.
+        if (useDeliVoice && (provider is "fish" or "fishaudio"))
         {
             var configuredVoiceId = (_configuration["FISH_AUDIO_SITE_ASSISTANT_VOICE_ID"]
                 ?? DefaultSiteAssistantVoiceId).Trim();
@@ -215,7 +230,7 @@ public sealed class SystemAudioPromptService
         SystemAudioCatalog.SiteAssistantHome => (SystemAudioCatalog.SiteAssistantHome, "من هنا تبدأ التدريب، وتتعلّم الإشارات والميكانيك، أو تدخل نموذج اختبار."),
         SystemAudioCatalog.SiteAssistantRules => (SystemAudioCatalog.SiteAssistantRules, "استعرض قواعد السير الأساسية، ثم انتقل إلى التدريب لتجربة ما تعلمته."),
         SystemAudioCatalog.SiteAssistantPublicSigns => (SystemAudioCatalog.SiteAssistantPublicSigns, "استعرض الإشارات ومعانيها، ثم اختبر فهمك من قسم التدريب."),
-        SystemAudioCatalog.SiteAssistantWelcome => (SystemAudioCatalog.SiteAssistantWelcome, "أهلاً بك في رخصتي. اضغط على زيب متى احتجت مساعدة في الصفحة."),
+        SystemAudioCatalog.SiteAssistantWelcome => (SystemAudioCatalog.SiteAssistantWelcome, "أهلاً بك في رخصتي. اضغط على ديلي متى احتجت مساعدة في الصفحة."),
         SystemAudioCatalog.SiteAssistantLogin => (SystemAudioCatalog.SiteAssistantLogin, "أهلاً بك! سجّل الدخول للمتابعة إلى تدريباتك ونماذج الاختبار."),
         SystemAudioCatalog.SiteAssistantResult => (SystemAudioCatalog.SiteAssistantResult, "هذه نتيجتك. راجع إجاباتك، وركّز على النقاط التي تحتاج إلى تدريب إضافي."),
         SystemAudioCatalog.SiteAssistantAbout => (SystemAudioCatalog.SiteAssistantAbout, "هنا تجد نبذة عن رخصتي وكيف يساعدك على الاستعداد لاختبار القيادة."),

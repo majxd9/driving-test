@@ -73,11 +73,11 @@ assert.ok(!html.includes('type="importmap"'), 'Inline import map found; viewer s
 assert.ok(html.includes('src="./viewer-boot.js?v=20261010-r8"'), 'Versioned viewer boot/error handler is not linked');
 assert.ok(html.includes('type="module" src="./viewer.js?v=20261010-r8"'), 'Versioned viewer module is not linked');
 assert.ok(html.includes('href="./viewer-premium.css?v=20261010-r8"'), 'Versioned premium viewer CSS is not linked');
-assert.ok(html.includes('href="./guide-assistant.css?v=20261010-r8"'), 'Versioned Zeb assistant CSS is not linked');
-assert.ok(html.includes('src="./guide-assistant.js?v=20261010-r8"'), 'Versioned Zeb assistant script is not linked');
+assert.ok(html.includes('href="./guide-assistant.css?v=20261010-deli1"'), 'Versioned Deli assistant CSS is not linked');
+assert.ok(html.includes('src="./guide-assistant.js?v=20261010-deli1"'), 'Versioned Deli assistant script is not linked');
 assert.ok(html.includes('<div class="guide-assistant" id="guideAssistant" hidden>'), 'Student-only car robot container is missing');
 assert.ok(html.includes('<button type="button" class="guide-assistant-toggle" id="guideAssistantToggle"'), 'Direct-speech robot button is missing');
-assert.ok(html.includes('id="guideRobotCanvas"') && html.includes('guide-robot.js?v=20261010-r8'), 'Actual Zeb 3D canvas/module is missing');
+assert.ok(html.includes('id="guideRobotCanvas"') && html.includes('guide-robot.js?v=20261010-deli1'), 'Actual Zeb 3D canvas/module is missing');
 assert.ok(html.includes('id="guideAssistantSuggestion"') && html.includes('type="button" class="guide-assistant-toggle"') && !html.includes('guideAssistantSpeak') && !html.includes('guideAssistantPanel') && !html.includes('data-guide-topic='), 'Standalone assistant must have only a non-interactive page hint and a direct-speech robot, with no popup/button panel');
 assert.ok(guideRobot.includes('new THREE.WebGLRenderer') && guideRobot.includes('window.addEventListener("pointermove", readPointer'), 'The assistant must be a real Three.js robot that tracks the pointer');
 assert.ok(guideRobot.includes('gaze.x * 0.24') && guideRobot.includes('gaze.y * 0.11'), 'Zeb 3D character does not smoothly follow pointer/touch movement');
@@ -85,8 +85,8 @@ assert.ok(guideRobot.includes('lastFrameAt') && guideRobot.includes('now - lastF
 assert.ok(guideAssistantCss.includes('.guide-assistant[data-robot-ready="true"] .guide-robot-stage{display:none}'), 'CSS fallback must yield to the rendered 3D robot');
 assert.ok(floatingAssistant.includes('import FloatingRobot3D') && floatingAssistant.includes("location.pathname.startsWith('/admin')") && !floatingAssistant.includes('useAuth'), 'Main-site assistant must be visible on every non-admin route');
 assert.ok(floatingRobot3D.includes('new THREE.WebGLRenderer') && floatingRobot3D.includes("window.addEventListener('pointermove', readPointer") && floatingRobot3D.includes("window.addEventListener('pointerdown', readPointer"), 'Main-site helper must render an actual Three.js model and track mouse/touch');
-assert.ok(floatingRobot3D.includes("await import('three/addons/loaders/USDLoader.js')") && floatingRobot3D.includes("'/car-explorer/Zeb.usdz?v=zeb-1'") && !floatingRobot3D.includes('Lucario.usdz'), 'Main assistant must load Zeb USDZ and remove the legacy character');
-assert.ok(guideRobot.includes('import("./guide-usdz-loader.js?v=20261010-r8")') && guideRobot.includes('loadAsync("./Zeb.usdz?v=zeb-1")') && !guideRobot.includes('Lucario.usdz'), 'Standalone assistant must load the Zeb model and remove legacy character references');
+assert.ok(floatingRobot3D.includes("await import('three/addons/loaders/USDLoader.js')") && floatingRobot3D.includes("'/car-explorer/Zeb.usdz?v=deli-primary-voice-1'") && !floatingRobot3D.includes('Lucario.usdz'), 'Main assistant must load Zeb USDZ and remove the legacy character');
+assert.ok(guideRobot.includes('import("./guide-usdz-loader.js?v=20261010-r8")') && guideRobot.includes('loadAsync("./Zeb.usdz?v=deli-primary-voice-1")') && !guideRobot.includes('Lucario.usdz'), 'Standalone assistant must load the Zeb model and remove legacy character references');
 assert.ok(usdzLoaderConfig.includes('node_modules/three/examples/jsm/loaders/USDLoader.js') && usdzLoaderConfig.includes("./vendor/three.module.js"), 'Standalone USDZ loader must bundle locally and avoid a CDN');
 assert.ok(buildScript.includes("'vite.usdz-loader.config.ts'") && buildScript.includes('guide-usdz-loader.js'), 'Production build must generate the standalone USDZ loader before copying public assets');
 assert.ok(floatingRobot3D.includes('gaze.x * 0.24') && floatingRobot3D.includes('gaze.y * 0.11'), 'Main-site Zeb character must smoothly track the pointer');

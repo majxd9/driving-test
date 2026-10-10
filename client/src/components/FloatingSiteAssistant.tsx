@@ -38,7 +38,7 @@ function topicForPath(pathname: string): GuideTopic {
   if (pathname.startsWith('/about')) return { id: 'about', title: 'عن رخصتي', text: 'هنا تجد نبذة عن رخصتي وكيف يساعدك على الاستعداد لاختبار القيادة.' };
   if (pathname.startsWith('/driving-test-syria')) return { id: 'syrian-test', title: 'امتحان القيادة في سوريا', text: 'تعرّف على معلومات امتحان القيادة في سوريا، ثم تدرّب على الإشارات والقواعد.' };
   if (pathname === '/' || pathname.startsWith('/login')) return { id: 'login', title: 'تسجيل الدخول', text: 'أهلاً بك! سجّل الدخول للمتابعة إلى تدريباتك ونماذج الاختبار.' };
-  if (pathname.startsWith('/admin')) return { id: 'welcome', title: 'مساعد رخصتي', text: 'أهلاً بك في رخصتي. اضغط على زيب متى احتجت مساعدة في الصفحة.' };
+  if (pathname.startsWith('/admin')) return { id: 'welcome', title: 'مساعد رخصتي', text: 'أهلاً بك في رخصتي. اضغط على ديلي متى احتجت مساعدة في الصفحة.' };
   return { id: 'not-found', title: 'الصفحة غير موجودة', text: 'لم أجد الصفحة المطلوبة. ارجع للرئيسية أو اختر أحد أقسام رخصتي.' };
 }
 
@@ -249,22 +249,22 @@ export default function FloatingSiteAssistant() {
   return (
     <div className="rukhsati-site-assistant" dir="rtl" data-robot-ready={robot3dReady ? 'true' : 'false'} data-speaking={isSpeaking ? 'true' : 'false'}>
       <button type="button" className="rukhsati-assistant-robot-button" style={{ left: position.x, top: position.y }}
-        aria-label="مساعد رخصتي. انقر لسماع شرح الصفحة، أو اضغط مطولاً لتحريك الروبوت."
+        aria-label="ديلي، مساعد رخصتي. انقر لسماع شرح الصفحة، أو اضغط مطولاً لتحريكه."
         title="انقر ليسمعك الشرح · اضغط مطولاً للتحريك"
         onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={finishDrag} onPointerCancel={finishDrag}
         onClick={handleRobotClick}>
         <FloatingRobot3D onReady={() => setRobot3dReady(true)} onError={() => setRobot3dReady(false)} />
         <span className="rukhsati-robot-stage" aria-hidden="true">
           <span className="rukhsati-robot-halo" />
-          <span className="rukhsati-robot-orb">Z</span>
+          <span className="rukhsati-robot-orb">D</span>
         </span>
-        <span className="rukhsati-robot-caption">{isSpeaking ? 'عم يحكي' : 'زيب'}</span>
+        <span className="rukhsati-robot-caption">{isSpeaking ? 'عم يحكي' : 'ديلي'}</span>
       </button>
 
       {showSuggestion && !isSpeaking && (
         <div className="rukhsati-assistant-suggestion" role="status" aria-live="polite"
           style={{ left: suggestionLeft, top: suggestionTop, width: suggestionWidth }}>
-          <span>إذا احتجت مساعدة في {activeTopic.title}، اضغط على زيب.</span>
+          <span>إذا احتجت مساعدة في {activeTopic.title}، اضغط على ديلي.</span>
           <button type="button" aria-label="إخفاء الاقتراح" onClick={() => setShowSuggestion(false)}>×</button>
         </div>
       )}
