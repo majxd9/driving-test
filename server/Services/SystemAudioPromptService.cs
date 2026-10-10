@@ -247,7 +247,25 @@ public sealed class SystemAudioPromptService
         return await GetCurrentQuestionExplanationAudioAsync(question, cancellationToken);
     }
 
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> PromptLocks = new(StringComparer.Ordinal);
+
     public async Task<bool> EnsurePromptAsync(
+        string key,
+        CancellationToken cancellationToken)
+    {
+        var gate = PromptLocks.GetOrAdd(key, static _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken);
+        try
+        {
+            return await EnsurePromptCoreAsync(key, cancellationToken);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private async Task<bool> EnsurePromptCoreAsync(
         string key,
         CancellationToken cancellationToken)
     {
