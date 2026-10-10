@@ -25,6 +25,8 @@ jobs:
       - run: npm ci
       - run: npm run audit:questions
       - run: npm run build
+      - name: 3D car viewer, CSP, and guide assistant audit
+        run: node ../scripts/audit-car-viewer.mjs
       - name: Runtime dependency audit
         run: npm audit --omit=dev --audit-level=moderate
       - name: Full dependency audit report
