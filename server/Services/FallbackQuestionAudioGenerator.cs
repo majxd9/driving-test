@@ -2,7 +2,7 @@ using DrivingTestApi.Models;
 
 namespace DrivingTestApi.Services;
 
-public sealed class FallbackQuestionAudioGenerator : IQuestionAudioGenerator
+public sealed class FallbackQuestionAudioGenerator : IQuestionAudioGenerator, ITextToSpeechGenerator
 {
     private readonly ElevenLabsQuestionAudioGenerator _primary;
     private readonly EdenAiQuestionAudioGenerator _eden;
