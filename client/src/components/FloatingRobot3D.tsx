@@ -86,14 +86,14 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
 
       // The uploaded model is a static, same-origin asset. Keep the existing
       // lightweight robot as a safe fallback until Lucario finishes loading.
-      let lucarioRoot: THREE.Group | null = null;
+      let lucarioRoot: any = null;
       let lucarioBaseY = 0;
-      const disposeLoadedModel = (object: THREE.Object3D) => {
-        const modelGeometries = new Set<THREE.BufferGeometry>();
-        const modelMaterials = new Set<THREE.Material>();
-        const modelTextures = new Set<THREE.Texture>();
-        object.traverse((child) => {
-          const mesh = child as THREE.Mesh;
+      const disposeLoadedModel = (object: any) => {
+        const modelGeometries = new Set<any>();
+        const modelMaterials = new Set<any>();
+        const modelTextures = new Set<any>();
+        object.traverse((child: any) => {
+          const mesh = child as any;
           if (mesh.geometry) modelGeometries.add(mesh.geometry);
           const mats = Array.isArray(mesh.material) ? mesh.material : (mesh.material ? [mesh.material] : []);
           for (const material of mats) {
@@ -108,9 +108,9 @@ export default function FloatingRobot3D({ onReady, onError }: Props) {
         for (const geometry of modelGeometries) geometry.dispose();
       };
       const loadLucario = async () => {
-        let loaded: THREE.Group | null = null;
+        let loaded: any = null;
         try {
-          loaded = await new USDLoader().loadAsync('/car-explorer/Lucario.usdz') as THREE.Group;
+          loaded = await new USDLoader().loadAsync('/car-explorer/Lucario.usdz');
           if (disposed) {
             disposeLoadedModel(loaded);
             return;
