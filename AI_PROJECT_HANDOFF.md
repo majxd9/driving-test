@@ -923,3 +923,12 @@ Read first: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It supersedes older task sta
 - Pointer/touch presses on the page cause a small step away, except when the target is the assistant itself or its prompt. Eyes continue following mouse/touch coordinates.
 - A contextual help suggestion appears on initial load and after each SPA route change; the user can open it. The standalone car viewer shows its own suggestion on entry.
 - Owner may provide an alternate robot model and a separate assistant voice ID in a later step.
+
+
+## Floating robot stability and direct speech — 2026-10-10
+
+- Corrective behavior: clicking/tapping the robot itself plays the current page explanation directly using the browser Arabic voice; it no longer opens a panel or requires a separate play button. Click again while speech is active to stop it. The dedicated voice ID remains pending and must be applied only to the assistant.
+- The page hint is informational/non-interactive; it returns on each SPA route change. On the standalone car viewer, a matching hint is shown for Student sessions.
+- The robot only steps away from unrelated page taps when the touch/click is within 190 px. Taps far from it no longer trigger movement, reducing jumping/flicker. Direct interaction with the robot is exempt.
+- Both Three.js renderers use lower-poly geometry, a 1.15 pixel-ratio cap, and a 30 FPS cap; render loops stop while the tab is hidden and resume safely. The standalone CSS fallback is no longer hidden before its first WebGL frame.
+- Cache revision is `20261010-r6` for the car viewer entry and model scripts. Build/audit must pass before visual behavior is accepted; real mobile/desktop testing remains required to confirm the reported stutter is gone on the owner's devices.
