@@ -1,13 +1,19 @@
 (() => {
   "use strict";
+
   const $ = (id) => document.getElementById(id);
-  const root = $("guideAssistant"), toggle = $("guideAssistantToggle");
-  const panel = $("guideAssistantPanel"), close = $("guideAssistantClose");
-  const title = $("guideAssistantTitle"), message = $("guideAssistantText");
-  const status = $("guideAssistantStatus"), stopButton = $("guideAssistantStop");
+  const root = $("guideAssistant");
+  const toggle = $("guideAssistantToggle");
+  const panel = $("guideAssistantPanel");
+  const close = $("guideAssistantClose");
+  const title = $("guideAssistantTitle");
+  const message = $("guideAssistantText");
+  const status = $("guideAssistantStatus");
+  const stopButton = $("guideAssistantStop");
   const audio = $("guideAssistantAudio");
   const apiBase = (document.querySelector('meta[name="api-base-url"]')?.content ||
     "https://driving-test-evd0.onrender.com").trim().replace(/\/+$/, "");
+
   if (!root || !toggle || !panel || !title || !message || !status || !audio) return;
 
   const topics = {
@@ -18,7 +24,9 @@
     quality: { title: "جودة العرض", text: "اختر الجودة الاقتصادية عند بطء الجهاز أو الاتصال، والمتوسطة للتوازن، والعالية عندما يكون الجهاز قادراً على تشغيل التفاصيل بسلاسة.", key: "car-guide-quality" }
   };
 
-  let token = 0, fallbackToken = -1, activeTopic = null;
+  let token = 0;
+  let fallbackToken = -1;
+  let activeTopic = null;
   const setStatus = (text) => { status.textContent = text; };
 
   function stopSpeech(update = true) {
@@ -40,6 +48,7 @@
       setStatus("الصوت غير متاح على هذا المتصفح حالياً. يمكنك قراءة الشرح أعلاه.");
       return;
     }
+
     const utterance = new SpeechSynthesisUtterance(topic.text);
     utterance.lang = "ar-SA";
     utterance.rate = 0.96;
@@ -47,6 +56,7 @@
     const voice = voices.find((item) => /^ar([_-]|$)/i.test(item.lang)) ||
       voices.find((item) => item.lang.toLowerCase().startsWith("ar"));
     if (voice) utterance.voice = voice;
+
     utterance.onstart = () => {
       if (requestToken === token) setStatus("ملف الصوت المولّد غير متاح؛ يعمل صوت الجهاز الآن.");
     };
@@ -62,6 +72,7 @@
       if (stopButton) stopButton.disabled = true;
       setStatus("تعذّر تشغيل الصوت. يمكنك قراءة الشرح أعلاه.");
     };
+
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   }
@@ -75,6 +86,7 @@
     audio.pause();
     audio.removeAttribute("src");
     audio.load();
+
     setStatus("جارٍ تشغيل الشرح الصوتي…");
     audio.onerror = () => speakOnDevice(topic, requestToken);
     audio.onplaying = () => {
@@ -86,13 +98,14 @@
       if (stopButton) stopButton.disabled = true;
       setStatus("انتهى الشرح الصوتي.");
     };
+
     audio.src = apiBase + "/api/questions/audio-prompt/" + encodeURIComponent(topic.key) + "?v=20261010";
     audio.load();
     const playing = audio.play();
     if (playing && typeof playing.catch === "function") playing.catch(() => speakOnDevice(topic, requestToken));
   }
 
-  function showTopic(id, play = true) {
+  function showTopic(id, shouldPlay = true) {
     const topic = topics[id];
     if (!topic) return;
     title.textContent = topic.title;
@@ -100,30 +113,39 @@
     root.querySelectorAll("[data-guide-topic]").forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.guideTopic === id));
     });
-    if (play) playTopic(topic);
+    if (shouldPlay) playTopic(topic);
     else {
       stopSpeech(false);
       setStatus("اختر «استمع» لتشغيل الشرح الصوتي.");
     }
   }
 
-  function setOpen(open) {
-    panel.hidden = !open;
+  // Native <details>/<summary> opens the help panel even if this script fails to load.
+  root.addEventListener("toggle", () => {
+    const open = root.open;
     toggle.setAttribute("aria-expanded", String(open));
-    toggle.classList.toggle("is-open", open);
     if (open) {
       if (!activeTopic) showTopic("welcome", false);
-    } else stopSpeech(false);
+    } else {
+      stopSpeech(false);
+    }
+  });
+
+  function setOpen(open) {
+    root.open = open;
+    toggle.setAttribute("aria-expanded", String(open));
+    if (!open) stopSpeech(false);
   }
 
-  toggle.addEventListener("click", () => setOpen(panel.hidden));
   if (close) close.addEventListener("click", () => setOpen(false));
   root.querySelectorAll("[data-guide-topic]").forEach((button) => {
     button.addEventListener("click", () => showTopic(button.dataset.guideTopic));
   });
   if (stopButton) stopButton.addEventListener("click", () => stopSpeech(true));
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !panel.hidden) setOpen(false);
+    if (event.key === "Escape" && root.open) setOpen(false);
   });
-  setOpen(false);
+
+  toggle.setAttribute("aria-expanded", String(root.open));
+  root.dataset.initialized = "true";
 })();
