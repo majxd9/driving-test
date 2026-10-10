@@ -8,13 +8,13 @@
 
 ## المقاسات الحالية
 
-Supabase measured database size: **195 MB / 500 MB Free**.
+Supabase measured database size on 2026-10-10: **247.2 MB / 500 MB Free (~49.4%)**. Table sizes (including indexes): QuestionAudios 142.6 MB, QuestionAiImages 47.9 MB, SystemAudios 41.4 MB.
 
 Media:
-- QuestionAudios table: ~133 MB.
-- QuestionAiImages table: ~46 MB.
+- QuestionAudios table: 142.6 MB including indexes.
+- QuestionAiImages table: 47.9 MB including indexes.
 - 397 questions.
-- 397 audio records.
+- 397 audio records; 0 empty audio files.
 - 299 صورة AI محفوظة حالياً.\n- 277 مراجعة صورة AI pending، 22 approved، 7 rejected.\n- 98 image jobs pending لكنها غير قابلة للتنفيذ حالياً لأن ImageEnabled=false.
 
 تقريباً:
