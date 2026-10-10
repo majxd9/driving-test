@@ -139,6 +139,31 @@ public class QuestionsController : ControllerBase
         )).ToList());
     }
 
+    [HttpGet("{id:int}/explanation-audio")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetQuestionExplanationAudio(int id, CancellationToken cancellationToken)
+    {
+        var question = await _db.Questions
+            .AsNoTracking()
+            .SingleOrDefaultAsync(item => item.Id == id, cancellationToken);
+
+        if (question is null) return NotFound(new { message = "السؤال غير موجود." });
+        if (string.IsNullOrWhiteSpace(question.Explanation))
+            return NotFound(new { message = "لا يوجد شرح نصي لهذا السؤال." });
+
+        var audio = await _systemAudioPrompts.GetCurrentQuestionExplanationAudioAsync(
+            question, cancellationToken);
+        if (audio is null || audio.AudioBytes.Length == 0)
+            return NotFound(new { message = "صوت الشرح لم يُجهّز بعد." });
+
+        Response.Headers.CacheControl = "public,max-age=300,stale-while-revalidate=60";
+        Response.Headers.ETag = $"\\"{audio.ContentHash}\\"";
+        Response.Headers["Content-Disposition"] = "inline";
+        Response.Headers["X-Audio-Bytes"] = audio.AudioBytes.LongLength.ToString();
+        Response.Headers["X-Audio-Format"] = "mp3";
+        return File(audio.AudioBytes, "audio/mpeg", enableRangeProcessing: false);
+    }
+
     [HttpGet("audio-prompt/{key}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAudioPrompt(string key, CancellationToken cancellationToken)
