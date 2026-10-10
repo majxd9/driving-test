@@ -7,7 +7,7 @@ namespace DrivingTestApi.Services;
 public sealed class SystemAudioPromptService
 {
     private const string VoiceId = "0IwoSbTUTTn6egOMrnel";
-    private const string DefaultSiteAssistantVoiceId = "9ae8ab5e6db14f12bac954621f68bfae";
+    private const string DeliVoiceId = "9ae8ab5e6db14f12bac954621f68bfae";
 
     private readonly AppDbContext _db;
     private readonly ITextToSpeechGenerator _audioGenerator;
@@ -119,18 +119,13 @@ public sealed class SystemAudioPromptService
         var prompt = GetPrompt(key);
         var hashSource = prompt.Text;
 
-        // Version site-assistant audio by provider and voice so existing database clips
-        // are regenerated when Deli's primary voice changes; text-only hashes would keep
-        // serving older cached audio even though the voice configuration is now correct.
-        if (SystemAudioCatalog.IsSiteAssistantKey(key))
+        // Include provider and voice in the cache hash for all Deli narration. This refreshes
+        // previously stored clips instead of accidentally continuing to play an older voice.
+        if (SystemAudioCatalog.UsesDeliVoice(key))
         {
             var provider = (_configuration["QUESTION_AUDIO_PROVIDER"] ?? "fish").Trim().ToLowerInvariant();
-            var configuredVoiceId = (_configuration["FISH_AUDIO_SITE_ASSISTANT_VOICE_ID"]
-                ?? DefaultSiteAssistantVoiceId).Trim();
-            var voiceSignature = provider is "fish" or "fishaudio"
-                ? (string.IsNullOrWhiteSpace(configuredVoiceId) ? DefaultSiteAssistantVoiceId : configuredVoiceId)
-                : "provider-default";
-            hashSource = $"deli-site-assistant-audio-v1|provider={provider}|voice={voiceSignature}|text={prompt.Text}";
+            var voiceSignature = provider is "fish" or "fishaudio" ? DeliVoiceId : "provider-default";
+            hashSource = $"deli-assistant-audio-v1|provider={provider}|voice={voiceSignature}|text={prompt.Text}";
         }
 
         var hash = QuestionAudioTextBuilder.HashText(hashSource);
@@ -145,7 +140,7 @@ public sealed class SystemAudioPromptService
             return false;
         }
 
-        var result = await GenerateTextAsync(prompt.Text, cancellationToken, SystemAudioCatalog.IsSiteAssistantKey(key));
+        var result = await GenerateTextAsync(prompt.Text, cancellationToken, SystemAudioCatalog.UsesDeliVoice(key));
 
         if (result.Bytes.Length == 0)
             throw new InvalidOperationException(
@@ -176,20 +171,16 @@ public sealed class SystemAudioPromptService
     private async Task<GeneratedAudioResult> GenerateTextAsync(
         string text,
         CancellationToken cancellationToken,
-        bool useSiteAssistantVoice = false)
+        bool useDeliVoice = false)
     {
         var provider = (_configuration["QUESTION_AUDIO_PROVIDER"] ?? "fish").Trim().ToLowerInvariant();
         var usesConfiguredProvider = provider is "fish" or "fishaudio" or "local" or "edenai";
         var voiceId = usesConfiguredProvider ? null : VoiceId;
 
-        // Dedicated voice applies only to the new site-assistant prompts on Fish Audio.
-        if (useSiteAssistantVoice && (provider is "fish" or "fishaudio"))
+        // Deli's selected voice is the primary Fish Audio voice for both site and car-guide narration.
+        if (useDeliVoice && (provider is "fish" or "fishaudio"))
         {
-            var configuredVoiceId = (_configuration["FISH_AUDIO_SITE_ASSISTANT_VOICE_ID"]
-                ?? DefaultSiteAssistantVoiceId).Trim();
-            voiceId = string.IsNullOrWhiteSpace(configuredVoiceId)
-                ? DefaultSiteAssistantVoiceId
-                : configuredVoiceId;
+            voiceId = DeliVoiceId;
         }
 
         try
