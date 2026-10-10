@@ -38,6 +38,8 @@ const guideAssistant = read('client/public/car-explorer/guide-assistant.js');
 const guideAssistantCss = read('client/public/car-explorer/guide-assistant.css');
 const systemAudioCatalog = read('server/Services/SystemAudioCatalog.cs');
 const systemAudioPrompts = read('server/Services/SystemAudioPromptService.cs');
+const systemAudioGeneratorInterfaces = read('server/Services/IQuestionAiGenerators.cs');
+const serverProgram = read('server/Program.cs');
 const premiumCss = read('client/public/car-explorer/viewer-premium.css');
 const buildScript = read('scripts/build-client.mjs');
 const boot = read('client/public/car-explorer/viewer-boot.js');
@@ -62,6 +64,9 @@ assert.ok(guideAssistant.includes('speechSynthesis') && guideAssistant.includes(
 assert.ok(guideAssistantCss.includes('@media(max-width:480px)') && guideAssistantCss.includes('prefers-reduced-motion:reduce'), 'Guide assistant responsive/reduced-motion styles are missing');
 assert.ok(systemAudioCatalog.includes('CarGuideWelcome') && systemAudioCatalog.includes('CarGuideQuality'), 'Guide audio keys are not registered in the backend');
 assert.ok(systemAudioPrompts.includes('CarGuideWelcome =>') && systemAudioPrompts.includes('Optional car-guide audio generation failed'), 'Guide audio generation is not safely integrated');
+assert.ok(systemAudioGeneratorInterfaces.includes('interface ITextToSpeechGenerator'), 'Configured system-text speech interface is missing');
+assert.ok(serverProgram.includes('AddScoped<ITextToSpeechGenerator>') && systemAudioPrompts.includes('QUESTION_AUDIO_PROVIDER'), 'System guide audio must follow the configured audio provider');
+assert.ok(systemAudioPrompts.includes('existing ElevenLabs/Eden AI fallback'), 'Guide audio provider fallback is missing');
 assert.ok(headers.includes('media-src') && headers.includes('https://driving-test-evd0.onrender.com;'), 'CSP does not permit guide audio from the API');
 assert.ok(premiumCss.includes('@media(max-width:850px)'), 'Mobile layout is missing');
 assert.ok(viewer.includes('mainPartDefinitions'), 'Human-readable main part list is missing');
