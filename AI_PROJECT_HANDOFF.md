@@ -3,7 +3,7 @@
 > هذا الملف هو مرجع الاستمرارية العملي لأي محادثة أو AI agent يعمل على المشروع.
 > اقرأه قبل أي تغيير، ثم ارجع إلى `PROJECT_MASTER_SPEC.md` للتفاصيل الأوسع.
 >
-> آخر تحديث موثق: 2026-10-09
+> آخر تحديث موثق: 2026-10-10
 > **المصدر الحالي لتدقيق الإنتاج:** [PRODUCTION_AUDIT_1_100_REVALIDATION.md](PRODUCTION_AUDIT_1_100_REVALIDATION.md).
 > هذا التقرير يحتوي الحالة الأحدث لكل مهمة 1–100 وقائمة الإغلاق اليدوية. الأعداد والنتائج الأقدم أدناه تاريخية، ولا يجوز استخدامها لإعلان Production-Cleared.
 
@@ -932,3 +932,8 @@ Read first: PRODUCTION_AUDIT_1_100_REVALIDATION.md. It supersedes older task sta
 - The robot only steps away from unrelated page taps when the touch/click is within 190 px. Taps far from it no longer trigger movement, reducing jumping/flicker. Direct interaction with the robot is exempt.
 - Both Three.js renderers use lower-poly geometry, a 1.15 pixel-ratio cap, and a 30 FPS cap; render loops stop while the tab is hidden and resume safely. The standalone CSS fallback is no longer hidden before its first WebGL frame.
 - Cache revision is `20261010-r6` for the car viewer entry and model scripts. Build/audit must pass before visual behavior is accepted; real mobile/desktop testing remains required to confirm the reported stutter is gone on the owner's devices.
+
+
+## Site assistant voice handoff — 2026-10-10
+
+The owner supplied Fish Audio voice ID `9ae8ab5e6db14f12bac954621f68bfae` for the floating site-wide helper. It is scoped to cached `site-assistant-*` system-audio prompts. Fish Audio now honors an explicitly supplied prompt voice ID; question-audio generation continues to use the existing `FISH_AUDIO_VOICE_ID` setting. No question-audio jobs/content or Exam/Study UI are changed. After release, verify Render's provider key/quota and tap-to-play on phone and desktop.

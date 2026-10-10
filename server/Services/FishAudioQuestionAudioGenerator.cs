@@ -21,9 +21,12 @@ public sealed class FishAudioQuestionAudioGenerator : IQuestionAudioGenerator, I
         string text,
         string? voiceId,
         CancellationToken cancellationToken) =>
-        GenerateTextAsync(text, cancellationToken);
+        GenerateTextAsync(text, cancellationToken, voiceId);
 
-    private async Task<GeneratedAudioResult> GenerateTextAsync(string text, CancellationToken cancellationToken)
+    private async Task<GeneratedAudioResult> GenerateTextAsync(
+        string text,
+        CancellationToken cancellationToken,
+        string? voiceIdOverride = null)
     {
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("نص الصوت فارغ.", nameof(text));
@@ -36,7 +39,10 @@ public sealed class FishAudioQuestionAudioGenerator : IQuestionAudioGenerator, I
         if (string.IsNullOrWhiteSpace(model))
             model = "s2.1-pro-free";
 
-        var voiceId = (_configuration["FISH_AUDIO_VOICE_ID"] ?? string.Empty).Trim();
+        var configuredVoiceId = (_configuration["FISH_AUDIO_VOICE_ID"] ?? string.Empty).Trim();
+        var voiceId = string.IsNullOrWhiteSpace(voiceIdOverride)
+            ? configuredVoiceId
+            : voiceIdOverride.Trim();
 
         var payload = new Dictionary<string, object>
         {

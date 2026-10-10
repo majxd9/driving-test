@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { resolveApiUrl } from '../api/client';
 import './floating-site-assistant.css';
 import FloatingRobot3D from './FloatingRobot3D';
 
@@ -48,10 +49,20 @@ export default function FloatingSiteAssistant() {
   const dragRef = useRef<DragState | null>(null);
   const suppressClickRef = useRef(false);
   const speechActiveRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const locationRef = useRef(location.pathname);
 
   const stopSpeech = () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    const activeAudio = audioRef.current;
+    if (activeAudio) {
+      activeAudio.onended = null;
+      activeAudio.onerror = null;
+      activeAudio.pause();
+      activeAudio.removeAttribute('src');
+      activeAudio.load();
+      audioRef.current = null;
+    }
     speechActiveRef.current = false;
     setIsSpeaking(false);
   };
@@ -89,6 +100,15 @@ export default function FloatingSiteAssistant() {
 
   useEffect(() => () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    const activeAudio = audioRef.current;
+    if (activeAudio) {
+      activeAudio.onended = null;
+      activeAudio.onerror = null;
+      activeAudio.pause();
+      activeAudio.removeAttribute('src');
+      activeAudio.load();
+      audioRef.current = null;
+    }
     speechActiveRef.current = false;
   }, []);
 
@@ -128,15 +148,11 @@ export default function FloatingSiteAssistant() {
   }, []);
 
   const activeTopic = topicForPath(location.pathname);
-  const speakCurrentPage = () => {
-    // The robot itself is the direct speech control; do not open a popup first.
-    setShowSuggestion(false);
+  const speakWithDeviceVoice = () => {
     if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+      speechActiveRef.current = false;
+      setIsSpeaking(false);
       setShowSuggestion(true);
-      return;
-    }
-    if (speechActiveRef.current || window.speechSynthesis.speaking) {
-      stopSpeech();
       return;
     }
 
@@ -154,6 +170,49 @@ export default function FloatingSiteAssistant() {
     speechActiveRef.current = true;
     setIsSpeaking(true);
     window.speechSynthesis.speak(utterance);
+  };
+
+  const speakCurrentPage = () => {
+    // Playback remains strictly click-to-play. No audio starts on page load/navigation.
+    setShowSuggestion(false);
+    if (speechActiveRef.current || audioRef.current || ('speechSynthesis' in window && window.speechSynthesis.speaking)) {
+      stopSpeech();
+      return;
+    }
+
+    const key = `site-assistant-${activeTopic.id}`;
+    const audio = new Audio(resolveApiUrl(`/api/questions/audio-prompt/${encodeURIComponent(key)}`));
+    audio.preload = 'auto';
+    audioRef.current = audio;
+    speechActiveRef.current = true;
+    setIsSpeaking(true);
+
+    let fellBack = false;
+    const useDeviceVoice = () => {
+      if (fellBack || audioRef.current !== audio) return;
+      fellBack = true;
+      audio.onended = null;
+      audio.onerror = null;
+      audio.pause();
+      audioRef.current = null;
+      speechActiveRef.current = false;
+      setIsSpeaking(false);
+      speakWithDeviceVoice();
+    };
+
+    audio.onplay = () => {
+      if (audioRef.current !== audio) return;
+      speechActiveRef.current = true;
+      setIsSpeaking(true);
+    };
+    audio.onended = () => {
+      if (audioRef.current !== audio) return;
+      audioRef.current = null;
+      speechActiveRef.current = false;
+      setIsSpeaking(false);
+    };
+    audio.onerror = useDeviceVoice;
+    void audio.play().catch(useDeviceVoice);
   };
 
   const startDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {

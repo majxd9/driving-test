@@ -24,6 +24,7 @@ const required = [
   'client/vite.usdz-loader.config.ts',
   'server/Services/SystemAudioCatalog.cs',
   'server/Services/SystemAudioPromptService.cs',
+  'server/Services/FishAudioQuestionAudioGenerator.cs',
   'client/public/car-explorer/vendor/three.module.js',
   'client/public/car-explorer/vendor/OrbitControls.js',
   'client/public/car-explorer/vendor/GLTFLoader.js',
@@ -52,6 +53,7 @@ const floatingRobot3D = read('client/src/components/FloatingRobot3D.tsx');
 const floatingAssistantCss = read('client/src/components/floating-site-assistant.css');
 const systemAudioCatalog = read('server/Services/SystemAudioCatalog.cs');
 const systemAudioPrompts = read('server/Services/SystemAudioPromptService.cs');
+const fishAudioGenerator = read('server/Services/FishAudioQuestionAudioGenerator.cs');
 const systemAudioGeneratorInterfaces = read('server/Services/IQuestionAiGenerators.cs');
 const serverProgram = read('server/Program.cs');
 const premiumCss = read('client/public/car-explorer/viewer-premium.css');
@@ -107,6 +109,10 @@ assert.ok(systemAudioPrompts.includes('CarGuideWelcome =>') && systemAudioPrompt
 assert.ok(systemAudioGeneratorInterfaces.includes('interface ITextToSpeechGenerator'), 'Configured system-text speech interface is missing');
 assert.ok(serverProgram.includes('AddScoped<ITextToSpeechGenerator>') && systemAudioPrompts.includes('QUESTION_AUDIO_PROVIDER'), 'System guide audio must follow the configured audio provider');
 assert.ok(systemAudioPrompts.includes('existing ElevenLabs/Eden AI fallback'), 'Guide audio provider fallback is missing');
+assert.ok(floatingAssistant.includes('resolveApiUrl') && floatingAssistant.includes('site-assistant-${activeTopic.id}') && floatingAssistant.includes('audio.play()'), 'Main assistant must prefer cached AI speech after a direct click and keep a device-voice fallback');
+assert.ok(systemAudioCatalog.includes('IsSiteAssistantKey') && systemAudioCatalog.includes('SiteAssistantWelcome'), 'Dedicated site-assistant audio keys must stay separate in the catalog');
+assert.ok(systemAudioPrompts.includes('FISH_AUDIO_SITE_ASSISTANT_VOICE_ID') && systemAudioPrompts.includes('DefaultSiteAssistantVoiceId'), 'Site-assistant voice ID must have a separate configuration setting');
+assert.ok(fishAudioGenerator.includes('voiceIdOverride') && fishAudioGenerator.includes('FISH_AUDIO_VOICE_ID') && fishAudioGenerator.includes('GenerateTextAsync(text, cancellationToken, voiceId)'), 'Fish Audio must honor explicit prompt voice IDs without replacing the question voice');
 assert.ok(headers.includes('media-src') && headers.includes('https://driving-test-evd0.onrender.com;'), 'CSP does not permit guide audio from the API');
 assert.ok(premiumCss.includes('@media(max-width:850px)'), 'Mobile layout is missing');
 assert.ok(viewer.includes('mainPartDefinitions'), 'Human-readable main part list is missing');

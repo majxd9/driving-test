@@ -216,3 +216,13 @@ server/Prompts/rukhsati_397_ai_scene_prompts.txt
 
 Gemini image generation uses Google's Interactions API with gemini-3.1-flash-image. The generated output is returned as image data and stored by the existing image-generation worker.
 \n
+
+## صوت المساعد العائم — 2026-10-10
+
+- معرّف Fish Audio المخصص للمساعد العائم: `9ae8ab5e6db14f12bac954621f68bfae`.
+- الإعداد الاختياري على Render: `FISH_AUDIO_SITE_ASSISTANT_VOICE_ID`؛ إن لم يوجد يستخدم الخادم المعرّف أعلاه.
+- هذا الإعداد منفصل تماماً عن `FISH_AUDIO_VOICE_ID` المستخدم لتوليد صوت الأسئلة.
+- رسائل المساعد الثابتة محفوظة في `SystemAudios` وتُولَّد عند فقدانها فقط؛ لا يوجد توليد صوت عند النقر أو التنقل.
+- يبدأ الصوت بعد نقر الطالب فقط؛ عند غياب المقطع أو فشل تشغيله يستخدم المساعد النطق العربي المحلي في المتصفح.
+- لا يعاد توليد QuestionAudios ولا تتغير رسائل الأسئلة أو أصوات عارض السيارة الحالية.
+- يجب التحقق من صوت Fish Audio الفعلي على Render بعد النشر؛ نجاح البناء وحده لا يثبت عمل المفتاح أو الحصة.

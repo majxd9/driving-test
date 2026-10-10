@@ -488,3 +488,12 @@ The floating site assistant uses a real Three.js procedural robot in the React S
 - The robot only steps away from unrelated page taps when the touch/click is within 190 px. Taps far from it no longer trigger movement, reducing jumping/flicker. Direct interaction with the robot is exempt.
 - Both Three.js renderers use lower-poly geometry, a 1.15 pixel-ratio cap, and a 30 FPS cap; render loops stop while the tab is hidden and resume safely. The standalone CSS fallback is no longer hidden before its first WebGL frame.
 - Cache revision is `20261010-r6` for the car viewer entry and model scripts. Build/audit must pass before visual behavior is accepted; real mobile/desktop testing remains required to confirm the reported stutter is gone on the owner's devices.
+
+
+## صوت المساعد العائم — 2026-10-10
+
+- معرّف Fish Audio الذي زوّده المالك للمساعد العائم: `9ae8ab5e6db14f12bac954621f68bfae`.
+- الإعداد الاختياري على Render: `FISH_AUDIO_SITE_ASSISTANT_VOICE_ID`، والقيمة الافتراضية في المصدر هي المعرّف أعلاه.
+- الصوت مخصص لمفاتيح `site-assistant-*` المخزنة في `SystemAudios`. لا يغيّر `FISH_AUDIO_VOICE_ID` ولا محتوى/توليد صوت الأسئلة.
+- النطق يبدأ عند نقر الروبوت فقط، مع fallback إلى صوت المتصفح عند تعذّر المقطع.
+- بعد النشر يجب التحقق عملياً من Render وCloudflare ومن تشغيل الصوت على الهاتف والكمبيوتر.
