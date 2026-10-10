@@ -1,7 +1,7 @@
 /* Lightweight assistant shell with a real Three.js robot and CSS fallback. */
 .rukhsati-site-assistant{position:fixed;inset:0;z-index:9500;direction:rtl;color:#f3f8fc;font-family:"IBM Plex Sans Arabic","Cairo",system-ui,sans-serif;pointer-events:none}
 .rukhsati-assistant-robot-button{position:fixed;z-index:9502;display:block;width:92px;height:104px;margin:0;padding:0;border:0;border-radius:22px;background:transparent;color:#e9fcff;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;pointer-events:auto;filter:drop-shadow(0 8px 12px #0006)}
-.rukhsati-assistant-robot-button:active{cursor:grabbing}.rukhsati-assistant-robot-button:focus-visible{outline:2px solid #81f0e0;outline-offset:2px}
+.rukhsati-assistant-robot-button:active{cursor:grab}.rukhsati-assistant-robot-button:focus-visible{outline:2px solid #81f0e0;outline-offset:2px}
 .rukhsati-robot-stage{position:absolute;inset:0 0 12px;display:block;perspective:230px;transform-style:preserve-3d;animation:rukhsati-robot-hover 3.2s ease-in-out infinite;pointer-events:none}
 .rukhsati-robot-halo{position:absolute;left:8px;right:8px;top:16px;bottom:0;border-radius:50%;background:radial-gradient(ellipse,#36d8dc32 0%,#3470a015 46%,transparent 72%);filter:blur(4px)}
 .rukhsati-robot-shadow{position:absolute;left:22px;bottom:1px;width:49px;height:12px;border-radius:50%;background:#0008;filter:blur(5px);transform:rotateX(62deg)}
@@ -43,3 +43,11 @@
 
 .rukhsati-robot-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;touch-action:none}
 .rukhsati-site-assistant[data-robot-ready="true"] .rukhsati-robot-stage{display:none}
+
+.rukhsati-assistant-suggestion{position:fixed;z-index:9503;display:grid;gap:6px;padding:11px 12px;border:1px solid #8ce7dd52;border-radius:15px;color:#eaf8fa;background:linear-gradient(145deg,#142934f5,#0b141df5);box-shadow:0 14px 40px #0008;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);text-align:right;font:inherit;font-size:11px;line-height:1.8;cursor:pointer;pointer-events:auto;animation:rukhsati-assistant-in .18s ease-out both}
+.rukhsati-assistant-suggestion b{color:#8be7d9;font-size:10px;font-weight:800}
+.rukhsati-assistant-panel{max-height:min(255px,48dvh)}
+.rukhsati-assistant-explanation p{margin:0;color:#c4d2dd;font-size:12px;line-height:1.9}
+.rukhsati-assistant-actions{display:flex;gap:7px}
+.rukhsati-assistant-open-page{width:100%}
+@media(max-width:480px){.rukhsati-assistant-suggestion{font-size:10px;padding:10px 11px}.rukhsati-assistant-panel{max-height:min(245px,46dvh)}.rukhsati-assistant-explanation p{font-size:11px}}
