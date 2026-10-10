@@ -41,7 +41,7 @@ export default function SpiritDrift({ onStateChange }: { onStateChange?: (active
     // “Car starts with tires screeching sound effect” by Alexander, Orange Free Sounds, CC BY-NC 4.0 (source credit kept in code, not shown in the UI).
     const audio = audioRef.current;
     if (audio) {
-      audio.currentTime = 0;
+      try { audio.currentTime = 0; } catch { /* Metadata may still be loading. */ }
       void audio.play().catch(() => {
         setDrifting(false);
         onStateChange?.(false);
